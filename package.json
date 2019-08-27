@@ -1,0 +1,46 @@
+{
+  "name": "book-reader",
+  "version": "1.0.0",
+  "private": true,
+  "author": "syuchan1005<syuchan.dev@gmail.com>",
+  "scripts": {
+    "serve:client": "cross-env NODE_ENV=react parcel serve public/index.html --port 8080 --out-dir dist/client",
+    "build:client": "cross-env NODE_ENV=react parcel build public/index.html --out-dir dist/client",
+    "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server & node dist/server\"",
+    "build:server": "cross-env NODE_ENV=koa parcel build --target node src/server/index.ts --out-dir dist/server",
+    "serve": "npm-run-all --parallel serve:*",
+    "build": "npm run build:client & npm run build:server",
+    "lint": "eslint src/**/*.*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@types/koa": "^2.0.49",
+    "@types/node": "^12.7.2",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.0.0",
+    "@typescript-eslint/typescript-estree": "^2.0.0",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.2.2",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-react": "^7.14.3",
+    "nodemon": "^1.19.1",
+    "npm-run-all": "^4.1.5",
+    "react-hot-loader": "^4.12.12",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.3.3",
+    "@types/react": "^16.9.2",
+    "@types/react-dom": "^16.9.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "cross-env": "^5.2.0",
+    "koa": "^2.8.1",
+    "parcel-bundler": "^1.12.3",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-router-dom": "^5.0.1"
+  }
+}

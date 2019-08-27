@@ -1,0 +1,6 @@
+dist
+.idea
+.cache
+node_modules
+*.iml
+*-lock.json
