@@ -1,6 +1,8 @@
-dist
-.idea
 .cache
+.idea
+dist
 node_modules
+storage
 *.iml
+*.sqlite
 *-lock.json

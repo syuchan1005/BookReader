@@ -1,14 +1,22 @@
 // @ts-ignore
 import Koa from 'koa'; // import * as Koa ... throw exception
+import Graphql from './graphql';
+import Database from './database';
 
 const app = new Koa();
+const graphql = new Graphql();
+const database = new Database();
 
-app.use((ctx) => {
-  ctx.status = 200;
-});
+(async () => {
+  await database.init();
 
-const port = process.env.PORT || 8081;
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`🚀 listen at: http://localhost:${port}`);
-});
+  graphql.middleware(app);
+
+  const port = process.env.PORT || 8081;
+  app.listen(port, () => {
+    /* eslint-disable no-console */
+    console.log(`👔 listen  at: http://localhost:${port}`);
+    console.log(`🚀 graphql at: http://localhost:${port}${graphql.server.graphqlPath}`);
+  });
+
+})();

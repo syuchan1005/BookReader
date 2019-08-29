@@ -1,0 +1,31 @@
+scalar Upload
+
+type Query {
+    bookInfos(limit: Int = 10): [BookInfo!]!
+    books(infoId: ID): [Book!]!
+}
+
+type Mutation {
+    addBookInfo(name: String!, thumbnail: Upload): Result!
+    addBook(name: String!, number: Int!, file: Upload): Result!
+}
+
+type BookInfo {
+    infoId: ID!
+    name: String!
+    thumbnail: String!
+    count: Int!
+}
+
+type Book {
+    bookId: ID!
+    info: BookInfo!
+    thumbnail: String!
+    number: Int!
+    pages: Int!
+}
+
+type Result {
+    success: Boolean!
+    message: String
+}
