@@ -6,8 +6,8 @@ import uuidv4 from 'uuid/v4';
 // @ts-ignore
 import typeDefs from './schema.graphql';
 import { Book, BookInfo, Result } from '../common/GraphqlTypes';
-import { BookInfo as BookInfoModel } from './models/BookInfo';
-import { Book as BookModel } from './models/Book';
+import { bookInfo as BookInfoModel } from './sequelize/models/bookInfo';
+import { book as BookModel } from './sequelize/models/book';
 import ModelUtil from './ModelUtil';
 
 export default class Graphql {
@@ -27,12 +27,12 @@ export default class Graphql {
           /* parent, args, context, info */
           Query: {
             bookInfos: async (): Promise<BookInfo[]> => {
-              const bookInfos = await BookInfoModel.find();
+              const bookInfos = await BookInfoModel.findAll();
               return bookInfos.map((info) => ModelUtil.bookInfo(info));
             },
             books: async (parent, { infoId }): Promise<Book[]> => {
-              const books = await BookModel.find({
-                where: { info: { id: infoId } },
+              const books = await BookModel.findAll({
+                where: { infoId },
               });
               return books.map((book) => ModelUtil.book(book));
             },
@@ -47,11 +47,11 @@ export default class Graphql {
                 }
                 await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, stream);
               }
-              await BookInfoModel.newInstance(
+              await BookInfoModel.create({
                 infoId,
                 name,
-                thumbnail ? `bookInfo/${infoId}.jpg` : undefined,
-              ).save();
+                thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
+              });
               return { success: true };
             },
             addBook: async (parent, { name, number, file }): Promise<Result> => {

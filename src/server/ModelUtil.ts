@@ -1,6 +1,6 @@
 import { BookInfo, Book } from '../common/GraphqlTypes';
-import { BookInfo as BookInfoModel } from './models/BookInfo';
-import { Book as BookModel } from './models/Book';
+import { bookInfo as BookInfoModel } from './sequelize/models/bookInfo';
+import { book as BookModel } from './sequelize/models/book';
 
 const util = {
   bookInfo(model: BookInfoModel, convertBook: boolean = true): BookInfo {
