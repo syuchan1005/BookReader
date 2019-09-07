@@ -1,17 +1,23 @@
 // @ts-ignore
 import { promises as fs } from 'fs';
+import * as os from 'os';
 
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
 import uuidv4 from 'uuid/v4';
+import unzipper from 'unzipper';
+import rimraf from 'rimraf';
 // @ts-ignore
 import typeDefs from './schema.graphql';
 import { Book, BookInfo, Result } from '../common/GraphqlTypes';
-import { bookInfo as BookInfoModel } from './sequelize/models/bookInfo';
-import { book as BookModel } from './sequelize/models/book';
+import Database from './sequelize/models';
+import BookInfoModel from './sequelize/models/bookInfo';
+import BookModel from './sequelize/models/book';
 import ModelUtil from './ModelUtil';
+import { asyncForEach, readdirRecursively, mkdirpIfNotExists } from './Util';
+import Errors from './Errors';
 
 export default class Graphql {
-  private _server: ApolloServer;
+  private readonly _server: ApolloServer;
 
   get server() {
     // eslint-disable-next-line no-underscore-dangle
@@ -26,15 +32,58 @@ export default class Graphql {
         resolvers: {
           /* parent, args, context, info */
           Query: {
-            bookInfos: async (): Promise<BookInfo[]> => {
-              const bookInfos = await BookInfoModel.findAll();
+            bookInfos: async (parent, { limit }): Promise<BookInfo[]> => {
+              const bookInfos = await BookInfoModel.findAll({
+                limit,
+              });
               return bookInfos.map((info) => ModelUtil.bookInfo(info));
             },
-            books: async (parent, { infoId }): Promise<Book[]> => {
+            bookInfo: async (parent, { infoId }, context, info): Promise<BookInfo> => {
+              const needBook = info.operation.selectionSet.selections.some(
+                (section) => section.kind === 'Field'
+                  && section.selectionSet.selections.some(
+                    (sec) => sec.kind === 'Field' && sec.name.value === 'books',
+                  ),
+              );
+              const bookInfo = await BookInfoModel.findOne({
+                where: { id: infoId },
+                include: needBook ? [
+                  {
+                    model: BookModel,
+                    as: 'books',
+                  },
+                ] : [],
+              });
+              if (bookInfo) return ModelUtil.bookInfo(bookInfo);
+              return null;
+            },
+            books: async (parent, { infoId, limit }): Promise<Book[]> => {
+              const where: any = {};
+              if (infoId) where.infoId = infoId;
               const books = await BookModel.findAll({
-                where: { infoId },
+                where,
+                include: [
+                  {
+                    model: BookInfoModel,
+                    as: 'info',
+                  },
+                ],
+                limit,
               });
               return books.map((book) => ModelUtil.book(book));
+            },
+            book: async (parent, { bookId }): Promise<Book> => {
+              const book = await BookModel.findOne({
+                where: { id: bookId },
+                include: [
+                  {
+                    model: BookInfoModel,
+                    as: 'info',
+                  },
+                ],
+              });
+              if (book) return ModelUtil.book(book);
+              return null;
             },
           },
           Mutation: {
@@ -43,18 +92,86 @@ export default class Graphql {
               if (thumbnail) {
                 const { stream, mimetype } = await thumbnail;
                 if (!mimetype.startsWith('image/jpeg')) {
-                  throw new Error('Thumbnail must be image');
+                  return {
+                    success: false,
+                    code: 'QL0000',
+                    message: Errors.QL0000,
+                  };
                 }
                 await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, stream);
               }
               await BookInfoModel.create({
-                infoId,
+                id: infoId,
                 name,
                 thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
               });
               return { success: true };
             },
-            addBook: async (parent, { name, number, file }): Promise<Result> => {
+            addBook: async (parent, { infoId, number, file }): Promise<Result> => {
+              const bookId = uuidv4();
+              if (!infoId || !await BookInfoModel.hasId(infoId)) {
+                return {
+                  success: false,
+                  code: 'QL0001',
+                  message: Errors.QL0001,
+                };
+              }
+              const { createReadStream, mimetype } = await file;
+              if (mimetype !== 'application/zip') {
+                return {
+                  success: false,
+                  code: 'QL0002',
+                  message: Errors.QL0002,
+                };
+              }
+              // unzip
+              const tempPath = `${os.tmpdir()}/${bookId}`;
+              await new Promise((resolve) => {
+                createReadStream()
+                  .pipe(unzipper.Extract({ path: tempPath }))
+                  .on('close', resolve);
+              });
+              const files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
+                (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
+              ));
+              if (files.length <= 0) {
+                return {
+                  success: false,
+                  code: 'QL0003',
+                  message: Errors.QL0003,
+                };
+              }
+              files.sort((a, b) => {
+                const aDepth = (a.match(/\//g) || []).length;
+                const bDepth = (b.match(/\//g) || []).length;
+                if (aDepth !== bDepth) return aDepth - bDepth;
+                return a.localeCompare(b);
+              });
+              const pad = files.length.toString(10).length;
+              await fs.mkdir(`storage/book/${bookId}`);
+              await asyncForEach(files, async (f, i) => {
+                const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
+                await fs.rename(f, `storage/book/${bookId}/${fileName}`);
+              });
+              await new Promise((resolve) => {
+                rimraf(tempPath, () => resolve());
+              });
+
+              await BookModel.create({
+                id: bookId,
+                thumbnail: null,
+                number,
+                pages: files.length,
+                infoId,
+              });
+              await BookInfoModel.update({
+                // @ts-ignore
+                count: Database.sequelize.literal('count + 1'),
+              }, {
+                where: {
+                  id: infoId,
+                },
+              });
               return {
                 success: true,
               };
@@ -65,8 +182,11 @@ export default class Graphql {
     });
   }
 
-  middleware(app) {
+  async middleware(app) {
+    await mkdirpIfNotExists('storage/bookInfo');
+    await mkdirpIfNotExists('storage/book');
+
     // eslint-disable-next-line no-underscore-dangle
-    this._server.applyMiddleware({ app });
+    app.use(this._server.getMiddleware({}));
   }
 }

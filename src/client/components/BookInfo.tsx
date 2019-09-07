@@ -4,6 +4,8 @@ import {
   CardActionArea,
   CardContent,
   makeStyles,
+  createStyles,
+  Omit,
 } from '@material-ui/core';
 
 import { BookInfo as QLBookInfo } from '../../common/GraphqlTypes';
@@ -12,7 +14,7 @@ interface BookInfoProps extends Omit<QLBookInfo, 'infoId'> {
   onClick?: Function;
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => createStyles({
   thumbnail: {
     maxWidth: '200px',
     marginBottom: theme.spacing(1),
@@ -40,7 +42,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     <Card className={classes.card}>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <CardContent className={classes.cardContent}>
-          <img src={thumbnail} alt="thumbnail" className={classes.thumbnail} />
+          <img src={thumbnail || `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}`} alt="thumbnail" className={classes.thumbnail} />
           <div>{name}</div>
           <div>
             {count}

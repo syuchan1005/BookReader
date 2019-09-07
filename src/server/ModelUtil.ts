@@ -1,6 +1,6 @@
-import { BookInfo, Book } from '../common/GraphqlTypes';
-import { bookInfo as BookInfoModel } from './sequelize/models/bookInfo';
-import { book as BookModel } from './sequelize/models/book';
+import { BookInfo, Book, SimpleBookInfo } from '../common/GraphqlTypes';
+import BookInfoModel from './sequelize/models/bookInfo';
+import BookModel from './sequelize/models/book';
 
 const util = {
   bookInfo(model: BookInfoModel, convertBook: boolean = true): BookInfo {
@@ -8,17 +8,17 @@ const util = {
       infoId: model.id,
       name: model.name,
       thumbnail: model.thumbnail,
-      count: model.books.length,
-      books: convertBook ? model.books.map(util.book) : [],
+      count: model.count,
+      books: convertBook && model.books ? model.books.map((b) => util.book(b, false)) : [],
     };
   },
-  book(model: BookModel): Book {
+  book(model: BookModel, convertInfo = true): Book {
     return {
       bookId: model.id,
-      info: util.bookInfo(model.info, false),
       pages: model.pages,
       number: model.number,
       thumbnail: model.thumbnail,
+      info: convertInfo ? <SimpleBookInfo>util.bookInfo(model.info, false) : null,
     };
   },
 };

@@ -6,15 +6,24 @@ export interface BookInfo {
   books: Book[];
 }
 
+export interface SimpleBookInfo {
+  infoId: string;
+  name: string;
+  thumbnail: string;
+  count: number;
+}
+
 export interface Book {
   bookId: string;
-  info: BookInfo;
   thumbnail: string;
-  number: number;
+  number: string;
   pages: number;
+  // infoId: string;
+  info: SimpleBookInfo;
 }
 
 export interface Result {
   success: boolean;
+  code?: string;
   message?: string;
 }

@@ -1,12 +1,12 @@
 import { DataTypes, Association, Model } from 'sequelize';
-import { bookInfo } from './bookInfo';
+import bookInfo from './bookInfo';
 
-export class book extends Model {
+export default class book extends Model {
   public id!: string;
 
-  public thumbnail!: string;
+  public thumbnail: string | null;
 
-  public number!: number;
+  public number!: string;
 
   public pages!: number;
 
@@ -16,44 +16,47 @@ export class book extends Model {
 
   public readonly updatedAt!: Date;
 
+  public readonly deletedAt: Date | null;
+
   public readonly info?: bookInfo;
 
   public static associations: {
     info: Association<book, bookInfo>;
+  };
+
+  public static initModel(sequelize) {
+    book.init({
+      id: {
+        allowNull: false,
+        primaryKey: true,
+        type: DataTypes.UUID,
+      },
+      thumbnail: {
+        type: DataTypes.STRING,
+      },
+      number: {
+        allowNull: false,
+        unique: 'info',
+        type: DataTypes.STRING,
+      },
+      pages: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+      },
+      infoId: {
+        allowNull: false,
+        unique: 'info',
+        type: DataTypes.UUID,
+      },
+    }, {
+      sequelize,
+      tableName: 'books',
+      paranoid: true,
+    });
+    return 'book';
+  }
+
+  public static associate() {
+    book.belongsTo(bookInfo, { foreignKey: 'infoId', as: 'info' });
   }
 }
-
-export const init = (sequelize) => {
-  const tableName = 'bookInfos';
-  bookInfo.init({
-    id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      primaryKey: true,
-    },
-    thumbnail: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    number: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      allowNull: false,
-    },
-    pages: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      allowNull: false,
-    },
-    infoId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-    },
-  }, {
-    sequelize,
-    tableName,
-  });
-  return tableName;
-};
-
-export const associate = () => {
-  book.hasOne(bookInfo, { foreignKey: 'infoId' });
-};

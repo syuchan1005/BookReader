@@ -1,0 +1,66 @@
+@startuml
+' styles
+skinparam linetype ortho
+skinparam shadowing false
+skinparam shadowing<<with_shadow>> true
+
+!unquoted function Table($name) return "class " + $name + " <<table>> << (T,#add1b2) >>"
+!unquoted function primary_key(x) return "<b>" + x + "</b>"
+!unquoted function foreign_key(x) return "<i>" + x + "</i>"
+!unquoted function unique(x) return "<color:green>" + x + "</color>"
+!unquoted function unique_key(x) return "<color:blue>[" + x + "]</color>"
+!unquoted function $not_null(x) return "<u>" + x + "</u>"
+!unquoted function unique_not_null(x) return "<color:green><u>" + x + "</u></color>"
+!unquoted function foreign_key_not_null(x) return "<i><u>" + x + "</u></i>"
+!unquoted function unique_foreign_key_not_null(x) return "<color:green><i><u>" + x + "</u></i><color:green>"
+
+skinparam class {
+    ArrowColor #0d0d88
+    ArrowStyle Bold
+}
+
+skinparam class<<table>> {
+    BorderColor #c0c0c0
+    BackgroundColor #fcfad1
+}
+
+hide methods
+hide stereotypes
+
+' entities
+Table(details) <<with_shadow>> {
+    primary_key(PRIMARY KEY)
+    foreign_key(FOREIGN KEY)
+    $not_null(NOT NULL)
+    unique(UNIQUE)
+    unique_key(UNIQUE_KEY)
+}
+
+Table(bookInfos) {
+  primary_key(id) uuid
+  ---
+  unique_not_null(name) varchar(255)
+  thumbnail varchar(255)
+  $not_null(count) integer = 0
+  ---
+  $not_null(createdAt) datetime
+  $not_null(updatedAt) datetime
+  deletedAt datetime
+}
+
+Table(books) {
+  primary_key(id) uuid
+  ---
+  thumbnail varchar(255)
+  $not_null(number)unique_key(info) varchar(255)
+  $not_null(pages) integer
+  $not_null(infoId)unique_key(info) uuid
+  ---
+  $not_null(createdAt) datetime
+  $not_null(updatedAt) datetime
+  deletedAt datetime
+}
+
+' relations
+bookInfos --o{ books
+@enduml

@@ -1,6 +1,6 @@
 import debug from 'debug';
 
-export default {
+module.exports = {
   development: {
     dialect: 'sqlite',
     storage: 'development.sqlite',
