@@ -23,8 +23,13 @@ import Error from './pages/Error';
 
 const theme = createMuiTheme({
   palette: {
-    primary: { main: colors.green['500'] },
-    secondary: { main: colors.blue.A700 },
+    primary: {
+      main: colors.green['500'],
+    },
+    secondary: {
+      main: colors.blue.A700,
+      contrastText: colors.common.white,
+    },
   },
 });
 

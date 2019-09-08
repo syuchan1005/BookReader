@@ -11,6 +11,7 @@ import {
 import { Book as BookType } from '../../common/GraphqlTypes';
 import Book from '../components/Book';
 import AddBookDialog, { ChildProps } from '../components/AddBookDialog';
+import db from '../Database';
 
 interface InfoProps {
   store: any;
@@ -46,6 +47,7 @@ const useStyles = makeStyles((theme) => createStyles({
 const Info: React.FC = (props: InfoProps) => {
   const classes = useStyles(props);
   const { match, history } = useReactRouter();
+  const [readId, setReadId] = React.useState('');
   const {
     refetch,
     loading,
@@ -72,12 +74,21 @@ const Info: React.FC = (props: InfoProps) => {
   // eslint-disable-next-line
   props.store.barTitle = 'Book';
 
+  // @ts-ignore
+  React.useEffect(() => {
+    db.infoReads.get(match.params.id).then((read) => {
+      if (read) {
+        setReadId(read.bookId);
+      }
+    });
+  });
+
   if (loading || error || !data.bookInfo) {
     return (
       <div>
-        { loading && 'Loading' }
-        { error && `Error: ${error}`}
-        { !data.bookInfo && 'Empty'}
+        {loading && 'Loading'}
+        {error && `Error: ${error}`}
+        {!data.bookInfo && 'Empty'}
       </div>
     );
   }
@@ -93,13 +104,29 @@ const Info: React.FC = (props: InfoProps) => {
     </div>
   );
 
+  const clickBook = (book) => {
+    db.infoReads.put({
+      infoId: match.params.id,
+      bookId: book.bookId,
+    }).catch(() => { /* ignored */ });
+    history.push(`/book/${book.bookId}`);
+  };
+
   const bookList: [BookType] = data.bookInfo.books;
 
   return (
     <div className={classes.info}>
       {// @ts-ignore
         (bookList && bookList.length > 0) && bookList.map(
-          (book) => (<Book {...book} name={data.bookInfo.name} key={book.bookId} onClick={() => history.push(`/book/${book.bookId}`)} />),
+          (book) => (
+            <Book
+              {...book}
+              name={data.bookInfo.name}
+              reading={readId === book.bookId}
+              key={book.bookId}
+              onClick={() => clickBook(book)}
+            />
+          ),
         )
       }
       <AddBookDialog infoId={match.params.id} onAdded={refetch}>

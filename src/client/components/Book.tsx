@@ -7,28 +7,45 @@ import {
   makeStyles,
   createStyles,
   Omit,
+  Theme,
 } from '@material-ui/core';
 
 import { Book as QLBook } from '../../common/GraphqlTypes';
 
 interface BookProps extends Omit<QLBook, 'bookId'> {
   name: string;
+  reading?: boolean;
   onClick?: Function;
 }
 
-const useStyles = makeStyles((theme) => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   thumbnail: {
-    maxWidth: '200px',
-    marginBottom: theme.spacing(1),
+    minWidth: '100%',
+    height: '250px',
+    objectFit: 'contain',
   },
   card: {
-    maxWidth: '250px',
+    margin: 'auto',
   },
   cardContent: {
-    paddingBottom: `${theme.spacing(1)}px !important`,
+    position: 'absolute',
+    bottom: '0',
+    width: '100%',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+  },
+  readLabel: {
+    position: 'absolute',
+    top: 0,
+    right: theme.spacing(1),
+    background: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
   },
 }));
 
@@ -39,20 +56,20 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     number,
     pages,
     name,
+    reading,
     onClick,
   } = props;
 
   return (
     <Card className={classes.card}>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
+        <img
+          src={thumbnail || `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}\n${number}`}
+          alt="thumbnail"
+          className={classes.thumbnail}
+        />
         <CardContent className={classes.cardContent}>
-          <img
-            src={thumbnail || `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}\n${number}`}
-            alt="thumbnail"
-            className={classes.thumbnail}
-          />
           <div>
-            {name}
             {number}
             巻
           </div>
@@ -61,6 +78,9 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
             ページ
           </div>
         </CardContent>
+        {reading && (
+          <div className={classes.readLabel}>Read</div>
+        )}
       </CardActionArea>
     </Card>
   );

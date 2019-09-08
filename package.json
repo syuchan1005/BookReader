@@ -54,6 +54,7 @@
       "babel-preset-react": "^6.24.1",
       "cross-env": "^5.2.0",
       "debug": "^4.1.1",
+      "dexie": "^2.0.4",
       "graphql": "^14.5.3",
       "graphql-tag": "^2.10.1",
       "history": "^4.9.0",

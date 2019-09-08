@@ -14,16 +14,22 @@ interface BookInfoProps extends Omit<QLBookInfo, 'infoId'> {
   onClick?: Function;
 }
 
-const useStyles = makeStyles((theme) => createStyles({
+const useStyles = makeStyles(() => createStyles({
   thumbnail: {
-    maxWidth: '200px',
-    marginBottom: theme.spacing(1),
+    minWidth: '100%',
+    height: '250px',
+    objectFit: 'contain',
   },
   card: {
-    maxWidth: '250px',
+    margin: 'auto',
   },
   cardContent: {
-    paddingBottom: `${theme.spacing(1)}px !important`,
+    position: 'absolute',
+    bottom: '0',
+    width: '100%',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -41,8 +47,12 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   return (
     <Card className={classes.card}>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
+        <img
+          src={thumbnail || `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}`}
+          alt="thumbnail"
+          className={classes.thumbnail}
+        />
         <CardContent className={classes.cardContent}>
-          <img src={thumbnail || `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}`} alt="thumbnail" className={classes.thumbnail} />
           <div>{name}</div>
           <div>
             {count}

@@ -12,6 +12,8 @@ import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Observer } from 'mobx-react';
 
+import db from '../Database';
+
 interface BookProps {
   store: any;
   children?: React.ReactElement;
@@ -101,16 +103,27 @@ const Book: React.FC = (props: BookProps) => {
   const decrement = () => {
     setPage(Math.max(page - 1, 0));
   };
+
   const setShowAppBar = (val) => {
     let v = val;
     if (v === undefined) v = !props.store.showAppBar;
     // eslint-disable-next-line
     props.store.showAppBar = v;
   };
+
+  const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
     setShowAppBar(false);
     // eslint-disable-next-line
     props.store.needContentMargin = false;
+
+    db.bookReads.get(match.params.id).then((read) => {
+      if (read) {
+        setPage(read.page);
+      }
+      setPageSet(true);
+    });
+
     return () => {
       setShowAppBar(true);
       // remove onkeydown
@@ -120,6 +133,15 @@ const Book: React.FC = (props: BookProps) => {
       props.store.needContentMargin = true;
     };
   }, []);
+
+  if (isPageSet) {
+    db.bookReads.put({
+      bookId: match.params.id,
+      page,
+    }).catch(() => { /* ignored */
+    });
+  }
+
   window.document.onkeydown = ({ key }) => {
     switch (key) {
       case 'ArrowRight':
@@ -182,6 +204,7 @@ const Book: React.FC = (props: BookProps) => {
               </IconButton>
               <div className={classes.bottomSlider}>
                 <Slider
+                  valueLabelDisplay="auto"
                   max={data.book.pages}
                   min={1}
                   value={page + 1}
