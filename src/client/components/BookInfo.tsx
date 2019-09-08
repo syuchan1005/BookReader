@@ -52,6 +52,7 @@ const useStyles = makeStyles(() => createStyles({
   headerMenu: {
     position: 'absolute',
     zIndex: 1,
+    padding: 0,
   },
 }));
 
@@ -98,8 +99,9 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           <Icon>more_vert</Icon>
         </IconButton>
         <Menu
+          getContentAnchorEl={null}
           anchorOrigin={{
-            horizontal: 'right',
+            horizontal: 'center',
             vertical: 'bottom',
           }}
           anchorEl={menuAnchor}

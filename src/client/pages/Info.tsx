@@ -74,13 +74,16 @@ const Info: React.FC = (props: InfoProps) => {
   // eslint-disable-next-line
   props.store.barTitle = 'Book';
 
-  // @ts-ignore
   React.useEffect(() => {
+    let unMounted = false;
     db.infoReads.get(match.params.id).then((read) => {
-      if (read) {
+      if (read && !unMounted) {
         setReadId(read.bookId);
       }
     });
+    return () => {
+      unMounted = true;
+    };
   });
 
   if (loading || error || !data.bookInfo) {
@@ -108,7 +111,8 @@ const Info: React.FC = (props: InfoProps) => {
     db.infoReads.put({
       infoId: match.params.id,
       bookId: book.bookId,
-    }).catch(() => { /* ignored */ });
+    }).catch(() => { /* ignored */
+    });
     history.push(`/book/${book.bookId}`);
   };
 

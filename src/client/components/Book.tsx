@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   headerMenu: {
     position: 'absolute',
     zIndex: 1,
+    padding: 0,
   },
 }));
 
@@ -113,8 +114,9 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           <Icon>more_vert</Icon>
         </IconButton>
         <Menu
+          getContentAnchorEl={null}
           anchorOrigin={{
-            horizontal: 'right',
+            horizontal: 'center',
             vertical: 'bottom',
           }}
           anchorEl={menuAnchor}
@@ -142,7 +144,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           </div>
         </CardContent>
         {reading && (
-          <div className={classes.readLabel}>Read</div>
+          <div className={classes.readLabel}>Reading</div>
         )}
       </CardActionArea>
       <Dialog open={askDelete} onClose={() => loading && setAskDelete(false)}>
