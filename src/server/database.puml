@@ -45,7 +45,6 @@ Table(bookInfos) {
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime
-  deletedAt datetime
 }
 
 Table(books) {
@@ -58,7 +57,6 @@ Table(books) {
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime
-  deletedAt datetime
 }
 
 ' relations

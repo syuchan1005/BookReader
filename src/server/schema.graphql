@@ -10,6 +10,8 @@ type Query {
 type Mutation {
     addBookInfo(name: String!, thumbnail: Upload): Result!
     addBook(infoId: ID!, number: String!, file: Upload!): Result!
+    deleteBookInfo(infoId: ID!): Result!
+    deleteBook(bookId: ID!): Result!
 }
 
 type BookInfo {

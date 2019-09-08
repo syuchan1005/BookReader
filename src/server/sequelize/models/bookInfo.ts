@@ -14,8 +14,6 @@ export default class bookInfo extends Model {
 
   public readonly updatedAt!: Date;
 
-  public readonly deletedAt: Date | null;
-
   public readonly books?: book[];
 
   public static associations: {
@@ -56,7 +54,6 @@ export default class bookInfo extends Model {
     }, {
       sequelize,
       tableName: 'bookInfos',
-      paranoid: true,
     });
     return 'bookInfo';
   }

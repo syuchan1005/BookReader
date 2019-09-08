@@ -176,6 +176,60 @@ export default class Graphql {
                 success: true,
               };
             },
+            deleteBookInfo: async (parent, { infoId }): Promise<Result> => {
+              const books = await BookModel.findAll({
+                where: {
+                  infoId,
+                },
+              });
+              await asyncForEach(books, async (book) => {
+                await new Promise((resolve) => {
+                  rimraf(`storage/book/${book.id}`, () => resolve());
+                });
+              });
+              await BookModel.destroy({
+                where: {
+                  infoId,
+                },
+              });
+              await BookInfoModel.destroy({
+                where: {
+                  id: infoId,
+                },
+              });
+              return {
+                success: true,
+              };
+            },
+            deleteBook: async (parent, { bookId }): Promise<Result> => {
+              const book = await BookModel.findOne({
+                where: {
+                  id: bookId,
+                },
+              });
+              if (!book) {
+                return {
+                  success: false,
+                  code: 'QL0004',
+                  message: Errors.QL0004,
+                };
+              }
+              await book.destroy();
+              await BookInfoModel.update({
+                // @ts-ignore
+                count: Database.sequelize.literal('count - 1'),
+              }, {
+                where: {
+                  id: book.infoId,
+                },
+              });
+              await new Promise((resolve) => {
+                rimraf(`storage/book/${bookId}`, () => resolve());
+              });
+              return {
+                success: true,
+              };
+            },
           },
         },
       }),
