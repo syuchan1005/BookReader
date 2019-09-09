@@ -118,6 +118,11 @@ const Info: React.FC = (props: InfoProps) => {
 
   const bookList: [BookType] = data.bookInfo.books;
 
+  const onDeletedBook = (bookId) => {
+    refetch();
+    db.bookReads.delete(bookId);
+  };
+
   return (
     <div className={classes.info}>
       {// @ts-ignore
@@ -129,7 +134,7 @@ const Info: React.FC = (props: InfoProps) => {
               reading={readId === book.bookId}
               key={book.bookId}
               onClick={() => clickBook(book)}
-              onDeleted={refetch}
+              onDeleted={() => onDeletedBook(book.bookId)}
             />
           ),
         )

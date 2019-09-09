@@ -7,6 +7,7 @@ import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
 import { ApolloProvider } from '@apollo/react-hooks';
 
+import './registerServiceWorker';
 import App from './App';
 
 let uri = '';

@@ -2,6 +2,7 @@ const { resolve } = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   context: resolve(__dirname, 'src/client'),
@@ -67,11 +68,26 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.ProgressPlugin(),
     new MiniCssExtractPlugin({
       filename: 'style.css',
       chunkFilename: '[id].css',
     }),
     // inject <script> in html file.
-    new HtmlWebpackPlugin({ template: resolve(__dirname, 'public/index.html') }),
+    new HtmlWebpackPlugin({
+      template: resolve(__dirname, 'public/index.html'),
+    }),
+    new CopyWebpackPlugin(
+      [
+        {
+          from: resolve(__dirname, 'public'),
+          to: resolve(__dirname, 'dist/client'),
+          ignore: [
+            'index.html',
+            '.DS_Store',
+          ],
+        },
+      ],
+    ),
   ],
 };

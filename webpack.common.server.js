@@ -1,5 +1,5 @@
 const { resolve } = require('path');
-// const webpack = require('webpack');
+const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
@@ -43,7 +43,9 @@ module.exports = {
       },
     ],
   },
-  plugins: [],
+  plugins: [
+    new webpack.ProgressPlugin(),
+  ],
   target: 'node',
   externals: [nodeExternals()],
   entry: './index.ts',

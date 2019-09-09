@@ -1,3 +1,5 @@
+const { resolve } = require('path');
+
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const commonConfig = require('./webpack.common.client');
@@ -16,6 +18,8 @@ module.exports = merge(commonConfig, {
   devServer: {
     port: '8080',
     hot: true,
+    watchContentBase: true,
+    contentBase: resolve(__dirname, 'public'),
     historyApiFallback: {
       historyApiFallback: true,
     },

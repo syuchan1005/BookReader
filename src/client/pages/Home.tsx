@@ -14,6 +14,7 @@ import useReactRouter from 'use-react-router';
 import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import BookInfo from '../components/BookInfo';
 import AddBookInfoDialog, { ChildProps } from '../components/AddBookInfoDialog';
+import db from '../Database';
 
 interface HomeProps {
   store: any;
@@ -94,6 +95,11 @@ const Home: React.FC = (props: HomeProps) => {
   );
 
   const infos: [BookInfoType] = data.bookInfos;
+  const onDeletedBookInfo = (info) => {
+    refetch();
+    db.infoReads.delete(info.infoId);
+  };
+
   return (
     <div className={classes.home}>
       {(infos && infos.length > 0) && (
@@ -102,7 +108,7 @@ const Home: React.FC = (props: HomeProps) => {
             key={info.infoId}
             {...info}
             onClick={() => history.push(`/info/${info.infoId}`)}
-            onDeleted={refetch}
+            onDeleted={() => onDeletedBookInfo(info)}
           />
         ))
       )}
