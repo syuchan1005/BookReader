@@ -1,6 +1,5 @@
-// @ts-ignore
-import Koa from 'koa'; // import * as Koa ... throw exception
-import Serve from 'koa-static';
+import * as Koa from 'koa';
+import * as Serve from 'koa-static';
 import Graphql from './graphql';
 import Database from './sequelize/models';
 

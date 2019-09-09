@@ -81,6 +81,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
           <DialogContentText>
             Add book to server.
           </DialogContentText>
+          <FileField file={file} onChange={setFile} />
           <TextField
             color="secondary"
             label="Number"
@@ -88,8 +89,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
             // @ts-ignore
             onChange={(event) => setNum(event.target.value)}
             margin="normal"
+            autoFocus
           />
-          <FileField file={file} onChange={setFile} />
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog} disabled={loading}>

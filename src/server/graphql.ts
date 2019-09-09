@@ -6,8 +6,7 @@ import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
 import uuidv4 from 'uuid/v4';
 import unzipper from 'unzipper';
 import rimraf from 'rimraf';
-// @ts-ignore
-import typeDefs from './schema.graphql';
+
 import { Book, BookInfo, Result } from '../common/GraphqlTypes';
 import Database from './sequelize/models';
 import BookInfoModel from './sequelize/models/bookInfo';
@@ -15,6 +14,9 @@ import BookModel from './sequelize/models/book';
 import ModelUtil from './ModelUtil';
 import { asyncForEach, readdirRecursively, mkdirpIfNotExists } from './Util';
 import Errors from './Errors';
+
+// @ts-ignore
+import * as typeDefs from './schema.graphql';
 
 export default class Graphql {
   private readonly _server: ApolloServer;
