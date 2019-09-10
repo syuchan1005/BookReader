@@ -8,10 +8,12 @@ import {
   Fab,
   Icon,
 } from '@material-ui/core';
+
 import { Book as BookType } from '../../common/GraphqlTypes';
 import Book from '../components/Book';
 import AddBookDialog, { ChildProps } from '../components/AddBookDialog';
 import db from '../Database';
+import DashedOutlineButton from '../components/DashedOutlineButton';
 
 interface InfoProps {
   store: any;
@@ -31,16 +33,6 @@ const useStyles = makeStyles((theme) => createStyles({
     position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
-  },
-  addBookButton: {
-    width: '100%',
-    height: '100%',
-    minHeight: theme.spacing(8),
-    border: '2px dashed lightgray',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 }));
 
@@ -86,12 +78,12 @@ const Info: React.FC = (props: InfoProps) => {
     };
   });
 
-  if (loading || error || !data.bookInfo) {
+  if (loading || error || !data || !data.bookInfo) {
     return (
       <div>
         {loading && 'Loading'}
         {error && `Error: ${error}`}
-        {!data.bookInfo && 'Empty'}
+        {(!data || !data.bookInfo) && 'Empty'}
       </div>
     );
   }
@@ -99,12 +91,11 @@ const Info: React.FC = (props: InfoProps) => {
   // eslint-disable-next-line
   props.store.barTitle = data.bookInfo.name;
 
-  const AddBtn: React.FC<Partial<ChildProps>> = ({ setOpen }: ChildProps) => (
-    // eslint-disable-next-line
-    <div onClick={() => setOpen(true)} className={classes.addBookButton}>
+  const AddButton: React.FC<Partial<ChildProps>> = ({ setOpen }: ChildProps) => (
+    <DashedOutlineButton onClick={() => setOpen(true)}>
       <Icon fontSize="large">add</Icon>
       add book
-    </div>
+    </DashedOutlineButton>
   );
 
   const clickBook = (book) => {
@@ -140,7 +131,7 @@ const Info: React.FC = (props: InfoProps) => {
         )
       }
       <AddBookDialog infoId={match.params.id} onAdded={refetch}>
-        <AddBtn />
+        <AddButton />
       </AddBookDialog>
       <Fab
         color="secondary"

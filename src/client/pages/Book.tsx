@@ -156,12 +156,12 @@ const Book: React.FC = (props: BookProps) => {
 
   // eslint-disable-next-line
   props.store.barTitle = 'Book';
-  if (loading || error || !data.book) {
+  if (loading || error || !data || !data.book) {
     return (
       <div>
         {loading && 'Loading'}
         {error && `Error: ${error}`}
-        {!data.bookInfo && 'Empty'}
+        {(!data || !data.book) && 'Empty'}
       </div>
     );
   }
@@ -204,6 +204,7 @@ const Book: React.FC = (props: BookProps) => {
               </IconButton>
               <div className={classes.bottomSlider}>
                 <Slider
+                  color="secondary"
                   valueLabelDisplay="auto"
                   max={data.book.pages}
                   min={1}

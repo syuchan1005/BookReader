@@ -1,8 +1,13 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const { resolve } = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+const dist = resolve('dist/client');
 
 module.exports = {
   context: resolve(__dirname, 'src/client'),
@@ -68,12 +73,13 @@ module.exports = {
     ],
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
+    // inject <script> in html file.
     new MiniCssExtractPlugin({
       filename: 'style.css',
       chunkFilename: '[id].css',
     }),
-    // inject <script> in html file.
     new HtmlWebpackPlugin({
       template: resolve(__dirname, 'public/index.html'),
     }),
@@ -89,5 +95,17 @@ module.exports = {
         },
       ],
     ),
+    new WorkboxWebpackPlugin.InjectManifest({
+      swSrc: './src/client/service-worker.js',
+      swDest: `${dist}/service-worker.js`,
+      globDirectory: dist,
+      globPatterns: ['*.{html,js}'],
+      exclude: [
+        /\.map$/,
+        /icons\//,
+        /favicon\.ico$/,
+        /manifest\.json$/,
+      ],
+    }),
   ],
 };

@@ -4,6 +4,7 @@ module.exports = {
     '@typescript-eslint',
     'import',
     'react',
+    'react-hooks',
     'jsx-a11y',
     'graphql',
   ],

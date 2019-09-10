@@ -15,6 +15,7 @@ import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import BookInfo from '../components/BookInfo';
 import AddBookInfoDialog, { ChildProps } from '../components/AddBookInfoDialog';
 import db from '../Database';
+import DashedOutlineButton from '../components/DashedOutlineButton';
 
 interface HomeProps {
   store: any;
@@ -86,12 +87,11 @@ const Home: React.FC = (props: HomeProps) => {
     );
   }
 
-  const AddBtn: React.FC<Partial<ChildProps>> = ({ setOpen }: ChildProps) => (
-    // eslint-disable-next-line
-    <div onClick={() => setOpen(true)} className={classes.addBookInfoButton}>
+  const AddButton: React.FC<Partial<ChildProps>> = ({ setOpen }: ChildProps) => (
+    <DashedOutlineButton onClick={() => setOpen(true)}>
       <Icon fontSize="large">add</Icon>
-      Add BookInfo
-    </div>
+      add BookInfo
+    </DashedOutlineButton>
   );
 
   const infos: [BookInfoType] = data.bookInfos;
@@ -113,7 +113,7 @@ const Home: React.FC = (props: HomeProps) => {
         ))
       )}
       <AddBookInfoDialog onAdded={refetch}>
-        <AddBtn />
+        <AddButton />
       </AddBookInfoDialog>
       <Fab
         color="secondary"

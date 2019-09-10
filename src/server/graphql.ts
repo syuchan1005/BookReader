@@ -3,16 +3,21 @@ import { promises as fs } from 'fs';
 import * as os from 'os';
 
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
-import uuidv4 from 'uuid/v4';
-import unzipper from 'unzipper';
-import rimraf from 'rimraf';
+import * as uuidv4 from 'uuid/v4';
+import * as unzipper from 'unzipper';
+import * as rimraf from 'rimraf';
 
 import { Book, BookInfo, Result } from '../common/GraphqlTypes';
 import Database from './sequelize/models';
 import BookInfoModel from './sequelize/models/bookInfo';
 import BookModel from './sequelize/models/book';
 import ModelUtil from './ModelUtil';
-import { asyncForEach, readdirRecursively, mkdirpIfNotExists } from './Util';
+import {
+  asyncForEach,
+  readdirRecursively,
+  mkdirpIfNotExists,
+  renameFile,
+} from './Util';
 import Errors from './Errors';
 
 // @ts-ignore
@@ -119,7 +124,7 @@ export default class Graphql {
                 };
               }
               const { createReadStream, mimetype } = await file;
-              if (mimetype !== 'application/zip') {
+              if (!['application/zip', 'application/x-zip-compressed'].includes(mimetype)) {
                 return {
                   success: false,
                   code: 'QL0002',
@@ -153,7 +158,7 @@ export default class Graphql {
               await fs.mkdir(`storage/book/${bookId}`);
               await asyncForEach(files, async (f, i) => {
                 const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
-                await fs.rename(f, `storage/book/${bookId}/${fileName}`);
+                await renameFile(f, `storage/book/${bookId}/${fileName}`);
               });
               await new Promise((resolve) => {
                 rimraf(tempPath, () => resolve());

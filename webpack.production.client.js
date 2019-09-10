@@ -1,5 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const { resolve } = require('path');
-const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const merge = require('webpack-merge');
 
 const commonConfig = require('./webpack.common.client');
@@ -15,20 +15,5 @@ module.exports = merge(commonConfig, {
     publicPath: '/',
   },
   devtool: 'source-map',
-  plugins: [
-    new WorkboxWebpackPlugin.GenerateSW({
-      globDirectory: dist,
-      globPatterns: ['*.{html,js}'],
-      swDest: `${dist}/service-worker.js`,
-      clientsClaim: true,
-      skipWaiting: true,
-      cacheId: 'bookReader',
-      exclude: [
-        /\.map$/,
-        /icons\//,
-        /favicon\.ico$/,
-        /manifest\.json$/,
-      ],
-    }),
-  ],
+  plugins: [],
 });

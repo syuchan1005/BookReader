@@ -1,6 +1,8 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const { resolve } = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   context: resolve(__dirname, 'src/server'),
@@ -44,6 +46,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
   ],
   target: 'node',
