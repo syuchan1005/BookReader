@@ -43,8 +43,9 @@ const useStyles = makeStyles((th) => createStyles({
   },
   appBar: {
     '& + .appbar--margin': {
-      marginTop: '64px',
+      marginTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
     },
+    paddingTop: 'env(safe-area-inset-top)',
   },
 }));
 

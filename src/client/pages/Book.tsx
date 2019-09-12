@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     borderRadius: theme.spacing(1),
     position: 'absolute',
     '&.top': {
-      top: theme.spacing(/* appBar */8 + 2),
+      top: `calc(${theme.spacing(/* appBar */8 + 2)}px + env(safe-area-inset-top))`,
       whiteSpace: 'nowrap',
     },
     '&.bottom': {

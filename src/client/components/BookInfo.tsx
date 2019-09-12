@@ -34,7 +34,7 @@ interface BookInfoProps extends QLBookInfo {
 const useStyles = makeStyles((theme: Theme) => createStyles({
   thumbnail: {
     width: '100%',
-    height: '100%',
+    minHeight: '100%',
     objectFit: 'contain',
   },
   card: {

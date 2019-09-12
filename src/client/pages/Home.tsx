@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridTemplateColumns: 'repeat(auto-fill, 200px)',
     justifyContent: 'center',
     columnGap: theme.spacing(2),
-    rowGap: `${theme.spacing(2)}px`,
+    rowGap: theme.spacing(2),
   },
   loading: {
     width: '100%',
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     fontSize: '2rem',
   },
   fab: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
