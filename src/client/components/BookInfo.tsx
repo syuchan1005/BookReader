@@ -18,6 +18,7 @@ import {
   Menu,
   MenuItem,
   TextField,
+  Theme,
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
@@ -30,10 +31,10 @@ interface BookInfoProps extends QLBookInfo {
   onEdit?: Function;
 }
 
-const useStyles = makeStyles(() => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   thumbnail: {
-    minWidth: '100%',
-    height: '250px',
+    width: '100%',
+    height: '100%',
     objectFit: 'contain',
   },
   card: {
@@ -44,13 +45,19 @@ const useStyles = makeStyles(() => createStyles({
   cardContent: {
     position: 'absolute',
     bottom: '0',
-    width: '100%',
+    right: '0',
     background: 'rgba(0, 0, 0, 0.7)',
     color: 'white',
     fontSize: '1rem',
+    width: '2rem',
+    height: '2rem',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderRadius: '50%',
   },
   headerMenu: {
     position: 'absolute',
@@ -151,11 +158,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           className={classes.thumbnail}
         />
         <CardContent className={classes.cardContent}>
-          <div>{name}</div>
-          <div>
-            {count}
-            巻まで
-          </div>
+          <div>{count}</div>
         </CardContent>
       </CardActionArea>
 

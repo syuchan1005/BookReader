@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   home: {
     padding: theme.spacing(1),
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 250px)',
+    gridTemplateColumns: 'repeat(auto-fill, 200px)',
     justifyContent: 'center',
     columnGap: theme.spacing(2),
     rowGap: `${theme.spacing(2)}px`,
@@ -53,6 +53,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  [theme.breakpoints.down('xs')]: {
+    home: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px)',
+    },
   },
 }));
 

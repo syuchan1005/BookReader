@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => createStyles({
     padding: theme.spacing(1),
     display: 'grid',
     justifyContent: 'center',
-    gridTemplateColumns: 'repeat(auto-fill, 250px) [end]',
+    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
     columnGap: theme.spacing(2),
     rowGap: `${theme.spacing(2)}px`,
   },
@@ -33,6 +33,11 @@ const useStyles = makeStyles((theme) => createStyles({
     position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
+  },
+  [theme.breakpoints.down('xs')]: {
+    info: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px)',
+    },
   },
 }));
 

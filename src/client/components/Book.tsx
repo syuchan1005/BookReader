@@ -34,8 +34,8 @@ interface BookProps extends QLBook {
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   thumbnail: {
-    minWidth: '100%',
-    height: '250px',
+    width: '100%',
+    height: '100%',
     objectFit: 'contain',
   },
   card: {
@@ -46,13 +46,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   cardContent: {
     position: 'absolute',
     bottom: '0',
-    width: '100%',
     background: 'rgba(0, 0, 0, 0.7)',
     color: 'white',
     fontSize: '1rem',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    padding: theme.spacing(1),
+    borderTopRightRadius: theme.spacing(0.5),
   },
   readLabel: {
     position: 'absolute',
@@ -164,14 +165,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           className={classes.thumbnail}
         />
         <CardContent className={classes.cardContent}>
-          <div>
-            {number}
-            巻
-          </div>
-          <div>
-            {pages}
-            ページ
-          </div>
+          <div>{`${number} (p.${pages})`}</div>
         </CardContent>
         {reading && (
           <div className={classes.readLabel}>Reading</div>
@@ -209,7 +203,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           <TextField
             color="secondary"
             autoFocus
-            label="Book name"
+            label="Book number"
             value={editContent.number}
             // @ts-ignore
             onChange={(event) => setEditContent({ ...editContent, number: event.target.value })}
