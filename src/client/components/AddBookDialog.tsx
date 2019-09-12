@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => createStyles({
 }));
 
 const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) => {
-  const classes = useStyles();
+  const classes = useStyles(props);
   const { children, infoId, onAdded } = props;
   const [open, setOpen] = React.useState(false);
   const [num, setNum] = React.useState('1');

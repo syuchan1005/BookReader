@@ -1,12 +1,15 @@
 // @ts-ignore
 import { promises as fs } from 'fs';
 import * as os from 'os';
+import * as path from 'path';
 
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
 import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
+import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
 
+import { archiveTypes } from '../common/Common';
 import { Book, BookInfo, Result } from '../common/GraphqlTypes';
 import Database from './sequelize/models';
 import BookInfoModel from './sequelize/models/bookInfo';
@@ -123,25 +126,58 @@ export default class Graphql {
                   message: Errors.QL0001,
                 };
               }
-              const { createReadStream, mimetype } = await file;
-              if (!['application/zip', 'application/x-zip-compressed'].includes(mimetype)) {
+              const { createReadStream, mimetype, filename } = await file;
+              let archiveType = archiveTypes[mimetype];
+              if (!archiveType) {
+                archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
+              }
+              if (!archiveType) {
                 return {
                   success: false,
                   code: 'QL0002',
                   message: Errors.QL0002,
                 };
               }
-              // unzip
-              const tempPath = `${os.tmpdir()}/${bookId}`;
-              await new Promise((resolve) => {
-                createReadStream()
-                  .pipe(unzipper.Extract({ path: tempPath }))
-                  .on('close', resolve);
-              });
+              // extract
+              const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
+              if (archiveType === 'zip') {
+                await new Promise((resolve) => {
+                  createReadStream()
+                    .pipe(unzipper.Extract({ path: tempPath }))
+                    .on('close', resolve);
+                });
+              } else if (archiveType === 'rar') {
+                const readStream = createReadStream();
+                const buffer: Buffer = await new Promise((resolve, reject) => {
+                  const chunks = [];
+                  readStream.once('error', (err) => reject(err));
+                  readStream.once('end', () => resolve(Buffer.concat(chunks)));
+                  readStream.on('data', (c) => chunks.push(c));
+                });
+
+                await new Promise((resolve, reject) => {
+                  const extractor = createExtractorFromData(buffer);
+                  // eslint-disable-next-line camelcase
+                  const [obj_state, obj_header] = extractor.extractAll();
+                  if (obj_state.state !== 'SUCCESS') {
+                    reject(new Error('Unrar failed'));
+                  }
+                  // eslint-disable-next-line camelcase
+                  asyncForEach(obj_header.files, async (f) => {
+                    if (f.fileHeader.flags.directory) return;
+                    await mkdirpIfNotExists(path.join(tempPath, f.fileHeader.name, '..'));
+                    await fs.writeFile(path.join(tempPath, f.fileHeader.name), f.extract[1]);
+                  }).then(resolve);
+                });
+              }
+              const deleteTempFolder = (resolve) => {
+                rimraf(tempPath, () => resolve());
+              };
               const files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
                 (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
               ));
               if (files.length <= 0) {
+                await new Promise(deleteTempFolder);
                 return {
                   success: false,
                   code: 'QL0003',
@@ -160,9 +196,7 @@ export default class Graphql {
                 const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
                 await renameFile(f, `storage/book/${bookId}/${fileName}`);
               });
-              await new Promise((resolve) => {
-                rimraf(tempPath, () => resolve());
-              });
+              await new Promise(deleteTempFolder);
 
               await BookModel.create({
                 id: bookId,

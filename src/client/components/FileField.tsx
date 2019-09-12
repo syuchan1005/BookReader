@@ -6,6 +6,8 @@ import {
   Theme,
 } from '@material-ui/core';
 
+import { archiveTypes } from '../../common/Common';
+
 interface FileFieldProps {
   label?: string;
   file?: File;
@@ -35,13 +37,14 @@ const FileField: React.FC<FileFieldProps> = (props: FileFieldProps) => {
     buttonText += ` [${file.name}]`;
   }
 
+  const acceptType = `${Object.keys(archiveTypes).join(',')},${[...new Set(Object.values(archiveTypes))].map((a) => `.${a}`).join(',')}`;
   return (
     <Button onClick={() => inputRef.current.click()} className={classes.fileField}>
       {buttonText}
       <input
         hidden
         type="file"
-        accept="application/zip"
+        accept={acceptType}
         ref={inputRef}
         onChange={onFilePicked}
       />
