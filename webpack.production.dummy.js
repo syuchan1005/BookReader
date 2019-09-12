@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = {
   mode: 'production',
   context: __dirname,
@@ -1069,7 +1070,7 @@ module.exports = {
       /* config.module.rule('eslint') */
       {
         enforce: 'pre',
-        test: /\.(vue|(j|t)sx?)$/,
+        test: /\.(vue|([jt])sx?)$/,
         exclude: [
           /node_modules/,
           `${__dirname}node_modules/@vue/cli-service/lib`,

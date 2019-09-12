@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const { resolve } = require('path');
 
 const webpack = require('webpack');
@@ -22,6 +23,20 @@ module.exports = merge(commonConfig, {
     contentBase: resolve(__dirname, 'public'),
     historyApiFallback: {
       historyApiFallback: true,
+    },
+    proxy: {
+      '**/*.jpg': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
+      '/graphql': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
     },
   },
   devtool: 'cheap-module-eval-source-map',

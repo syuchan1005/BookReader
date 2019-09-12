@@ -5,12 +5,7 @@ import { createUploadLink } from 'apollo-upload-client';
 import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
 
-let uri = '';
-if (process.env.NODE_ENV !== 'production') {
-  uri = `${window.location.protocol}//${window.location.hostname}:8081/graphql`;
-} else {
-  uri = '/graphql';
-}
+const uri = '/graphql';
 
 const parseHeaders = (rawHeaders: any) => {
   const headers = new Headers();

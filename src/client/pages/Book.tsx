@@ -170,7 +170,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const pad = data.book.pages.toString(10).length;
   const pages = [...Array(data.book.pages).keys()]
-    .map((i) => `${window.location.protocol}//${window.location.hostname}:8081/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
+    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
 
   const clickPage = (event) => {
     const targetWidth = event.target.offsetWidth;

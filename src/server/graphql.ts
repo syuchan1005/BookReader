@@ -16,13 +16,9 @@ import BookInfoModel from './sequelize/models/bookInfo';
 import BookModel from './sequelize/models/book';
 import ModelUtil from './ModelUtil';
 import {
-  asyncForEach,
-  readdirRecursively,
-  mkdirpIfNotExists,
-  renameFile,
+  asyncForEach, mkdirpIfNotExists, readdirRecursively, renameFile,
 } from './Util';
 import Errors from './Errors';
-
 // @ts-ignore
 import * as typeDefs from './schema.graphql';
 
@@ -188,6 +184,8 @@ export default class Graphql {
                 const aDepth = (a.match(/\//g) || []).length;
                 const bDepth = (b.match(/\//g) || []).length;
                 if (aDepth !== bDepth) return aDepth - bDepth;
+                const length = a.length - b.length;
+                if (length !== 0) return length;
                 return a.localeCompare(b);
               });
               const pad = files.length.toString(10).length;
@@ -198,20 +196,35 @@ export default class Graphql {
               });
               await new Promise(deleteTempFolder);
 
-              await BookModel.create({
-                id: bookId,
-                thumbnail: null,
-                number,
-                pages: files.length,
-                infoId,
-              });
-              await BookInfoModel.update({
-                // @ts-ignore
-                count: Database.sequelize.literal('count + 1'),
-              }, {
-                where: {
-                  id: infoId,
-                },
+              const thumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
+              await Database.sequelize.transaction(async (transaction) => {
+                await BookModel.create({
+                  id: bookId,
+                  thumbnail,
+                  number,
+                  pages: files.length,
+                  infoId,
+                }, {
+                  transaction,
+                });
+                await BookInfoModel.update({
+                  // @ts-ignore
+                  count: Database.sequelize.literal('count + 1'),
+                }, {
+                  where: {
+                    id: infoId,
+                  },
+                  transaction,
+                });
+                await BookInfoModel.update({
+                  thumbnail,
+                }, {
+                  where: {
+                    id: infoId,
+                    thumbnail: null,
+                  },
+                  transaction,
+                });
               });
               return {
                 success: true,
