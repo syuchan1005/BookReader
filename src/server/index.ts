@@ -7,8 +7,6 @@ import Database from './sequelize/models';
 const app = new Koa();
 const graphql = new Graphql();
 
-app.use(historyApiFallback({ whiteList: ['/home'] }));
-
 app.use(Serve('storage/'));
 
 if (process.env.NODE_ENV === 'production') {
@@ -19,6 +17,8 @@ if (process.env.NODE_ENV === 'production') {
   await Database.sequelize.sync();
 
   await graphql.middleware(app);
+
+  app.use(historyApiFallback());
 
   const port = process.env.PORT || 8081;
   app.listen(port, () => {

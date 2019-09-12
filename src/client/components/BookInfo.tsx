@@ -1,21 +1,23 @@
 import * as React from 'react';
 import {
+  Button,
   Card,
   CardActionArea,
-  CardContent,
-  makeStyles,
-  createStyles,
-  Icon,
-  IconButton,
   CardActions,
-  Menu,
-  MenuItem,
+  CardContent,
+  createStyles,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  Button,
+  DialogTitle,
+  Icon,
+  IconButton,
+  InputAdornment,
+  makeStyles,
+  Menu,
+  MenuItem,
+  TextField,
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
@@ -25,6 +27,7 @@ import { BookInfo as QLBookInfo } from '../../common/GraphqlTypes';
 interface BookInfoProps extends QLBookInfo {
   onClick?: Function;
   onDeleted?: Function;
+  onEdit?: Function;
 }
 
 const useStyles = makeStyles(() => createStyles({
@@ -65,12 +68,17 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     count,
     onClick,
     onDeleted,
+    onEdit,
   } = props;
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
   const [askDelete, setAskDelete] = React.useState(false);
+  const [editDialog, setEditDialog] = React.useState(false);
+  const [editContent, setEditContent] = React.useState({
+    name,
+  });
 
-  const [deleteBookInfo, { loading }] = useMutation(gql`
+  const [deleteBookInfo, { loading: delLoading }] = useMutation(gql`
       mutation delete($id: ID!) {
           del: deleteBookInfo(infoId: $id) {
               success
@@ -86,6 +94,29 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       if (del.success && onDeleted) onDeleted();
     },
   });
+
+  const [editBookInfo, { loading: editLoading }] = useMutation(gql`
+    mutation edit($id: ID! $name: String $thumbnail: String) {
+        edit: editBookInfo(infoId: $id name: $name thumbnail: $thumbnail) {
+            success
+            code
+        }
+    }
+  `, {
+    variables: {
+      id: infoId,
+      ...editContent,
+    },
+    onCompleted({ edit }) {
+      setEditDialog(!edit.success);
+      if (edit.success && onEdit) onEdit();
+    },
+  });
+
+  const clickEditBookInfo = () => {
+    setMenuAnchor(null);
+    setEditDialog(true);
+  };
 
   const clickDeleteBookInfo = () => {
     setMenuAnchor(null);
@@ -109,6 +140,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           open={Boolean(menuAnchor)}
           onClose={() => setMenuAnchor(null)}
         >
+          <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
           <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
         </Menu>
       </CardActions>
@@ -126,7 +158,8 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           </div>
         </CardContent>
       </CardActionArea>
-      <Dialog open={askDelete} onClose={() => loading && setAskDelete(false)}>
+
+      <Dialog open={askDelete} onClose={() => delLoading && setAskDelete(false)}>
         <DialogTitle>Delete book info</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -136,7 +169,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         <DialogActions>
           <Button
             onClick={() => setAskDelete(false)}
-            disabled={loading}
+            disabled={delLoading}
           >
             close
           </Button>
@@ -144,9 +177,49 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
             variant="contained"
             color="secondary"
             onClick={() => deleteBookInfo()}
-            disabled={loading}
+            disabled={delLoading}
           >
             delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={editDialog} onClose={() => editLoading && setEditDialog(false)}>
+        <DialogTitle>Edit book info</DialogTitle>
+        <DialogContent>
+          <TextField
+            color="secondary"
+            autoFocus
+            label="Book info name"
+            value={editContent.name}
+            // @ts-ignore
+            onChange={(event) => setEditContent({ ...editContent, name: event.target.value })}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setEditContent({ ...editContent, name })}>
+                    <Icon>restore</Icon>
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            disabled={editLoading}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setEditDialog(false)}
+            disabled={editLoading}
+          >
+            close
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => editBookInfo()}
+            disabled={editLoading}
+          >
+            edit
           </Button>
         </DialogActions>
       </Dialog>

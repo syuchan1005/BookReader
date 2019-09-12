@@ -109,6 +109,7 @@ const Home: React.FC = (props: HomeProps) => {
             {...info}
             onClick={() => history.push(`/info/${info.infoId}`)}
             onDeleted={() => onDeletedBookInfo(info)}
+            onEdit={() => refetch()}
           />
         ))
       )}

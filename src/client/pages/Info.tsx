@@ -126,6 +126,7 @@ const Info: React.FC = (props: InfoProps) => {
               key={book.bookId}
               onClick={() => clickBook(book)}
               onDeleted={() => onDeletedBook(book.bookId)}
+              onEdit={() => refetch()}
             />
           ),
         )

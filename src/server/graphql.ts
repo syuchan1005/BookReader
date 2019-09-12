@@ -113,14 +113,96 @@ export default class Graphql {
               });
               return { success: true };
             },
-            addBook: async (parent, { infoId, number, file }): Promise<Result> => {
-              const bookId = uuidv4();
-              if (!infoId || !await BookInfoModel.hasId(infoId)) {
+            editBookInfo: async (parent, { infoId, name, thumbnail }): Promise<Result> => {
+              if (name === undefined && thumbnail === undefined) {
+                return {
+                  success: false,
+                  code: 'QL0005',
+                  message: Errors.QL0005,
+                };
+              }
+              const info = await BookInfoModel.findOne({
+                where: { id: infoId },
+              });
+              if (!info) {
                 return {
                   success: false,
                   code: 'QL0001',
                   message: Errors.QL0001,
                 };
+              }
+              const val = Object.entries({ name, thumbnail }).reduce((o, e) => {
+                if (e[1] !== undefined && info[e[0]] !== e[1]) {
+                  // eslint-disable-next-line no-param-reassign,prefer-destructuring
+                  o[e[0]] = e[1];
+                }
+                return o;
+              }, {});
+              if (Object.keys(val).length === 0) {
+                return {
+                  success: false,
+                  code: 'QL0005',
+                  message: Errors.QL0005,
+                };
+              }
+              await BookInfoModel.update(val, {
+                where: { id: infoId },
+              });
+              return {
+                success: true,
+              };
+            },
+            deleteBookInfo: async (parent, { infoId }): Promise<Result> => {
+              const books = await BookModel.findAll({
+                where: {
+                  infoId,
+                },
+              });
+              await asyncForEach(books, async (book) => {
+                await new Promise((resolve) => {
+                  rimraf(`storage/book/${book.id}`, () => resolve());
+                });
+              });
+              await BookModel.destroy({
+                where: {
+                  infoId,
+                },
+              });
+              await BookInfoModel.destroy({
+                where: {
+                  id: infoId,
+                },
+              });
+              return {
+                success: true,
+              };
+            },
+            addBook: async (parent, {
+              infoId,
+              number,
+              file,
+              thumbnail,
+            }): Promise<Result> => {
+              const bookId = uuidv4();
+              if (!await BookInfoModel.hasId(infoId)) {
+                return {
+                  success: false,
+                  code: 'QL0001',
+                  message: Errors.QL0001,
+                };
+              }
+              let argThumbnail;
+              if (thumbnail) {
+                const { stream, mimetype } = await thumbnail;
+                if (!mimetype.startsWith('image/jpeg')) {
+                  return {
+                    success: false,
+                    code: 'QL0000',
+                    message: Errors.QL0000,
+                  };
+                }
+                await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
+                argThumbnail = `/book/${bookId}/thumbnail.jpg`;
               }
               const { createReadStream, mimetype, filename } = await file;
               let archiveType = archiveTypes[mimetype];
@@ -196,11 +278,11 @@ export default class Graphql {
               });
               await new Promise(deleteTempFolder);
 
-              const thumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
+              const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
               await Database.sequelize.transaction(async (transaction) => {
                 await BookModel.create({
                   id: bookId,
-                  thumbnail,
+                  thumbnail: argThumbnail || bThumbnail,
                   number,
                   pages: files.length,
                   infoId,
@@ -217,7 +299,7 @@ export default class Graphql {
                   transaction,
                 });
                 await BookInfoModel.update({
-                  thumbnail,
+                  thumbnail: argThumbnail || bThumbnail,
                 }, {
                   where: {
                     id: infoId,
@@ -230,26 +312,40 @@ export default class Graphql {
                 success: true,
               };
             },
-            deleteBookInfo: async (parent, { infoId }): Promise<Result> => {
-              const books = await BookModel.findAll({
-                where: {
-                  infoId,
-                },
+            editBook: async (parent, { bookId, number, thumbnail }): Promise<Result> => {
+              if (number === undefined && thumbnail === undefined) {
+                return {
+                  success: false,
+                  code: 'QL0005',
+                  message: Errors.QL0005,
+                };
+              }
+              const book = await BookModel.findOne({
+                where: { id: bookId },
               });
-              await asyncForEach(books, async (book) => {
-                await new Promise((resolve) => {
-                  rimraf(`storage/book/${book.id}`, () => resolve());
-                });
-              });
-              await BookModel.destroy({
-                where: {
-                  infoId,
-                },
-              });
-              await BookInfoModel.destroy({
-                where: {
-                  id: infoId,
-                },
+              if (!book) {
+                return {
+                  success: false,
+                  code: 'QL0001',
+                  message: Errors.QL0001,
+                };
+              }
+              const val = Object.entries({ number, thumbnail }).reduce((o, e) => {
+                if (e[1] !== undefined && book[e[0]] !== e[1]) {
+                  // eslint-disable-next-line no-param-reassign,prefer-destructuring
+                  o[e[0]] = e[1];
+                }
+                return o;
+              }, {});
+              if (Object.keys(val).length === 0) {
+                return {
+                  success: false,
+                  code: 'QL0005',
+                  message: Errors.QL0005,
+                };
+              }
+              await BookModel.update(val, {
+                where: { id: bookId },
               });
               return {
                 success: true,
