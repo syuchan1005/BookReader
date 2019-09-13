@@ -6,3 +6,4 @@ storage
 *.iml
 *.sqlite
 *-lock.json
+.DS_Store

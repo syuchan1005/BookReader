@@ -4,10 +4,10 @@
    "private": true,
    "author": "syuchan1005<syuchan.dev@gmail.com>",
    "scripts": {
-      "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack.development.client.js",
-      "build:client": "cross-env NODE_ENV=react webpack --config webpack.production.client.js",
+      "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
+      "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
       "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && node dist/server\"",
-      "build:server": "cross-env NODE_ENV=koa webpack --config webpack.common.server.js",
+      "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
       "serve": "npm-run-all --parallel serve:*",
       "build": "npm run build:client & npm run build:server -- -p",
       "start": "node dist/server",
