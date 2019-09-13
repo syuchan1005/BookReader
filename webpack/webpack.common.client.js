@@ -10,7 +10,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const dist = resolve('dist/client');
 
 module.exports = {
-  context: resolve(__dirname, 'src/client'),
+  context: resolve('src/client'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -22,7 +22,7 @@ module.exports = {
         enforce: 'pre',
         test: /\.(ts|tsx)?$/,
         loader: 'tslint-loader',
-        exclude: [resolve(__dirname, 'node_modules')],
+        exclude: [resolve('node_modules')],
       },
       */
       {
@@ -35,7 +35,7 @@ module.exports = {
             },
           },
         ],
-        exclude: [resolve(__dirname, 'node_modules')],
+        exclude: [resolve('node_modules')],
       },
       {
         enforce: 'pre',
@@ -81,13 +81,13 @@ module.exports = {
       chunkFilename: '[id].css',
     }),
     new HtmlWebpackPlugin({
-      template: resolve(__dirname, 'public/index.html'),
+      template: resolve('public/index.html'),
     }),
     new CopyWebpackPlugin(
       [
         {
-          from: resolve(__dirname, 'public'),
-          to: resolve(__dirname, 'dist/client'),
+          from: resolve('public'),
+          to: resolve('dist/client'),
           ignore: [
             'index.html',
             '.DS_Store',

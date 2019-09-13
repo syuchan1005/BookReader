@@ -9,18 +9,40 @@
 // the developer will have to manually unregister the service worker in
 // Chrome Devtools -> Application -> Service Workers
 
-const fs = require('fs')
-const path = require('path')
-const resetScript = fs.readFileSync(path.resolve(__dirname, 'noopServiceWorker.js'), 'utf-8')
+const fs = require('fs');
+const path = require('path');
 
-module.exports = function createNoopServiceWorkerMiddleware () {
-  return function noopServiceWorkerMiddleware (req, res, next) {
+// language=JS
+const resetScript = `
+/* eslint-disable no-restricted-globals */
+
+// This service worker file is effectively a 'no-op' that will reset any
+// previous service worker registered for the same host:port combination.
+
+// It is read and returned by a dev server middleware that is only loaded
+// during development.
+
+// In the production build, this file is replaced with an actual service worker
+// file that will precache your site's local assets.
+
+self.addEventListener('install', () => self.skipWaiting());
+
+self.addEventListener('activate', () => {
+  self.clients.matchAll({ type: 'window' }).then((windowClients) => {
+    windowClients.forEach((windowClient) => {
+      windowClient.navigate(windowClient.url);
+    });
+  });
+});
+`;
+
+module.exports = function createNoopServiceWorkerMiddleware() {
+  return function noopServiceWorkerMiddleware(req, res, next) {
     if (req.url === '/service-worker.js') {
-      res.setHeader('Content-Type', 'text/javascript')
-      res.send(resetScript)
+      res.setHeader('Content-Type', 'text/javascript');
+      res.send(resetScript);
     } else {
-      next()
+      next();
     }
-  }
-}
-
+  };
+};

@@ -5,7 +5,7 @@ const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
-  context: resolve(__dirname, 'src/server'),
+  context: resolve('src/server'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -17,7 +17,7 @@ module.exports = {
         enforce: 'pre',
         test: /\.(ts|tsx)?$/,
         loader: 'tslint-loader',
-        exclude: [resolve(__dirname, 'node_modules')],
+        exclude: [resolve('node_modules')],
       },
       */
       {
@@ -35,7 +35,7 @@ module.exports = {
             },
           },
         ],
-        exclude: [resolve(__dirname, 'node_modules')],
+        exclude: [resolve('node_modules')],
       },
 
       {

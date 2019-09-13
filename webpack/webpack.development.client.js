@@ -23,7 +23,7 @@ module.exports = merge(commonConfig, {
     port: '8080',
     hot: true,
     watchContentBase: true,
-    contentBase: resolve(__dirname, 'public'),
+    contentBase: resolve('public'),
     historyApiFallback: {
       historyApiFallback: true,
     },
