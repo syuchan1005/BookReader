@@ -40,6 +40,13 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState('');
   const [addBooks, setAddBooks] = React.useState([]);
+
+  const closeDialog = () => {
+    setOpen(false);
+    setName('');
+    setAddBooks([]);
+  };
+
   const [addBookInfo, { loading }] = useMutation(gql`
     mutation add($name: String! $books: [InputBook!]) {
         add: addBookInfo(name: $name books: $books) {
@@ -49,7 +56,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     }
   `, {
     onCompleted({ add }) {
-      setOpen(!add.success);
+      closeDialog();
       if (add.success && onAdded) onAdded();
     },
     variables: {
@@ -57,12 +64,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
       books: addBooks,
     },
   });
-
-  const closeDialog = () => {
-    if (!loading) {
-      setOpen(false);
-    }
-  };
 
   const dropFiles = React.useCallback((files) => {
     setAddBooks([
@@ -88,7 +89,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   return (
     <div className={classes.dialog}>
       {React.cloneElement(children, { open, setOpen })}
-      <Dialog open={open} onClose={closeDialog}>
+      <Dialog open={open} onClose={() => !loading && closeDialog()}>
         <DialogTitle>Add book info</DialogTitle>
         <DialogContent>
           <TextField
@@ -121,7 +122,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
           <DropZone onChange={dropFiles} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDialog} disabled={loading}>
+          <Button onClick={() => !loading && closeDialog()} disabled={loading}>
             close
           </Button>
           <Button

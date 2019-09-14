@@ -77,6 +77,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const closeDialog = () => {
     if (!loading) {
       setOpen(false);
+      setAddBooks([]);
     }
   };
 

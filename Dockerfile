@@ -22,6 +22,14 @@ COPY --from=build /bookReader /bookReader
 
 WORKDIR /bookReader
 
-RUN npm ci
+RUN npm ci \
+    && apk add --no-cache supervisor nginx
 
-CMD npm run db:migrate -- --env production; npm run start
+COPY nginx.conf /etc/nginx/
+COPY supervisord.conf /etc/
+
+VOLUME ["/bookReader/storage", "/bookReader/production.sqlite"]
+
+ENV DEBUG=""
+
+CMD npm run db:migrate -- --env production; /usr/bin/supervisord
