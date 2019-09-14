@@ -1,6 +1,10 @@
 FROM node:12.7-alpine as build
 
-RUN npm install && npm run build \
+COPY . /build
+
+WORKDIR /build
+
+RUN npm ci && npm run build \
     && mkdir /bookReader \
     && mkdir /bookReader/src \
     && mv dist/ /bookReader/ \
