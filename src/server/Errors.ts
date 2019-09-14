@@ -5,4 +5,5 @@ export default {
   QL0003: 'jpeg file not found in zip',
   QL0004: 'book not found',
   QL0005: 'Some changes are needed',
+  QL0006: 'failed add books',
 };

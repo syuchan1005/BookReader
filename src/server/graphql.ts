@@ -52,9 +52,10 @@ export default class Graphql {
   // eslint-disable-next-line class-methods-use-this
   get Query() {
     return {
-      bookInfos: async (parent, { limit }): Promise<BookInfo[]> => {
+      bookInfos: async (parent, { limit, offset }): Promise<BookInfo[]> => {
         const bookInfos = await BookInfoModel.findAll({
           limit,
+          offset,
         });
         return bookInfos.map((info) => ModelUtil.bookInfo(info));
       },
@@ -111,7 +112,7 @@ export default class Graphql {
   // eslint-disable-next-line class-methods-use-this
   get Mutation() {
     return {
-      addBookInfo: async (parent, { name, thumbnail }): Promise<Result> => {
+      addBookInfo: async (parent, { name, thumbnail, books }): Promise<Result> => {
         const infoId = uuidv4();
         if (thumbnail) {
           const { stream, mimetype } = await thumbnail;
@@ -129,6 +130,16 @@ export default class Graphql {
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
+        if (books) {
+          const result = await this.Mutation.addBooks(undefined, { infoId, books });
+          if (!result.every((r) => r.success)) {
+            return {
+              success: false,
+              code: 'QL0006',
+              message: Errors.QL0006,
+            };
+          }
+        }
         return { success: true };
       },
       editBookInfo: async (parent, { infoId, name, thumbnail }): Promise<Result> => {

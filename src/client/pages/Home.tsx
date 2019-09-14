@@ -1,10 +1,11 @@
 import * as React from 'react';
 import {
-  makeStyles,
+  Button,
   createStyles,
-  Theme,
   Fab,
   Icon,
+  makeStyles,
+  Theme,
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -26,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   home: {
     padding: theme.spacing(1),
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 200px)',
+    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
     justifyContent: 'center',
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
@@ -56,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   [theme.breakpoints.down('xs')]: {
     home: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px)',
+      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
   },
 }));
@@ -72,16 +73,22 @@ const Home: React.FC = (props: HomeProps) => {
     loading,
     error,
     data,
+    fetchMore,
   } = useQuery(gql`
-      {
-          bookInfos {
+      query ($limit: Int!, $offset: Int!){
+          bookInfos(limit: $limit offset: $offset){
               infoId
               name
               count
               thumbnail
           }
       }
-  `);
+  `, {
+    variables: {
+      offset: 0,
+      limit: 10,
+    },
+  });
 
   if (loading || error) {
     return (
@@ -99,28 +106,41 @@ const Home: React.FC = (props: HomeProps) => {
     </DashedOutlineButton>
   );
 
-  const infos: [BookInfoType] = data.bookInfos;
+  const infos: [BookInfoType] = (data.bookInfos || []);
   const onDeletedBookInfo = (info) => {
     refetch();
     db.infoReads.delete(info.infoId);
   };
 
+  const clickLoadMore = () => {
+    fetchMore({
+      variables: {
+        offset: infos.length,
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return { bookInfos: [...prev.bookInfos, ...fetchMoreResult.bookInfos] };
+      },
+    });
+  };
+
   return (
     <div className={classes.home}>
-      {(infos && infos.length > 0) && (
-        infos.map((info) => (
-          <BookInfo
-            key={info.infoId}
-            {...info}
-            onClick={() => history.push(`/info/${info.infoId}`)}
-            onDeleted={() => onDeletedBookInfo(info)}
-            onEdit={() => refetch()}
-          />
-        ))
-      )}
+      {infos.map((info) => (
+        <BookInfo
+          key={info.infoId}
+          {...info}
+          onClick={() => history.push(`/info/${info.infoId}`)}
+          onDeleted={() => onDeletedBookInfo(info)}
+          onEdit={() => refetch()}
+        />
+      ))}
       <AddBookInfoDialog onAdded={refetch}>
         <AddButton />
       </AddBookInfoDialog>
+      <Button fullWidth style={{ gridColumn: '1 / end' }} onClick={clickLoadMore}>
+        load more
+      </Button>
       <Fab
         color="secondary"
         className={classes.fab}

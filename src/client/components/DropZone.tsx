@@ -12,7 +12,8 @@ interface FileFieldProps {
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   dropZone: {
-    width: '50vw',
+    marginTop: theme.spacing(1),
+    width: 'minmax(80%, 50vw)',
     border: `dashed ${theme.spacing(0.25)}px ${grey[600]}`,
     padding: theme.spacing(1),
     '&.dragging': {

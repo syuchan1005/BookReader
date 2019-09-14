@@ -2,11 +2,13 @@ import * as React from 'react';
 import {
   Button, createStyles,
   Dialog, DialogActions,
-  DialogContent, DialogContentText,
-  DialogTitle, makeStyles, TextField,
+  DialogContent,
+  DialogTitle, Icon, IconButton, makeStyles, TextField,
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
+import FileField from './FileField';
+import DropZone from './DropZone';
 
 interface AddBookInfoDialogProps {
   onAdded?: Function;
@@ -19,21 +21,28 @@ export interface ChildProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const useStyles = makeStyles(() => createStyles({
+const useStyles = makeStyles((theme) => createStyles({
   dialog: {
     width: '100%',
     height: '100%',
   },
+  listItem: {
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: '1fr 50px 48px',
+    marginBottom: theme.spacing(0.5),
+  },
 }));
 
 const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoDialogProps) => {
-  const classes = useStyles();
+  const classes = useStyles(props);
   const { onAdded, children } = props;
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState('');
+  const [addBooks, setAddBooks] = React.useState([]);
   const [addBookInfo, { loading }] = useMutation(gql`
-    mutation add($name: String!) {
-        add: addBookInfo(name: $name) {
+    mutation add($name: String! $books: [InputBook!]) {
+        add: addBookInfo(name: $name books: $books) {
             success
             code
         }
@@ -45,6 +54,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
     variables: {
       name,
+      books: addBooks,
     },
   });
 
@@ -54,15 +64,33 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     }
   };
 
+  const dropFiles = React.useCallback((files) => {
+    setAddBooks([
+      ...addBooks,
+      ...files.map((f, i) => ({
+        file: f,
+        number: `${addBooks.length + i + 1}`,
+      })),
+    ]);
+  }, [addBooks]);
+
+  const changeAddBook = React.useCallback((i, obj) => {
+    const books = [
+      ...addBooks,
+    ];
+    books[i] = {
+      ...books[i],
+      ...obj,
+    };
+    setAddBooks(books);
+  }, [addBooks]);
+
   return (
     <div className={classes.dialog}>
       {React.cloneElement(children, { open, setOpen })}
       <Dialog open={open} onClose={closeDialog}>
         <DialogTitle>Add book info</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Add book info to server.
-          </DialogContentText>
           <TextField
             color="secondary"
             autoFocus
@@ -71,6 +99,26 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             // @ts-ignore
             onChange={(event) => setName(event.target.value)}
           />
+          <div>
+            {addBooks.map(({ file, number }, i) => (
+              <div key={`${file.name} ${number}`} className={classes.listItem}>
+                <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
+                <TextField
+                  color="secondary"
+                  label="Number"
+                  value={number}
+                  // @ts-ignore
+                  onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                  margin="none"
+                  autoFocus
+                />
+                <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                  <Icon>clear</Icon>
+                </IconButton>
+              </div>
+            ))}
+          </div>
+          <DropZone onChange={dropFiles} />
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog} disabled={loading}>
