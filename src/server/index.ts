@@ -18,7 +18,7 @@ if (process.env.NODE_ENV === 'production') {
 
   await graphql.middleware(app);
 
-  app.use(historyApiFallback());
+  app.use(historyApiFallback({}));
 
   const port = process.env.PORT || 8081;
   app.listen(port, () => {
