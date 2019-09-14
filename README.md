@@ -1,4 +1,4 @@
-# Book Reader (for me)
+# Book Reader
 
 > no production use (because not yet ready for production)
 

@@ -1,5 +1,3 @@
-import { DataTypes } from 'sequelize';
-
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('bookInfos', {
     id: {
@@ -18,7 +16,7 @@ module.exports = {
     count: {
       allowNull: false,
       defaultValue: 0,
-      type: DataTypes.INTEGER,
+      type: Sequelize.INTEGER,
     },
     createdAt: {
       allowNull: false,
