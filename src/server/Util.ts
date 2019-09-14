@@ -8,6 +8,16 @@ export const asyncForEach = async (arr, callback) => {
   }
 };
 
+export const asyncMap = async <T, E>
+(arr: Array<E>, transform: (e: E, index: number, arr: Array<E>) => Promise<T>): Promise<T[]> => {
+  const result = [];
+  for (let i = 0; i < arr.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    result[i] = await transform(arr[i], i, arr);
+  }
+  return result;
+};
+
 export const readdirRecursively = async (dir, files = []) => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];

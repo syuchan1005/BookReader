@@ -26,8 +26,8 @@ const useStyles = makeStyles((theme) => createStyles({
     display: 'grid',
     justifyContent: 'center',
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
+    columnGap: `${theme.spacing(2)}px`,
+    rowGap: `${theme.spacing(2)}px`,
   },
   fab: {
     position: 'fixed',

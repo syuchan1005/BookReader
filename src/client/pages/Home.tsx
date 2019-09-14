@@ -28,8 +28,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, 200px)',
     justifyContent: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
+    columnGap: `${theme.spacing(2)}px`,
+    rowGap: `${theme.spacing(2)}px`,
   },
   loading: {
     width: '100%',

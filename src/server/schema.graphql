@@ -15,6 +15,7 @@ type Mutation {
 
     ## Book
     addBook(infoId: ID!, number: String!, file: Upload!): Result!
+    addBooks(infoId: ID!, books: [InputBook!]!): [Result!]!
     editBook(bookId: ID!, number: String, thumbnail: String): Result!
     deleteBook(bookId: ID!): Result!
 }
@@ -49,4 +50,9 @@ type Result {
     success: Boolean!
     code: String
     message: String
+}
+
+input InputBook {
+    number: String!
+    file: Upload!
 }

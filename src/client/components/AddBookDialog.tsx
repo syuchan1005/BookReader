@@ -2,12 +2,14 @@ import * as React from 'react';
 import {
   Button, createStyles,
   Dialog, DialogActions,
-  DialogContent, DialogContentText,
+  DialogContent,
   DialogTitle, makeStyles, TextField,
+  IconButton, Icon,
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import FileField from './FileField';
+import DropZone from './DropZone';
 
 interface AddBookDialogProps {
   infoId: string;
@@ -20,7 +22,7 @@ export interface ChildProps {
   setOpen: Function;
 }
 
-const useStyles = makeStyles(() => createStyles({
+const useStyles = makeStyles((theme) => createStyles({
   dialog: {
     width: '100%',
     height: '100%',
@@ -28,6 +30,13 @@ const useStyles = makeStyles(() => createStyles({
   dialogContent: {
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
+  },
+  listItem: {
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: '1fr 50px 48px',
+    marginBottom: theme.spacing(0.5),
   },
 }));
 
@@ -35,11 +44,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const classes = useStyles(props);
   const { children, infoId, onAdded } = props;
   const [open, setOpen] = React.useState(false);
-  const [num, setNum] = React.useState('1');
-  const [file, setFile] = React.useState(undefined);
-  const [addBookInfo, { loading }] = useMutation(gql`
-    mutation add($id: ID!, $file: Upload!, $num: String!) {
-        add: addBook(infoId: $id file: $file number: $num) {
+  const [addBooks, setAddBooks] = React.useState([]);
+  const [addBook, { loading }] = useMutation(gql`
+    mutation add($id: ID!, $books: [InputBook!]!) {
+        adds: addBooks(infoId: $id books: $books) {
             success
             code
         }
@@ -47,12 +55,12 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   `, {
     variables: {
       id: infoId,
-      file,
-      num,
+      books: addBooks,
     },
-    onCompleted({ add }) {
-      setOpen(!add.success);
-      if (add.success && onAdded) onAdded();
+    onCompleted({ adds }) {
+      const success = adds.every((a) => a.success);
+      setOpen(!success);
+      if (success && onAdded) onAdded();
     },
     context: {
       fetchOptions: {
@@ -72,32 +80,60 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     }
   };
 
+  const dropFiles = React.useCallback((files) => {
+    setAddBooks([
+      ...addBooks,
+      ...files.map((f, i) => ({
+        file: f,
+        number: `${addBooks.length + i + 1}`,
+      })),
+    ]);
+  }, [addBooks]);
+
+  const changeAddBook = React.useCallback((i, obj) => {
+    const books = [
+      ...addBooks,
+    ];
+    books[i] = {
+      ...books[i],
+      ...obj,
+    };
+    setAddBooks(books);
+  }, [addBooks]);
+
   return (
     <div className={classes.dialog}>
       {React.cloneElement(children, { open, setOpen })}
       <Dialog open={open} onClose={closeDialog}>
         <DialogTitle>Add book</DialogTitle>
         <DialogContent className={classes.dialogContent}>
-          <DialogContentText>
-            Add book to server.
-          </DialogContentText>
-          <FileField file={file} onChange={setFile} />
-          <TextField
-            color="secondary"
-            label="Number"
-            value={num}
-            // @ts-ignore
-            onChange={(event) => setNum(event.target.value)}
-            margin="normal"
-            autoFocus
-          />
+          <div>
+            {addBooks.map(({ file, number }, i) => (
+              <div key={`${file.name} ${number}`} className={classes.listItem}>
+                <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
+                <TextField
+                  color="secondary"
+                  label="Number"
+                  value={number}
+                  // @ts-ignore
+                  onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                  margin="none"
+                  autoFocus
+                />
+                <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                  <Icon>clear</Icon>
+                </IconButton>
+              </div>
+            ))}
+          </div>
+          <DropZone onChange={dropFiles} />
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog} disabled={loading}>
             close
           </Button>
           <Button
-            onClick={() => addBookInfo()}
+            onClick={() => addBook()}
             disabled={loading}
             variant="contained"
             color="secondary"
