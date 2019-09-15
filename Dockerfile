@@ -8,6 +8,7 @@ RUN npm ci && npm run build \
     && mkdir /bookReader \
     && mkdir /bookReader/src \
     && mv dist/ /bookReader/ \
+    && cp -r /bookReader/dist/client /bookReader/public/ \
     && mv src/server/ /bookReader/src/server/ \
     && mv .sequelizerc /bookReader/ \
     && mv package.json /bookReader/ \
