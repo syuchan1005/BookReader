@@ -23,12 +23,14 @@ COPY --from=build /bookReader /bookReader
 WORKDIR /bookReader
 
 RUN npm ci \
-    && apk add --no-cache supervisor nginx
+    && apk add --no-cache supervisor nginx imagemagick
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/
 
 VOLUME ["/bookReader/storage", "/bookReader/production.sqlite"]
+
+EXPOSE 80
 
 ENV DEBUG=""
 

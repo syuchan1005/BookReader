@@ -9,7 +9,7 @@ import * as gmModule from 'gm';
 import Graphql from './graphql';
 import Database from './sequelize/models';
 
-const gm = gmModule; // .subClass({ imageMagick: true });
+const gm = gmModule.subClass({ imageMagick: true });
 
 const app = new Koa();
 const graphql = new Graphql();
