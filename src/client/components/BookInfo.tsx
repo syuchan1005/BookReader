@@ -153,7 +153,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <img
-          src={thumbnail || `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}`}
+          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}`}
           alt="thumbnail"
           className={classes.thumbnail}
         />
