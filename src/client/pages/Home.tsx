@@ -107,8 +107,9 @@ const Home: React.FC = (props: HomeProps) => {
   );
 
   const infos: [BookInfoType] = (data.bookInfos || []);
+  const limit = Math.ceil(infos.length / 10) * 10 + (infos.length % 10 === 0 ? 10 : 0);
   const onDeletedBookInfo = (info) => {
-    refetch();
+    refetch({ offset: 0, limit });
     db.infoReads.delete(info.infoId);
   };
 
@@ -132,10 +133,10 @@ const Home: React.FC = (props: HomeProps) => {
           {...info}
           onClick={() => history.push(`/info/${info.infoId}`)}
           onDeleted={() => onDeletedBookInfo(info)}
-          onEdit={() => refetch()}
+          onEdit={() => refetch({ offset: 0, limit })}
         />
       ))}
-      <AddBookInfoDialog onAdded={refetch}>
+      <AddBookInfoDialog onAdded={() => refetch({ offset: 0, limit })}>
         <AddButton />
       </AddBookInfoDialog>
       <Button fullWidth style={{ gridColumn: '1 / end' }} onClick={clickLoadMore}>
@@ -144,7 +145,7 @@ const Home: React.FC = (props: HomeProps) => {
       <Fab
         color="secondary"
         className={classes.fab}
-        onClick={() => refetch()}
+        onClick={() => refetch({ offset: 0, limit })}
       >
         <Icon style={{ color: 'white' }}>refresh</Icon>
       </Fab>

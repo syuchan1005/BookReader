@@ -56,6 +56,7 @@ export default (props) => {
     showAppBar: true,
     needContentMargin: true,
     barTitle: 'Book Reader',
+    backRoute: undefined,
   }));
   const classes = useStyles(props);
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
@@ -67,6 +68,15 @@ export default (props) => {
     listener(window.location);
   }, []);
 
+  const clickBack = () => {
+    if (store.backRoute) {
+      history.push(store.backRoute);
+      store.backRoute = undefined;
+    } else {
+      history.goBack();
+    }
+  };
+
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
@@ -75,7 +85,7 @@ export default (props) => {
           <AppBar className={classes.appBar}>
             <Toolbar>
               {isShowBack && (
-                <IconButton className={classes.backIcon} onClick={() => history.goBack()}>
+                <IconButton className={classes.backIcon} onClick={clickBack}>
                   <Icon>arrow_back</Icon>
                 </IconButton>
               )}

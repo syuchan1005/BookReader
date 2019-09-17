@@ -5,7 +5,7 @@ import {
   Theme,
   IconButton,
   Icon,
-  Slider,
+  Slider, Button,
 } from '@material-ui/core';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
@@ -67,6 +67,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       gridTemplateRows: '1fr 1fr',
       bottom: theme.spacing(2),
     },
+    '&.center': {
+      background: 'inherit',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   },
   bottomSlider: {
     gridColumn: '1 / span 3',
@@ -76,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Book: React.FC = (props: BookProps) => {
   const classes = useStyles(props);
-  const { match } = useReactRouter();
+  const { match, history } = useReactRouter();
   const {
     loading,
     error,
@@ -87,20 +94,41 @@ const Book: React.FC = (props: BookProps) => {
               number
               pages
               info {
+                  infoId
                   name
               }
+              
+              nextBook
+              prevBook
           }
       }
   `, {
     variables: {
       id: match.params.id,
     },
+    onCompleted({ book }) {
+      // eslint-disable-next-line no-param-reassign
+      props.store.backRoute = `/info/${book.info.infoId}`;
+    },
   });
+
+  const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
+
   const increment = () => {
+    if (page === data.book.pages - 1) {
+      setRouteButton([false, true]);
+    } else {
+      setRouteButton([false, false]);
+    }
     setPage(Math.min(page + 1, data.book.pages - 1));
   };
   const decrement = () => {
+    if (page === 0) {
+      setRouteButton([true, false]);
+    } else {
+      setRouteButton([false, false]);
+    }
     setPage(Math.max(page - 1, 0));
   };
 
@@ -181,6 +209,21 @@ const Book: React.FC = (props: BookProps) => {
     else setShowAppBar(undefined);
   };
 
+  const clickRouteButton = (e, i) => {
+    e.stopPropagation();
+    const bookId = [data.book.prevBook, data.book.nextBook][i];
+    if (!bookId) return;
+    db.infoReads.put({
+      infoId: data.book.info.infoId,
+      bookId,
+    }).catch(() => { /* ignored */
+    });
+    history.push('/dummy');
+    setTimeout(() => {
+      history.replace(`/book/${bookId}`);
+    });
+  };
+
   /* eslint-disable */
   return (
     <div className={classes.book} onClick={clickPage}>
@@ -214,6 +257,20 @@ const Book: React.FC = (props: BookProps) => {
             </div>
           ) : null)}
         </Observer>
+        {(routeButton.some(a => a)) ? (
+          <div className={`${classes.overlayContent} center`} onClick={(e) => { e.stopPropagation(); setRouteButton([false, false]); }}>
+            {routeButton[1] ? (
+              <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                to Next book
+              </Button>
+            ) : null}
+            {routeButton[0] ? (
+              <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
+                to Prev book
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className={classes.page}>

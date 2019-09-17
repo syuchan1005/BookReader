@@ -20,6 +20,9 @@ export interface Book {
   pages: number;
   // infoId: string;
   info: SimpleBookInfo;
+
+  nextBook?: string | null;
+  prevBook?: string | null;
 }
 
 export interface Result {

@@ -71,6 +71,9 @@ const Info: React.FC = (props: InfoProps) => {
   // eslint-disable-next-line
   props.store.barTitle = 'Book';
 
+  // eslint-disable-next-line
+  props.store.backRoute = '/';
+
   React.useEffect(() => {
     let unMounted = false;
     db.infoReads.get(match.params.id).then((read) => {
