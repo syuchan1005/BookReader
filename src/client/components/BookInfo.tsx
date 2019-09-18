@@ -90,6 +90,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           del: deleteBookInfo(infoId: $id) {
               success
               code
+              books {
+                  bookId
+                  pages
+              }
           }
       }
   `, {
@@ -98,7 +102,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     },
     onCompleted({ del }) {
       setAskDelete(!del.success);
-      if (del.success && onDeleted) onDeleted();
+      if (del.success && onDeleted) onDeleted(del.books);
     },
   });
 

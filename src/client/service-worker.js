@@ -10,20 +10,23 @@ workbox.routing.registerRoute(
 );
 addEventListener('message', (event) => {
   if (!event.data || !event.data.type) return;
+  let cb;
   switch (event.data.type) {
     case 'SKIP_WAITING':
       // eslint-disable-next-line no-undef
       skipWaiting();
+      return;
+    case 'BOOK_CACHE':
+      cb = (cache, urls) => cache.addAll(urls);
       break;
-    case 'BOOK_CACHE': {
-      const pad = event.data.pages.toString(10).length;
-      const urls = [...Array(event.data.pages).keys()]
-        .map((i) => i.toString(10).padStart(pad, '0'))
-        .map((num) => `/book/${event.data.bookId}/${num}.jpg`);
-      event.waitUntil(
-        caches.open(workbox.core.cacheNames.runtime)
-          .then((cache) => cache.addAll(urls)),
-      );
-    }
+    case 'BOOK_REMOVE':
+      cb = (cache, urls) => urls.forEach((k) => cache.delete(k));
+      break;
+  }
+  if (cb) {
+    const pad = event.data.pages.toString(10).length;
+    const urls = [...Array(event.data.pages).keys()]
+      .map((i) => `/book/${event.data.bookId}/${i.toString(10).padStart(pad, '0')}.jpg`);
+    event.waitUntil(caches.open(workbox.core.cacheNames.runtime).then((cache) => cb(cache, urls)));
   }
 });

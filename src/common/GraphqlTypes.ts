@@ -30,3 +30,10 @@ export interface Result {
   code?: string;
   message?: string;
 }
+
+export interface BookInfoResult {
+  success: boolean;
+  code?: string;
+  message?: string;
+  books: Book[];
+}

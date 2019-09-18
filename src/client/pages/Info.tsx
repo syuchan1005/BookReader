@@ -117,9 +117,14 @@ const Info: React.FC = (props: InfoProps) => {
 
   const bookList: [BookType] = data.bookInfo.books;
 
-  const onDeletedBook = (bookId) => {
+  const onDeletedBook = ({ bookId, pages }) => {
     refetch();
     db.bookReads.delete(bookId);
+    props.store.wb.messageSW({
+      type: 'BOOK_REMOVE',
+      bookId,
+      pages,
+    });
   };
 
   return (
@@ -133,7 +138,7 @@ const Info: React.FC = (props: InfoProps) => {
               reading={readId === book.bookId}
               key={book.bookId}
               onClick={() => clickBook(book)}
-              onDeleted={() => onDeletedBook(book.bookId)}
+              onDeleted={() => onDeletedBook(book)}
               onEdit={() => refetch()}
               wb={props.store.wb}
             />

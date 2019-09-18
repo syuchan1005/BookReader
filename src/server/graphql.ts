@@ -10,7 +10,12 @@ import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
 
 import { archiveTypes } from '../common/Common';
-import { Book, BookInfo, Result } from '../common/GraphqlTypes';
+import {
+  Book,
+  BookInfo,
+  BookInfoResult,
+  Result,
+} from '../common/GraphqlTypes';
 import Database from './sequelize/models';
 import BookInfoModel from './sequelize/models/bookInfo';
 import BookModel from './sequelize/models/book';
@@ -182,7 +187,7 @@ export default class Graphql {
           success: true,
         };
       },
-      deleteBookInfo: async (parent, { infoId }): Promise<Result> => {
+      deleteBookInfo: async (parent, { infoId }): Promise<BookInfoResult> => {
         const books = await BookModel.findAll({
           where: {
             infoId,
@@ -205,6 +210,7 @@ export default class Graphql {
         });
         return {
           success: true,
+          books: books.map((b) => ModelUtil.book(b, false)),
         };
       },
       addBook: async (parent, {

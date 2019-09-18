@@ -108,9 +108,15 @@ const Home: React.FC = (props: HomeProps) => {
 
   const infos: [BookInfoType] = (data.bookInfos || []);
   const limit = Math.ceil(infos.length / 10) * 10 + (infos.length % 10 === 0 ? 10 : 0);
-  const onDeletedBookInfo = (info) => {
+  const onDeletedBookInfo = (info, books) => {
     refetch({ offset: 0, limit });
     db.infoReads.delete(info.infoId);
+    db.bookReads.bulkDelete(books.map((b) => b.bookId));
+    books.map(({ bookId, pages }) => props.store.wb.messageSW({
+      type: 'BOOK_REMOVE',
+      bookId,
+      pages,
+    }));
   };
 
   const clickLoadMore = () => {
@@ -132,7 +138,7 @@ const Home: React.FC = (props: HomeProps) => {
           key={info.infoId}
           {...info}
           onClick={() => history.push(`/info/${info.infoId}`)}
-          onDeleted={() => onDeletedBookInfo(info)}
+          onDeleted={(books) => onDeletedBookInfo(info, books)}
           onEdit={() => refetch({ offset: 0, limit })}
         />
       ))}
