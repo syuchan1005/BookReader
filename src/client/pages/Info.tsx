@@ -135,6 +135,7 @@ const Info: React.FC = (props: InfoProps) => {
               onClick={() => clickBook(book)}
               onDeleted={() => onDeletedBook(book.bookId)}
               onEdit={() => refetch()}
+              wb={props.store.wb}
             />
           ),
         )

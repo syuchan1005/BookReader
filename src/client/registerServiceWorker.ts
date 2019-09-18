@@ -1,9 +1,14 @@
 import { Workbox } from 'workbox-window';
 
-if (process.env.NODE_ENV === 'production') {
-  if ('serviceWorker' in navigator) {
-    const wb = new Workbox('/service-worker.js');
+export default () => {
+  let wb;
+  if (process.env.NODE_ENV === 'production' || true) {
+    if ('serviceWorker' in navigator) {
+      wb = new Workbox('/service-worker.js');
 
-    wb.register();
+      wb.register();
+    }
   }
-}
+
+  return wb;
+};

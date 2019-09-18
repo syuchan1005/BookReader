@@ -33,6 +33,10 @@ const theme = createMuiTheme({
   },
 });
 
+interface AppProps {
+  wb: any;
+}
+
 const useStyles = makeStyles((th) => createStyles({
   backIcon: {
     color: 'white',
@@ -51,12 +55,13 @@ const useStyles = makeStyles((th) => createStyles({
 
 const history = createBrowserHistory();
 
-export default (props) => {
+const App: React.FC<AppProps> = (props: AppProps) => {
   const store = useLocalStore(() => ({
     showAppBar: true,
     needContentMargin: true,
     barTitle: 'Book Reader',
     backRoute: undefined,
+    wb: props.wb,
   }));
   const classes = useStyles(props);
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
@@ -111,3 +116,5 @@ export default (props) => {
     </MuiThemeProvider>
   );
 };
+
+export default App;

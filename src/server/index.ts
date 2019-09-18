@@ -14,8 +14,6 @@ const gm = gmModule.subClass({ imageMagick: true });
 const app = new Koa();
 const graphql = new Graphql();
 
-app.use(Serve('storage/'));
-
 app.use(async (ctx, next) => {
   const { url } = ctx.req;
   const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)_(\d*)x(\d*)\.jpg$/);
@@ -59,6 +57,8 @@ app.use(async (ctx, next) => {
   }
   await next();
 });
+
+app.use(Serve('storage/'));
 
 if (process.env.NODE_ENV === 'production') {
   app.use(Serve('dist/client'));

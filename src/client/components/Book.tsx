@@ -30,6 +30,7 @@ interface BookProps extends QLBook {
   onClick?: Function;
   onDeleted?: Function;
   onEdit?: Function;
+  wb?: any;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -83,6 +84,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     onClick,
     onDeleted,
     onEdit,
+    wb,
   } = props;
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
@@ -137,6 +139,14 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     setAskDelete(true);
   };
 
+  const clickCacheBook = () => {
+    wb.messageSW({
+      type: 'BOOK_CACHE',
+      pages,
+      bookId,
+    });
+  };
+
   return (
     <Card className={classes.card}>
       <CardActions className={classes.headerMenu}>
@@ -154,6 +164,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           open={Boolean(menuAnchor)}
           onClose={() => setMenuAnchor(null)}
         >
+          {wb ? (<MenuItem onClick={clickCacheBook}>Cache</MenuItem>) : null}
           <MenuItem onClick={clickEditBook}>Edit</MenuItem>
           <MenuItem onClick={clickDeleteBook}>Delete</MenuItem>
         </Menu>
