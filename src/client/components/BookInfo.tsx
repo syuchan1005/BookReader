@@ -166,7 +166,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         </CardContent>
       </CardActionArea>
 
-      <Dialog open={askDelete} onClose={() => delLoading && setAskDelete(false)}>
+      <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
         <DialogTitle>Delete book info</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -191,7 +191,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={editDialog} onClose={() => editLoading && setEditDialog(false)}>
+      <Dialog open={editDialog} onClose={() => !editLoading && setEditDialog(false)}>
         <DialogTitle>Edit book info</DialogTitle>
         <DialogContent>
           <TextField

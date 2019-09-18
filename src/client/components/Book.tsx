@@ -90,6 +90,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   const [menuAnchor, setMenuAnchor] = React.useState(null);
   const [askDelete, setAskDelete] = React.useState(false);
   const [editDialog, setEditDialog] = React.useState(false);
+  const [cacheDialog, setCacheDialog] = React.useState([false, false]); // showDialog, loading
   const [editContent, setEditContent] = React.useState({
     number,
   });
@@ -129,6 +130,22 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
+  const cacheBook = () => {
+    setCacheDialog([true, true]);
+    const onFinish = (event) => {
+      if (event.data && event.data.type === 'BOOK_CACHE' && event.data.state === 'Finish') {
+        setCacheDialog([false, false]);
+        navigator.serviceWorker.removeEventListener('message', onFinish);
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', onFinish);
+    wb.messageSW({
+      type: 'BOOK_CACHE',
+      pages,
+      bookId,
+    });
+  };
+
   const clickEditBook = () => {
     setMenuAnchor(null);
     setEditDialog(true);
@@ -140,11 +157,8 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   };
 
   const clickCacheBook = () => {
-    wb.messageSW({
-      type: 'BOOK_CACHE',
-      pages,
-      bookId,
-    });
+    setMenuAnchor(null);
+    setCacheDialog([true, false]);
   };
 
   return (
@@ -183,7 +197,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         )}
       </CardActionArea>
 
-      <Dialog open={askDelete} onClose={() => delLoading && setAskDelete(false)}>
+      <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
         <DialogTitle>Delete book</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -208,7 +222,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={editDialog} onClose={() => editLoading && setEditDialog(false)}>
+      <Dialog open={editDialog} onClose={() => !editLoading && setEditDialog(false)}>
         <DialogTitle>Edit book</DialogTitle>
         <DialogContent>
           <TextField
@@ -244,6 +258,34 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
             disabled={editLoading}
           >
             edit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={cacheDialog[0]}
+        onClose={() => !cacheDialog[1] && setCacheDialog([false, false])}
+      >
+        <DialogTitle>Cache book</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {`Do you want to cache \`${number}\`巻?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setCacheDialog([false, false])}
+            disabled={cacheDialog[1]}
+          >
+            close
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => cacheBook()}
+            disabled={cacheDialog[1]}
+          >
+            cache
           </Button>
         </DialogActions>
       </Dialog>

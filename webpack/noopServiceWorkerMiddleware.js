@@ -9,7 +9,7 @@
 // the developer will have to manually unregister the service worker in
 // Chrome Devtools -> Application -> Service Workers
 
-// language=JS
+// language=JavaScript
 const resetScript = `
 /* eslint-disable no-restricted-globals */
 
@@ -30,6 +30,15 @@ self.addEventListener('activate', () => {
       windowClient.navigate(windowClient.url);
     });
   });
+});
+
+addEventListener('message', (event) => {
+  if (!event.data || !event.data.type) return;
+  event.waitUntil((async () => {
+    await new Promise((r) => setTimeout(r, 3000));
+    const client = await self.clients.get(event.clientId || event.source.id);
+    if (client) client.postMessage({ type: event.data.type, state: 'Finish' });
+  })());
 });
 `;
 
