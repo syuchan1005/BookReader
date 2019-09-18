@@ -9,9 +9,6 @@
 // the developer will have to manually unregister the service worker in
 // Chrome Devtools -> Application -> Service Workers
 
-const fs = require('fs');
-const path = require('path');
-
 // language=JS
 const resetScript = `
 /* eslint-disable no-restricted-globals */
