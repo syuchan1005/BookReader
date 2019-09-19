@@ -11,6 +11,7 @@ import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 
 import useReactRouter from 'use-react-router';
+import { useTranslation } from 'react-i18next';
 
 import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import BookInfo from '../components/BookInfo';
@@ -90,6 +91,8 @@ const Home: React.FC = (props: HomeProps) => {
     },
   });
 
+  const { t } = useTranslation();
+
   if (loading || error) {
     return (
       <div className={classes.loading}>
@@ -146,7 +149,7 @@ const Home: React.FC = (props: HomeProps) => {
         <AddButton />
       </AddBookInfoDialog>
       <Button fullWidth style={{ gridColumn: '1 / end' }} onClick={clickLoadMore}>
-        load more
+        {t('loadMore')}
       </Button>
       <Fab
         color="secondary"
