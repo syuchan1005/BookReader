@@ -9,7 +9,7 @@ workbox.routing.registerRoute(
   'GET',
 );
 addEventListener('message', (event) => {
-  if (!event.data || !event.data.type) return;
+  if (!event.data || !event.data.type || !event.clientId) return;
   let cb;
   switch (event.data.type) {
     case 'SKIP_WAITING':
@@ -17,7 +17,11 @@ addEventListener('message', (event) => {
       skipWaiting();
       return;
     case 'BOOK_CACHE':
-      cb = (cache, urls) => cache.addAll(urls);
+      cb = (cache, urls) => event.waitUntil((async () => {
+        await cache.addAll(urls);
+        const client = await self.clients.get(event.clientId);
+        if (client) client.postMessage({ type: 'BOOK_CACHE', state: 'Finish' });
+      })());
       break;
     case 'BOOK_REMOVE':
       cb = (cache, urls) => urls.forEach((k) => cache.delete(k));

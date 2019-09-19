@@ -65,7 +65,7 @@ export default class Graphql {
         });
         return bookInfos.map((info) => ModelUtil.bookInfo(info));
       },
-      bookInfo: async (parent, { infoId }, context, info): Promise<BookInfo> => {
+      bookInfo: async (parent, { id: infoId }, context, info): Promise<BookInfo> => {
         const needBook = info.operation.selectionSet.selections.some(
           (section) => section.kind === 'Field'
             && section.selectionSet.selections.some(
@@ -84,7 +84,7 @@ export default class Graphql {
         if (bookInfo) return ModelUtil.bookInfo(bookInfo);
         return null;
       },
-      books: async (parent, { infoId, limit }): Promise<Book[]> => {
+      books: async (parent, { id: infoId, limit }): Promise<Book[]> => {
         const where: any = {};
         if (infoId) where.infoId = infoId;
         const books = await BookModel.findAll({
@@ -99,7 +99,7 @@ export default class Graphql {
         });
         return books.map((book) => ModelUtil.book(book));
       },
-      book: async (parent, { bookId }): Promise<Book> => {
+      book: async (parent, { id: bookId }): Promise<Book> => {
         const book = await BookModel.findOne({
           where: { id: bookId },
           include: [
@@ -137,7 +137,7 @@ export default class Graphql {
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
         if (books) {
-          const result = await this.Mutation.addBooks(undefined, { infoId, books });
+          const result = await this.Mutation.addBooks(undefined, { id: infoId, books });
           if (!result.every((r) => r.success)) {
             return {
               success: false,
@@ -148,7 +148,7 @@ export default class Graphql {
         }
         return { success: true };
       },
-      editBookInfo: async (parent, { infoId, name, thumbnail }): Promise<Result> => {
+      editBookInfo: async (parent, { id: infoId, name, thumbnail }): Promise<Result> => {
         if (name === undefined && thumbnail === undefined) {
           return {
             success: false,
@@ -187,7 +187,7 @@ export default class Graphql {
           success: true,
         };
       },
-      deleteBookInfo: async (parent, { infoId }): Promise<BookInfoResult> => {
+      deleteBookInfo: async (parent, { id: infoId }): Promise<BookInfoResult> => {
         const books = await BookModel.findAll({
           where: {
             infoId,
@@ -214,7 +214,7 @@ export default class Graphql {
         };
       },
       addBook: async (parent, {
-        infoId,
+        id: infoId,
         number,
         file,
         thumbnail,
@@ -348,14 +348,14 @@ export default class Graphql {
           success: true,
         };
       },
-      addBooks: async (parent, { infoId, books }): Promise<Result[]> => asyncMap(books,
+      addBooks: async (parent, { id: infoId, books }): Promise<Result[]> => asyncMap(books,
         ({ number, file }) => this.Mutation.addBook(parent, {
-          infoId,
+          id: infoId,
           number,
           file,
           thumbnail: null,
         })),
-      editBook: async (parent, { bookId, number, thumbnail }): Promise<Result> => {
+      editBook: async (parent, { id: bookId, number, thumbnail }): Promise<Result> => {
         if (number === undefined && thumbnail === undefined) {
           return {
             success: false,
@@ -394,7 +394,7 @@ export default class Graphql {
           success: true,
         };
       },
-      deleteBook: async (parent, { bookId }): Promise<Result> => {
+      deleteBook: async (parent, { id: bookId }): Promise<Result> => {
         const book = await BookModel.findOne({
           where: {
             id: bookId,

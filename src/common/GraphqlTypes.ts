@@ -1,25 +1,18 @@
 export interface BookInfo {
-  infoId: string;
+  id: string;
   name: string;
   thumbnail: string;
   count: number;
   books: Book[];
 }
 
-export interface SimpleBookInfo {
-  infoId: string;
-  name: string;
-  thumbnail: string;
-  count: number;
-}
-
 export interface Book {
-  bookId: string;
+  id: string;
   thumbnail: string;
   number: string;
   pages: number;
   // infoId: string;
-  info: SimpleBookInfo;
+  info: BookInfo;
 
   nextBook?: string | null;
   prevBook?: string | null;

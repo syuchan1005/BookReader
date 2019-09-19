@@ -22,7 +22,8 @@ import {
 import { useMutation } from '@apollo/react-hooks';
 
 import gql from 'graphql-tag';
-import { Book as QLBook } from '../../common/GraphqlTypes';
+import { Book as QLBook, Result } from '../../common/GraphqlTypes';
+import Img from './Img';
 
 interface BookProps extends QLBook {
   name: string;
@@ -78,9 +79,8 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     thumbnail,
     number,
     pages,
-    name,
     reading,
-    bookId,
+    id: bookId,
     onClick,
     onDeleted,
     onEdit,
@@ -90,13 +90,14 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   const [menuAnchor, setMenuAnchor] = React.useState(null);
   const [askDelete, setAskDelete] = React.useState(false);
   const [editDialog, setEditDialog] = React.useState(false);
+  const [cacheDialog, setCacheDialog] = React.useState([false, false]); // showDialog, loading
   const [editContent, setEditContent] = React.useState({
     number,
   });
 
-  const [deleteBook, { loading: delLoading }] = useMutation(gql`
+  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(gql`
       mutation delete($id: ID!) {
-          del: deleteBook(bookId: $id) {
+          del: deleteBook(id: $id) {
               success
               code
           }
@@ -111,9 +112,9 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const [editBook, { loading: editLoading }] = useMutation(gql`
+  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(gql`
       mutation edit($id: ID! $number: String $thumbnail: String) {
-          edit: editBook(bookId: $id number: $number thumbnail: $thumbnail) {
+          edit: editBook(id: $id number: $number thumbnail: $thumbnail) {
               success
               code
           }
@@ -129,6 +130,22 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
+  const cacheBook = () => {
+    setCacheDialog([true, true]);
+    const onFinish = (event) => {
+      if (event.data && event.data.type === 'BOOK_CACHE' && event.data.state === 'Finish') {
+        setCacheDialog([false, false]);
+        navigator.serviceWorker.removeEventListener('message', onFinish);
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', onFinish);
+    wb.messageSW({
+      type: 'BOOK_CACHE',
+      pages,
+      bookId,
+    });
+  };
+
   const clickEditBook = () => {
     setMenuAnchor(null);
     setEditDialog(true);
@@ -140,11 +157,8 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   };
 
   const clickCacheBook = () => {
-    wb.messageSW({
-      type: 'BOOK_CACHE',
-      pages,
-      bookId,
-    });
+    setMenuAnchor(null);
+    setCacheDialog([true, false]);
   };
 
   return (
@@ -170,8 +184,8 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         </Menu>
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
-        <img
-          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}\n${number}`}
+        <Img
+          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
           alt="thumbnail"
           className={classes.thumbnail}
         />
@@ -183,7 +197,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         )}
       </CardActionArea>
 
-      <Dialog open={askDelete} onClose={() => delLoading && setAskDelete(false)}>
+      <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
         <DialogTitle>Delete book</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -208,7 +222,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={editDialog} onClose={() => editLoading && setEditDialog(false)}>
+      <Dialog open={editDialog} onClose={() => !editLoading && setEditDialog(false)}>
         <DialogTitle>Edit book</DialogTitle>
         <DialogContent>
           <TextField
@@ -244,6 +258,34 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
             disabled={editLoading}
           >
             edit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={cacheDialog[0]}
+        onClose={() => !cacheDialog[1] && setCacheDialog([false, false])}
+      >
+        <DialogTitle>Cache book</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {`Do you want to cache \`${number}\`巻?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setCacheDialog([false, false])}
+            disabled={cacheDialog[1]}
+          >
+            close
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => cacheBook()}
+            disabled={cacheDialog[1]}
+          >
+            cache
           </Button>
         </DialogActions>
       </Dialog>

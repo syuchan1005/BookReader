@@ -9,7 +9,7 @@ import {
   Icon,
 } from '@material-ui/core';
 
-import { Book as BookType } from '../../common/GraphqlTypes';
+import { Book as BookType, BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import Book from '../components/Book';
 import AddBookDialog, { ChildProps } from '../components/AddBookDialog';
 import db from '../Database';
@@ -50,12 +50,13 @@ const Info: React.FC = (props: InfoProps) => {
     loading,
     error,
     data,
-  } = useQuery(gql`
+  } = useQuery<{ bookInfo: BookInfoType }>(gql`
       query ($id: ID!){
-          bookInfo(infoId: $id) {
+          bookInfo(id: $id) {
+              id
               name
               books {
-                  bookId
+                  id
                   number
                   pages
                   thumbnail
@@ -109,15 +110,15 @@ const Info: React.FC = (props: InfoProps) => {
   const clickBook = (book) => {
     db.infoReads.put({
       infoId: match.params.id,
-      bookId: book.bookId,
+      bookId: book.id,
     }).catch(() => { /* ignored */
     });
-    history.push(`/book/${book.bookId}`);
+    history.push(`/book/${book.id}`);
   };
 
-  const bookList: [BookType] = data.bookInfo.books;
+  const bookList = data.bookInfo.books;
 
-  const onDeletedBook = ({ bookId, pages }) => {
+  const onDeletedBook = ({ id: bookId, pages }: BookType) => {
     refetch();
     db.bookReads.delete(bookId);
     props.store.wb.messageSW({
@@ -135,8 +136,8 @@ const Info: React.FC = (props: InfoProps) => {
             <Book
               {...book}
               name={data.bookInfo.name}
-              reading={readId === book.bookId}
-              key={book.bookId}
+              reading={readId === book.id}
+              key={book.id}
               onClick={() => clickBook(book)}
               onDeleted={() => onDeletedBook(book)}
               onEdit={() => refetch()}

@@ -74,10 +74,10 @@ const Home: React.FC = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useQuery(gql`
+  } = useQuery<{ bookInfos: BookInfoType[] }>(gql`
       query ($limit: Int!, $offset: Int!){
-          bookInfos(limit: $limit offset: $offset){
-              infoId
+          bookInfos(limit: $limit offset: $offset) {
+              id
               name
               count
               thumbnail
@@ -106,13 +106,13 @@ const Home: React.FC = (props: HomeProps) => {
     </DashedOutlineButton>
   );
 
-  const infos: [BookInfoType] = (data.bookInfos || []);
+  const infos = (data.bookInfos || []);
   const limit = Math.ceil(infos.length / 10) * 10 + (infos.length % 10 === 0 ? 10 : 0);
   const onDeletedBookInfo = (info, books) => {
     refetch({ offset: 0, limit });
-    db.infoReads.delete(info.infoId);
-    db.bookReads.bulkDelete(books.map((b) => b.bookId));
-    books.map(({ bookId, pages }) => props.store.wb.messageSW({
+    db.infoReads.delete(info.id);
+    db.bookReads.bulkDelete(books.map((b) => b.id));
+    books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
       type: 'BOOK_REMOVE',
       bookId,
       pages,
@@ -135,9 +135,9 @@ const Home: React.FC = (props: HomeProps) => {
     <div className={classes.home}>
       {infos.map((info) => (
         <BookInfo
-          key={info.infoId}
+          key={info.id}
           {...info}
-          onClick={() => history.push(`/info/${info.infoId}`)}
+          onClick={() => history.push(`/info/${info.id}`)}
           onDeleted={(books) => onDeletedBookInfo(info, books)}
           onEdit={() => refetch({ offset: 0, limit })}
         />
