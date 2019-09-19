@@ -23,7 +23,8 @@ import {
 import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
-import { BookInfo as QLBookInfo } from '../../common/GraphqlTypes';
+import { BookInfo as QLBookInfo, BookInfoResult, Result } from '../../common/GraphqlTypes';
+import Img from './Img';
 
 interface BookInfoProps extends QLBookInfo {
   onClick?: Function;
@@ -69,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
-    infoId,
+    id: infoId,
     thumbnail,
     name,
     count,
@@ -85,13 +86,13 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     name,
   });
 
-  const [deleteBookInfo, { loading: delLoading }] = useMutation(gql`
+  const [deleteBookInfo, { loading: delLoading }] = useMutation<{ del: BookInfoResult }>(gql`
       mutation delete($id: ID!) {
-          del: deleteBookInfo(infoId: $id) {
+          del: deleteBookInfo(id: $id) {
               success
               code
               books {
-                  bookId
+                  id
                   pages
               }
           }
@@ -106,9 +107,9 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     },
   });
 
-  const [editBookInfo, { loading: editLoading }] = useMutation(gql`
+  const [editBookInfo, { loading: editLoading }] = useMutation<{ edit: Result }>(gql`
     mutation edit($id: ID! $name: String $thumbnail: String) {
-        edit: editBookInfo(infoId: $id name: $name thumbnail: $thumbnail) {
+        edit: editBookInfo(id: $id name: $name thumbnail: $thumbnail) {
             success
             code
         }
@@ -156,8 +157,8 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         </Menu>
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
-        <img
-          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : `http://placehold.jp/99ccff/003366/100x150.jpg?text=${name}`}
+        <Img
+          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
           alt="thumbnail"
           className={classes.thumbnail}
         />

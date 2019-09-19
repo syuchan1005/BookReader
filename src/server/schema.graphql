@@ -2,26 +2,26 @@ scalar Upload
 
 type Query {
     bookInfos(limit: Int = 10 offset: Int = 0): [BookInfo!]!
-    bookInfo(infoId: ID!): BookInfo
-    books(infoId: ID, limit: Int = 10): [Book!]!
-    book(bookId: ID!): Book
+    bookInfo(id: ID!): BookInfo
+    books(id: ID, limit: Int = 10): [Book!]!
+    book(id: ID!): Book
 }
 
 type Mutation {
     ## BookInfo
     addBookInfo(name: String!, thumbnail: Upload, books: [InputBook!]): Result!
-    editBookInfo(infoId: ID!, name: String, thumbnail: String): Result!
-    deleteBookInfo(infoId: ID!): BookInfoResult!
+    editBookInfo(id: ID!, name: String, thumbnail: String): Result!
+    deleteBookInfo(id: ID!): BookInfoResult!
 
     ## Book
-    addBook(infoId: ID!, number: String!, file: Upload!): Result!
-    addBooks(infoId: ID!, books: [InputBook!]!): [Result!]!
-    editBook(bookId: ID!, number: String, thumbnail: String): Result!
-    deleteBook(bookId: ID!): Result!
+    addBook(id: ID!, number: String!, file: Upload!): Result!
+    addBooks(id: ID!, books: [InputBook!]!): [Result!]!
+    editBook(id: ID!, number: String, thumbnail: String): Result!
+    deleteBook(id: ID!): Result!
 }
 
 type BookInfo {
-    infoId: ID!
+    id: ID!
     name: String!
     thumbnail: String
     count: Int!
@@ -29,21 +29,14 @@ type BookInfo {
     books: [Book!]!
 }
 
-type SimpleBookInfo {
-    infoId: ID!
-    name: String!
-    thumbnail: String
-    count: Int!
-}
-
 type Book {
-    bookId: ID!
+    id: ID!
     thumbnail: String
     number: String!
     pages: Int!
 
     # infoId: ID!
-    info: SimpleBookInfo
+    info: BookInfo
 
     prevBook: ID
     nextBook: ID

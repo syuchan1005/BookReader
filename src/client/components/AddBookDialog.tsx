@@ -10,6 +10,7 @@ import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import FileField from './FileField';
 import DropZone from './DropZone';
+import { Result } from '../../common/GraphqlTypes';
 
 interface AddBookDialogProps {
   infoId: string;
@@ -45,9 +46,9 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const { children, infoId, onAdded } = props;
   const [open, setOpen] = React.useState(false);
   const [addBooks, setAddBooks] = React.useState([]);
-  const [addBook, { loading }] = useMutation(gql`
+  const [addBook, { loading }] = useMutation<{ adds: Result[] }>(gql`
     mutation add($id: ID!, $books: [InputBook!]!) {
-        adds: addBooks(infoId: $id books: $books) {
+        adds: addBooks(id: $id books: $books) {
             success
             code
         }

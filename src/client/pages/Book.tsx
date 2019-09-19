@@ -13,6 +13,8 @@ import gql from 'graphql-tag';
 import { Observer } from 'mobx-react';
 
 import db from '../Database';
+import Img from '../components/Img';
+import { Book as BookType } from '../../common/GraphqlTypes';
 
 interface BookProps {
   store: any;
@@ -88,13 +90,14 @@ const Book: React.FC = (props: BookProps) => {
     loading,
     error,
     data,
-  } = useQuery(gql`
+  } = useQuery<{ book: BookType }>(gql`
       query ($id: ID!) {
-          book(bookId: $id) {
+          book(id: $id) {
+              id
               number
               pages
               info {
-                  infoId
+                  id
                   name
               }
               
@@ -108,7 +111,7 @@ const Book: React.FC = (props: BookProps) => {
     },
     onCompleted({ book }) {
       // eslint-disable-next-line no-param-reassign
-      props.store.backRoute = `/info/${book.info.infoId}`;
+      props.store.backRoute = `/info/${book.info.id}`;
     },
   });
 
@@ -214,7 +217,7 @@ const Book: React.FC = (props: BookProps) => {
     const bookId = [data.book.prevBook, data.book.nextBook][i];
     if (!bookId) return;
     db.infoReads.put({
-      infoId: data.book.info.infoId,
+      infoId: data.book.info.id,
       bookId,
     }).catch(() => { /* ignored */
     });
@@ -274,7 +277,7 @@ const Book: React.FC = (props: BookProps) => {
       </div>
 
       <div className={classes.page}>
-        <img src={pages[page]} alt={page.toString(10)} className={classes.pageImage} />
+        <Img src={pages[page]} alt={page.toString(10)} className={classes.pageImage} />
       </div>
     </div>
   );
