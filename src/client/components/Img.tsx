@@ -16,6 +16,10 @@ const useStyles = makeStyles(() => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  hasImg: {
+    width: '100%',
+    height: '100%',
+  },
 }));
 
 const Img: React.FC<ImgProps> = (props: ImgProps) => {
@@ -36,7 +40,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   }
 
   return (
-    <div className={state !== 1 ? classes.noImg : ''}>
+    <div className={state !== 1 ? classes.noImg : classes.hasImg}>
       {(state === 0) && (
         <p>loading</p>
       )}

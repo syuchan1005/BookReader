@@ -19,20 +19,20 @@ FROM node:12.7-alpine
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
 
+EXPOSE 80
+
+ENV DEBUG=""
+
+VOLUME ["/bookReader/storage", "/bookReader/production.sqlite"]
+
+COPY nginx.conf /etc/nginx/
+COPY supervisord.conf /etc/
+
 COPY --from=build /bookReader /bookReader
 
 WORKDIR /bookReader
 
 RUN npm ci \
     && apk add --no-cache supervisor nginx imagemagick
-
-COPY nginx.conf /etc/nginx/
-COPY supervisord.conf /etc/
-
-VOLUME ["/bookReader/storage", "/bookReader/production.sqlite"]
-
-EXPOSE 80
-
-ENV DEBUG=""
 
 CMD npm run db:migrate -- --env production; /usr/bin/supervisord
