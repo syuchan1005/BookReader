@@ -4,13 +4,13 @@ import { createStyles, makeStyles } from '@material-ui/core';
 interface ImgProps {
   src: string;
   alt?: string;
+  minWidth?: number;
+  minHeight?: number;
   className?: any;
 }
 
 const useStyles = makeStyles(() => createStyles({
   noImg: {
-    minWidth: 150,
-    minHeight: 200,
     fontSize: '1.5rem',
     display: 'flex',
     justifyContent: 'center',
@@ -27,6 +27,8 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   const {
     src,
     alt,
+    minWidth = 150,
+    minHeight = 200,
     className,
   } = props;
 
@@ -35,12 +37,15 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
 
   if (src === undefined) {
     return (
-      <div className={classes.noImg}><p>failed</p></div>
+      <div className={classes.noImg} style={{ minWidth, minHeight }}><p>failed</p></div>
     );
   }
 
   return (
-    <div className={state !== 1 ? classes.noImg : classes.hasImg}>
+    <div
+      className={state !== 1 ? classes.noImg : classes.hasImg}
+      style={state !== 1 ? { minWidth, minHeight } : {}}
+    >
       {(state === 0) && (
         <p>loading</p>
       )}

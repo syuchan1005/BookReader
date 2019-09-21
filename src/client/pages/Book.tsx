@@ -117,6 +117,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
+  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL, TtoB, BtoT
 
   const increment = () => {
     if (page === data.book.pages - 1) {
@@ -176,10 +177,20 @@ const Book: React.FC = (props: BookProps) => {
   window.document.onkeydown = ({ key }) => {
     switch (key) {
       case 'ArrowRight':
-        increment();
+        if (readOrder === 0) increment();
+        else if (readOrder === 1) decrement();
         break;
       case 'ArrowLeft':
-        decrement();
+        if (readOrder === 0) decrement();
+        else if (readOrder === 1) increment();
+        break;
+      case 'ArrowUp':
+        if (readOrder === 2) decrement();
+        else if (readOrder === 3) increment();
+        break;
+      case 'ArrowDown':
+        if (readOrder === 2) increment();
+        else if (readOrder === 3) decrement();
         break;
       default:
     }
@@ -204,12 +215,32 @@ const Book: React.FC = (props: BookProps) => {
     .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
 
   const clickPage = (event) => {
-    const targetWidth = event.target.offsetWidth;
-    const clickX = event.nativeEvent.x;
-    const percent = clickX / targetWidth;
-    if (percent <= 0.2) decrement();
-    else if (percent >= 0.8) increment();
-    else setShowAppBar(undefined);
+    const percentX = event.nativeEvent.x / event.target.offsetWidth;
+    const percentY = event.nativeEvent.y / event.target.offsetHeight;
+    switch (readOrder) {
+      case 0:
+        if (percentX <= 0.2) decrement();
+        else if (percentX >= 0.8) increment();
+        else setShowAppBar(undefined);
+        break;
+      case 1:
+        if (percentX <= 0.2) increment();
+        else if (percentX >= 0.8) decrement();
+        else setShowAppBar(undefined);
+        break;
+      case 2:
+        if (percentY <= 0.2) decrement();
+        else if (percentY >= 0.8) increment();
+        else setShowAppBar(undefined);
+        break;
+      case 3:
+        if (percentY <= 0.2) increment();
+        else if (percentY >= 0.8) decrement();
+        else setShowAppBar(undefined);
+        break;
+      default:
+        setShowAppBar(undefined);
+    }
   };
 
   const clickRouteButton = (e, i) => {
@@ -244,7 +275,13 @@ const Book: React.FC = (props: BookProps) => {
               <IconButton size="small" onClick={decrement}>
                 <Icon style={{ color: 'white' }}>keyboard_arrow_left</Icon>
               </IconButton>
-              <div />
+              <Button
+                variant="outlined"
+                style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
+                onClick={() => setReadOrder((readOrder + 1) % 4)}
+              >
+                {['L > R', 'L < R', 'T > B', 'T < B'][readOrder]}
+              </Button>
               <IconButton size="small" onClick={increment}>
                 <Icon style={{ color: 'white' }}>keyboard_arrow_right</Icon>
               </IconButton>
@@ -255,7 +292,8 @@ const Book: React.FC = (props: BookProps) => {
                   max={data.book.pages}
                   min={1}
                   value={page + 1}
-                  onChange={(e, v: number) => setPage(v - 1)} />
+                  onChange={(e, v: number) => setPage(v - 1)}
+                />
               </div>
             </div>
           ) : null)}
