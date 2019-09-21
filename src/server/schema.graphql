@@ -1,7 +1,7 @@
 scalar Upload
 
 type Query {
-    bookInfos(limit: Int = 10 offset: Int = 0): [BookInfo!]!
+    bookInfos(limit: Int = 10 offset: Int = 0 search: String order: Order = Update_Newest): [BookInfo!]!
     bookInfo(id: ID!): BookInfo
     books(id: ID, limit: Int = 10): [Book!]!
     book(id: ID!): Book
@@ -18,6 +18,13 @@ type Mutation {
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
+}
+
+enum Order {
+    Update_Newest
+    Update_Oldest
+    Add_Newest
+    Add_Oldest
 }
 
 type BookInfo {

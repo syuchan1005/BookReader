@@ -11,8 +11,9 @@ import {
   MuiThemeProvider,
   createMuiTheme,
   makeStyles,
-  createStyles,
+  createStyles, InputBase, Menu, MenuItem,
 } from '@material-ui/core';
+import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useLocalStore, Observer } from 'mobx-react';
 
@@ -44,12 +45,55 @@ const useStyles = makeStyles((th) => createStyles({
   },
   title: {
     color: 'white',
+    flexGrow: 1,
   },
   appBar: {
     '& + .appbar--margin': {
       marginTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
     },
     paddingTop: 'env(safe-area-inset-top)',
+  },
+  search: {
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: fade(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: fade(theme.palette.common.white, 0.25),
+    },
+    color: theme.palette.common.white,
+    marginLeft: 0,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(1),
+      width: 'auto',
+    },
+  },
+  searchIcon: {
+    width: theme.spacing(7),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputRoot: {
+    color: 'inherit',
+  },
+  inputInput: {
+    padding: theme.spacing(1, 1, 1, 7),
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: 120,
+      '&:focus': {
+        width: 200,
+      },
+    },
+  },
+  sortIcon: {
+    marginLeft: theme.spacing(1),
+    color: 'white',
   },
 }));
 
@@ -62,9 +106,14 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     barTitle: 'Book Reader',
     backRoute: undefined,
     wb: props.wb,
+    searchText: '',
+    sortOrder: 'Update_Newest',
   }));
   const classes = useStyles(props);
+
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
+  const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
+
   const listener = (location) => {
     setShowBack(['/info', '/book'].some((s) => location.pathname.startsWith(s)));
   };
@@ -95,6 +144,54 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 </IconButton>
               )}
               <Typography variant="h6" className={classes.title} noWrap>{store.barTitle}</Typography>
+              {(history.location.pathname === '/') ? (
+                <div className={classes.search}>
+                  <div className={classes.searchIcon}>
+                    <Icon>search</Icon>
+                  </div>
+                  <InputBase
+                    placeholder="Search…"
+                    classes={{
+                      root: classes.inputRoot,
+                      input: classes.inputInput,
+                    }}
+                    inputProps={{ 'aria-label': 'search' }}
+                    value={store.searchText}
+                    onChange={(e) => { store.searchText = e.target.value; }}
+                  />
+                </div>
+              ) : null}
+              {(history.location.pathname === '/') ? (
+                <IconButton
+                  size="small"
+                  className={classes.sortIcon}
+                  onClick={(event) => setSortAnchorEl(event.currentTarget)}
+                >
+                  <Icon>sort</Icon>
+                </IconButton>
+              ) : null}
+              <Menu
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  horizontal: 'center',
+                  vertical: 'bottom',
+                }}
+                anchorEl={sortAnchorEl}
+                open={!!sortAnchorEl}
+                onClose={() => setSortAnchorEl(null)}
+              >
+                {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest'].map((order) => (
+                  <MenuItem
+                    key={order}
+                    onClick={() => {
+                      store.sortOrder = order;
+                      setSortAnchorEl(null);
+                    }}
+                  >
+                    {order}
+                  </MenuItem>
+                ))}
+              </Menu>
             </Toolbar>
           </AppBar>
         ) : null)}

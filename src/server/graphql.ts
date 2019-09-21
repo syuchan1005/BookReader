@@ -8,6 +8,7 @@ import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
+import { Op } from 'sequelize';
 
 import { archiveTypes } from '../common/Common';
 import {
@@ -58,10 +59,27 @@ export default class Graphql {
   // eslint-disable-next-line class-methods-use-this
   get Query() {
     return {
-      bookInfos: async (parent, { limit, offset }): Promise<BookInfo[]> => {
+      bookInfos: async (parent, {
+        limit,
+        offset,
+        search,
+        order,
+      }): Promise<BookInfo[]> => {
+        const where = (search) ? {
+          name: {
+            [Op.like]: `%${search}%`,
+          },
+        } : undefined;
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
+          where,
+          order: [
+            [
+              (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
+              (order.endsWith('Newest')) ? 'desc' : 'asc',
+            ],
+          ],
         });
         return bookInfos.map((info) => ModelUtil.bookInfo(info));
       },
