@@ -139,7 +139,7 @@ const Info: React.FC = (props: InfoProps) => {
 
   return (
     <div className={classes.info}>
-      <div className={classes.grid}>
+      <div className={classes.infoGrid}>
         {// @ts-ignore
           (bookList && bookList.length > 0) && bookList.map(
             (book) => (

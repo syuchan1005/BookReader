@@ -148,7 +148,7 @@ const Home: React.FC = (props: HomeProps) => {
 
   return (
     <div className={classes.home}>
-      <div className={classes.grid}>
+      <div className={classes.homeGrid}>
         {infos.map((info) => (
           <BookInfo
             key={info.id}
