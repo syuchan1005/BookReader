@@ -16,9 +16,8 @@ import { useTranslation } from 'react-i18next';
 
 import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import BookInfo from '../components/BookInfo';
-import AddBookInfoDialog, { ChildProps } from '../components/AddBookInfoDialog';
+import AddBookInfoDialog from '../components/AddBookInfoDialog';
 import db from '../Database';
-import DashedOutlineButton from '../components/DashedOutlineButton';
 import useDebounceValue from '../hooks/useDebounceValue';
 
 interface HomeProps {
@@ -28,6 +27,10 @@ interface HomeProps {
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   home: {
+    height: '100%',
+    // marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
+  },
+  grid: {
     padding: theme.spacing(1),
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
@@ -45,23 +48,26 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   fab: {
     position: 'fixed',
-    bottom: theme.spacing(2),
+    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
-  },
-  addBookInfoButton: {
-    width: '100%',
-    height: '100%',
-    minHeight: theme.spacing(8),
-    border: '2px dashed lightgray',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   [theme.breakpoints.down('xs')]: {
     home: {
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
+  },
+  addButton: {
+    position: 'fixed',
+    left: 0,
+    bottom: 0,
+    borderRadius: 0,
+    borderTopRightRadius: `calc(${theme.shape.borderRadius}px * 2)`,
+    paddingTop: theme.spacing(2),
+    fontSize: '0.9rem',
+    paddingBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
+  },
+  readMoreButton: {
+    gridColumn: '1 / end',
   },
 }));
 
@@ -73,6 +79,7 @@ const Home: React.FC = (props: HomeProps) => {
   const { t } = useTranslation();
 
   const [search, setSearch] = React.useState(null);
+  const [open, setOpen] = React.useState(false);
   const debounceSearch = useDebounceValue(search, 800);
   const {
     refetch,
@@ -114,13 +121,6 @@ const Home: React.FC = (props: HomeProps) => {
     );
   }
 
-  const AddButton: React.FC<Partial<ChildProps>> = ({ setOpen }: ChildProps) => (
-    <DashedOutlineButton onClick={() => setOpen(true)}>
-      <Icon fontSize="large">add</Icon>
-      add BookInfo
-    </DashedOutlineButton>
-  );
-
   const infos = (data.bookInfos || []);
   const limit = Math.ceil(infos.length / 10) * 10 + (infos.length % 10 === 0 ? 10 : 0);
   const onDeletedBookInfo = (info, books) => {
@@ -148,20 +148,32 @@ const Home: React.FC = (props: HomeProps) => {
 
   return (
     <div className={classes.home}>
-      {infos.map((info) => (
-        <BookInfo
-          key={info.id}
-          {...info}
-          onClick={() => history.push(`/info/${info.id}`)}
-          onDeleted={(books) => onDeletedBookInfo(info, books)}
-          onEdit={() => refetch({ offset: 0, limit })}
-        />
-      ))}
-      <AddBookInfoDialog onAdded={() => refetch({ offset: 0, limit })}>
-        <AddButton />
-      </AddBookInfoDialog>
-      <Button fullWidth style={{ gridColumn: '1 / end' }} onClick={clickLoadMore}>
-        {t('loadMore')}
+      <div className={classes.grid}>
+        {infos.map((info) => (
+          <BookInfo
+            key={info.id}
+            {...info}
+            onClick={() => history.push(`/info/${info.id}`)}
+            onDeleted={(books) => onDeletedBookInfo(info, books)}
+            onEdit={() => refetch({ offset: 0, limit })}
+          />
+        ))}
+        <Button
+          fullWidth
+          className={classes.readMoreButton}
+          onClick={clickLoadMore}
+        >
+          {t('loadMore')}
+        </Button>
+      </div>
+      <Button
+        variant="contained"
+        color="secondary"
+        className={classes.addButton}
+        onClick={() => setOpen(true)}
+      >
+        <Icon fontSize="large">add</Icon>
+        Add BookInfo
       </Button>
       <Fab
         color="secondary"
@@ -170,6 +182,12 @@ const Home: React.FC = (props: HomeProps) => {
       >
         <Icon style={{ color: 'white' }}>refresh</Icon>
       </Fab>
+
+      <AddBookInfoDialog
+        open={open}
+        onAdded={() => refetch({ offset: 0, limit })}
+        onClose={() => setOpen(false)}
+      />
     </div>
   );
 };

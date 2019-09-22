@@ -15,10 +15,10 @@ const useStyles = makeStyles(() => createStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    textAlign: 'center',
   },
   hasImg: {
     width: '100%',
-    height: '100%',
   },
 }));
 
@@ -33,13 +33,9 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   } = props;
 
   // [beforeLoading, rendered, failed]
-  const [state, setState] = React.useState(0);
+  const [_state, setState] = React.useState(0);
 
-  if (src === undefined) {
-    return (
-      <div className={classes.noImg} style={{ minWidth, minHeight }}><p>failed</p></div>
-    );
-  }
+  const state = React.useMemo(() => (src === undefined ? 2 : _state), [_state, src]);
 
   return (
     <div
@@ -47,10 +43,16 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
       style={state !== 1 ? { minWidth, minHeight } : {}}
     >
       {(state === 0) && (
-        <p>loading</p>
+        <div>
+          <div>loading</div>
+          <div>{alt}</div>
+        </div>
       )}
       {(state === 2) && (
-        <p>failed</p>
+        <div>
+          <div>failed</div>
+          <div>{alt}</div>
+        </div>
       )}
       <img
         className={className}
