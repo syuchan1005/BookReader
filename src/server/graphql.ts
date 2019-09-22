@@ -2,12 +2,14 @@
 import { promises as fs } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { Readable } from 'stream';
 
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
 import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
+import { Op } from 'sequelize';
 
 import { archiveTypes } from '../common/Common';
 import {
@@ -58,10 +60,27 @@ export default class Graphql {
   // eslint-disable-next-line class-methods-use-this
   get Query() {
     return {
-      bookInfos: async (parent, { limit, offset }): Promise<BookInfo[]> => {
+      bookInfos: async (parent, {
+        limit,
+        offset,
+        search,
+        order,
+      }): Promise<BookInfo[]> => {
+        const where = (search) ? {
+          name: {
+            [Op.like]: `%${search}%`,
+          },
+        } : undefined;
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
+          where,
+          order: [
+            [
+              (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
+              (order.endsWith('Newest')) ? 'desc' : 'asc',
+            ],
+          ],
         });
         return bookInfos.map((info) => ModelUtil.bookInfo(info));
       },
@@ -118,7 +137,12 @@ export default class Graphql {
   // eslint-disable-next-line class-methods-use-this
   get Mutation() {
     return {
-      addBookInfo: async (parent, { name, thumbnail, books }): Promise<Result> => {
+      addBookInfo: async (parent, {
+        name,
+        thumbnail,
+        books,
+        compressBooks,
+      }): Promise<Result> => {
         const infoId = uuidv4();
         if (thumbnail) {
           const { stream, mimetype } = await thumbnail;
@@ -136,15 +160,77 @@ export default class Graphql {
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
-        if (books) {
-          const result = await this.Mutation.addBooks(undefined, { id: infoId, books });
-          if (!result.every((r) => r.success)) {
+
+        let result;
+        if (compressBooks) {
+          const tempPath = `${os.tmpdir()}/bookReader/${infoId}`;
+          const { createReadStream, mimetype, filename } = await compressBooks;
+          let archiveType = archiveTypes[mimetype];
+          if (!archiveType) {
+            archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
+          }
+          if (!archiveType) {
+            return {
+              success: false,
+              code: 'QL0002',
+              message: Errors.QL0002,
+            };
+          }
+
+          await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
+          let booksFolderPath = '/';
+          let bookFolders = [];
+          for (let i = 0; i < 10; i += 1) {
+            const tempBooksFolder = path.join(tempPath, booksFolderPath);
+            // eslint-disable-next-line no-await-in-loop
+            const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
+            const dirs = dirents.filter((d) => d.isDirectory());
+            if (dirs.length > 1) {
+              bookFolders = dirs.map((d) => d.name);
+              break;
+            } else if (dirs.length === 1) {
+              booksFolderPath = path.join(booksFolderPath, dirs[0].name);
+            } else {
+              break;
+            }
+          }
+          if (bookFolders.length === 0) {
             return {
               success: false,
               code: 'QL0006',
               message: Errors.QL0006,
             };
           }
+          result = await asyncMap(bookFolders, (p, i) => {
+            const folderPath = path.join(tempPath, booksFolderPath, p);
+            return this.Util.addBookFromLocalPath(
+              folderPath,
+              infoId,
+              uuidv4(),
+              `${i}`,
+              undefined,
+              (resolve) => {
+                rimraf(folderPath, () => resolve());
+              },
+            );
+          });
+          await new Promise((resolve) => rimraf(tempPath, resolve));
+        } else if (books) {
+          result = await this.Mutation.addBooks(undefined, { id: infoId, books });
+        }
+        if (!result) {
+          return {
+            success: false,
+            code: 'Unknown',
+            message: Errors.Unknown,
+          };
+        }
+        if (!result.every((r) => r.success)) {
+          return {
+            success: false,
+            code: 'QL0006',
+            message: Errors.QL0006,
+          };
         }
         return { success: true };
       },
@@ -254,99 +340,17 @@ export default class Graphql {
         }
         // extract
         const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
-        if (archiveType === 'zip') {
-          await new Promise((resolve) => {
-            createReadStream()
-              .pipe(unzipper.Extract({ path: tempPath }))
-              .on('close', resolve);
-          });
-        } else if (archiveType === 'rar') {
-          const readStream = createReadStream();
-          const buffer: Buffer = await new Promise((resolve, reject) => {
-            const chunks = [];
-            readStream.once('error', (err) => reject(err));
-            readStream.once('end', () => resolve(Buffer.concat(chunks)));
-            readStream.on('data', (c) => chunks.push(c));
-          });
-
-          await new Promise((resolve, reject) => {
-            const extractor = createExtractorFromData(buffer);
-            // eslint-disable-next-line camelcase
-            const [obj_state, obj_header] = extractor.extractAll();
-            if (obj_state.state !== 'SUCCESS') {
-              reject(new Error('Unrar failed'));
-            }
-            // eslint-disable-next-line camelcase
-            asyncForEach(obj_header.files, async (f) => {
-              if (f.fileHeader.flags.directory) return;
-              await mkdirpIfNotExists(path.join(tempPath, f.fileHeader.name, '..'));
-              await fs.writeFile(path.join(tempPath, f.fileHeader.name), f.extract[1]);
-            }).then(resolve);
-          });
-        }
-        const deleteTempFolder = (resolve) => {
-          rimraf(tempPath, () => resolve());
-        };
-        const files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
-          (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
-        ));
-        if (files.length <= 0) {
-          await new Promise(deleteTempFolder);
-          return {
-            success: false,
-            code: 'QL0003',
-            message: Errors.QL0003,
-          };
-        }
-        files.sort((a, b) => {
-          const aDepth = (a.match(/\//g) || []).length;
-          const bDepth = (b.match(/\//g) || []).length;
-          if (aDepth !== bDepth) return aDepth - bDepth;
-          const length = a.length - b.length;
-          if (length !== 0) return length;
-          return a.localeCompare(b);
-        });
-        const pad = files.length.toString(10).length;
-        await fs.mkdir(`storage/book/${bookId}`);
-        await asyncForEach(files, async (f, i) => {
-          const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
-          await renameFile(f, `storage/book/${bookId}/${fileName}`);
-        });
-        await new Promise(deleteTempFolder);
-
-        const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
-        await Database.sequelize.transaction(async (transaction) => {
-          await BookModel.create({
-            id: bookId,
-            thumbnail: argThumbnail || bThumbnail,
-            number,
-            pages: files.length,
-            infoId,
-          }, {
-            transaction,
-          });
-          await BookInfoModel.update({
-            // @ts-ignore
-            count: Database.sequelize.literal('count + 1'),
-          }, {
-            where: {
-              id: infoId,
-            },
-            transaction,
-          });
-          await BookInfoModel.update({
-            thumbnail: argThumbnail || bThumbnail,
-          }, {
-            where: {
-              id: infoId,
-              thumbnail: null,
-            },
-            transaction,
-          });
-        });
-        return {
-          success: true,
-        };
+        await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
+        return this.Util.addBookFromLocalPath(
+          tempPath,
+          infoId,
+          bookId,
+          number,
+          argThumbnail,
+          (resolve) => {
+            rimraf(tempPath, () => resolve());
+          },
+        );
       },
       addBooks: async (parent, { id: infoId, books }): Promise<Result[]> => asyncMap(books,
         ({ number, file }) => this.Mutation.addBook(parent, {
@@ -422,6 +426,113 @@ export default class Graphql {
         return {
           success: true,
         };
+      },
+    };
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get Util() {
+    return {
+      async addBookFromLocalPath(
+        tempPath: string,
+        infoId: string,
+        bookId: string,
+        number: string,
+        argThumbnail?: string,
+        deleteTempFolder?: (resolve, reject) => void,
+      ) {
+        const files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
+          (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
+        ));
+        if (files.length <= 0) {
+          if (deleteTempFolder) await new Promise(deleteTempFolder);
+          return {
+            success: false,
+            code: 'QL0003',
+            message: Errors.QL0003,
+          };
+        }
+        files.sort((a, b) => {
+          const aDepth = (a.match(/\//g) || []).length;
+          const bDepth = (b.match(/\//g) || []).length;
+          if (aDepth !== bDepth) return aDepth - bDepth;
+          const length = a.length - b.length;
+          if (length !== 0) return length;
+          return a.localeCompare(b);
+        });
+        const pad = files.length.toString(10).length;
+        await fs.mkdir(`storage/book/${bookId}`);
+        await asyncForEach(files, async (f, i) => {
+          const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
+          await renameFile(f, `storage/book/${bookId}/${fileName}`);
+        });
+        if (deleteTempFolder) await new Promise(deleteTempFolder);
+
+        const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
+        await Database.sequelize.transaction(async (transaction) => {
+          await BookModel.create({
+            id: bookId,
+            thumbnail: argThumbnail || bThumbnail,
+            number,
+            pages: files.length,
+            infoId,
+          }, {
+            transaction,
+          });
+          await BookInfoModel.update({
+            // @ts-ignore
+            count: Database.sequelize.literal('count + 1'),
+          }, {
+            where: {
+              id: infoId,
+            },
+            transaction,
+          });
+          await BookInfoModel.update({
+            thumbnail: argThumbnail || bThumbnail,
+          }, {
+            where: {
+              id: infoId,
+              thumbnail: null,
+            },
+            transaction,
+          });
+        });
+        return {
+          success: true,
+        };
+      },
+      async extractCompressFile(tempPath, archiveType: string, createReadStream: () => Readable) {
+        if (archiveType === 'zip') {
+          await new Promise((resolve) => {
+            createReadStream()
+              .pipe(unzipper.Extract({ path: tempPath }))
+              .on('close', resolve);
+          });
+        } else if (archiveType === 'rar') {
+          const readStream = createReadStream();
+          const buffer: Buffer = await new Promise((resolve, reject) => {
+            const chunks = [];
+            readStream.once('error', (err) => reject(err));
+            readStream.once('end', () => resolve(Buffer.concat(chunks)));
+            readStream.on('data', (c) => chunks.push(c));
+          });
+
+          await new Promise((resolve, reject) => {
+            const extractor = createExtractorFromData(buffer);
+            // eslint-disable-next-line camelcase
+            const [obj_state, obj_header] = extractor.extractAll();
+            if (obj_state.state !== 'SUCCESS') {
+              reject(new Error('Unrar failed'));
+            }
+            // eslint-disable-next-line camelcase
+            asyncForEach(obj_header.files, async (f) => {
+              if (f.fileHeader.flags.directory) return;
+              await mkdirpIfNotExists(path.join(tempPath, f.fileHeader.name, '..'));
+              await fs.writeFile(path.join(tempPath, f.fileHeader.name), f.extract[1]);
+            }).then(resolve);
+          });
+        }
       },
     };
   }

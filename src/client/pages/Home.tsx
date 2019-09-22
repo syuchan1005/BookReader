@@ -9,14 +9,17 @@ import {
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import { useObserver } from 'mobx-react';
 
 import useReactRouter from 'use-react-router';
+import { useTranslation } from 'react-i18next';
 
 import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import BookInfo from '../components/BookInfo';
 import AddBookInfoDialog, { ChildProps } from '../components/AddBookInfoDialog';
 import db from '../Database';
 import DashedOutlineButton from '../components/DashedOutlineButton';
+import useDebounceValue from '../hooks/useDebounceValue';
 
 interface HomeProps {
   store: any;
@@ -67,7 +70,10 @@ const Home: React.FC = (props: HomeProps) => {
   props.store.barTitle = 'Book Info';
   const classes = useStyles(props);
   const { history } = useReactRouter();
+  const { t } = useTranslation();
 
+  const [search, setSearch] = React.useState(null);
+  const debounceSearch = useDebounceValue(search, 800);
   const {
     refetch,
     loading,
@@ -75,8 +81,8 @@ const Home: React.FC = (props: HomeProps) => {
     data,
     fetchMore,
   } = useQuery<{ bookInfos: BookInfoType[] }>(gql`
-      query ($limit: Int!, $offset: Int!){
-          bookInfos(limit: $limit offset: $offset) {
+      query ($limit: Int! $offset: Int! $search: String $order: Order){
+          bookInfos(limit: $limit offset: $offset search: $search order: $order) {
               id
               name
               count
@@ -87,7 +93,16 @@ const Home: React.FC = (props: HomeProps) => {
     variables: {
       offset: 0,
       limit: 10,
+      search: debounceSearch,
+      // eslint-disable-next-line react/destructuring-assignment
+      order: props.store.sortOrder,
     },
+  });
+
+  useObserver(() => {
+    if (search !== props.store.searchText) {
+      setSearch(props.store.searchText);
+    }
   });
 
   if (loading || error) {
@@ -146,7 +161,7 @@ const Home: React.FC = (props: HomeProps) => {
         <AddButton />
       </AddBookInfoDialog>
       <Button fullWidth style={{ gridColumn: '1 / end' }} onClick={clickLoadMore}>
-        load more
+        {t('loadMore')}
       </Button>
       <Fab
         color="secondary"

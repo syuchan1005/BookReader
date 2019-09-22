@@ -3,7 +3,7 @@ import {
   Button, createStyles,
   Dialog, DialogActions,
   DialogContent,
-  DialogTitle, Icon, IconButton, makeStyles, TextField,
+  DialogTitle, Grid, Icon, IconButton, makeStyles, Switch, TextField,
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
@@ -41,6 +41,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState('');
   const [addBooks, setAddBooks] = React.useState([]);
+  const [isCompress, setIsCompress] = React.useState(false);
 
   const closeDialog = () => {
     setOpen(false);
@@ -49,8 +50,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   };
 
   const [addBookInfo, { loading }] = useMutation<{ add: Result }>(gql`
-    mutation add($name: String! $books: [InputBook!]) {
-        add: addBookInfo(name: $name books: $books) {
+    mutation add($name: String! $books: [InputBook!] $compress: Upload) {
+        add: addBookInfo(name: $name books: $books, compressBooks: $compress) {
             success
             code
         }
@@ -62,7 +63,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
     variables: {
       name,
-      books: addBooks,
+      books: (isCompress ? null : addBooks),
+      compress: (isCompress ? (addBooks[0] || {}).file : null),
     },
   });
 
@@ -87,6 +89,12 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setAddBooks(books);
   }, [addBooks]);
 
+  const showBooks = React.useMemo(() => {
+    if (!isCompress) return addBooks;
+    if (addBooks.length <= 0) return [];
+    return [addBooks[0]];
+  }, [isCompress, addBooks]);
+
   return (
     <div className={classes.dialog}>
       {React.cloneElement(children, { open, setOpen })}
@@ -101,26 +109,37 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             // @ts-ignore
             onChange={(event) => setName(event.target.value)}
           />
+          <Grid container alignItems="center" spacing={1}>
+            <Grid item>Books</Grid>
+            <Grid item>
+              <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
+            </Grid>
+            <Grid item>Compress Books</Grid>
+          </Grid>
           <div>
-            {addBooks.map(({ file, number }, i) => (
+            {showBooks.map(({ file, number }, i) => (
               <div key={`${file.name} ${number}`} className={classes.listItem}>
                 <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-                <TextField
-                  color="secondary"
-                  label="Number"
-                  value={number}
-                  // @ts-ignore
-                  onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                  margin="none"
-                  autoFocus
-                />
+                {isCompress ? null : (
+                  <TextField
+                    color="secondary"
+                    label="Number"
+                    value={number}
+                    // @ts-ignore
+                    onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                    margin="none"
+                    autoFocus
+                  />
+                )}
                 <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
                   <Icon>clear</Icon>
                 </IconButton>
               </div>
             ))}
           </div>
-          <DropZone onChange={dropFiles} />
+          {(isCompress && addBooks.length >= 1) ? null : (
+            <DropZone onChange={dropFiles} />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => !loading && closeDialog()} disabled={loading}>

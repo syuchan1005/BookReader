@@ -1,4 +1,4 @@
-FROM node:12.7-alpine as build
+FROM node:12.10-alpine as build
 
 COPY . /build
 
@@ -14,25 +14,30 @@ RUN npm ci && npm run build \
     && mv package.json /bookReader/ \
     && mv package-lock.json /bookReader/
 
-FROM node:12.7-alpine
+FROM node:12.10-alpine
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
 
-COPY --from=build /bookReader /bookReader
+EXPOSE 80
+
+ENV DEBUG=""
+
+RUN apk add --no-cache supervisor=3.3.4-r1 nginx=1.14.2-r4 imagemagick=7.0.8.58-r0 \
+    && mkdir /bookReader
+
+COPY --from=build ["/bookReader/package.json", "/bookReader/package-lock.json", "/bookReader/"]
 
 WORKDIR /bookReader
 
-RUN npm ci \
-    && apk add --no-cache supervisor nginx imagemagick
+RUN npm ci
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/
 
-VOLUME ["/bookReader/storage", "/bookReader/production.sqlite"]
+COPY --from=build /bookReader /bookReader
 
-EXPOSE 80
-
-ENV DEBUG=""
+# "/bookReader/production.sqlite" is file
+VOLUME ["/bookReader/storage"]
 
 CMD npm run db:migrate -- --env production; /usr/bin/supervisord
