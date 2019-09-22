@@ -6,4 +6,6 @@ export default {
   QL0004: 'book not found',
   QL0005: 'Some changes are needed',
   QL0006: 'failed add books',
+
+  Unknown: 'Unknown',
 };
