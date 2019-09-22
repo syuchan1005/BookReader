@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     height: '100%',
     marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
   },
-  grid: {
+  infoGrid: {
     padding: theme.spacing(1),
     display: 'grid',
     justifyContent: 'center',
@@ -34,15 +34,15 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
   },
+  [theme.breakpoints.down('xs')]: {
+    infoGrid: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px)',
+    },
+  },
   fab: {
     position: 'fixed',
     bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
-  },
-  [theme.breakpoints.down('xs')]: {
-    info: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px)',
-    },
   },
   addButton: {
     position: 'fixed',

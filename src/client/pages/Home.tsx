@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     height: '100%',
     // marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
   },
-  grid: {
+  homeGrid: {
     padding: theme.spacing(1),
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     right: theme.spacing(2),
   },
   [theme.breakpoints.down('xs')]: {
-    home: {
+    homeGrid: {
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
   },
