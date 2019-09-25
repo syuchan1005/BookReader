@@ -186,7 +186,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
           src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
-          alt="thumbnail"
+          alt={number}
           className={classes.thumbnail}
         />
         <CardContent className={classes.cardContent}>
