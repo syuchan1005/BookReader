@@ -4,12 +4,12 @@ import * as os from 'os';
 import * as path from 'path';
 import { Readable } from 'stream';
 
+import { Op, col } from 'sequelize';
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
 import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
-import { Op } from 'sequelize';
 
 import { archiveTypes } from '../common/Common';
 import {
@@ -85,36 +85,55 @@ export default class Graphql {
         return bookInfos.map((info) => ModelUtil.bookInfo(info));
       },
       bookInfo: async (parent, { id: infoId }, context, info): Promise<BookInfo> => {
-        const needBook = info.operation.selectionSet.selections.some(
-          (section) => section.kind === 'Field'
-            && section.selectionSet.selections.some(
-              (sec) => sec.kind === 'Field' && sec.name.value === 'books',
-            ),
-        );
+        let booksField;
+        info.operation.selectionSet.selections.some((section) => {
+          if (section.kind !== 'Field') return false;
+          return section.selectionSet.selections.some(
+            (sec) => {
+              const ret = sec.kind === 'Field' && sec.name.value === 'books';
+              if (ret) booksField = sec;
+              return ret;
+            },
+          );
+        });
+        let bookOrder;
+        if (booksField && booksField.arguments.length > 0) {
+          const o = booksField.arguments.find((arg) => arg.name.value === 'order');
+          bookOrder = o.value.value;
+        }
+
         const bookInfo = await BookInfoModel.findOne({
           where: { id: infoId },
-          include: needBook ? [
+          include: booksField ? [
             {
               model: BookModel,
               as: 'books',
             },
           ] : [],
+          order: [
+            [col('books.number'), bookOrder || 'ASC'],
+          ],
         });
         if (bookInfo) return ModelUtil.bookInfo(bookInfo);
         return null;
       },
-      books: async (parent, { id: infoId, limit }): Promise<Book[]> => {
+      books: async (parent, {
+        id: infoId,
+        limit,
+        offset,
+        order,
+      }): Promise<Book[]> => {
         const where: any = {};
         if (infoId) where.infoId = infoId;
         const books = await BookModel.findAll({
           where,
-          include: [
-            {
-              model: BookInfoModel,
-              as: 'info',
-            },
-          ],
+          include: [{ model: BookInfoModel, as: 'info' }],
           limit,
+          offset,
+          order: [
+            ['infoId', 'desc'],
+            ['number', order],
+          ],
         });
         return books.map((book) => ModelUtil.book(book));
       },
@@ -207,7 +226,7 @@ export default class Graphql {
               folderPath,
               infoId,
               uuidv4(),
-              `${i}`,
+              `${i + 1}`,
               undefined,
               (resolve) => {
                 rimraf(folderPath, () => resolve());
