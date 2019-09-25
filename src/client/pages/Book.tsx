@@ -329,7 +329,13 @@ const Book: React.FC = (props: BookProps) => {
       </div>
 
       <div className={classes.page}>
+        {(page >= 1) ? (
+          <Img src={pages[page - 1]} hidden />
+        ) : null}
         <Img src={pages[page]} alt={(page + 1).toString(10)} className={classes.pageImage} />
+        {(page <= data.book.pages - 2) ? (
+          <Img src={pages[page + 1]} hidden />
+        ) : null}
       </div>
     </div>
   );

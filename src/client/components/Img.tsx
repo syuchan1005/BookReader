@@ -7,6 +7,7 @@ interface ImgProps {
   minWidth?: number;
   minHeight?: number;
   className?: any;
+  hidden?: boolean | 'false' | 'true';
 }
 
 const useStyles = makeStyles(() => createStyles({
@@ -30,6 +31,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     minWidth = 150,
     minHeight = 200,
     className,
+    hidden,
   } = props;
 
   // [beforeLoading, rendered, failed]
@@ -39,8 +41,9 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
 
   return (
     <div
+      aria-hidden={hidden}
       className={state !== 1 ? classes.noImg : classes.hasImg}
-      style={state !== 1 ? { minWidth, minHeight } : {}}
+      style={{ ...(state !== 1 ? { minWidth, minHeight } : {}), display: hidden === true ? 'none' : undefined }}
     >
       {(state === 0) && (
         <div>
