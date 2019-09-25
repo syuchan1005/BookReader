@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Home: React.FC = (props: HomeProps) => {
   // eslint-disable-next-line
-  props.store.barTitle = 'Book Info';
+  props.store.barTitle = '';
   const classes = useStyles(props);
   const { history } = useReactRouter();
   const { t } = useTranslation();
@@ -88,7 +88,7 @@ const Home: React.FC = (props: HomeProps) => {
     data,
     fetchMore,
   } = useQuery<{ bookInfos: BookInfoType[] }>(gql`
-      query ($limit: Int! $offset: Int! $search: String $order: Order){
+      query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder){
           bookInfos(limit: $limit offset: $offset search: $search order: $order) {
               id
               name

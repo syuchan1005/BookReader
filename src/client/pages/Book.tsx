@@ -46,6 +46,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     height: '100%',
     display: 'flex',
     justifyContent: 'center',
+    userSelect: 'none',
   },
   overlayContent: {
     userSelect: 'none',
@@ -119,28 +120,37 @@ const Book: React.FC = (props: BookProps) => {
   const [page, setPage] = React.useState(0);
   const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL, TtoB, BtoT
 
-  const increment = () => {
-    if (page === data.book.pages - 1) {
-      setRouteButton([false, true]);
-    } else {
-      setRouteButton([false, false]);
-    }
-    setPage(Math.min(page + 1, data.book.pages - 1));
-  };
-  const decrement = () => {
-    if (page === 0) {
-      setRouteButton([true, false]);
-    } else {
-      setRouteButton([false, false]);
-    }
-    setPage(Math.max(page - 1, 0));
-  };
-
   const setShowAppBar = (val) => {
     let v = val;
     if (v === undefined) v = !props.store.showAppBar;
     // eslint-disable-next-line
     props.store.showAppBar = v;
+  };
+
+  const increment = () => {
+    if (page === data.book.pages - 1) {
+      setRouteButton([false, true]);
+    } else if (page === 0 && routeButton[0]) {
+      setRouteButton([false, false]);
+      return;
+    } else {
+      setRouteButton([false, false]);
+    }
+    setPage(Math.min(page + 1, data.book.pages - 1));
+    if (props.store.showAppBar) setShowAppBar(false);
+  };
+
+  const decrement = () => {
+    if (page === 0) {
+      setRouteButton([true, false]);
+    } else if (page === data.book.pages - 1 && routeButton[1]) {
+      setRouteButton([false, false]);
+      return;
+    } else {
+      setRouteButton([false, false]);
+    }
+    setPage(Math.max(page - 1, 0));
+    if (props.store.showAppBar) setShowAppBar(false);
   };
 
   const [isPageSet, setPageSet] = React.useState(false);
@@ -198,17 +208,6 @@ const Book: React.FC = (props: BookProps) => {
 
   // eslint-disable-next-line
   props.store.barTitle = 'Book';
-  if (loading || error || !data || !data.book) {
-    return (
-      <div>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-        {(!data || !data.book) && 'Empty'}
-      </div>
-    );
-  }
-  // eslint-disable-next-line
-  props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
 
   const pad = data.book.pages.toString(10).length;
   const pages = [...Array(data.book.pages).keys()]
@@ -258,12 +257,25 @@ const Book: React.FC = (props: BookProps) => {
     });
   };
 
-  /* eslint-disable */
+  if (loading || error || !data || !data.book) {
+    return (
+      <div>
+        {loading && 'Loading'}
+        {error && `Error: ${error}`}
+        {(!data || !data.book) && 'Empty'}
+      </div>
+    );
+  }
+  // eslint-disable-next-line
+  props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
+
   return (
+    // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
       <div className={classes.overlay}>
         <Observer>
           {() => (props.store.showAppBar ? (
+            // eslint-disable-next-line
             <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
               <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
             </div>
@@ -271,6 +283,7 @@ const Book: React.FC = (props: BookProps) => {
         </Observer>
         <Observer>
           {() => (props.store.showAppBar ? (
+            // eslint-disable-next-line
             <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
               <IconButton size="small" onClick={decrement}>
                 <Icon style={{ color: 'white' }}>keyboard_arrow_left</Icon>
@@ -298,7 +311,8 @@ const Book: React.FC = (props: BookProps) => {
             </div>
           ) : null)}
         </Observer>
-        {(routeButton.some(a => a)) ? (
+        {(routeButton.some((a) => a)) ? (
+          // eslint-disable-next-line
           <div className={`${classes.overlayContent} center`} onClick={(e) => { e.stopPropagation(); setRouteButton([false, false]); }}>
             {routeButton[1] ? (
               <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
@@ -315,7 +329,7 @@ const Book: React.FC = (props: BookProps) => {
       </div>
 
       <div className={classes.page}>
-        <Img src={pages[page]} alt={page.toString(10)} className={classes.pageImage} />
+        <Img src={pages[page]} alt={(page + 1).toString(10)} className={classes.pageImage} />
       </div>
     </div>
   );
