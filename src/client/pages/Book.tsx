@@ -129,7 +129,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const increment = () => {
     if (page === data.book.pages - 1) {
-      setRouteButton([false, true]);
+      setRouteButton([false, !!(data.book && data.book.nextBook)]);
     } else if (page === 0 && routeButton[0]) {
       setRouteButton([false, false]);
       return;
@@ -142,7 +142,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const decrement = () => {
     if (page === 0) {
-      setRouteButton([true, false]);
+      setRouteButton([!!(data.book && data.book.prevBook), false]);
     } else if (page === data.book.pages - 1 && routeButton[1]) {
       setRouteButton([false, false]);
       return;
@@ -209,10 +209,6 @@ const Book: React.FC = (props: BookProps) => {
   // eslint-disable-next-line
   props.store.barTitle = 'Book';
 
-  const pad = data.book.pages.toString(10).length;
-  const pages = [...Array(data.book.pages).keys()]
-    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
-
   const clickPage = (event) => {
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     const percentY = event.nativeEvent.y / event.target.offsetHeight;
@@ -268,6 +264,10 @@ const Book: React.FC = (props: BookProps) => {
   }
   // eslint-disable-next-line
   props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
+
+  const pad = data.book.pages.toString(10).length;
+  const pages = [...Array(data.book.pages).keys()]
+    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
 
   return (
     // eslint-disable-next-line

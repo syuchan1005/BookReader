@@ -11,7 +11,7 @@ import {
   MuiThemeProvider,
   createMuiTheme,
   makeStyles,
-  createStyles, InputBase, Menu, MenuItem,
+  createStyles, InputBase, Menu, MenuItem, Theme,
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
@@ -21,27 +21,43 @@ import Home from './pages/Home';
 import Info from './pages/Info';
 import Book from './pages/Book';
 import Error from './pages/Error';
+import useMatchMedia from './hooks/useMatchMedia';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: colors.green['500'],
+const themes = {
+  light: createMuiTheme({
+    palette: {
+      type: 'light',
+      primary: {
+        main: colors.green['500'],
+      },
+      secondary: {
+        main: colors.blue.A700,
+        contrastText: colors.common.white,
+      },
     },
-    secondary: {
-      main: colors.blue.A700,
-      contrastText: colors.common.white,
+  }),
+  dark: createMuiTheme({
+    palette: {
+      type: 'dark',
+      primary: {
+        main: colors.green['600'],
+      },
+      secondary: {
+        main: colors.blue.A400,
+        contrastText: colors.common.white,
+      },
     },
-  },
-});
+  }),
+};
 
 interface AppProps {
   wb: any;
 }
 
-const useStyles = makeStyles((th) => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   backIcon: {
     color: 'white',
-    marginRight: th.spacing(1),
+    marginRight: theme.spacing(1),
   },
   title: {
     color: 'white',
@@ -108,8 +124,19 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     wb: props.wb,
     searchText: '',
     sortOrder: 'Update_Newest',
+    theme: 'light',
   }));
   const classes = useStyles(props);
+
+  const theme = useMatchMedia(
+    ['(prefers-color-scheme: dark)', '(prefers-color-scheme: light)'],
+    ['dark', 'light'],
+    'light',
+  );
+
+  if (store.theme !== theme) {
+    store.theme = theme;
+  }
 
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
@@ -132,7 +159,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   };
 
   return (
-    <MuiThemeProvider theme={theme}>
+    <MuiThemeProvider theme={themes[store.theme] || themes.light}>
       <CssBaseline />
       <Observer>
         {() => (store.showAppBar ? (

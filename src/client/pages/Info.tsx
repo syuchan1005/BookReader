@@ -76,6 +76,10 @@ const Info: React.FC = (props: InfoProps) => {
                   number
                   pages
                   thumbnail
+                  
+                  info {
+                      id
+                  }
               }
           }
       }
