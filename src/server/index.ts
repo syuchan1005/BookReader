@@ -4,12 +4,13 @@ import * as path from 'path';
 import * as Koa from 'koa';
 import * as Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
-import * as gmModule from 'gm';
+import * as gm from 'gm';
 
 import Graphql from './graphql';
 import Database from './sequelize/models';
 
-const gm = gmModule.subClass({ imageMagick: true });
+const im = gm.subClass({ imageMagick: true });
+let useIM = false;
 
 const app = new Koa();
 const graphql = new Graphql();
@@ -26,7 +27,7 @@ app.use(async (ctx, next) => {
       try {
         const b = await new Promise((resolve, reject) => {
           const atoi = (s) => (s ? Number(s) : null);
-          gm(path.resolve(origImgPath))
+          (useIM ? im : gm)(path.resolve(origImgPath))
             .resize(atoi(match[3]), atoi(match[4]))
             .stream((err, stdout, stderr) => {
               if (err) {
@@ -65,6 +66,14 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 (async () => {
+  useIM = await new Promise((resolve) => {
+    im(100, 100)
+      .stream((err, stdout, stderr) => {
+        stdout.once('end', () => resolve(true));
+        stderr.once('data', () => resolve(false));
+      });
+  });
+
   await Database.sequelize.sync();
 
   await graphql.middleware(app);
