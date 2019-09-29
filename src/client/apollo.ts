@@ -68,7 +68,9 @@ const customFetch = (uri1: any, options: any) => {
 };
 
 export default async () => {
-  const cache = new InMemoryCache();
+  const cache = new InMemoryCache({
+    freezeResults: false,
+  });
 
   await persistCache({
     cache,

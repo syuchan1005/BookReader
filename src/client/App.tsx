@@ -11,7 +11,14 @@ import {
   MuiThemeProvider,
   createMuiTheme,
   makeStyles,
-  createStyles, InputBase, Menu, MenuItem, Theme,
+  createStyles,
+  InputBase,
+  Menu,
+  MenuItem,
+  Theme,
+  ListItem,
+  ListItemText,
+  Switch as MSwitch,
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
@@ -124,6 +131,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     wb: props.wb,
     searchText: '',
     sortOrder: 'Update_Newest',
+    history: false,
     theme: 'light',
   }));
   const classes = useStyles(props);
@@ -140,6 +148,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
 
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
 
   const listener = (location) => {
     setShowBack(['/info', '/book'].some((s) => location.pathname.startsWith(s)));
@@ -192,11 +201,30 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <IconButton
                   size="small"
                   className={classes.sortIcon}
-                  onClick={(event) => setSortAnchorEl(event.currentTarget)}
+                  onClick={(event) => setMenuAnchorEl(event.currentTarget)}
                 >
                   <Icon>sort</Icon>
                 </IconButton>
               ) : null}
+              <Menu
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  horizontal: 'center',
+                  vertical: 'bottom',
+                }}
+                anchorEl={menuAnchorEl}
+                open={!!menuAnchorEl}
+                onClose={() => setMenuAnchorEl(null)}
+              >
+                <ListItem>
+                  <ListItemText>History</ListItemText>
+                  <MSwitch
+                    value={store.history}
+                    onChange={(e) => { store.history = e.target.checked; }}
+                  />
+                </ListItem>
+                <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
+              </Menu>
               <Menu
                 getContentAnchorEl={null}
                 anchorOrigin={{

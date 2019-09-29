@@ -8,6 +8,8 @@ interface ImgProps {
   minHeight?: number;
   className?: any;
   hidden?: boolean | 'false' | 'true';
+
+  onClick?: () => void;
 }
 
 const useStyles = makeStyles(() => createStyles({
@@ -32,6 +34,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     minHeight = 200,
     className,
     hidden,
+    onClick,
   } = props;
 
   // [beforeLoading, rendered, failed]
@@ -40,10 +43,12 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   const state = React.useMemo(() => (src === undefined ? 2 : _state), [_state, src]);
 
   return (
+    // eslint-disable-next-line
     <div
       aria-hidden={hidden}
       className={state !== 1 ? classes.noImg : classes.hasImg}
       style={{ ...(state !== 1 ? { minWidth, minHeight } : {}), display: hidden === true ? 'none' : undefined }}
+      onClick={onClick}
     >
       {(state === 0) && (
         <div>

@@ -3,6 +3,7 @@ export interface BookInfo {
   name: string;
   thumbnail: string;
   count: number;
+  history: boolean;
   books: Book[];
 }
 
