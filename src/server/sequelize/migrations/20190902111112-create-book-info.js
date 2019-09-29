@@ -7,7 +7,7 @@ module.exports = {
     },
     name: {
       allowNull: false,
-      unique: true,
+      unique: 'name',
       type: Sequelize.STRING,
     },
     thumbnail: {

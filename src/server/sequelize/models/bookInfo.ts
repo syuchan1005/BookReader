@@ -40,7 +40,7 @@ export default class bookInfo extends Model {
       },
       name: {
         allowNull: false,
-        unique: true,
+        unique: 'name',
         type: DataTypes.STRING,
       },
       thumbnail: {
@@ -50,6 +50,11 @@ export default class bookInfo extends Model {
         allowNull: false,
         defaultValue: 0,
         type: DataTypes.INTEGER,
+      },
+      history: {
+        allowNull: false,
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
       },
     }, {
       sequelize,

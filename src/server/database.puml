@@ -39,9 +39,10 @@ Table(details) <<with_shadow>> {
 Table(bookInfos) {
   primary_key(id) uuid
   ---
-  unique_not_null(name) varchar(255)
+  unique_not_null(name)unique_key(name) varchar(255)
   thumbnail varchar(255)
   $not_null(count) integer = 0
+  $not_null(history) tinyint(1) = 0
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime
@@ -51,9 +52,9 @@ Table(books) {
   primary_key(id) uuid
   ---
   thumbnail varchar(255)
-  $not_null(number)unique_key(info) varchar(255)
+  unique_not_null(number)unique_key(info) varchar(255)
   $not_null(pages) integer
-  $not_null(infoId)unique_key(info) uuid
+  unique_not_null(infoId)unique_key(info) uuid
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime
