@@ -318,6 +318,14 @@ export default class Graphql {
           books: books.map((b) => ModelUtil.book(b, false)),
         };
       },
+      addBookInfoHistories: async (parent, { histories }) => {
+        await BookInfoModel.bulkCreate(histories.map((h) => ({ ...h, history: true })), {
+          ignoreDuplicates: true,
+        });
+        return {
+          success: true,
+        };
+      },
       addBook: async (parent, {
         id: infoId,
         number,

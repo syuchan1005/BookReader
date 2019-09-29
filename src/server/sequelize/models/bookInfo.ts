@@ -10,6 +10,8 @@ export default class bookInfo extends Model {
 
   public count!: number;
 
+  public history!: boolean;
+
   public readonly createdAt!: Date;
 
   public readonly updatedAt!: Date;

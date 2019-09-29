@@ -13,6 +13,8 @@ type Mutation {
     editBookInfo(id: ID!, name: String, thumbnail: String): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 
+    addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
+
     ## Book
     addBook(id: ID!, number: String!, file: Upload!): Result!
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
@@ -37,6 +39,7 @@ type BookInfo {
     name: String!
     thumbnail: String
     count: Int!
+    history: Boolean!
 
     books(order: BookOrder = ASC): [Book!]!
 }
@@ -70,4 +73,9 @@ type BookInfoResult {
 input InputBook {
     number: String!
     file: Upload!
+}
+
+input BookInfoHistory {
+    name: String!
+    count: Int!
 }
