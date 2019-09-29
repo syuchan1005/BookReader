@@ -65,6 +65,7 @@ export default class Graphql {
         offset,
         search,
         order,
+        history,
       }): Promise<BookInfo[]> => {
         const where = (search) ? {
           name: {
@@ -74,7 +75,10 @@ export default class Graphql {
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
-          where,
+          where: {
+            ...where,
+            history,
+          },
           order: [
             [
               (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
@@ -319,9 +323,15 @@ export default class Graphql {
         };
       },
       addBookInfoHistories: async (parent, { histories }) => {
-        await BookInfoModel.bulkCreate(histories.map((h) => ({ ...h, history: true })), {
-          ignoreDuplicates: true,
-        });
+        await BookInfoModel.bulkCreate(
+          histories.map((h) => ({
+            ...h,
+            id: uuidv4(),
+            history: true,
+          })), {
+            ignoreDuplicates: true,
+          },
+        );
         return {
           success: true,
         };
@@ -512,6 +522,16 @@ export default class Graphql {
           }, {
             where: {
               id: infoId,
+            },
+            transaction,
+          });
+          await BookInfoModel.update({
+            history: false,
+            count: 1,
+          }, {
+            where: {
+              id: infoId,
+              history: true,
             },
             transaction,
           });

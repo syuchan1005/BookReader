@@ -19,6 +19,7 @@ import BookInfo from '../components/BookInfo';
 import AddBookInfoDialog from '../components/AddBookInfoDialog';
 import db from '../Database';
 import useDebounceValue from '../hooks/useDebounceValue';
+import AddBookDialog from '../components/AddBookDialog';
 
 interface HomeProps {
   store: any;
@@ -80,6 +81,7 @@ const Home: React.FC = (props: HomeProps) => {
 
   const [search, setSearch] = React.useState(null);
   const [open, setOpen] = React.useState(false);
+  const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
   const debounceSearch = useDebounceValue(search, 800);
   const {
     refetch,
@@ -88,8 +90,8 @@ const Home: React.FC = (props: HomeProps) => {
     data,
     fetchMore,
   } = useQuery<{ bookInfos: BookInfoType[] }>(gql`
-      query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder){
-          bookInfos(limit: $limit offset: $offset search: $search order: $order) {
+      query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean){
+          bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history) {
               id
               name
               count
@@ -104,6 +106,8 @@ const Home: React.FC = (props: HomeProps) => {
       search: debounceSearch,
       // eslint-disable-next-line react/destructuring-assignment
       order: props.store.sortOrder,
+      // eslint-disable-next-line react/destructuring-assignment
+      history: props.store.history || !!debounceSearch,
     },
   });
 
@@ -154,7 +158,7 @@ const Home: React.FC = (props: HomeProps) => {
           <BookInfo
             key={info.id}
             {...info}
-            onClick={() => !info.history && history.push(`/info/${info.id}`)}
+            onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
             onDeleted={(books) => onDeletedBookInfo(info, books)}
             onEdit={() => refetch({ offset: 0, limit })}
           />
@@ -188,6 +192,13 @@ const Home: React.FC = (props: HomeProps) => {
         open={open}
         onAdded={() => refetch({ offset: 0, limit })}
         onClose={() => setOpen(false)}
+      />
+
+      <AddBookDialog
+        open={!!openAddBook}
+        infoId={openAddBook}
+        onClose={() => setOpenAddBook(undefined)}
+        onAdded={() => refetch({ offset: 0, limit })}
       />
     </div>
   );

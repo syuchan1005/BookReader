@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Grid,
   Icon,
-  IconButton,
+  IconButton, List, ListItem,
   makeStyles,
   Switch,
   TextField,
@@ -37,6 +37,12 @@ const useStyles = makeStyles((theme) => createStyles({
     gridTemplateColumns: '1fr 50px 48px',
     marginBottom: theme.spacing(0.5),
   },
+  historyListItem: {
+    width: '100%',
+    display: 'grid',
+    gridColumnGap: theme.spacing(1),
+    gridTemplateColumns: '1fr 55px 30px',
+  },
 }));
 
 const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoDialogProps) => {
@@ -45,14 +51,25 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [name, setName] = React.useState('');
   const [addBooks, setAddBooks] = React.useState([]);
   const [isCompress, setIsCompress] = React.useState(false);
+  const [showAddHistory, setShowAddHistory] = React.useState(false);
+  const [addHistories, setAddHistories] = React.useState([]);
+  const historyBulkRef = React.useRef(null);
+
+  const changeAddHistories = (index, field, value) => {
+    const a = [...addHistories];
+    a[index][field] = value;
+    setAddHistories(a);
+  };
 
   const closeDialog = () => {
     if (onClose) onClose();
     setName('');
     setAddBooks([]);
+    setShowAddHistory(false);
+    setAddHistories([]);
   };
 
-  const [addBookInfo, { loading }] = useMutation<{ add: Result }>(gql`
+  const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(gql`
       mutation add($name: String! $books: [InputBook!] $compress: Upload) {
           add: addBookInfo(name: $name books: $books, compressBooks: $compress) {
               success
@@ -70,6 +87,25 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
       compress: (isCompress ? (addBooks[0] || {}).file : null),
     },
   });
+
+  const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(gql`
+      mutation add($histories: [BookInfoHistory!]!) {
+          add: addBookInfoHistories(histories: $histories) {
+              success
+              code
+          }
+      }
+  `, {
+    onCompleted({ add: { success } }) {
+      closeDialog();
+      if (success && onAdded) onAdded();
+    },
+    variables: {
+      histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
+    },
+  });
+
+  const loading = React.useMemo(() => addLoading || histLoading, [addLoading, histLoading]);
 
   const dropFiles = React.useCallback((files) => {
     setAddBooks([
@@ -98,56 +134,127 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     return [addBooks[0]];
   }, [isCompress, addBooks]);
 
+  const addHistoriesEntity = () => {
+    const a = [...(addHistories.filter((h) => h.name))];
+    a.push({ name: '', count: 0 });
+    setAddHistories(a);
+  };
+
+  const onFilePicked = (event) => {
+    const { files } = event.target;
+    if (files[0] === undefined) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (typeof e.target.result !== 'string') return;
+      const obj = e.target.result
+        .split('\n')
+        .filter((s) => s && s.length >= 1)
+        .map((s) => s.match(/^(.+) (\d+)(-(\d+))?/))
+        .map((m) => ({ name: m[1], count: Number(m[4] || m[2]) }));
+      setAddHistories([...addHistories, ...obj].filter((h) => h.name));
+    };
+    reader.readAsText(files[0]);
+  };
+
   return (
     <Dialog open={open} onClose={() => !loading && closeDialog()}>
-      <DialogTitle>Add book info</DialogTitle>
-      <DialogContent>
-        <TextField
-          color="secondary"
-          autoFocus
-          label="Book info name"
-          value={name}
-          // @ts-ignore
-          onChange={(event) => setName(event.target.value)}
-        />
-        <Grid container alignItems="center" spacing={1}>
-          <Grid item>Books</Grid>
-          <Grid item>
-            <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
-          </Grid>
-          <Grid item>Compress Books</Grid>
-        </Grid>
-        <div>
-          {showBooks.map(({ file, number }, i) => (
-            <div key={`${file.name} ${number}`} className={classes.listItem}>
-              <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-              {isCompress ? null : (
+      <DialogTitle>{`Add book info${showAddHistory ? ' history' : ''}`}</DialogTitle>
+      {(showAddHistory) ? (
+        <DialogContent>
+          <List>
+            {addHistories.map((h, i) => (
+              <ListItem className={classes.historyListItem} key={`${h.name} ${h.count}`}>
                 <TextField
-                  color="secondary"
-                  label="Number"
-                  value={number}
-                  // @ts-ignore
-                  onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                  margin="none"
-                  autoFocus
+                  placeholder="name"
+                  value={h.name}
+                  onChange={(e) => changeAddHistories(i, 'name', e.target.value)}
                 />
-              )}
-              <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                <Icon>clear</Icon>
-              </IconButton>
-            </div>
-          ))}
-        </div>
-        {(isCompress && addBooks.length >= 1) ? null : (
-          <DropZone onChange={dropFiles} />
-        )}
-      </DialogContent>
+                <TextField
+                  type="number"
+                  placeholder="count"
+                  value={h.count}
+                  onChange={(e) => changeAddHistories(i, 'count', e.target.value)}
+                />
+                <IconButton size="small" onClick={() => setAddHistories(addHistories.filter((f, k) => k !== i))}>
+                  <Icon>clear</Icon>
+                </IconButton>
+              </ListItem>
+            ))}
+            <ListItem>
+              <Button fullWidth onClick={addHistoriesEntity}>
+                <Icon>add</Icon>
+                Add
+              </Button>
+            </ListItem>
+            <ListItem>
+              <Button fullWidth onClick={() => historyBulkRef.current.click()}>
+                <Icon>add</Icon>
+                bulk Add
+              </Button>
+              <input
+                type="file"
+                hidden
+                ref={historyBulkRef}
+                onChange={onFilePicked}
+              />
+            </ListItem>
+          </List>
+        </DialogContent>
+      ) : (
+        <DialogContent>
+          <TextField
+            color="secondary"
+            autoFocus
+            label="Book info name"
+            value={name}
+            // @ts-ignore
+            onChange={(event) => setName(event.target.value)}
+          />
+          <Grid container alignItems="center" spacing={1}>
+            <Grid item>Books</Grid>
+            <Grid item>
+              <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
+            </Grid>
+            <Grid item>Compress Books</Grid>
+          </Grid>
+          <div>
+            {showBooks.map(({ file, number }, i) => (
+              <div key={`${file.name} ${number}`} className={classes.listItem}>
+                <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
+                {isCompress ? null : (
+                  <TextField
+                    color="secondary"
+                    label="Number"
+                    value={number}
+                    // @ts-ignore
+                    onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                    margin="none"
+                    autoFocus
+                  />
+                )}
+                <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                  <Icon>clear</Icon>
+                </IconButton>
+              </div>
+            ))}
+          </div>
+          {(isCompress && addBooks.length >= 1) ? null : (
+            <DropZone onChange={dropFiles} />
+          )}
+        </DialogContent>
+      )}
       <DialogActions>
+        <Button onClick={() => setShowAddHistory(!showAddHistory)}>
+          {`Add ${showAddHistory ? 'books' : 'history'}`}
+        </Button>
+
+        <div style={{ flex: 1 }} />
+
         <Button onClick={() => !loading && closeDialog()} disabled={loading}>
           close
         </Button>
         <Button
-          onClick={() => addBookInfo()}
+          onClick={() => (showAddHistory ? addBookInfoHistories : addBookInfo)()}
           disabled={loading}
           variant="contained"
           color="secondary"
