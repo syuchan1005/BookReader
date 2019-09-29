@@ -25,11 +25,12 @@ import gql from 'graphql-tag';
 
 import { BookInfo as QLBookInfo, BookInfoResult, Result } from '../../common/GraphqlTypes';
 import Img from './Img';
+import SelectBookInfoThumbnailDialog from './SelectBookInfoThumbnailDialog';
 
 interface BookInfoProps extends QLBookInfo {
   onClick?: Function;
   onDeleted?: Function;
-  onEdit?: Function;
+  onEdit?: () => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -85,6 +86,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const [editContent, setEditContent] = React.useState({
     name,
   });
+  const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
   const [deleteBookInfo, { loading: delLoading }] = useMutation<{ del: BookInfoResult }>(gql`
       mutation delete($id: ID!) {
@@ -135,6 +137,11 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     setAskDelete(true);
   };
 
+  const clickSelectThumbnailBookInfo = () => {
+    setMenuAnchor(null);
+    setSelectDialog(infoId);
+  };
+
   return (
     <Card className={classes.card}>
       <CardActions className={classes.headerMenu}>
@@ -152,6 +159,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           open={Boolean(menuAnchor)}
           onClose={() => setMenuAnchor(null)}
         >
+          <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
           <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
           <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
         </Menu>
@@ -231,6 +239,13 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <SelectBookInfoThumbnailDialog
+        open={!!selectDialog}
+        infoId={selectDialog}
+        onClose={() => setSelectDialog(undefined)}
+        onEdit={onEdit}
+      />
     </Card>
   );
 };

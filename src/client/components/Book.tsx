@@ -24,14 +24,17 @@ import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Book as QLBook, Result } from '../../common/GraphqlTypes';
 import Img from './Img';
+import SelectBookThumbnailDialog from './SelectBookThumbnailDialog';
 
 interface BookProps extends QLBook {
   name: string;
   reading?: boolean;
   onClick?: Function;
   onDeleted?: Function;
-  onEdit?: Function;
+  onEdit?: () => {};
   wb?: any;
+
+  simple?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -85,6 +88,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     onDeleted,
     onEdit,
     wb,
+    simple,
   } = props;
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
@@ -94,6 +98,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   const [editContent, setEditContent] = React.useState({
     number,
   });
+  const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
   const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(gql`
       mutation delete($id: ID!) {
@@ -161,28 +166,36 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     setCacheDialog([true, false]);
   };
 
+  const clickSelectThumbnailBook = () => {
+    setMenuAnchor(null);
+    setSelectDialog(bookId);
+  };
+
   return (
     <Card className={classes.card}>
-      <CardActions className={classes.headerMenu}>
-        <IconButton onClick={(event) => setMenuAnchor(event.currentTarget)}>
-          <Icon>more_vert</Icon>
-        </IconButton>
-        <Menu
-          getContentAnchorEl={null}
-          anchorOrigin={{
-            horizontal: 'center',
-            vertical: 'bottom',
-          }}
-          anchorEl={menuAnchor}
-          keepMounted
-          open={Boolean(menuAnchor)}
-          onClose={() => setMenuAnchor(null)}
-        >
-          {wb ? (<MenuItem onClick={clickCacheBook}>Cache</MenuItem>) : null}
-          <MenuItem onClick={clickEditBook}>Edit</MenuItem>
-          <MenuItem onClick={clickDeleteBook}>Delete</MenuItem>
-        </Menu>
-      </CardActions>
+      {(simple) ? null : (
+        <CardActions className={classes.headerMenu}>
+          <IconButton onClick={(event) => setMenuAnchor(event.currentTarget)}>
+            <Icon>more_vert</Icon>
+          </IconButton>
+          <Menu
+            getContentAnchorEl={null}
+            anchorOrigin={{
+              horizontal: 'center',
+              vertical: 'bottom',
+            }}
+            anchorEl={menuAnchor}
+            keepMounted
+            open={Boolean(menuAnchor)}
+            onClose={() => setMenuAnchor(null)}
+          >
+            {wb ? (<MenuItem onClick={clickCacheBook}>Cache</MenuItem>) : null}
+            <MenuItem onClick={clickSelectThumbnailBook}>Select Thumbnail</MenuItem>
+            <MenuItem onClick={clickEditBook}>Edit</MenuItem>
+            <MenuItem onClick={clickDeleteBook}>Delete</MenuItem>
+          </Menu>
+        </CardActions>
+      )}
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
           src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
@@ -190,11 +203,11 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           className={classes.thumbnail}
         />
         <CardContent className={classes.cardContent}>
-          <div>{`${number} (p.${pages})`}</div>
+          <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
         </CardContent>
-        {reading && (
+        {(reading && !simple) ? (
           <div className={classes.readLabel}>Reading</div>
-        )}
+        ) : null}
       </CardActionArea>
 
       <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
@@ -289,6 +302,13 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <SelectBookThumbnailDialog
+        open={!!selectDialog}
+        bookId={selectDialog}
+        onClose={() => setSelectDialog(undefined)}
+        onEdit={onEdit}
+      />
     </Card>
   );
 };
