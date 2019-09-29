@@ -94,6 +94,7 @@ const Home: React.FC = (props: HomeProps) => {
               name
               count
               thumbnail
+              history
           }
       }
   `, {
@@ -153,7 +154,7 @@ const Home: React.FC = (props: HomeProps) => {
           <BookInfo
             key={info.id}
             {...info}
-            onClick={() => history.push(`/info/${info.id}`)}
+            onClick={() => !info.history && history.push(`/info/${info.id}`)}
             onDeleted={(books) => onDeletedBookInfo(info, books)}
             onEdit={() => refetch({ offset: 0, limit })}
           />
