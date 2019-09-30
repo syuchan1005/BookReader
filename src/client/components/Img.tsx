@@ -16,6 +16,7 @@ const useStyles = makeStyles(() => createStyles({
   noImg: {
     fontSize: '1.5rem',
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
@@ -23,7 +24,11 @@ const useStyles = makeStyles(() => createStyles({
   hasImg: {
     width: '100%',
     height: '100%',
-    overflowY: 'hidden',
+  },
+  pic: {
+    display: 'block',
+    width: '100%',
+    height: '100%',
   },
 }));
 
@@ -65,11 +70,11 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
         </div>
       )}
       {(src) ? (
-        <picture>
+        <picture className={classes.pic}>
           <source type="image/webp" srcSet={`${src}.webp?nosave`} />
           <img
             className={className}
-            style={{ display: (state === 1) ? '' : 'none' }}
+            style={{ display: (state === 1) ? 'block' : 'none' }}
             src={src}
             alt={alt}
             onLoad={() => setState(1)}
