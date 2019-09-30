@@ -5,7 +5,12 @@ import * as path from 'path';
 import { Readable } from 'stream';
 
 import { Op, col } from 'sequelize';
-import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
+import {
+  ApolloServer,
+  makeExecutableSchema,
+  PubSub,
+  withFilter,
+} from 'apollo-server-koa';
 import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
@@ -37,13 +42,15 @@ import * as typeDefs from './schema.graphql';
 export default class Graphql {
   private readonly _server: ApolloServer;
 
+  private readonly pubsub: PubSub;
+
   get server() {
     // eslint-disable-next-line no-underscore-dangle
     return this._server;
   }
 
   constructor() {
-    const { Query, Mutation } = this;
+    const { Query, Mutation, Subscription } = this;
     // eslint-disable-next-line no-underscore-dangle
     this._server = new ApolloServer({
       schema: makeExecutableSchema({
@@ -53,9 +60,12 @@ export default class Graphql {
           /* handler(parent, args, context, info) */
           Query,
           Mutation,
+          Subscription,
         },
       }),
     });
+
+    this.pubsub = new PubSub();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -168,8 +178,9 @@ export default class Graphql {
         compressBooks,
       }): Promise<Result> => {
         const infoId = uuidv4();
+        let thumbnailStream;
         if (thumbnail) {
-          const { stream, mimetype } = await thumbnail;
+          const { createReadStream, mimetype } = await thumbnail;
           if (!mimetype.startsWith('image/jpeg')) {
             return {
               success: false,
@@ -177,13 +188,19 @@ export default class Graphql {
               message: Errors.QL0000,
             };
           }
-          await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, stream);
+          thumbnailStream = createReadStream;
         }
         await BookInfoModel.create({
           id: infoId,
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
+        this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
+
+        if (thumbnailStream) {
+          await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, thumbnailStream());
+          this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Thumbnail Saved' });
+        }
 
         let result;
         if (compressBooks) {
@@ -201,6 +218,7 @@ export default class Graphql {
             };
           }
 
+          this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Extract Files...' });
           await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
           let booksFolderPath = '/';
           let bookFolders = [];
@@ -225,6 +243,7 @@ export default class Graphql {
               message: Errors.QL0006,
             };
           }
+          this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Move Files...' });
           result = await asyncMap(bookFolders, (p, i) => {
             const folderPath = path.join(tempPath, booksFolderPath, p);
             return this.Util.addBookFromLocalPath(
@@ -240,7 +259,20 @@ export default class Graphql {
           });
           await new Promise((resolve) => rimraf(tempPath, resolve));
         } else if (books) {
-          result = await this.Mutation.addBooks(undefined, { id: infoId, books });
+          this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Add Books...' });
+          result = await this.MutationWithCustomData.addBooks(
+            undefined,
+            { id: infoId, books },
+            undefined,
+            undefined,
+            {
+              pubsub: {
+                key: Graphql.SubscriptionKeys.ADD_BOOK_INFO,
+                fieldName: 'AddBookInfo',
+                name,
+              },
+            },
+          );
         }
         if (!result) {
           return {
@@ -337,66 +369,16 @@ export default class Graphql {
           success: true,
         };
       },
-      addBook: async (parent, {
-        id: infoId,
-        number,
-        file,
-        thumbnail,
-      }): Promise<Result> => {
-        const bookId = uuidv4();
-        if (!await BookInfoModel.hasId(infoId)) {
-          return {
-            success: false,
-            code: 'QL0001',
-            message: Errors.QL0001,
-          };
-        }
-        let argThumbnail;
-        if (thumbnail) {
-          const { stream, mimetype } = await thumbnail;
-          if (!mimetype.startsWith('image/jpeg')) {
-            return {
-              success: false,
-              code: 'QL0000',
-              message: Errors.QL0000,
-            };
-          }
-          await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
-          argThumbnail = `/book/${bookId}/thumbnail.jpg`;
-        }
-        const { createReadStream, mimetype, filename } = await file;
-        let archiveType = archiveTypes[mimetype];
-        if (!archiveType) {
-          archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
-        }
-        if (!archiveType) {
-          return {
-            success: false,
-            code: 'QL0002',
-            message: Errors.QL0002,
-          };
-        }
-        // extract
-        const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
-        await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
-        return this.Util.addBookFromLocalPath(
-          tempPath,
-          infoId,
-          bookId,
-          number,
-          argThumbnail,
-          (resolve) => {
-            rimraf(tempPath, () => resolve());
-          },
-        );
-      },
-      addBooks: async (parent, { id: infoId, books }): Promise<Result[]> => asyncMap(books,
-        ({ number, file }) => this.Mutation.addBook(parent, {
-          id: infoId,
-          number,
-          file,
-          thumbnail: null,
-        })),
+      addBook: async (
+        parent, args, context, info,
+      ): Promise<Result> => this.MutationWithCustomData.addBook(
+        parent, args, context, info, undefined,
+      ),
+      addBooks: async (
+        parent, args, context, info,
+      ): Promise<Result[]> => this.MutationWithCustomData.addBooks(
+        parent, args, context, info, undefined,
+      ),
       editBook: async (parent, { id: bookId, number, thumbnail }): Promise<Result> => {
         if (number === undefined && thumbnail === undefined) {
           return {
@@ -465,6 +447,116 @@ export default class Graphql {
           success: true,
         };
       },
+    };
+  }
+
+  get MutationWithCustomData() {
+    return {
+      addBook: async (parent, {
+        id: infoId,
+        number,
+        file,
+        thumbnail,
+      }, context, info, customData): Promise<Result> => {
+        const bookId = uuidv4();
+        if (!await BookInfoModel.hasId(infoId)) {
+          return {
+            success: false,
+            code: 'QL0001',
+            message: Errors.QL0001,
+          };
+        }
+        let argThumbnail;
+        if (thumbnail) {
+          const { stream, mimetype } = await thumbnail;
+          if (!mimetype.startsWith('image/jpeg')) {
+            return {
+              success: false,
+              code: 'QL0000',
+              message: Errors.QL0000,
+            };
+          }
+          await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
+          argThumbnail = `/book/${bookId}/thumbnail.jpg`;
+        }
+        const { createReadStream, mimetype, filename } = await file;
+        let archiveType = archiveTypes[mimetype];
+        if (!archiveType) {
+          archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
+        }
+        if (!archiveType) {
+          return {
+            success: false,
+            code: 'QL0002',
+            message: Errors.QL0002,
+          };
+        }
+        if (customData) {
+          this.pubsub.publish(customData.pubsub.key, {
+            ...customData.pubsub,
+            [customData.pubsub.fieldName]: 'Extract Book...',
+          });
+        }
+        // extract
+        const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
+        await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
+        if (customData) {
+          this.pubsub.publish(customData.pubsub.key, {
+            ...customData.pubsub,
+            [customData.pubsub.fieldName]: 'Move Book...',
+          });
+        }
+        return this.Util.addBookFromLocalPath(
+          tempPath,
+          infoId,
+          bookId,
+          number,
+          argThumbnail,
+          (resolve) => {
+            rimraf(tempPath, () => resolve());
+          },
+        );
+      },
+      addBooks: async (parent, {
+        id: infoId,
+        books,
+      }, context, info, customData): Promise<Result[]> => asyncMap(books,
+        ({ number, file }) => this.MutationWithCustomData.addBook(parent, {
+          id: infoId,
+          number,
+          file,
+          thumbnail: null,
+        }, context, info, customData || {
+          pubsub: {
+            key: Graphql.SubscriptionKeys.ADD_BOOKS,
+            fieldName: 'addBooks',
+            id: infoId,
+          },
+        })),
+    };
+  }
+
+  get Subscription() {
+    return {
+      addBookInfo: {
+        subscribe: withFilter(
+          () => this.pubsub.asyncIterator([Graphql.SubscriptionKeys.ADD_BOOK_INFO]),
+          (payload, variables) => payload.name === variables.name,
+        ),
+      },
+      addBooks: {
+        subscribe: withFilter(
+          () => this.pubsub.asyncIterator([Graphql.SubscriptionKeys.ADD_BOOKS]),
+          (payload, variables) => payload.id === variables.id,
+        ),
+      },
+    };
+  }
+
+  static get SubscriptionKeys() {
+    return {
+      ADD_BOOK_INFO: 'ADD_BOOK_INFO',
+      ADD_BOOKS: 'ADD_BOOKS',
     };
   }
 
@@ -613,5 +705,10 @@ export default class Graphql {
 
     // eslint-disable-next-line no-underscore-dangle
     app.use(this._server.getMiddleware({}));
+  }
+
+  useSubscription(httpServer) {
+    // eslint-disable-next-line no-underscore-dangle
+    this._server.installSubscriptionHandlers(httpServer);
   }
 }

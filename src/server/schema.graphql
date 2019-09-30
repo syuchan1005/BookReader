@@ -22,6 +22,11 @@ type Mutation {
     deleteBook(id: ID!): Result!
 }
 
+type Subscription {
+    addBookInfo(name: String!): String!
+    addBooks(id: ID!): String!
+}
+
 enum BookInfoOrder {
     Update_Newest
     Update_Oldest

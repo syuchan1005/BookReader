@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-  Button,
+  Button, CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
@@ -9,10 +9,10 @@ import {
   Icon,
   IconButton,
   makeStyles,
-  TextField,
+  TextField, Theme,
 } from '@material-ui/core';
 import gql from 'graphql-tag';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useSubscription } from '@apollo/react-hooks';
 import FileField from './FileField';
 import DropZone from './DropZone';
 import { Result } from '../../common/GraphqlTypes';
@@ -24,7 +24,7 @@ interface AddBookDialogProps {
   onClose?: Function;
 }
 
-const useStyles = makeStyles((theme) => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   dialog: {
     width: '100%',
     height: '100%',
@@ -40,6 +40,14 @@ const useStyles = makeStyles((theme) => createStyles({
     gridTemplateColumns: '1fr 50px 48px',
     marginBottom: theme.spacing(0.5),
   },
+  addBookProgress: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  progressMessage: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
 const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) => {
@@ -50,7 +58,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     onAdded,
     onClose,
   } = props;
+
   const [addBooks, setAddBooks] = React.useState([]);
+  const [subscriptionId, setSubscriptionId] = React.useState<string | undefined>(undefined);
+
   const [addBook, { loading }] = useMutation<{ adds: Result[] }>(gql`
       mutation add($id: ID!, $books: [InputBook!]!) {
           adds: addBooks(id: $id books: $books) {
@@ -64,9 +75,13 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       books: addBooks,
     },
     onCompleted({ adds }) {
+      setSubscriptionId(undefined);
       const success = adds.every((a) => a.success);
       if (onClose && success) onClose();
       if (success && onAdded) onAdded();
+    },
+    onError() {
+      setSubscriptionId(undefined);
     },
     context: {
       fetchOptions: {
@@ -81,10 +96,22 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     },
   });
 
+  const { data: subscriptionData } = useSubscription(gql`
+      subscription ($id: ID!){
+          addBooks(id: $id)
+      }
+  `, {
+    skip: !subscriptionId,
+    variables: {
+      id: subscriptionId,
+    },
+  });
+
   const closeDialog = () => {
     if (!loading) {
       if (onClose) onClose();
       setAddBooks([]);
+      setSubscriptionId(undefined);
     }
   };
 
@@ -112,34 +139,44 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   return (
     <Dialog open={open} onClose={closeDialog}>
       <DialogTitle>Add book</DialogTitle>
-      <DialogContent className={classes.dialogContent}>
-        <div>
-          {addBooks.map(({ file, number }, i) => (
-            <div key={`${file.name} ${number}`} className={classes.listItem}>
-              <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-              <TextField
-                color="secondary"
-                label="Number"
-                value={number}
-                // @ts-ignore
-                onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                margin="none"
-                autoFocus
-              />
-              <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                <Icon>clear</Icon>
-              </IconButton>
-            </div>
-          ))}
-        </div>
-        <DropZone onChange={dropFiles} />
-      </DialogContent>
+      {(!subscriptionData) ? (
+        <DialogContent className={classes.dialogContent}>
+          <div>
+            {addBooks.map(({ file, number }, i) => (
+              <div key={`${file.name} ${number}`} className={classes.listItem}>
+                <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
+                <TextField
+                  color="secondary"
+                  label="Number"
+                  value={number}
+                  // @ts-ignore
+                  onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                  margin="none"
+                  autoFocus
+                />
+                <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                  <Icon>clear</Icon>
+                </IconButton>
+              </div>
+            ))}
+          </div>
+          <DropZone onChange={dropFiles} />
+        </DialogContent>
+      ) : (
+        <DialogContent className={classes.addBookProgress}>
+          <CircularProgress color="secondary" />
+          <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
+        </DialogContent>
+      )}
       <DialogActions>
         <Button onClick={closeDialog} disabled={loading}>
           close
         </Button>
         <Button
-          onClick={() => addBook()}
+          onClick={() => {
+            addBook();
+            setSubscriptionId(infoId);
+          }}
           disabled={loading}
           variant="contained"
           color="secondary"

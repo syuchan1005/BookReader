@@ -39,6 +39,7 @@ module.exports = merge(commonConfig, {
           host: 'localhost',
           port: 8081,
         },
+        ws: true,
       },
     },
     before(app) {

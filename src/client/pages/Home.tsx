@@ -132,11 +132,13 @@ const Home: React.FC = (props: HomeProps) => {
     refetch({ offset: 0, limit });
     db.infoReads.delete(info.id);
     db.bookReads.bulkDelete(books.map((b) => b.id));
-    books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
-      type: 'BOOK_REMOVE',
-      bookId,
-      pages,
-    }));
+    if (props.store.wb) {
+      books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
+        type: 'BOOK_REMOVE',
+        bookId,
+        pages,
+      }));
+    }
   };
 
   const clickLoadMore = () => {

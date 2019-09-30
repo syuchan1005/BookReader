@@ -81,9 +81,13 @@ if (process.env.NODE_ENV === 'production') {
   app.use(historyApiFallback({}));
 
   const port = process.env.PORT || 8081;
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     /* eslint-disable no-console */
     console.log(`👔 listen  at: http://localhost:${port}`);
     console.log(`🚀 graphql at: http://localhost:${port}${graphql.server.graphqlPath}`);
   });
+
+  graphql.useSubscription(server);
 })();
+
+// TODO: 画像最適化
