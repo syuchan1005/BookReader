@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { exec } from 'child_process';
 
 import * as Koa from 'koa';
 import * as Serve from 'koa-static';
@@ -8,6 +9,7 @@ import * as gm from 'gm';
 
 import Graphql from './graphql';
 import Database from './sequelize/models';
+import { mkdirpIfNotExists } from './Util';
 
 const im = gm.subClass({ imageMagick: true });
 let useIM = false;
@@ -16,6 +18,8 @@ const app = new Koa();
 const graphql = new Graphql();
 
 app.use(Serve('storage/'));
+
+app.use(Serve('storage/cache/'));
 
 app.use(async (ctx, next) => {
   const { url } = ctx.req;
@@ -47,14 +51,66 @@ app.use(async (ctx, next) => {
           ctx.set('Last-Modified', stats.mtime.toUTCString());
         }
         try {
-          await fs.stat(`storage${url}`);
+          await fs.stat(`storage/cache${url}`);
         } catch (ignored) {
-          await fs.writeFile(`storage${url}`, b);
+          await mkdirpIfNotExists(path.join(`storage/cache${url}`, '..'));
+          await fs.writeFile(`storage/cache${url}`, b);
         }
       } catch (e) {
         ctx.body = e;
         ctx.status = 503;
       }
+      return;
+    }
+  }
+  await next();
+});
+
+app.use(async (ctx, next) => {
+  const { url } = ctx.req;
+  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d*)x(\d*))?\.jpg\.webp(\?nosave)?$/);
+  if (match) {
+    const origImgPath = `storage/book/${match[1]}/${match[2]}.jpg`;
+    const stats = await fs.stat(origImgPath);
+    if (stats.isFile()) {
+      let command = `cwebp ${origImgPath} -quiet`;
+      if (match[3]) {
+        const w = Number(match[4]) || 0;
+        const h = Number(match[5]) || 0;
+        if (w > 0 || h > 0) {
+          command += ` -resize ${w} ${h}`;
+        }
+      }
+      const webpBuffer = await new Promise((resolve, reject) => {
+        exec(`${command} -o -`, {
+          encoding: 'buffer',
+          maxBuffer: 1024 * 512,
+        }, (err, stdout) => {
+          if (err) reject(err);
+          else if (stdout.length > 0) {
+            resolve(stdout);
+          } else {
+            reject(new Error('error'));
+          }
+        });
+      });
+
+      if (!ctx.response.get('Last-Modified')) {
+        ctx.set('Last-Modified', stats.mtime.toUTCString());
+      }
+
+      if (!match[6]) {
+        const u = url.replace(/\?nosave$/, '');
+        try {
+          await fs.stat(`storage/cache${u}`);
+        } catch (ignored) {
+          await mkdirpIfNotExists(path.join(`storage/cache${u}`, '..'));
+          await fs.writeFile(`storage/cache${u}`, webpBuffer);
+        }
+      }
+
+      ctx.body = webpBuffer;
+      ctx.type = 'image/webp';
       return;
     }
   }
@@ -89,5 +145,3 @@ if (process.env.NODE_ENV === 'production') {
 
   graphql.useSubscription(server);
 })();
-
-// TODO: 画像最適化

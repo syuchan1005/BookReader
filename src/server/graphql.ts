@@ -702,6 +702,8 @@ export default class Graphql {
   async middleware(app) {
     await mkdirpIfNotExists('storage/bookInfo');
     await mkdirpIfNotExists('storage/book');
+    await mkdirpIfNotExists('storage/cache/book');
+    await mkdirpIfNotExists('storage/cache/bookInfo');
 
     // eslint-disable-next-line no-underscore-dangle
     app.use(this._server.getMiddleware({}));
