@@ -182,6 +182,8 @@ const Book: React.FC = (props: BookProps) => {
       page,
     }).catch(() => { /* ignored */
     });
+  } else {
+    return null;
   }
 
   window.document.onkeydown = ({ key }) => {
@@ -265,9 +267,11 @@ const Book: React.FC = (props: BookProps) => {
   // eslint-disable-next-line
   props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
 
+  const sizes = [document.body.offsetWidth, document.body.offsetHeight];
+  sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
   const pad = data.book.pages.toString(10).length;
   const pages = [...Array(data.book.pages).keys()]
-    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
+    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
 
   return (
     // eslint-disable-next-line

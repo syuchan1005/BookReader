@@ -201,6 +201,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
           src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
           alt={number}
           className={classes.thumbnail}
+          noSave={false}
         />
         <CardContent className={classes.cardContent}>
           <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>

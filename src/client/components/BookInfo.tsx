@@ -169,6 +169,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
           alt={name}
           className={classes.thumbnail}
+          noSave={false}
         />
         <CardContent className={classes.cardContent}>
           <div>{count}</div>

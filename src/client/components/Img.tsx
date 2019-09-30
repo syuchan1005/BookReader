@@ -8,6 +8,7 @@ interface ImgProps {
   minHeight?: number;
   className?: any;
   hidden?: boolean | 'false' | 'true';
+  noSave?: boolean;
 
   onClick?: () => void;
 }
@@ -42,6 +43,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     className,
     hidden,
     onClick,
+    noSave = true,
   } = props;
 
   // [beforeLoading, rendered, failed]
@@ -71,7 +73,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
       )}
       {(src) ? (
         <picture className={classes.pic}>
-          <source type="image/webp" srcSet={`${src}.webp?nosave`} />
+          <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
           <img
             className={className}
             style={{ display: (state === 1) ? 'block' : 'none' }}
