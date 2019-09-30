@@ -23,7 +23,7 @@ EXPOSE 80
 
 ENV DEBUG=""
 
-RUN apk add --no-cache supervisor=3.3.4-r1 nginx=1.14.2-r4 imagemagick=7.0.8.58-r0 libwebp-tools=1.0.3-r0 \
+RUN apk add --no-cache supervisor=3.3.4-r1 nginx=1.14.2-r4 imagemagick=7.0.8.58-r0 libwebp-tools=1.0.1-r0 \
     && mkdir /bookReader
 
 COPY --from=build ["/bookReader/package.json", "/bookReader/package-lock.json", "/bookReader/"]
