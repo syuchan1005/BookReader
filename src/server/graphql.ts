@@ -10,6 +10,7 @@ import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
 
 import { archiveTypes } from '../common/Common';
 import {
@@ -478,7 +479,7 @@ export default class Graphql {
         argThumbnail?: string,
         deleteTempFolder?: (resolve, reject) => void,
       ) {
-        const files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
+        let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
           (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
         ));
         if (files.length <= 0) {
@@ -489,14 +490,14 @@ export default class Graphql {
             message: Errors.QL0003,
           };
         }
-        files.sort((a, b) => {
-          const aDepth = (a.match(/\//g) || []).length;
-          const bDepth = (b.match(/\//g) || []).length;
-          if (aDepth !== bDepth) return aDepth - bDepth;
-          const length = a.length - b.length;
-          if (length !== 0) return length;
-          return a.localeCompare(b);
-        });
+        files = naturalOrderBy(files, null, [(a, b) => {
+          const iA = a.includes('cover');
+          const iB = b.includes('cover');
+          if (iA && iB) return 0;
+          if (iA) return -1;
+          if (iB) return 1;
+          return 0;
+        }]);
         const pad = files.length.toString(10).length;
         await fs.mkdir(`storage/book/${bookId}`);
         await asyncForEach(files, async (f, i) => {
