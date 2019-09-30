@@ -22,6 +22,8 @@ const useStyles = makeStyles(() => createStyles({
   },
   hasImg: {
     width: '100%',
+    height: '100%',
+    overflowY: 'hidden',
   },
 }));
 
@@ -62,14 +64,19 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
           <div>{alt}</div>
         </div>
       )}
-      <img
-        className={className}
-        style={{ display: (state === 1) ? '' : 'none' }}
-        src={src}
-        alt={alt}
-        onLoad={() => setState(1)}
-        onError={() => setState(2)}
-      />
+      {(src) ? (
+        <picture>
+          <source type="image/webp" srcSet={`${src}.webp?nosave`} />
+          <img
+            className={className}
+            style={{ display: (state === 1) ? '' : 'none' }}
+            src={src}
+            alt={alt}
+            onLoad={() => setState(1)}
+            onError={() => setState(2)}
+          />
+        </picture>
+      ) : null}
     </div>
   );
 };

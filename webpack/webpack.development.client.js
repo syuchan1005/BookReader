@@ -34,6 +34,12 @@ module.exports = merge(commonConfig, {
           port: 8081,
         },
       },
+      '**/*.webp': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
       '/graphql': {
         target: {
           host: 'localhost',

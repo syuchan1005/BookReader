@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   bottomSlider: {
     gridColumn: '1 / span 3',
-    margin: `0 ${theme.spacing(2)}`,
+    margin: theme.spacing(0, 2),
   },
 }));
 

@@ -4,7 +4,7 @@ workbox.core.skipWaiting(); workbox.core.clientsClaim();
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 workbox.routing.registerRoute(
-  /^\/book\/([a-f0-9-]{36})\/(\d+)_(\d*)x(\d*)\.jpg$/,
+  /^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d*)x(\d*))?\.jpg(\.webp)?/,
   new workbox.strategies.CacheFirst(),
   'GET',
 );
