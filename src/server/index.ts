@@ -12,7 +12,17 @@ import Database from './sequelize/models';
 import { mkdirpIfNotExists } from './Util';
 
 const im = gm.subClass({ imageMagick: true });
-let useIM = false;
+let useIM = true;
+
+(async () => {
+  useIM = await new Promise((resolve) => {
+    im(10, 10)
+      .stream((err, stdout, stderr) => {
+        stdout.once('end', () => resolve(true));
+        stderr.once('data', () => resolve(false));
+      });
+  });
+})();
 
 const app = new Koa();
 const graphql = new Graphql();
@@ -52,12 +62,11 @@ app.use(async (ctx, next) => {
         }
 
         if (!match[5]) {
-          const u = url.replace(/\?nosave$/, '');
           try {
-            await fs.stat(`storage/cache${u}`);
+            await fs.stat(`storage/cache${url}`);
           } catch (ignored) {
-            await mkdirpIfNotExists(path.join(`storage/cache${u}`, '..'));
-            await fs.writeFile(`storage/cache${u}`, b);
+            await mkdirpIfNotExists(path.join(`storage/cache${url}`, '..'));
+            await fs.writeFile(`storage/cache${url}`, b);
           }
         }
       } catch (e) {
@@ -104,12 +113,11 @@ app.use(async (ctx, next) => {
       }
 
       if (!match[6]) {
-        const u = url.replace(/\?nosave$/, '');
         try {
-          await fs.stat(`storage/cache${u}`);
+          await fs.stat(`storage/cache${url}`);
         } catch (ignored) {
-          await mkdirpIfNotExists(path.join(`storage/cache${u}`, '..'));
-          await fs.writeFile(`storage/cache${u}`, webpBuffer);
+          await mkdirpIfNotExists(path.join(`storage/cache${url}`, '..'));
+          await fs.writeFile(`storage/cache${url}`, webpBuffer);
         }
       }
 
@@ -126,14 +134,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 (async () => {
-  useIM = await new Promise((resolve) => {
-    im(100, 100)
-      .stream((err, stdout, stderr) => {
-        stdout.once('end', () => resolve(true));
-        stderr.once('data', () => resolve(false));
-      });
-  });
-
   await Database.sequelize.sync();
 
   await graphql.middleware(app);
