@@ -77,7 +77,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
           <img
             className={className}
             style={{ display: (state === 1) ? 'block' : 'none' }}
-            src={src}
+            src={`${src}${noSave ? '?nosave' : ''}`}
             alt={alt}
             onLoad={() => setState(1)}
             onError={() => setState(2)}

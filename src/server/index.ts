@@ -23,7 +23,7 @@ app.use(Serve('storage/cache/'));
 
 app.use(async (ctx, next) => {
   const { url } = ctx.req;
-  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)_(\d*)x(\d*)\.jpg$/);
+  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)_(\d*)x(\d*)\.jpg(\?nosave)$/);
   if (match) {
     const origImgPath = `storage/book/${match[1]}/${match[2]}.jpg`;
     const stats = await fs.stat(origImgPath);
@@ -50,11 +50,15 @@ app.use(async (ctx, next) => {
         if (!ctx.response.get('Last-Modified')) {
           ctx.set('Last-Modified', stats.mtime.toUTCString());
         }
-        try {
-          await fs.stat(`storage/cache${url}`);
-        } catch (ignored) {
-          await mkdirpIfNotExists(path.join(`storage/cache${url}`, '..'));
-          await fs.writeFile(`storage/cache${url}`, b);
+
+        if (!match[5]) {
+          const u = url.replace(/\?nosave$/, '');
+          try {
+            await fs.stat(`storage/cache${u}`);
+          } catch (ignored) {
+            await mkdirpIfNotExists(path.join(`storage/cache${u}`, '..'));
+            await fs.writeFile(`storage/cache${u}`, b);
+          }
         }
       } catch (e) {
         ctx.body = e;
