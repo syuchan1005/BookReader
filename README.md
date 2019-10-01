@@ -6,7 +6,7 @@
 
 ## how to use?
 
-> when you use v1.0.5, please run command ↓
+> when you use v1.0.5, please run this 
 > `$ node scripts/removeCacheInBefore.js`
 
 
