@@ -337,7 +337,9 @@ export default class Graphql {
         });
         await asyncForEach(books, async (book) => {
           await new Promise((resolve) => {
-            rimraf(`storage/book/${book.id}`, () => resolve());
+            rimraf(`storage/book/${book.id}`, () => {
+              rimraf(`storage/cache/book/${book.id}`, () => resolve());
+            });
           });
         });
         await BookModel.destroy({
@@ -441,7 +443,9 @@ export default class Graphql {
           },
         });
         await new Promise((resolve) => {
-          rimraf(`storage/book/${bookId}`, () => resolve());
+          rimraf(`storage/book/${bookId}`, () => {
+            rimraf(`storage/cache/book/${bookId}`, () => resolve());
+          });
         });
         return {
           success: true,
