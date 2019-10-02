@@ -230,7 +230,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <ListItem>
                   <ListItemText>History</ListItemText>
                   <MSwitch
-                    value={store.history}
+                    checked={store.history}
                     onChange={(e) => { store.history = e.target.checked; }}
                   />
                 </ListItem>
