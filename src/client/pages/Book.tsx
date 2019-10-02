@@ -3,9 +3,10 @@ import {
   createStyles,
   makeStyles,
   Theme,
+  MuiThemeProvider,
   IconButton,
   Icon,
-  Slider, Button,
+  Slider, Button, useTheme, createMuiTheme,
 } from '@material-ui/core';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
@@ -118,7 +119,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
-  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL, TtoB, BtoT
+  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
 
   const setShowAppBar = (val) => {
     let v = val;
@@ -152,6 +153,12 @@ const Book: React.FC = (props: BookProps) => {
     setPage(Math.max(page - 1, 0));
     if (props.store.showAppBar) setShowAppBar(false);
   };
+
+  const theme = useTheme();
+  const sliderTheme = React.useMemo(() => createMuiTheme({
+    ...theme,
+    direction: readOrder === 1 ? 'rtl' : 'ltr',
+  }), [theme, readOrder]);
 
   const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
@@ -295,22 +302,24 @@ const Book: React.FC = (props: BookProps) => {
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                onClick={() => setReadOrder((readOrder + 1) % 4)}
+                onClick={() => setReadOrder((readOrder + 1) % 2)}
               >
-                {['L > R', 'L < R', 'T > B', 'T < B'][readOrder]}
+                {['L > R', 'L < R'][readOrder]}
               </Button>
               <IconButton size="small" onClick={increment}>
                 <Icon style={{ color: 'white' }}>keyboard_arrow_right</Icon>
               </IconButton>
               <div className={classes.bottomSlider}>
-                <Slider
-                  color="secondary"
-                  valueLabelDisplay="auto"
-                  max={data.book.pages}
-                  min={1}
-                  value={page + 1}
-                  onChange={(e, v: number) => setPage(v - 1)}
-                />
+                <MuiThemeProvider theme={sliderTheme}>
+                  <Slider
+                    color="secondary"
+                    valueLabelDisplay="auto"
+                    max={data.book.pages}
+                    min={1}
+                    value={page + 1}
+                    onChange={(e, v: number) => setPage(v - 1)}
+                  />
+                </MuiThemeProvider>
               </div>
             </div>
           ) : null)}
