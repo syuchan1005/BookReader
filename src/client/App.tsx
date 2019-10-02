@@ -133,6 +133,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     sortOrder: 'Update_Newest',
     history: false,
     theme: 'light',
+    webp: false,
   }));
   const classes = useStyles(props);
 
@@ -156,6 +157,16 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   history.listen(listener);
   React.useEffect(() => {
     listener(window.location);
+
+    // https://stackoverflow.com/questions/5573096/detecting-webp-support
+    new Promise((resolve) => {
+      const imgElem = window.document.createElement('img');
+      imgElem.onload = () => { resolve(imgElem.width === 2 && imgElem.height === 1); };
+      imgElem.onerror = () => { resolve(false); };
+      imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
+    }).then((r: boolean) => {
+      store.webp = r;
+    });
   }, []);
 
   const clickBack = () => {

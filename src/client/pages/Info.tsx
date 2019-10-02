@@ -43,6 +43,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'fixed',
     bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
+    zIndex: 2,
   },
   addButton: {
     position: 'fixed',
@@ -53,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     paddingTop: theme.spacing(2),
     fontSize: '0.9rem',
     paddingBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
+    zIndex: 2,
   },
 }));
 
@@ -155,7 +157,6 @@ const Info: React.FC = (props: InfoProps) => {
                 onClick={() => clickBook(book)}
                 onDeleted={() => onDeletedBook(book)}
                 onEdit={() => refetch()}
-                wb={props.store.wb}
               />
             ),
           )

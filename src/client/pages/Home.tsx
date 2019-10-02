@@ -51,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'fixed',
     bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
+    zIndex: 2,
   },
   [theme.breakpoints.down('xs')]: {
     homeGrid: {

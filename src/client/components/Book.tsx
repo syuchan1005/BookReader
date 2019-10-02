@@ -32,7 +32,6 @@ interface BookProps extends QLBook {
   onClick?: Function;
   onDeleted?: Function;
   onEdit?: () => {};
-  wb?: any;
 
   simple?: boolean;
 }
@@ -87,14 +86,12 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     onClick,
     onDeleted,
     onEdit,
-    wb,
     simple,
   } = props;
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
   const [askDelete, setAskDelete] = React.useState(false);
   const [editDialog, setEditDialog] = React.useState(false);
-  const [cacheDialog, setCacheDialog] = React.useState([false, false]); // showDialog, loading
   const [editContent, setEditContent] = React.useState({
     number,
   });
@@ -135,22 +132,6 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const cacheBook = () => {
-    setCacheDialog([true, true]);
-    const onFinish = (event) => {
-      if (event.data && event.data.type === 'BOOK_CACHE' && event.data.state === 'Finish') {
-        setCacheDialog([false, false]);
-        navigator.serviceWorker.removeEventListener('message', onFinish);
-      }
-    };
-    navigator.serviceWorker.addEventListener('message', onFinish);
-    wb.messageSW({
-      type: 'BOOK_CACHE',
-      pages,
-      bookId,
-    });
-  };
-
   const clickEditBook = () => {
     setMenuAnchor(null);
     setEditDialog(true);
@@ -159,11 +140,6 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   const clickDeleteBook = () => {
     setMenuAnchor(null);
     setAskDelete(true);
-  };
-
-  const clickCacheBook = () => {
-    setMenuAnchor(null);
-    setCacheDialog([true, false]);
   };
 
   const clickSelectThumbnailBook = () => {
@@ -189,7 +165,6 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
             open={Boolean(menuAnchor)}
             onClose={() => setMenuAnchor(null)}
           >
-            {wb ? (<MenuItem onClick={clickCacheBook}>Cache</MenuItem>) : null}
             <MenuItem onClick={clickSelectThumbnailBook}>Select Thumbnail</MenuItem>
             <MenuItem onClick={clickEditBook}>Edit</MenuItem>
             <MenuItem onClick={clickDeleteBook}>Delete</MenuItem>
@@ -272,34 +247,6 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
             disabled={editLoading}
           >
             edit
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={cacheDialog[0]}
-        onClose={() => !cacheDialog[1] && setCacheDialog([false, false])}
-      >
-        <DialogTitle>Cache book</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {`Do you want to cache \`${number}\`巻?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setCacheDialog([false, false])}
-            disabled={cacheDialog[1]}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => cacheBook()}
-            disabled={cacheDialog[1]}
-          >
-            cache
           </Button>
         </DialogActions>
       </Dialog>
