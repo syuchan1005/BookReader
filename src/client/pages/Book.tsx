@@ -16,6 +16,7 @@ import { Observer } from 'mobx-react';
 import db from '../Database';
 import Img from '../components/Img';
 import { Book as BookType } from '../../common/GraphqlTypes';
+import useDebounceValue from '../hooks/useDebounceValue';
 
 interface BookProps {
   store: any;
@@ -119,6 +120,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
+  const debouncePage = useDebounceValue(page, 200);
   const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
 
   const setShowAppBar = (val) => {
@@ -189,8 +191,6 @@ const Book: React.FC = (props: BookProps) => {
       page,
     }).catch(() => { /* ignored */
     });
-  } else {
-    return null;
   }
 
   window.document.onkeydown = ({ key }) => {
@@ -342,12 +342,16 @@ const Book: React.FC = (props: BookProps) => {
       </div>
 
       <div className={classes.page}>
-        {(page >= 1) ? (
-          <Img src={pages[page - 1]} hidden />
+        {(debouncePage >= 1) ? (
+          <Img src={pages[debouncePage - 1]} hidden />
         ) : null}
-        <Img src={pages[page]} alt={(page + 1).toString(10)} className={classes.pageImage} />
-        {(page <= data.book.pages - 2) ? (
-          <Img src={pages[page + 1]} hidden />
+        <Img
+          src={pages[debouncePage]}
+          alt={(debouncePage + 1).toString(10)}
+          className={classes.pageImage}
+        />
+        {(debouncePage <= data.book.pages - 2) ? (
+          <Img src={pages[debouncePage + 1]} hidden />
         ) : null}
       </div>
     </div>
