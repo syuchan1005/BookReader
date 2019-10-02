@@ -53,20 +53,18 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     right: theme.spacing(2),
     zIndex: 2,
   },
+  addButton: {
+    position: 'fixed',
+    right: theme.spacing(2),
+    bottom: theme.spacing(11),
+    background: theme.palette.background.paper,
+    color: theme.palette.secondary.main,
+    zIndex: 2,
+  },
   [theme.breakpoints.down('xs')]: {
     homeGrid: {
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
-  },
-  addButton: {
-    position: 'fixed',
-    left: 0,
-    bottom: 0,
-    borderRadius: 0,
-    borderTopRightRadius: `calc(${theme.shape.borderRadius}px * 2)`,
-    paddingTop: theme.spacing(2),
-    fontSize: '0.9rem',
-    paddingBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
   },
   readMoreButton: {
     gridColumn: '1 / end',
@@ -174,21 +172,18 @@ const Home: React.FC = (props: HomeProps) => {
           {t('loadMore')}
         </Button>
       </div>
-      <Button
-        variant="contained"
-        color="secondary"
+      <Fab
         className={classes.addButton}
         onClick={() => setOpen(true)}
       >
-        <Icon fontSize="large">add</Icon>
-        Add BookInfo
-      </Button>
+        <Icon>add</Icon>
+      </Fab>
       <Fab
         color="secondary"
         className={classes.fab}
         onClick={() => refetch({ offset: 0, limit })}
       >
-        <Icon style={{ color: 'white' }}>refresh</Icon>
+        <Icon>refresh</Icon>
       </Fab>
 
       <AddBookInfoDialog

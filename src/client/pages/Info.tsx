@@ -7,7 +7,6 @@ import {
   createStyles,
   Fab,
   Icon,
-  Button,
   Theme,
 } from '@material-ui/core';
 
@@ -47,13 +46,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   addButton: {
     position: 'fixed',
-    left: 0,
-    bottom: 0,
-    borderRadius: 0,
-    borderTopRightRadius: `calc(${theme.shape.borderRadius}px * 2)`,
-    paddingTop: theme.spacing(2),
-    fontSize: '0.9rem',
-    paddingBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
+    right: theme.spacing(2),
+    bottom: theme.spacing(11),
+    background: theme.palette.background.paper,
+    color: theme.palette.secondary.main,
     zIndex: 2,
   },
 }));
@@ -162,15 +158,12 @@ const Info: React.FC = (props: InfoProps) => {
           )
         }
       </div>
-      <Button
-        variant="contained"
-        color="secondary"
+      <Fab
         className={classes.addButton}
         onClick={() => setOpen(true)}
       >
-        <Icon fontSize="large">add</Icon>
-        Add Book
-      </Button>
+        <Icon>add</Icon>
+      </Fab>
       <Fab
         color="secondary"
         className={classes.fab}
