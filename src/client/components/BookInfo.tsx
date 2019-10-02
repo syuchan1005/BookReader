@@ -20,6 +20,7 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
+import { orange as color } from '@material-ui/core/colors';
 import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
@@ -66,6 +67,15 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     zIndex: 1,
     padding: 0,
   },
+  historyLabel: {
+    position: 'absolute',
+    top: 0,
+    left: theme.spacing(1),
+    background: color['800'],
+    color: theme.palette.common.white,
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+  },
 }));
 
 const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
@@ -75,6 +85,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     thumbnail,
     name,
     count,
+    history,
     onClick,
     onDeleted,
     onEdit,
@@ -174,6 +185,9 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         <CardContent className={classes.cardContent}>
           <div>{count}</div>
         </CardContent>
+        {(history) ? (
+          <div className={classes.historyLabel}>History</div>
+        ) : null}
       </CardActionArea>
 
       <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
