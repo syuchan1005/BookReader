@@ -41,6 +41,7 @@ module.exports = {
         enforce: 'pre',
         test: /\.js$/,
         loader: 'source-map-loader',
+        exclude: [resolve('node_modules')],
       },
       {
         test: /\.css$/,
@@ -98,13 +99,12 @@ module.exports = {
     new WorkboxWebpackPlugin.InjectManifest({
       swSrc: './src/client/service-worker.js',
       swDest: `${dist}/service-worker.js`,
-      globDirectory: dist,
-      globPatterns: ['*.{html,js}'],
       exclude: [
         /\.map$/,
         /icons\//,
         /favicon\.ico$/,
         /manifest\.json$/,
+        /robots\.txt$/,
       ],
     }),
   ],
