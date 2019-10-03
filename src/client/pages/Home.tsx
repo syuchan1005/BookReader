@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   addButton: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: theme.spacing(11),
+    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(11)}px)`,
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
