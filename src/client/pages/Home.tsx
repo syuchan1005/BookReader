@@ -194,6 +194,7 @@ const Home: React.FC = (props: HomeProps) => {
       <AddBookDialog
         open={!!openAddBook}
         infoId={openAddBook}
+        offset={0}
         onClose={() => setOpenAddBook(undefined)}
         onAdded={() => refetch({ offset: 0, limit })}
       />
