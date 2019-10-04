@@ -6,7 +6,6 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import regSW from './registerServiceWorker';
 import App from './App';
 
-import './i18n';
 import getClient from './apollo';
 
 const wb = regSW();

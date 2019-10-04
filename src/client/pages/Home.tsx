@@ -12,14 +12,14 @@ import { useQuery } from '@apollo/react-hooks';
 import { useObserver } from 'mobx-react';
 
 import useReactRouter from 'use-react-router';
-import { useTranslation } from 'react-i18next';
 
-import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
-import BookInfo from '../components/BookInfo';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
+import AddBookDialog from '@client/components/dialogs/AddBookDialog';
+import { BookInfo as BookInfoType } from '@common/GraphqlTypes';
+
+import BookInfo from '../components/BookInfo';
 import db from '../Database';
 import useDebounceValue from '../hooks/useDebounceValue';
-import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 
 interface HomeProps {
   store: any;
@@ -76,7 +76,6 @@ const Home: React.FC = (props: HomeProps) => {
   props.store.barTitle = '';
   const classes = useStyles(props);
   const { history } = useReactRouter();
-  const { t } = useTranslation();
 
   const [search, setSearch] = React.useState(null);
   const [open, setOpen] = React.useState(false);
@@ -169,7 +168,7 @@ const Home: React.FC = (props: HomeProps) => {
           className={classes.readMoreButton}
           onClick={clickLoadMore}
         >
-          {t('loadMore')}
+          Load More
         </Button>
       </div>
       <Fab
