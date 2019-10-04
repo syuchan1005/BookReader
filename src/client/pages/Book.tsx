@@ -40,6 +40,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     width: '100%',
     height: '100%',
     objectFit: 'contain',
+    paddingTop: 'env(safe-area-inset-top)',
   },
   overlay: {
     top: '0',
