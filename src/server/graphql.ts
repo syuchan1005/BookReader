@@ -153,10 +153,13 @@ export default class Graphql {
           offset,
           order: [
             ['infoId', 'desc'],
-            ['number', order],
           ],
         });
-        return books.map((book) => ModelUtil.book(book));
+        const bookModels = naturalOrderBy(
+          books,
+          [(v) => v.infoId, (v) => v.number],
+        ).map((book) => ModelUtil.book(book));
+        return (order === 'DESC') ? bookModels.reverse() : bookModels;
       },
       book: async (parent, { id: bookId }): Promise<Book> => {
         const book = await BookModel.findOne({
