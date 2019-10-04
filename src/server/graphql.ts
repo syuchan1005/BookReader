@@ -16,6 +16,7 @@ import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
+import { SubClass } from 'gm';
 
 import { archiveTypes } from '@common/Common';
 import {
@@ -39,7 +40,10 @@ import Errors from './Errors';
 // @ts-ignore
 import * as typeDefs from './schema.graphql';
 
+
 export default class Graphql {
+  private readonly gm: SubClass;
+
   private readonly _server: ApolloServer;
 
   private readonly pubsub: PubSub;
@@ -49,7 +53,9 @@ export default class Graphql {
     return this._server;
   }
 
-  constructor() {
+  constructor(gmModule) {
+    this.gm = gmModule;
+
     const { Query, Mutation, Subscription } = this;
     // eslint-disable-next-line no-underscore-dangle
     this._server = new ApolloServer({
@@ -566,6 +572,7 @@ export default class Graphql {
 
   // eslint-disable-next-line class-methods-use-this
   get Util() {
+    const { gm } = this;
     return {
       async addBookFromLocalPath(
         tempPath: string,
@@ -576,7 +583,7 @@ export default class Graphql {
         deleteTempFolder?: (resolve, reject) => void,
       ) {
         let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
-          (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
+          (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/.test(f),
         ));
         if (files.length <= 0) {
           if (deleteTempFolder) await new Promise(deleteTempFolder);
@@ -586,19 +593,32 @@ export default class Graphql {
             message: Errors.QL0003,
           };
         }
-        files = naturalOrderBy(files, null, [(a, b) => {
-          const iA = a.includes('cover');
-          const iB = b.includes('cover');
-          if (iA && iB) return 0;
-          if (iA) return -1;
-          if (iB) return 1;
-          return 0;
-        }]);
+        files = naturalOrderBy(
+          files,
+          [(v: string) => v.substring(0, v.length - path.extname(v).length)],
+          [(a, b) => {
+            const iA = a.includes('cover');
+            const iB = b.includes('cover');
+            if (iA && iB) return 0;
+            if (iA) return -1;
+            if (iB) return 1;
+            return 0;
+          }],
+        );
         const pad = files.length.toString(10).length;
         await fs.mkdir(`storage/book/${bookId}`);
         await asyncForEach(files, async (f, i) => {
           const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
-          await renameFile(f, `storage/book/${bookId}/${fileName}`);
+          const dist = `storage/book/${bookId}/${fileName}`;
+          if (/\.jpe?g$/.test(f)) {
+            await renameFile(f, dist);
+          } else {
+            await new Promise((resolve) => {
+              gm(f)
+                .quality(85)
+                .write(dist, resolve);
+            });
+          }
         });
         if (deleteTempFolder) await new Promise(deleteTempFolder);
 

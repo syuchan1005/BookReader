@@ -25,7 +25,7 @@ let useIM = true;
 })();
 
 const app = new Koa();
-const graphql = new Graphql();
+const graphql = new Graphql((useIM ? im : gm));
 
 app.use(Serve('storage/'));
 
@@ -43,6 +43,7 @@ app.use(async (ctx, next) => {
           const atoi = (s) => (s ? (Number(s) || null) : null);
           (useIM ? im : gm)(path.resolve(origImgPath))
             .resize(atoi(match[3]), atoi(match[4]))
+            .quality(85)
             .stream((err, stdout, stderr) => {
               if (err) {
                 reject(err);
