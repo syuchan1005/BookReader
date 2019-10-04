@@ -15,9 +15,9 @@ import {
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation, useSubscription } from '@apollo/react-hooks';
-import FileField from './FileField';
-import DropZone from './DropZone';
-import { Result } from '../../common/GraphqlTypes';
+import FileField from '@client/components/FileField';
+import DropZone from '@client/components/DropZone';
+import { Result } from '@common/GraphqlTypes';
 
 interface AddBookInfoDialogProps {
   open: boolean;

@@ -9,6 +9,11 @@ module.exports = {
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias: {
+      '@client': resolve(__dirname, '..', 'src/client'),
+      '@server': resolve(__dirname, '..', 'src/server'),
+      '@common': resolve(__dirname, '..', 'src/common'),
+    },
   },
   module: {
     rules: [

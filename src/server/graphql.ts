@@ -17,13 +17,13 @@ import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 
-import { archiveTypes } from '../common/Common';
+import { archiveTypes } from '@common/Common';
 import {
   Book,
   BookInfo,
   BookInfoResult,
   Result,
-} from '../common/GraphqlTypes';
+} from '@common/GraphqlTypes';
 import Database from './sequelize/models';
 import BookInfoModel from './sequelize/models/bookInfo';
 import BookModel from './sequelize/models/book';

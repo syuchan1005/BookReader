@@ -24,7 +24,9 @@ import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { Book as QLBook, Result } from '../../common/GraphqlTypes';
 import Img from './Img';
-import SelectBookThumbnailDialog from './SelectBookThumbnailDialog';
+import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
+import DeleteDialog from '@client/components/dialogs/DeleteDialog';
+import EditDialog from '@client/components/dialogs/EditDialog';
 
 interface BookProps extends QLBook {
   name: string;
@@ -186,70 +188,23 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         ) : null}
       </CardActionArea>
 
-      <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
-        <DialogTitle>Delete book</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {`Do you want to delete \`${number}\`巻?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setAskDelete(false)}
-            disabled={delLoading}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => deleteBook()}
-            disabled={delLoading}
-          >
-            delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        open={askDelete}
+        loading={delLoading}
+        book={number}
+        onClose={() => setAskDelete(false)}
+        onClickDelete={() => deleteBook()}
+      />
 
-      <Dialog open={editDialog} onClose={() => !editLoading && setEditDialog(false)}>
-        <DialogTitle>Edit book</DialogTitle>
-        <DialogContent>
-          <TextField
-            color="secondary"
-            autoFocus
-            label="Book number"
-            value={editContent.number}
-            // @ts-ignore
-            onChange={(event) => setEditContent({ ...editContent, number: event.target.value })}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setEditContent({ ...editContent, number })}>
-                    <Icon>restore</Icon>
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            disabled={editLoading}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setEditDialog(false)}
-            disabled={editLoading}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => editBook()}
-            disabled={editLoading}
-          >
-            edit
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <EditDialog
+        open={editDialog}
+        loading={editLoading}
+        fieldValue={editContent.name}
+        onChange={(n) => setEditContent({ ...editContent, number: n })}
+        onClose={() => setEditDialog(false)}
+        onClickRestore={() => setEditContent({ ...editContent, number })}
+        onClickEdit={() => editBook()}
+      />
 
       <SelectBookThumbnailDialog
         open={!!selectDialog}

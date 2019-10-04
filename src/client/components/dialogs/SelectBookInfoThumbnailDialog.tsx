@@ -11,8 +11,8 @@ import {
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
-import { BookInfo as BookInfoType, Result } from '../../common/GraphqlTypes';
-import Book from './Book';
+import { BookInfo as BookInfoType, Result } from '@common/GraphqlTypes';
+import Book from '@client/components/Book';
 
 interface SelectThumbnailDialogProps {
   open: boolean;

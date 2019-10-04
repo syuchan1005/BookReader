@@ -26,7 +26,9 @@ import gql from 'graphql-tag';
 
 import { BookInfo as QLBookInfo, BookInfoResult, Result } from '../../common/GraphqlTypes';
 import Img from './Img';
-import SelectBookInfoThumbnailDialog from './SelectBookInfoThumbnailDialog';
+import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
+import DeleteDialog from '@client/components/dialogs/DeleteDialog';
+import EditDialog from '@client/components/dialogs/EditDialog';
 
 interface BookInfoProps extends QLBookInfo {
   onClick?: Function;
@@ -190,70 +192,24 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         ) : null}
       </CardActionArea>
 
-      <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
-        <DialogTitle>Delete book info</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {`Do you want to delete \`${name}\`?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setAskDelete(false)}
-            disabled={delLoading}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => deleteBookInfo()}
-            disabled={delLoading}
-          >
-            delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        open={askDelete}
+        loading={delLoading}
+        bookInfo={name}
+        onClose={() => setAskDelete(false)}
+        onClickDelete={() => deleteBookInfo()}
+      />
 
-      <Dialog open={editDialog} onClose={() => !editLoading && setEditDialog(false)}>
-        <DialogTitle>Edit book info</DialogTitle>
-        <DialogContent>
-          <TextField
-            color="secondary"
-            autoFocus
-            label="Book info name"
-            value={editContent.name}
-            // @ts-ignore
-            onChange={(event) => setEditContent({ ...editContent, name: event.target.value })}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setEditContent({ ...editContent, name })}>
-                    <Icon>restore</Icon>
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            disabled={editLoading}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setEditDialog(false)}
-            disabled={editLoading}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => editBookInfo()}
-            disabled={editLoading}
-          >
-            edit
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <EditDialog
+        info
+        open={editDialog}
+        loading={editLoading}
+        fieldValue={editContent.name}
+        onChange={(n) => setEditContent({ ...editContent, name: n })}
+        onClose={() => setEditDialog(false)}
+        onClickRestore={() => setEditContent({ ...editContent, name })}
+        onClickEdit={() => editBookInfo()}
+      />
 
       <SelectBookInfoThumbnailDialog
         open={!!selectDialog}
