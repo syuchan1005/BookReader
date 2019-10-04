@@ -12,7 +12,7 @@ import {
 
 import { Book as BookType, BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import Book from '../components/Book';
-import AddBookDialog from '../components/AddBookDialog';
+import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import db from '../Database';
 
 interface InfoProps {

@@ -16,10 +16,10 @@ import { useTranslation } from 'react-i18next';
 
 import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
 import BookInfo from '../components/BookInfo';
-import AddBookInfoDialog from '../components/AddBookInfoDialog';
+import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import db from '../Database';
 import useDebounceValue from '../hooks/useDebounceValue';
-import AddBookDialog from '../components/AddBookDialog';
+import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 
 interface HomeProps {
   store: any;
