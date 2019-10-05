@@ -16,7 +16,7 @@ export default class bookInfo extends Model {
 
   public readonly updatedAt!: Date;
 
-  public readonly books?: book[];
+  public books?: book[];
 
   public static associations: {
     books: Association<bookInfo, book>;

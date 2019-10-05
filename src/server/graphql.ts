@@ -131,11 +131,15 @@ export default class Graphql {
               as: 'books',
             },
           ] : [],
-          order: [
-            [col('books.number'), bookOrder || 'ASC'],
-          ],
         });
-        if (bookInfo) return ModelUtil.bookInfo(bookInfo);
+        if (bookInfo) {
+          bookInfo.books = naturalOrderBy(
+            bookInfo.books || [],
+            [(v) => v.number],
+          );
+          if (bookOrder === 'DESC') bookInfo.books.reverse();
+          return ModelUtil.bookInfo(bookInfo);
+        }
         return null;
       },
       books: async (parent, {
