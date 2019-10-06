@@ -4,8 +4,10 @@ workbox.core.skipWaiting(); workbox.core.clientsClaim();
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 workbox.routing.registerRoute(
-  /^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d*)x(\d*))?\.jpg(\.webp)?/,
-  new workbox.strategies.CacheFirst(),
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d*)x(\d*))?\.jpg(\.webp)?/,
+  new workbox.strategies.CacheFirst({
+    cacheName: 'book-images-cache',
+  }),
   'GET',
 );
 addEventListener('message', (event) => {

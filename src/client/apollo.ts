@@ -74,12 +74,7 @@ export default async () => {
     freezeResults: false,
   });
 
-  await persistCache({
-    cache,
-    storage: window.localStorage,
-  });
-
-  return new ApolloClient({
+  const apolloClient = new ApolloClient({
     link: ApolloLink.from([
       onError(({ graphQLErrors, networkError }) => {
         /* eslint-disable no-console */
@@ -114,4 +109,11 @@ export default async () => {
     cache,
     connectToDevTools: process.env.NODE_ENV !== 'production',
   });
+
+  await persistCache({
+    cache,
+    storage: window.localStorage,
+  });
+
+  return apolloClient;
 };
