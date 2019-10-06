@@ -11,6 +11,7 @@ interface ImgProps {
   noSave?: boolean;
 
   onClick?: () => void;
+  onLoad?: (success: boolean) => void;
 }
 
 const useStyles = makeStyles(() => createStyles({
@@ -44,12 +45,16 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     hidden,
     onClick,
     noSave = true,
+    onLoad,
   } = props;
 
   // [beforeLoading, rendered, failed]
   const [_state, setState] = React.useState(0);
 
-  const state = React.useMemo(() => (src === undefined ? 2 : _state), [_state, src]);
+  const state = React.useMemo(() => {
+    if (onLoad && src === undefined) onLoad(false);
+    return (src === undefined ? 2 : _state);
+  }, [_state, src]);
 
   return (
     // eslint-disable-next-line
@@ -79,8 +84,8 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
             style={{ display: (state === 1) ? 'block' : 'none' }}
             src={`${src}${noSave ? '?nosave' : ''}`}
             alt={alt}
-            onLoad={() => setState(1)}
-            onError={() => setState(2)}
+            onLoad={() => { if (onLoad) { onLoad(true); } setState(1); }}
+            onError={() => { if (onLoad) { onLoad(true); } setState(2); }}
           />
         </picture>
       ) : null}

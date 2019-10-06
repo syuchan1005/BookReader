@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { Readable } from 'stream';
 
-import { Op, col } from 'sequelize';
+import { Op } from 'sequelize';
 import {
   ApolloServer,
   makeExecutableSchema,
@@ -88,14 +88,15 @@ export default class Graphql {
           name: {
             [Op.like]: `%${search}%`,
           },
-        } : undefined;
+        } : {};
+        if (!history) {
+          // @ts-ignore
+          where.history = false;
+        }
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
-          where: {
-            ...where,
-            history,
-          },
+          where,
           order: [
             [
               (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',

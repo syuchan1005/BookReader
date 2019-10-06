@@ -3,6 +3,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { persistCache } from 'apollo-cache-persist';
 import { createUploadLink } from 'apollo-upload-client';
 import { WebSocketLink } from 'apollo-link-ws';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { getMainDefinition } from 'apollo-utilities';
 import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
@@ -93,12 +94,12 @@ export default async () => {
             && definition.operation === 'subscription'
           );
         },
-        new WebSocketLink({
-          uri: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
-          options: {
+        new WebSocketLink(new SubscriptionClient(
+          `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
+          {
             lazy: true,
           },
-        }),
+        )),
         createUploadLink({
           uri: `${window.location.protocol}${uri}`,
           // credentials: "same-origin",

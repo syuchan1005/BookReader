@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   appBar: {
     '& + .appbar--margin': {
-      marginTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
+      paddingTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
     },
     paddingTop: 'env(safe-area-inset-top)',
   },

@@ -1,36 +1,30 @@
 import * as React from 'react';
 import {
-  Button,
   Card,
   CardActionArea,
   CardActions,
   CardContent,
   createStyles,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Icon,
   IconButton,
-  InputAdornment,
   makeStyles,
   Menu,
   MenuItem,
-  TextField,
   Theme,
 } from '@material-ui/core';
 import { orange as color } from '@material-ui/core/colors';
 import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
-import { BookInfo as QLBookInfo, BookInfoResult, Result } from '../../common/GraphqlTypes';
-import Img from './Img';
-import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
+import { BookInfo as QLBookInfo, BookInfoResult, Result } from '@common/GraphqlTypes';
+import Img from './Img';
+import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 
 interface BookInfoProps extends QLBookInfo {
+  style?: React.CSSProperties;
+
   onClick?: Function;
   onDeleted?: Function;
   onEdit?: () => void;
@@ -83,6 +77,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
+    style,
     id: infoId,
     thumbnail,
     name,
@@ -156,7 +151,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   };
 
   return (
-    <Card className={classes.card}>
+    <Card className={classes.card} style={style}>
       <CardActions className={classes.headerMenu}>
         <IconButton onClick={(event) => setMenuAnchor(event.currentTarget)}>
           <Icon>more_vert</Icon>
