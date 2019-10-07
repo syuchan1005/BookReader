@@ -10,9 +10,9 @@ import {
   Theme,
 } from '@material-ui/core';
 
-import { Book as BookType, BookInfo as BookInfoType } from '../../common/GraphqlTypes';
-import Book from '../components/Book';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
+import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
+import Book from '../components/Book';
 import db from '../Database';
 
 interface InfoProps {
@@ -132,11 +132,13 @@ const Info: React.FC = (props: InfoProps) => {
   const onDeletedBook = ({ id: bookId, pages }: BookType) => {
     refetch();
     db.bookReads.delete(bookId);
-    props.store.wb.messageSW({
-      type: 'BOOK_REMOVE',
-      bookId,
-      pages,
-    });
+    if (props.store.wb) {
+      props.store.wb.messageSW({
+        type: 'BOOK_REMOVE',
+        bookId,
+        pages,
+      });
+    }
   };
 
   return (

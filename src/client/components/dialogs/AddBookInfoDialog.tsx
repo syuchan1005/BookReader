@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Grid,
   Icon,
-  IconButton, List, ListItem,
+  IconButton, LinearProgress, List, ListItem,
   makeStyles,
   Switch,
   TextField, Theme,
@@ -43,13 +43,20 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridColumnGap: theme.spacing(1),
     gridTemplateColumns: '1fr 55px 30px',
   },
-  addBookInfoProgress: {
+  addBookInfoSubscription: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   progressMessage: {
     marginTop: theme.spacing(2),
+  },
+  addBookInfoProgress: {
+    display: 'grid',
+    alignItems: 'center',
+    gridTemplateColumns: '1fr 64px',
+    columnGap: theme.spacing(1),
+    width: 300,
   },
 }));
 
@@ -63,6 +70,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
   const [subscriptionName, setSubscriptionName] = React.useState<string | undefined>(undefined);
+  const [addBookInfoProgress, setAddBookInfoProgress] = React
+    .useState<ProgressEvent | undefined>(undefined);
+  const [addBookInfoAbort, setAddBookInfoAbort] = React
+    .useState<() => void | undefined>(undefined);
 
   const changeAddHistories = (index, field, value) => {
     const a = [...addHistories];
@@ -77,6 +88,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setShowAddHistory(false);
     setAddHistories([]);
     setSubscriptionName(undefined);
+    setAddBookInfoProgress(undefined);
+    setAddBookInfoAbort(undefined);
   };
 
   const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(gql`
@@ -87,7 +100,14 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
           }
       }
   `, {
+    variables: {
+      name,
+      books: (isCompress ? null : addBooks),
+      compress: (isCompress ? (addBooks[0] || {}).file : null),
+    },
     onCompleted({ add }) {
+      setAddBookInfoProgress(undefined);
+      setAddBookInfoAbort(undefined);
       setSubscriptionName(undefined);
       closeDialog();
       if (add.success && onAdded) onAdded();
@@ -95,10 +115,16 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     onError() {
       setSubscriptionName(undefined);
     },
-    variables: {
-      name,
-      books: (isCompress ? null : addBooks),
-      compress: (isCompress ? (addBooks[0] || {}).file : null),
+    context: {
+      fetchOptions: {
+        useUpload: true,
+        onProgress: (ev: ProgressEvent) => {
+          setAddBookInfoProgress(ev);
+        },
+        onAbortPossible: (abortFunc) => {
+          setAddBookInfoAbort(() => abortFunc);
+        },
+      },
     },
   });
 
@@ -230,55 +256,71 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             </DialogContent>
           );
         }
-        if (!subscriptionData) {
+        if (subscriptionData
+          && (!addBookInfoProgress || addBookInfoProgress.loaded === addBookInfoProgress.total)) {
           return (
-            <DialogContent>
-              <TextField
-                color="secondary"
-                autoFocus
-                label="Book info name"
-                value={name}
-                // @ts-ignore
-                onChange={(event) => setName(event.target.value)}
-              />
-              <Grid container alignItems="center" spacing={1}>
-                <Grid item>Books</Grid>
-                <Grid item>
-                  <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
-                </Grid>
-                <Grid item>Compress Books</Grid>
-              </Grid>
-              <div>
-                {showBooks.map(({ file, number }, i) => (
-                  <div key={`${file.name} ${number}`} className={classes.listItem}>
-                    <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-                    {isCompress ? null : (
-                      <TextField
-                        color="secondary"
-                        label="Number"
-                        value={number}
-                        // @ts-ignore
-                        onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                        margin="none"
-                        autoFocus
-                      />
-                    )}
-                    <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                      <Icon>clear</Icon>
-                    </IconButton>
-                  </div>
-                ))}
-              </div>
-              {(isCompress && addBooks.length >= 1) ? null : (
-                <DropZone onChange={dropFiles} />
+            <DialogContent className={classes.addBookInfoSubscription}>
+              <CircularProgress color="secondary" />
+              <div className={classes.progressMessage}>{subscriptionData.addBookInfo}</div>
+            </DialogContent>
+          );
+        }
+        if (addBookInfoProgress || addBookInfoAbort) {
+          return (
+            <DialogContent className={classes.addBookInfoProgress}>
+              {addBookInfoProgress && (
+                <LinearProgress
+                  variant="determinate"
+                  value={(addBookInfoProgress.loaded / addBookInfoProgress.total) * 100}
+                />
+              )}
+              {addBookInfoAbort && (
+                <Button onClick={addBookInfoAbort}>Abort</Button>
               )}
             </DialogContent>
           );
         }
         return (
-          <DialogContent className={classes.addBookInfoProgress}>
-            <CircularProgress color="secondary" />
-            <div className={classes.progressMessage}>{subscriptionData.addBookInfo}</div>
+          <DialogContent>
+            <TextField
+              color="secondary"
+              autoFocus
+              label="Book info name"
+              value={name}
+              // @ts-ignore
+              onChange={(event) => setName(event.target.value)}
+            />
+            <Grid container alignItems="center" spacing={1}>
+              <Grid item>Books</Grid>
+              <Grid item>
+                <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
+              </Grid>
+              <Grid item>Compress Books</Grid>
+            </Grid>
+            <div>
+              {showBooks.map(({ file, number }, i) => (
+                <div key={`${file.name} ${number}`} className={classes.listItem}>
+                  <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
+                  {isCompress ? null : (
+                    <TextField
+                      color="secondary"
+                      label="Number"
+                      value={number}
+                      // @ts-ignore
+                      onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                      margin="none"
+                      autoFocus
+                    />
+                  )}
+                  <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                    <Icon>clear</Icon>
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+            {(isCompress && addBooks.length >= 1) ? null : (
+              <DropZone onChange={dropFiles} />
+            )}
           </DialogContent>
         );
       })()}

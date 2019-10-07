@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Icon,
-  IconButton,
+  IconButton, LinearProgress,
   makeStyles,
   TextField, Theme,
 } from '@material-ui/core';
@@ -41,13 +41,20 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridTemplateColumns: '1fr 50px 48px',
     marginBottom: theme.spacing(0.5),
   },
-  addBookProgress: {
+  addBookSubscription: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   progressMessage: {
     marginTop: theme.spacing(2),
+  },
+  addBookProgress: {
+    display: 'grid',
+    alignItems: 'center',
+    gridTemplateColumns: '1fr 64px',
+    columnGap: theme.spacing(1),
+    width: 300,
   },
 }));
 
@@ -64,6 +71,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const [addBooks, setAddBooks] = React.useState([]);
   const [subscriptionId, setSubscriptionId] = React.useState<string | undefined>(undefined);
 
+  const [addBookProgress, setAddBookProgress] = React
+    .useState<ProgressEvent | undefined>(undefined);
+  const [addBookAbort, setAddBookAbort] = React
+    .useState<() => void | undefined>(undefined);
   const [addBook, { loading }] = useMutation<{ adds: Result[] }>(gql`
       mutation add($id: ID!, $books: [InputBook!]!) {
           adds: addBooks(id: $id books: $books) {
@@ -77,6 +88,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       books: addBooks,
     },
     onCompleted({ adds }) {
+      setAddBookProgress(undefined);
+      setAddBookAbort(undefined);
       setSubscriptionId(undefined);
       const success = adds.every((a) => a.success);
       if (onClose && success) onClose();
@@ -89,10 +102,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       fetchOptions: {
         useUpload: true,
         onProgress: (ev: ProgressEvent) => {
-          // eslint-disable-next-line no-console
-          console.log(`${(ev.loaded / ev.total) * 100}%`);
+          setAddBookProgress(ev);
         },
-        onAbortPossible: () => {
+        onAbortPossible: (abortFunc) => {
+          setAddBookAbort(() => abortFunc);
         },
       },
     },
@@ -114,6 +127,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       if (onClose) onClose();
       setAddBooks([]);
       setSubscriptionId(undefined);
+      setAddBookProgress(undefined);
+      setAddBookAbort(undefined);
     }
   };
 
@@ -141,35 +156,53 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   return (
     <Dialog open={open} onClose={closeDialog}>
       <DialogTitle>Add book</DialogTitle>
-      {(!subscriptionData) ? (
-        <DialogContent className={classes.dialogContent}>
-          <div>
-            {addBooks.map(({ file, number }, i) => (
-              <div key={`${file.name} ${number}`} className={classes.listItem}>
-                <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-                <TextField
-                  color="secondary"
-                  label="Number"
-                  value={number}
-                  // @ts-ignore
-                  onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                  margin="none"
-                  autoFocus
-                />
-                <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                  <Icon>clear</Icon>
-                </IconButton>
-              </div>
-            ))}
-          </div>
-          <DropZone onChange={dropFiles} />
-        </DialogContent>
-      ) : (
-        <DialogContent className={classes.addBookProgress}>
-          <CircularProgress color="secondary" />
-          <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
-        </DialogContent>
-      )}
+      {(() => {
+        if (subscriptionData
+          && (!addBookProgress || addBookProgress.loaded === addBookProgress.total)) {
+          return (
+            <DialogContent className={classes.addBookSubscription}>
+              <CircularProgress color="secondary" />
+              <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
+            </DialogContent>
+          );
+        }
+        if (addBookProgress || addBookAbort) {
+          return (
+            <DialogContent className={classes.addBookProgress}>
+              {addBookProgress && (
+                <LinearProgress variant="determinate" value={(addBookProgress.loaded / addBookProgress.total) * 100} />
+              )}
+              {addBookAbort && (
+                <Button onClick={addBookAbort}>Abort</Button>
+              )}
+            </DialogContent>
+          );
+        }
+        return (
+          <DialogContent className={classes.dialogContent}>
+            <div>
+              {addBooks.map(({ file, number }, i) => (
+                <div key={`${file.name} ${number}`} className={classes.listItem}>
+                  <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
+                  <TextField
+                    color="secondary"
+                    label="Number"
+                    value={number}
+                    // @ts-ignore
+                    onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                    margin="none"
+                    autoFocus
+                  />
+                  <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                    <Icon>clear</Icon>
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+            <DropZone onChange={dropFiles} />
+          </DialogContent>
+        );
+      })()}
       <DialogActions>
         <Button onClick={closeDialog} disabled={loading}>
           close
