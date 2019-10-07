@@ -12,21 +12,15 @@ import {
   CardActions,
   Menu,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button, TextField, InputAdornment,
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
-
 import gql from 'graphql-tag';
-import { Book as QLBook, Result } from '../../common/GraphqlTypes';
-import Img from './Img';
-import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
+
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
+import { Book as QLBook, Result } from '@common/GraphqlTypes';
+import Img from './Img';
+import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
 interface BookProps extends QLBook {
   name: string;
@@ -199,7 +193,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
       <EditDialog
         open={editDialog}
         loading={editLoading}
-        fieldValue={editContent.name}
+        fieldValue={editContent.number}
         onChange={(n) => setEditContent({ ...editContent, number: n })}
         onClose={() => setEditDialog(false)}
         onClickRestore={() => setEditContent({ ...editContent, number })}

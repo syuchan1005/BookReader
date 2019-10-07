@@ -1,3 +1,4 @@
+// noinspection JSUnresolvedVariable
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('bookInfos', {
     id: {

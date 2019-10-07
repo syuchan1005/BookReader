@@ -33,6 +33,7 @@ export default class bookInfo extends Model {
     return (a && a.length > 0);
   }
 
+  // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
     bookInfo.init({
       id: {

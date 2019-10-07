@@ -11,10 +11,9 @@ workbox.routing.registerRoute(
   'GET',
 );
 addEventListener('message', (event) => {
-  if (!event.data || !event.data.type) return;
-  switch (event.data.type) {
-    case 'SKIP_WAITING':
-      // eslint-disable-next-line no-undef
-      skipWaiting();
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    /* eslint-disable no-undef */
+    // noinspection JSUnresolvedFunction
+    skipWaiting();
   }
 });

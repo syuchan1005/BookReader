@@ -163,6 +163,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       const imgElem = window.document.createElement('img');
       imgElem.onload = () => { resolve(imgElem.width === 2 && imgElem.height === 1); };
       imgElem.onerror = () => { resolve(false); };
+      // noinspection SpellCheckingInspection
       imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
     }).then((r: boolean) => {
       store.webp = r;

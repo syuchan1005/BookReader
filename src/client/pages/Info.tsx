@@ -130,7 +130,9 @@ const Info: React.FC = (props: InfoProps) => {
   const bookList = data.bookInfo.books;
 
   const onDeletedBook = ({ id: bookId, pages }: BookType) => {
+    // noinspection JSIgnoredPromiseFromCall
     refetch();
+    // noinspection JSIgnoredPromiseFromCall
     db.bookReads.delete(bookId);
     if (props.store.wb) {
       props.store.wb.messageSW({

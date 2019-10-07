@@ -338,8 +338,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
         <Button
           onClick={() => {
             if (showAddHistory) {
+              // noinspection JSIgnoredPromiseFromCall
               addBookInfoHistories();
             } else {
+              // noinspection JSIgnoredPromiseFromCall
               addBookInfo();
               setSubscriptionName(name);
             }

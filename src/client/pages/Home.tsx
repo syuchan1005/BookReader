@@ -127,8 +127,11 @@ const Home: React.FC = (props: HomeProps) => {
   const infos = (data.bookInfos || []);
   const limit = infos.length;
   const onDeletedBookInfo = (info, books) => {
+    // noinspection JSIgnoredPromiseFromCall
     refetch({ offset: 0, limit });
+    // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(info.id);
+    // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
     if (props.store.wb) {
       books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
@@ -140,6 +143,7 @@ const Home: React.FC = (props: HomeProps) => {
   };
 
   const clickLoadMore = () => {
+    // noinspection JSIgnoredPromiseFromCall,JSUnusedGlobalSymbols
     fetchMore({
       variables: {
         offset: infos.length,

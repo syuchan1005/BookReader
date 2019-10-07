@@ -170,7 +170,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
           return (
             <DialogContent className={classes.addBookProgress}>
               {addBookProgress && (
-                <LinearProgress variant="determinate" value={(addBookProgress.loaded / addBookProgress.total) * 100} />
+                <LinearProgress
+                  variant="determinate"
+                  value={(addBookProgress.loaded / addBookProgress.total) * 100}
+                />
               )}
               {addBookAbort && (
                 <Button onClick={addBookAbort}>Abort</Button>
@@ -209,6 +212,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         </Button>
         <Button
           onClick={() => {
+            // noinspection JSIgnoredPromiseFromCall
             addBook();
             setSubscriptionId(infoId);
           }}

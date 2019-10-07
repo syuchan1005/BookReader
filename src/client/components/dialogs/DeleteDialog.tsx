@@ -33,7 +33,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = (props: DeleteDialogProps) => 
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
       <DialogTitle>
         {bookInfo && 'Delete book info'}
-        {book     && 'Delete book'}
+        {book && 'Delete book'}
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
