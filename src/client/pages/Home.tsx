@@ -180,6 +180,7 @@ const Home: React.FC = (props: HomeProps) => {
       <Fab
         className={classes.addButton}
         onClick={() => setOpen(true)}
+        aria-label="add"
       >
         <Icon>add</Icon>
       </Fab>
@@ -187,6 +188,7 @@ const Home: React.FC = (props: HomeProps) => {
         color="secondary"
         className={classes.fab}
         onClick={() => refetch({ offset: 0, limit })}
+        aria-label="refetch"
       >
         <Icon>refresh</Icon>
       </Fab>

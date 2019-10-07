@@ -147,7 +147,10 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     <Card className={classes.card}>
       {(simple) ? null : (
         <CardActions className={classes.headerMenu}>
-          <IconButton onClick={(event) => setMenuAnchor(event.currentTarget)}>
+          <IconButton
+            onClick={(event) => setMenuAnchor(event.currentTarget)}
+            aria-label="menu"
+          >
             <Icon>more_vert</Icon>
           </IconButton>
           <Menu

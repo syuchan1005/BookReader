@@ -165,6 +165,7 @@ const Info: React.FC = (props: InfoProps) => {
       <Fab
         className={classes.addButton}
         onClick={() => setOpen(true)}
+        aria-label="add"
       >
         <Icon>add</Icon>
       </Fab>
@@ -172,6 +173,7 @@ const Info: React.FC = (props: InfoProps) => {
         color="secondary"
         className={classes.fab}
         onClick={() => refetch()}
+        aria-label="refetch"
       >
         <Icon style={{ color: 'white' }}>refresh</Icon>
       </Fab>

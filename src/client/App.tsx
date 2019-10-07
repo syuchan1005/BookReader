@@ -214,6 +214,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   size="small"
                   className={classes.sortIcon}
                   onClick={(event) => setMenuAnchorEl(event.currentTarget)}
+                  aria-label="sort"
                 >
                   <Icon>sort</Icon>
                 </IconButton>
