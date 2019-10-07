@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   makeStyles,
-  Theme,
+  Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
+  },
+  loadMoreButton: {
+    gridColumn: '1 / end',
   },
 }));
 
@@ -97,8 +100,13 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     if (onClose) onClose();
   };
 
+  const theme = useTheme();
+  const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [count, setCount] = React.useState(5);
+
   return (
-    <Dialog open={open} onClose={closeDialog}>
+    <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
 
       <DialogContent>
@@ -110,7 +118,7 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
         ) : null}
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
-            {data.bookInfo.books.map((book) => (
+            {data.bookInfo.books.slice(0, count).map((book) => (
               <Book
                 key={book.id}
                 simple
@@ -119,6 +127,15 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                 onClick={() => changeThumbnail({ variables: { th: book.thumbnail } })}
               />
             ))}
+            {(count < data.bookInfo.books.length) && (
+              <Button
+                fullWidth
+                className={classes.loadMoreButton}
+                onClick={() => setCount(Math.min(count + 5, data.bookInfo.books.length))}
+              >
+                Load More
+              </Button>
+            )}
           </div>
         ) : null}
       </DialogContent>
