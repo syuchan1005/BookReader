@@ -288,19 +288,21 @@ export default class Graphql {
             },
           );
         }
-        if (!result) {
-          return {
-            success: false,
-            code: 'Unknown',
-            message: Errors.Unknown,
-          };
-        }
-        if (!result.every((r) => r.success)) {
-          return {
-            success: false,
-            code: 'QL0006',
-            message: Errors.QL0006,
-          };
+        if (compressBooks || books) {
+          if (!result) {
+            return {
+              success: false,
+              code: 'Unknown',
+              message: Errors.Unknown,
+            };
+          }
+          if (!result.every((r) => r.success)) {
+            return {
+              success: false,
+              code: 'QL0006',
+              message: Errors.QL0006,
+            };
+          }
         }
         return { success: true };
       },
