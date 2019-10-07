@@ -103,7 +103,7 @@ module.exports = {
     ),
     new WorkboxWebpackPlugin.InjectManifest({
       swSrc: './src/client/service-worker.js',
-      swDest: `${dist}/service-worker.js`,
+      swDest: 'service-worker.js',
       exclude: [
         /\.map$/,
         /icons\//,

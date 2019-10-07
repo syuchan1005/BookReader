@@ -4,7 +4,6 @@ const { resolve } = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const commonConfig = require('./webpack.common.client');
-const createNoopServiceWorkerMiddleware = require('./noopServiceWorkerMiddleware');
 
 module.exports = merge(commonConfig, {
   mode: 'development',
@@ -47,9 +46,6 @@ module.exports = merge(commonConfig, {
         },
         ws: true,
       },
-    },
-    before(app) {
-      app.use(createNoopServiceWorkerMiddleware());
     },
   },
   devtool: 'cheap-module-eval-source-map',

@@ -96,7 +96,6 @@
       "sequelize": "^5.19.2",
       "sqlite3": "^4.1.0",
       "subscriptions-transport-ws": "^0.9.16",
-      "typeorm": "0.2.19",
       "unzipper": "^0.10.5",
       "use-react-router": "^1.0.7",
       "uuid": "^3.3.3",

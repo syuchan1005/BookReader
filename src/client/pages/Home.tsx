@@ -101,7 +101,7 @@ const Home: React.FC = (props: HomeProps) => {
     variables: {
       offset: 0,
       limit: 10,
-      search: debounceSearch,
+      search: debounceSearch || '',
       // eslint-disable-next-line react/destructuring-assignment
       order: props.store.sortOrder,
       // eslint-disable-next-line react/destructuring-assignment
@@ -125,7 +125,7 @@ const Home: React.FC = (props: HomeProps) => {
   }
 
   const infos = (data.bookInfos || []);
-  const limit = Math.ceil(infos.length / 10) * 10 + (infos.length % 10 === 0 ? 10 : 0);
+  const limit = infos.length;
   const onDeletedBookInfo = (info, books) => {
     refetch({ offset: 0, limit });
     db.infoReads.delete(info.id);
@@ -146,7 +146,9 @@ const Home: React.FC = (props: HomeProps) => {
       },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
-        return { bookInfos: [...prev.bookInfos, ...fetchMoreResult.bookInfos] };
+        return {
+          bookInfos: [...prev.bookInfos, ...fetchMoreResult.bookInfos],
+        };
       },
     });
   };
