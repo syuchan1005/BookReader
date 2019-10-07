@@ -23,6 +23,7 @@ import {
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useLocalStore, Observer } from 'mobx-react';
+import { CachePersistor } from 'apollo-cache-persist';
 
 import Home from './pages/Home';
 import Info from './pages/Info';
@@ -59,6 +60,7 @@ const themes = {
 
 interface AppProps {
   wb: any;
+  persistor: CachePersistor<any>;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -179,6 +181,13 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     }
   };
 
+  const purgeCache = () => {
+    props.persistor.purge()
+      .then(() => {
+        window.location.reload();
+      });
+  };
+
   return (
     <MuiThemeProvider theme={themes[store.theme] || themes.light}>
       <CssBaseline />
@@ -237,6 +246,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   />
                 </ListItem>
                 <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
+                <MenuItem onClick={purgeCache}>Purge Cache</MenuItem>
               </Menu>
               <Menu
                 getContentAnchorEl={null}

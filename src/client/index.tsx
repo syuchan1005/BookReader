@@ -10,11 +10,11 @@ import getClient from './apollo';
 
 const wb = regSW();
 
-getClient().then((client) => {
+getClient().then(([client, persistor]) => {
   ReactDOM.render(
     (
       <ApolloProvider client={client}>
-        <App wb={wb} />
+        <App wb={wb} persistor={persistor} />
       </ApolloProvider>
     ),
     document.getElementById('app'),
