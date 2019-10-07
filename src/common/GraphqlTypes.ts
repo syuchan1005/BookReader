@@ -31,3 +31,8 @@ export interface BookInfoResult {
   message?: string;
   books: Book[];
 }
+
+export interface BookInfoList {
+  length: number;
+  infos: BookInfo[];
+}

@@ -1,7 +1,7 @@
 scalar Upload
 
 type Query {
-    bookInfos(limit: Int = 10 offset: Int = 0 search: String order: BookInfoOrder = Update_Newest history: Boolean = false): [BookInfo!]!
+    bookInfos(limit: Int = 10 offset: Int = 0 search: String order: BookInfoOrder = Update_Newest history: Boolean = false): BookInfoList!
     bookInfo(id: ID!): BookInfo
     books(id: ID offset: Int = 0 limit: Int = 10 order: BookOrder = ASC): [Book!]!
     book(id: ID!): Book
@@ -60,6 +60,11 @@ type Book {
 
     prevBook: ID
     nextBook: ID
+}
+
+type BookInfoList {
+    length: Int!
+    infos: [BookInfo!]!
 }
 
 type Result {

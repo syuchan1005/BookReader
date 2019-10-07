@@ -91,6 +91,7 @@
       "react-dom": "^16.10.1",
       "react-dropzone": "^10.1.9",
       "react-router-dom": "^5.1.2",
+      "react-waypoint": "^9.0.2",
       "reflect-metadata": "^0.1.13",
       "rimraf": "^3.0.0",
       "sequelize": "^5.19.2",

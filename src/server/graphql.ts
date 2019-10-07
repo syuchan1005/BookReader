@@ -21,7 +21,7 @@ import { SubClass } from 'gm';
 import { archiveTypes } from '@common/Common';
 import {
   Book,
-  BookInfo,
+  BookInfo, BookInfoList,
   BookInfoResult,
   Result,
 } from '@common/GraphqlTypes';
@@ -83,7 +83,7 @@ export default class Graphql {
         search,
         order,
         history,
-      }): Promise<BookInfo[]> => {
+      }): Promise<BookInfoList> => {
         const where = (search) ? {
           name: {
             [Op.like]: `%${search}%`,
@@ -93,18 +93,30 @@ export default class Graphql {
           // @ts-ignore
           where.history = false;
         }
-        const bookInfos = await BookInfoModel.findAll({
-          limit,
-          offset,
-          where,
-          order: [
-            [
-              (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
-              (order.endsWith('Newest')) ? 'desc' : 'asc',
+        const [infos, len] = await Database.sequelize.transaction(async (transaction) => {
+          const bookInfos = await BookInfoModel.findAll({
+            transaction,
+            limit,
+            offset,
+            where,
+            order: [
+              [
+                (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
+                (order.endsWith('Newest')) ? 'desc' : 'asc',
+              ],
             ],
-          ],
+          });
+          const length = await BookInfoModel.count({
+            transaction,
+            where,
+          });
+          return [bookInfos, length];
         });
-        return bookInfos.map((info) => ModelUtil.bookInfo(info));
+
+        return {
+          length: len,
+          infos: infos.map((info) => ModelUtil.bookInfo(info)),
+        };
       },
       bookInfo: async (parent, { id: infoId }, context, info): Promise<BookInfo> => {
         let booksField;
