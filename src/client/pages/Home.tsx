@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
   },
-  readMoreButton: {
+  loadMoreButton: {
     gridColumn: '1 / end',
   },
 }));
@@ -171,7 +171,7 @@ const Home: React.FC = (props: HomeProps) => {
         ))}
         <Button
           fullWidth
-          className={classes.readMoreButton}
+          className={classes.loadMoreButton}
           onClick={clickLoadMore}
         >
           Load More

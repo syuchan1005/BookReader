@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   makeStyles,
-  Theme,
+  Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
@@ -37,6 +37,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     width: '100%',
     minHeight: '100%',
     objectFit: 'contain',
+  },
+  loadMoreButton: {
+    gridColumn: '1 / end',
   },
 }));
 
@@ -93,8 +96,13 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     if (onClose) onClose();
   };
 
+  const theme = useTheme();
+  const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [count, setCount] = React.useState(5);
+
   return (
-    <Dialog open={open} onClose={closeDialog}>
+    <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
 
       <DialogContent>
@@ -106,7 +114,7 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
         ) : null}
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
-            {[...Array(data.book.pages).keys()]
+            {[...Array(count).keys()]
               .map((i) => i.toString(10).padStart(data.book.pages.toString(10).length, '0'))
               .map((n) => `/book/${bookId}/${n}_125x.jpg`)
               .map((th, i) => (
@@ -126,6 +134,15 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                   </CardActionArea>
                 </Card>
               ))}
+            {(count < data.book.pages) && (
+              <Button
+                fullWidth
+                className={classes.loadMoreButton}
+                onClick={() => setCount(Math.min(count + 5, data.book.pages))}
+              >
+                Load More
+              </Button>
+            )}
           </div>
         ) : null}
       </DialogContent>
