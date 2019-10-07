@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   extends: 'airbnb',
   plugins: [
@@ -31,6 +33,9 @@ module.exports = {
     'import/resolver': {
       node: {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs'],
+      },
+      webpack: {
+        config: path.join(__dirname, 'webpack/webpack.common.client.js'),
       },
     },
   },

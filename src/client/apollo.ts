@@ -2,10 +2,13 @@ import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { persistCache } from 'apollo-cache-persist';
 import { createUploadLink } from 'apollo-upload-client';
+import { WebSocketLink } from 'apollo-link-ws';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { getMainDefinition } from 'apollo-utilities';
 import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
 
-const uri = '/graphql';
+const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 
 const parseHeaders = (rawHeaders: any) => {
   const headers = new Headers();
@@ -72,12 +75,7 @@ export default async () => {
     freezeResults: false,
   });
 
-  await persistCache({
-    cache,
-    storage: window.localStorage,
-  });
-
-  return new ApolloClient({
+  const apolloClient = new ApolloClient({
     link: ApolloLink.from([
       onError(({ graphQLErrors, networkError }) => {
         /* eslint-disable no-console */
@@ -88,13 +86,35 @@ export default async () => {
         }
         if (networkError) console.log(`[Network error]: ${networkError}`);
       }),
-      createUploadLink({
-        uri,
-        // credentials: "same-origin",
-        fetch: customFetch as any,
-      }),
+      ApolloLink.split(
+        ({ query }) => {
+          const definition = getMainDefinition(query);
+          return (
+            definition.kind === 'OperationDefinition'
+            && definition.operation === 'subscription'
+          );
+        },
+        new WebSocketLink(new SubscriptionClient(
+          `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
+          {
+            lazy: true,
+          },
+        )),
+        createUploadLink({
+          uri: `${window.location.protocol}${uri}`,
+          // credentials: "same-origin",
+          fetch: customFetch as any,
+        }),
+      ),
     ]),
     cache,
     connectToDevTools: process.env.NODE_ENV !== 'production',
   });
+
+  await persistCache({
+    cache,
+    storage: window.localStorage,
+  });
+
+  return apolloClient;
 };

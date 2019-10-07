@@ -4,20 +4,27 @@ import * as os from 'os';
 import * as path from 'path';
 import { Readable } from 'stream';
 
-import { Op, col } from 'sequelize';
-import { ApolloServer, makeExecutableSchema } from 'apollo-server-koa';
+import { Op } from 'sequelize';
+import {
+  ApolloServer,
+  makeExecutableSchema,
+  PubSub,
+  withFilter,
+} from 'apollo-server-koa';
 import * as uuidv4 from 'uuid/v4';
 import * as unzipper from 'unzipper';
 import { createExtractorFromData } from 'node-unrar-js';
 import * as rimraf from 'rimraf';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
+import { SubClass } from 'gm';
 
-import { archiveTypes } from '../common/Common';
+import { archiveTypes } from '@common/Common';
 import {
   Book,
   BookInfo,
   BookInfoResult,
   Result,
-} from '../common/GraphqlTypes';
+} from '@common/GraphqlTypes';
 import Database from './sequelize/models';
 import BookInfoModel from './sequelize/models/bookInfo';
 import BookModel from './sequelize/models/book';
@@ -33,16 +40,23 @@ import Errors from './Errors';
 // @ts-ignore
 import * as typeDefs from './schema.graphql';
 
+
 export default class Graphql {
+  private readonly gm: SubClass;
+
   private readonly _server: ApolloServer;
+
+  private readonly pubsub: PubSub;
 
   get server() {
     // eslint-disable-next-line no-underscore-dangle
     return this._server;
   }
 
-  constructor() {
-    const { Query, Mutation } = this;
+  constructor(gmModule) {
+    this.gm = gmModule;
+
+    const { Query, Mutation, Subscription } = this;
     // eslint-disable-next-line no-underscore-dangle
     this._server = new ApolloServer({
       schema: makeExecutableSchema({
@@ -52,9 +66,12 @@ export default class Graphql {
           /* handler(parent, args, context, info) */
           Query,
           Mutation,
+          Subscription,
         },
       }),
     });
+
+    this.pubsub = new PubSub();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -71,14 +88,15 @@ export default class Graphql {
           name: {
             [Op.like]: `%${search}%`,
           },
-        } : undefined;
+        } : {};
+        if (!history) {
+          // @ts-ignore
+          where.history = false;
+        }
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
-          where: {
-            ...where,
-            history,
-          },
+          where,
           order: [
             [
               (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
@@ -114,11 +132,15 @@ export default class Graphql {
               as: 'books',
             },
           ] : [],
-          order: [
-            [col('books.number'), bookOrder || 'ASC'],
-          ],
         });
-        if (bookInfo) return ModelUtil.bookInfo(bookInfo);
+        if (bookInfo) {
+          bookInfo.books = naturalOrderBy(
+            bookInfo.books || [],
+            [(v) => v.number],
+          );
+          if (bookOrder === 'DESC') bookInfo.books.reverse();
+          return ModelUtil.bookInfo(bookInfo);
+        }
         return null;
       },
       books: async (parent, {
@@ -136,10 +158,13 @@ export default class Graphql {
           offset,
           order: [
             ['infoId', 'desc'],
-            ['number', order],
           ],
         });
-        return books.map((book) => ModelUtil.book(book));
+        const bookModels = naturalOrderBy(
+          books,
+          [(v) => v.infoId, (v) => v.number],
+        ).map((book) => ModelUtil.book(book));
+        return (order === 'DESC') ? bookModels.reverse() : bookModels;
       },
       book: async (parent, { id: bookId }): Promise<Book> => {
         const book = await BookModel.findOne({
@@ -159,6 +184,7 @@ export default class Graphql {
 
   // eslint-disable-next-line class-methods-use-this
   get Mutation() {
+    // noinspection JSUnusedGlobalSymbols
     return {
       addBookInfo: async (parent, {
         name,
@@ -167,8 +193,9 @@ export default class Graphql {
         compressBooks,
       }): Promise<Result> => {
         const infoId = uuidv4();
+        let thumbnailStream;
         if (thumbnail) {
-          const { stream, mimetype } = await thumbnail;
+          const { createReadStream, mimetype } = await thumbnail;
           if (!mimetype.startsWith('image/jpeg')) {
             return {
               success: false,
@@ -176,30 +203,30 @@ export default class Graphql {
               message: Errors.QL0000,
             };
           }
-          await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, stream);
+          thumbnailStream = createReadStream;
         }
         await BookInfoModel.create({
           id: infoId,
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
+        await this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
+
+        if (thumbnailStream) {
+          await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, thumbnailStream());
+          await this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Thumbnail Saved' });
+        }
 
         let result;
         if (compressBooks) {
           const tempPath = `${os.tmpdir()}/bookReader/${infoId}`;
-          const { createReadStream, mimetype, filename } = await compressBooks;
-          let archiveType = archiveTypes[mimetype];
-          if (!archiveType) {
-            archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
+          const type = await this.Util.checkArchiveType(compressBooks);
+          if (type.success === false) {
+            return type;
           }
-          if (!archiveType) {
-            return {
-              success: false,
-              code: 'QL0002',
-              message: Errors.QL0002,
-            };
-          }
+          const { createReadStream, archiveType } = type;
 
+          await this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Extract Files...' });
           await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
           let booksFolderPath = '/';
           let bookFolders = [];
@@ -224,6 +251,7 @@ export default class Graphql {
               message: Errors.QL0006,
             };
           }
+          await this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Move Files...' });
           result = await asyncMap(bookFolders, (p, i) => {
             const folderPath = path.join(tempPath, booksFolderPath, p);
             return this.Util.addBookFromLocalPath(
@@ -239,21 +267,36 @@ export default class Graphql {
           });
           await new Promise((resolve) => rimraf(tempPath, resolve));
         } else if (books) {
-          result = await this.Mutation.addBooks(undefined, { id: infoId, books });
+          await this.pubsub.publish(Graphql.SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Add Books...' });
+          result = await this.MutationWithCustomData.addBooks(
+            undefined,
+            { id: infoId, books },
+            undefined,
+            undefined,
+            {
+              pubsub: {
+                key: Graphql.SubscriptionKeys.ADD_BOOK_INFO,
+                fieldName: 'AddBookInfo',
+                name,
+              },
+            },
+          );
         }
-        if (!result) {
-          return {
-            success: false,
-            code: 'Unknown',
-            message: Errors.Unknown,
-          };
-        }
-        if (!result.every((r) => r.success)) {
-          return {
-            success: false,
-            code: 'QL0006',
-            message: Errors.QL0006,
-          };
+        if (compressBooks || books) {
+          if (!result) {
+            return {
+              success: false,
+              code: 'Unknown',
+              message: Errors.Unknown,
+            };
+          }
+          if (!result.every((r) => r.success)) {
+            return {
+              success: false,
+              code: 'QL0006',
+              message: Errors.QL0006,
+            };
+          }
         }
         return { success: true };
       },
@@ -304,7 +347,9 @@ export default class Graphql {
         });
         await asyncForEach(books, async (book) => {
           await new Promise((resolve) => {
-            rimraf(`storage/book/${book.id}`, () => resolve());
+            rimraf(`storage/book/${book.id}`, () => {
+              rimraf(`storage/cache/book/${book.id}`, () => resolve());
+            });
           });
         });
         await BookModel.destroy({
@@ -336,66 +381,16 @@ export default class Graphql {
           success: true,
         };
       },
-      addBook: async (parent, {
-        id: infoId,
-        number,
-        file,
-        thumbnail,
-      }): Promise<Result> => {
-        const bookId = uuidv4();
-        if (!await BookInfoModel.hasId(infoId)) {
-          return {
-            success: false,
-            code: 'QL0001',
-            message: Errors.QL0001,
-          };
-        }
-        let argThumbnail;
-        if (thumbnail) {
-          const { stream, mimetype } = await thumbnail;
-          if (!mimetype.startsWith('image/jpeg')) {
-            return {
-              success: false,
-              code: 'QL0000',
-              message: Errors.QL0000,
-            };
-          }
-          await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
-          argThumbnail = `/book/${bookId}/thumbnail.jpg`;
-        }
-        const { createReadStream, mimetype, filename } = await file;
-        let archiveType = archiveTypes[mimetype];
-        if (!archiveType) {
-          archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
-        }
-        if (!archiveType) {
-          return {
-            success: false,
-            code: 'QL0002',
-            message: Errors.QL0002,
-          };
-        }
-        // extract
-        const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
-        await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
-        return this.Util.addBookFromLocalPath(
-          tempPath,
-          infoId,
-          bookId,
-          number,
-          argThumbnail,
-          (resolve) => {
-            rimraf(tempPath, () => resolve());
-          },
-        );
-      },
-      addBooks: async (parent, { id: infoId, books }): Promise<Result[]> => asyncMap(books,
-        ({ number, file }) => this.Mutation.addBook(parent, {
-          id: infoId,
-          number,
-          file,
-          thumbnail: null,
-        })),
+      addBook: async (
+        parent, args, context, info,
+      ): Promise<Result> => this.MutationWithCustomData.addBook(
+        parent, args, context, info, undefined,
+      ),
+      addBooks: async (
+        parent, args, context, info,
+      ): Promise<Result[]> => this.MutationWithCustomData.addBooks(
+        parent, args, context, info, undefined,
+      ),
       editBook: async (parent, { id: bookId, number, thumbnail }): Promise<Result> => {
         if (number === undefined && thumbnail === undefined) {
           return {
@@ -458,7 +453,9 @@ export default class Graphql {
           },
         });
         await new Promise((resolve) => {
-          rimraf(`storage/book/${bookId}`, () => resolve());
+          rimraf(`storage/book/${bookId}`, () => {
+            rimraf(`storage/cache/book/${bookId}`, () => resolve());
+          });
         });
         return {
           success: true,
@@ -467,8 +464,114 @@ export default class Graphql {
     };
   }
 
+  get MutationWithCustomData() {
+    return {
+      addBook: async (parent, {
+        id: infoId,
+        number,
+        file,
+        thumbnail,
+      }, context, info, customData): Promise<Result> => {
+        const bookId = uuidv4();
+        if (!await BookInfoModel.hasId(infoId)) {
+          return {
+            success: false,
+            code: 'QL0001',
+            message: Errors.QL0001,
+          };
+        }
+        let argThumbnail;
+        if (thumbnail) {
+          const { stream, mimetype } = await thumbnail;
+          if (!mimetype.startsWith('image/jpeg')) {
+            return {
+              success: false,
+              code: 'QL0000',
+              message: Errors.QL0000,
+            };
+          }
+          await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
+          argThumbnail = `/book/${bookId}/thumbnail.jpg`;
+        }
+
+        const type = await this.Util.checkArchiveType(file);
+        if (type.success === false) {
+          return type;
+        }
+        const { createReadStream, archiveType } = type;
+
+        if (customData) {
+          await this.pubsub.publish(customData.pubsub.key, {
+            ...customData.pubsub,
+            [customData.pubsub.fieldName]: 'Extract Book...',
+          });
+        }
+        // extract
+        const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
+        await this.Util.extractCompressFile(tempPath, archiveType, createReadStream);
+        if (customData) {
+          await this.pubsub.publish(customData.pubsub.key, {
+            ...customData.pubsub,
+            [customData.pubsub.fieldName]: 'Move Book...',
+          });
+        }
+        return this.Util.addBookFromLocalPath(
+          tempPath,
+          infoId,
+          bookId,
+          number,
+          argThumbnail,
+          (resolve) => {
+            rimraf(tempPath, () => resolve());
+          },
+        );
+      },
+      addBooks: async (parent, {
+        id: infoId,
+        books,
+      }, context, info, customData): Promise<Result[]> => asyncMap(books,
+        ({ number, file }) => this.MutationWithCustomData.addBook(parent, {
+          id: infoId,
+          number,
+          file,
+          thumbnail: null,
+        }, context, info, customData || {
+          pubsub: {
+            key: Graphql.SubscriptionKeys.ADD_BOOKS,
+            fieldName: 'addBooks',
+            id: infoId,
+          },
+        })),
+    };
+  }
+
+  get Subscription() {
+    return {
+      addBookInfo: {
+        subscribe: withFilter(
+          () => this.pubsub.asyncIterator([Graphql.SubscriptionKeys.ADD_BOOK_INFO]),
+          (payload, variables) => payload.name === variables.name,
+        ),
+      },
+      addBooks: {
+        subscribe: withFilter(
+          () => this.pubsub.asyncIterator([Graphql.SubscriptionKeys.ADD_BOOKS]),
+          (payload, variables) => payload.id === variables.id,
+        ),
+      },
+    };
+  }
+
+  static get SubscriptionKeys() {
+    return {
+      ADD_BOOK_INFO: 'ADD_BOOK_INFO',
+      ADD_BOOKS: 'ADD_BOOKS',
+    };
+  }
+
   // eslint-disable-next-line class-methods-use-this
   get Util() {
+    const { gm } = this;
     return {
       async addBookFromLocalPath(
         tempPath: string,
@@ -478,8 +581,8 @@ export default class Graphql {
         argThumbnail?: string,
         deleteTempFolder?: (resolve, reject) => void,
       ) {
-        const files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
-          (f) => /^(?!.*__MACOSX).*\.jpe?g$/.test(f),
+        let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
+          (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/.test(f),
         ));
         if (files.length <= 0) {
           if (deleteTempFolder) await new Promise(deleteTempFolder);
@@ -489,19 +592,32 @@ export default class Graphql {
             message: Errors.QL0003,
           };
         }
-        files.sort((a, b) => {
-          const aDepth = (a.match(/\//g) || []).length;
-          const bDepth = (b.match(/\//g) || []).length;
-          if (aDepth !== bDepth) return aDepth - bDepth;
-          const length = a.length - b.length;
-          if (length !== 0) return length;
-          return a.localeCompare(b);
-        });
+        files = naturalOrderBy(
+          files,
+          [(v: string) => v.substring(0, v.length - path.extname(v).length)],
+          [(a, b) => {
+            const iA = a.includes('cover');
+            const iB = b.includes('cover');
+            if (iA && iB) return 0;
+            if (iA) return -1;
+            if (iB) return 1;
+            return 0;
+          }],
+        );
         const pad = files.length.toString(10).length;
         await fs.mkdir(`storage/book/${bookId}`);
         await asyncForEach(files, async (f, i) => {
           const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
-          await renameFile(f, `storage/book/${bookId}/${fileName}`);
+          const dist = `storage/book/${bookId}/${fileName}`;
+          if (/\.jpe?g$/.test(f)) {
+            await renameFile(f, dist);
+          } else {
+            await new Promise((resolve) => {
+              gm(f)
+                .quality(85)
+                .write(dist, resolve);
+            });
+          }
         });
         if (deleteTempFolder) await new Promise(deleteTempFolder);
 
@@ -581,6 +697,25 @@ export default class Graphql {
           });
         }
       },
+      async checkArchiveType(file) {
+        const awaitFile = await file;
+        const { mimetype, filename } = awaitFile;
+        let archiveType = archiveTypes[mimetype];
+        if (!archiveType) {
+          archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
+        }
+        if (!archiveType) {
+          return {
+            success: false,
+            code: 'QL0002',
+            message: Errors.QL0002,
+          };
+        }
+        return {
+          ...awaitFile,
+          archiveType,
+        };
+      },
     };
   }
 
@@ -609,8 +744,15 @@ export default class Graphql {
   async middleware(app) {
     await mkdirpIfNotExists('storage/bookInfo');
     await mkdirpIfNotExists('storage/book');
+    await mkdirpIfNotExists('storage/cache/book');
+    await mkdirpIfNotExists('storage/cache/bookInfo');
 
     // eslint-disable-next-line no-underscore-dangle
     app.use(this._server.getMiddleware({}));
+  }
+
+  useSubscription(httpServer) {
+    // eslint-disable-next-line no-underscore-dangle
+    this._server.installSubscriptionHandlers(httpServer);
   }
 }

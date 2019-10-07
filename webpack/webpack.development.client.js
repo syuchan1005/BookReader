@@ -4,7 +4,6 @@ const { resolve } = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const commonConfig = require('./webpack.common.client');
-const createNoopServiceWorkerMiddleware = require('./noopServiceWorkerMiddleware');
 
 module.exports = merge(commonConfig, {
   mode: 'development',
@@ -34,22 +33,27 @@ module.exports = merge(commonConfig, {
           port: 8081,
         },
       },
-      '/graphql': {
+      '**/*.webp': {
         target: {
           host: 'localhost',
           port: 8081,
         },
       },
-    },
-    before(app) {
-      app.use(createNoopServiceWorkerMiddleware());
+      '/graphql': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+        ws: true,
+      },
     },
   },
   devtool: 'cheap-module-eval-source-map',
   plugins: [
     // enable HMR globally
     new webpack.HotModuleReplacementPlugin(),
-    // prints more readable module names in the browser console on HMR updates
-    new webpack.NamedModulesPlugin(),
   ],
+  optimization: {
+    namedModules: true,
+  },
 });

@@ -12,8 +12,8 @@ import {
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
-import { Book as BookType, Result } from '../../common/GraphqlTypes';
-import Img from './Img';
+import { Book as BookType, Result } from '@common/GraphqlTypes';
+import Img from '@client/components/Img';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -108,7 +108,7 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
           <div className={classes.selectGrid}>
             {[...Array(data.book.pages).keys()]
               .map((i) => i.toString(10).padStart(data.book.pages.toString(10).length, '0'))
-              .map((n) => `/book/${bookId}/${n}.jpg`)
+              .map((n) => `/book/${bookId}/${n}_125x.jpg`)
               .map((th, i) => (
                 <Card key={th}>
                   <CardActionArea

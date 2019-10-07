@@ -3,9 +3,10 @@ import {
   createStyles,
   makeStyles,
   Theme,
+  MuiThemeProvider,
   IconButton,
   Icon,
-  Slider, Button,
+  Slider, Button, useTheme, createMuiTheme,
 } from '@material-ui/core';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
@@ -15,6 +16,7 @@ import { Observer } from 'mobx-react';
 import db from '../Database';
 import Img from '../components/Img';
 import { Book as BookType } from '../../common/GraphqlTypes';
+import useDebounceValue from '../hooks/useDebounceValue';
 
 interface BookProps {
   store: any;
@@ -38,6 +40,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     width: '100%',
     height: '100%',
     objectFit: 'contain',
+    paddingTop: 'env(safe-area-inset-top)',
   },
   overlay: {
     top: '0',
@@ -80,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   bottomSlider: {
     gridColumn: '1 / span 3',
-    margin: `0 ${theme.spacing(2)}`,
+    margin: theme.spacing(0, 2),
   },
 }));
 
@@ -118,7 +121,8 @@ const Book: React.FC = (props: BookProps) => {
 
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
-  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL, TtoB, BtoT
+  const debouncePage = useDebounceValue(page, 200);
+  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
 
   const setShowAppBar = (val) => {
     let v = val;
@@ -152,6 +156,12 @@ const Book: React.FC = (props: BookProps) => {
     setPage(Math.max(page - 1, 0));
     if (props.store.showAppBar) setShowAppBar(false);
   };
+
+  const theme = useTheme();
+  const sliderTheme = React.useMemo(() => createMuiTheme({
+    ...theme,
+    direction: readOrder === 1 ? 'rtl' : 'ltr',
+  }), [theme, readOrder]);
 
   const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
@@ -265,9 +275,11 @@ const Book: React.FC = (props: BookProps) => {
   // eslint-disable-next-line
   props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
 
+  const sizes = [document.body.offsetWidth, document.body.offsetHeight];
+  sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
   const pad = data.book.pages.toString(10).length;
   const pages = [...Array(data.book.pages).keys()]
-    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}.jpg`);
+    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
 
   return (
     // eslint-disable-next-line
@@ -291,22 +303,24 @@ const Book: React.FC = (props: BookProps) => {
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                onClick={() => setReadOrder((readOrder + 1) % 4)}
+                onClick={() => setReadOrder((readOrder + 1) % 2)}
               >
-                {['L > R', 'L < R', 'T > B', 'T < B'][readOrder]}
+                {['L > R', 'L < R'][readOrder]}
               </Button>
               <IconButton size="small" onClick={increment}>
                 <Icon style={{ color: 'white' }}>keyboard_arrow_right</Icon>
               </IconButton>
               <div className={classes.bottomSlider}>
-                <Slider
-                  color="secondary"
-                  valueLabelDisplay="auto"
-                  max={data.book.pages}
-                  min={1}
-                  value={page + 1}
-                  onChange={(e, v: number) => setPage(v - 1)}
-                />
+                <MuiThemeProvider theme={sliderTheme}>
+                  <Slider
+                    color="secondary"
+                    valueLabelDisplay="auto"
+                    max={data.book.pages}
+                    min={1}
+                    value={page + 1}
+                    onChange={(e, v: number) => setPage(v - 1)}
+                  />
+                </MuiThemeProvider>
               </div>
             </div>
           ) : null)}
@@ -329,12 +343,16 @@ const Book: React.FC = (props: BookProps) => {
       </div>
 
       <div className={classes.page}>
-        {(page >= 1) ? (
-          <Img src={pages[page - 1]} hidden />
+        {(debouncePage >= 1) ? (
+          <Img src={pages[debouncePage - 1]} hidden />
         ) : null}
-        <Img src={pages[page]} alt={(page + 1).toString(10)} className={classes.pageImage} />
-        {(page <= data.book.pages - 2) ? (
-          <Img src={pages[page + 1]} hidden />
+        <Img
+          src={pages[debouncePage]}
+          alt={(debouncePage + 1).toString(10)}
+          className={classes.pageImage}
+        />
+        {(debouncePage <= data.book.pages - 2) ? (
+          <Img src={pages[debouncePage + 1]} hidden />
         ) : null}
       </div>
     </div>

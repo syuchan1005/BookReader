@@ -7,13 +7,12 @@ import {
   createStyles,
   Fab,
   Icon,
-  Button,
   Theme,
 } from '@material-ui/core';
 
-import { Book as BookType, BookInfo as BookInfoType } from '../../common/GraphqlTypes';
+import AddBookDialog from '@client/components/dialogs/AddBookDialog';
+import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 import Book from '../components/Book';
-import AddBookDialog from '../components/AddBookDialog';
 import db from '../Database';
 
 interface InfoProps {
@@ -43,16 +42,15 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'fixed',
     bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
+    zIndex: 2,
   },
   addButton: {
     position: 'fixed',
-    left: 0,
-    bottom: 0,
-    borderRadius: 0,
-    borderTopRightRadius: `calc(${theme.shape.borderRadius}px * 2)`,
-    paddingTop: theme.spacing(2),
-    fontSize: '0.9rem',
-    paddingBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
+    right: theme.spacing(2),
+    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(11)}px)`,
+    background: theme.palette.background.paper,
+    color: theme.palette.secondary.main,
+    zIndex: 2,
   },
 }));
 
@@ -132,13 +130,17 @@ const Info: React.FC = (props: InfoProps) => {
   const bookList = data.bookInfo.books;
 
   const onDeletedBook = ({ id: bookId, pages }: BookType) => {
+    // noinspection JSIgnoredPromiseFromCall
     refetch();
+    // noinspection JSIgnoredPromiseFromCall
     db.bookReads.delete(bookId);
-    props.store.wb.messageSW({
-      type: 'BOOK_REMOVE',
-      bookId,
-      pages,
-    });
+    if (props.store.wb) {
+      props.store.wb.messageSW({
+        type: 'BOOK_REMOVE',
+        bookId,
+        pages,
+      });
+    }
   };
 
   return (
@@ -155,25 +157,23 @@ const Info: React.FC = (props: InfoProps) => {
                 onClick={() => clickBook(book)}
                 onDeleted={() => onDeletedBook(book)}
                 onEdit={() => refetch()}
-                wb={props.store.wb}
               />
             ),
           )
         }
       </div>
-      <Button
-        variant="contained"
-        color="secondary"
+      <Fab
         className={classes.addButton}
         onClick={() => setOpen(true)}
+        aria-label="add"
       >
-        <Icon fontSize="large">add</Icon>
-        Add Book
-      </Button>
+        <Icon>add</Icon>
+      </Fab>
       <Fab
         color="secondary"
         className={classes.fab}
         onClick={() => refetch()}
+        aria-label="refetch"
       >
         <Icon style={{ color: 'white' }}>refresh</Icon>
       </Fab>

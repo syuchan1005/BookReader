@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   appBar: {
     '& + .appbar--margin': {
-      marginTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
+      paddingTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
     },
     paddingTop: 'env(safe-area-inset-top)',
   },
@@ -133,6 +133,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     sortOrder: 'Update_Newest',
     history: false,
     theme: 'light',
+    webp: false,
   }));
   const classes = useStyles(props);
 
@@ -156,6 +157,17 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   history.listen(listener);
   React.useEffect(() => {
     listener(window.location);
+
+    // https://stackoverflow.com/questions/5573096/detecting-webp-support
+    new Promise((resolve) => {
+      const imgElem = window.document.createElement('img');
+      imgElem.onload = () => { resolve(imgElem.width === 2 && imgElem.height === 1); };
+      imgElem.onerror = () => { resolve(false); };
+      // noinspection SpellCheckingInspection
+      imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
+    }).then((r: boolean) => {
+      store.webp = r;
+    });
   }, []);
 
   const clickBack = () => {
@@ -202,6 +214,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   size="small"
                   className={classes.sortIcon}
                   onClick={(event) => setMenuAnchorEl(event.currentTarget)}
+                  aria-label="sort"
                 >
                   <Icon>sort</Icon>
                 </IconButton>
@@ -219,7 +232,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <ListItem>
                   <ListItemText>History</ListItemText>
                   <MSwitch
-                    value={store.history}
+                    checked={store.history}
                     onChange={(e) => { store.history = e.target.checked; }}
                   />
                 </ListItem>

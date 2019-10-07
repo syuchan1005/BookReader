@@ -1,4 +1,4 @@
-import { BookInfo, Book } from '../common/GraphqlTypes';
+import { BookInfo, Book } from '@common/GraphqlTypes';
 import BookInfoModel from './sequelize/models/bookInfo';
 import BookModel from './sequelize/models/book';
 

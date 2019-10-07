@@ -16,7 +16,7 @@ export default class bookInfo extends Model {
 
   public readonly updatedAt!: Date;
 
-  public readonly books?: book[];
+  public books?: book[];
 
   public static associations: {
     books: Association<bookInfo, book>;
@@ -33,6 +33,7 @@ export default class bookInfo extends Model {
     return (a && a.length > 0);
   }
 
+  // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
     bookInfo.init({
       id: {

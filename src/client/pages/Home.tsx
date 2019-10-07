@@ -12,14 +12,14 @@ import { useQuery } from '@apollo/react-hooks';
 import { useObserver } from 'mobx-react';
 
 import useReactRouter from 'use-react-router';
-import { useTranslation } from 'react-i18next';
 
-import { BookInfo as BookInfoType } from '../../common/GraphqlTypes';
+import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
+import AddBookDialog from '@client/components/dialogs/AddBookDialog';
+import { BookInfo as BookInfoType } from '@common/GraphqlTypes';
+
 import BookInfo from '../components/BookInfo';
-import AddBookInfoDialog from '../components/AddBookInfoDialog';
 import db from '../Database';
 import useDebounceValue from '../hooks/useDebounceValue';
-import AddBookDialog from '../components/AddBookDialog';
 
 interface HomeProps {
   store: any;
@@ -51,21 +51,20 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'fixed',
     bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
+    zIndex: 2,
+  },
+  addButton: {
+    position: 'fixed',
+    right: theme.spacing(2),
+    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(11)}px)`,
+    background: theme.palette.background.paper,
+    color: theme.palette.secondary.main,
+    zIndex: 2,
   },
   [theme.breakpoints.down('xs')]: {
     homeGrid: {
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
-  },
-  addButton: {
-    position: 'fixed',
-    left: 0,
-    bottom: 0,
-    borderRadius: 0,
-    borderTopRightRadius: `calc(${theme.shape.borderRadius}px * 2)`,
-    paddingTop: theme.spacing(2),
-    fontSize: '0.9rem',
-    paddingBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
   },
   readMoreButton: {
     gridColumn: '1 / end',
@@ -77,7 +76,6 @@ const Home: React.FC = (props: HomeProps) => {
   props.store.barTitle = '';
   const classes = useStyles(props);
   const { history } = useReactRouter();
-  const { t } = useTranslation();
 
   const [search, setSearch] = React.useState(null);
   const [open, setOpen] = React.useState(false);
@@ -103,7 +101,7 @@ const Home: React.FC = (props: HomeProps) => {
     variables: {
       offset: 0,
       limit: 10,
-      search: debounceSearch,
+      search: debounceSearch || '',
       // eslint-disable-next-line react/destructuring-assignment
       order: props.store.sortOrder,
       // eslint-disable-next-line react/destructuring-assignment
@@ -127,26 +125,34 @@ const Home: React.FC = (props: HomeProps) => {
   }
 
   const infos = (data.bookInfos || []);
-  const limit = Math.ceil(infos.length / 10) * 10 + (infos.length % 10 === 0 ? 10 : 0);
+  const limit = infos.length;
   const onDeletedBookInfo = (info, books) => {
+    // noinspection JSIgnoredPromiseFromCall
     refetch({ offset: 0, limit });
+    // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(info.id);
+    // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
-    books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
-      type: 'BOOK_REMOVE',
-      bookId,
-      pages,
-    }));
+    if (props.store.wb) {
+      books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
+        type: 'BOOK_REMOVE',
+        bookId,
+        pages,
+      }));
+    }
   };
 
   const clickLoadMore = () => {
+    // noinspection JSIgnoredPromiseFromCall,JSUnusedGlobalSymbols
     fetchMore({
       variables: {
         offset: infos.length,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
-        return { bookInfos: [...prev.bookInfos, ...fetchMoreResult.bookInfos] };
+        return {
+          bookInfos: [...prev.bookInfos, ...fetchMoreResult.bookInfos],
+        };
       },
     });
   };
@@ -168,24 +174,23 @@ const Home: React.FC = (props: HomeProps) => {
           className={classes.readMoreButton}
           onClick={clickLoadMore}
         >
-          {t('loadMore')}
+          Load More
         </Button>
       </div>
-      <Button
-        variant="contained"
-        color="secondary"
+      <Fab
         className={classes.addButton}
         onClick={() => setOpen(true)}
+        aria-label="add"
       >
-        <Icon fontSize="large">add</Icon>
-        Add BookInfo
-      </Button>
+        <Icon>add</Icon>
+      </Fab>
       <Fab
         color="secondary"
         className={classes.fab}
         onClick={() => refetch({ offset: 0, limit })}
+        aria-label="refetch"
       >
-        <Icon style={{ color: 'white' }}>refresh</Icon>
+        <Icon>refresh</Icon>
       </Fab>
 
       <AddBookInfoDialog

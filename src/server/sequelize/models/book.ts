@@ -22,6 +22,7 @@ export default class book extends Model {
     info: Association<book, bookInfo>;
   };
 
+  // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
     book.init({
       id: {

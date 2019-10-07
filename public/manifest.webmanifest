@@ -2,6 +2,7 @@
   "name": "Book Reader",
   "short_name": "Book Reader",
   "display": "fullscreen",
+  "orientation": "portrait",
   "theme_color": "#4caf50",
   "background_color": "#fafafa",
   "start_url": "/",

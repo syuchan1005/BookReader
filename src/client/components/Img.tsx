@@ -8,20 +8,29 @@ interface ImgProps {
   minHeight?: number;
   className?: any;
   hidden?: boolean | 'false' | 'true';
+  noSave?: boolean;
 
   onClick?: () => void;
+  onLoad?: (success: boolean) => void;
 }
 
 const useStyles = makeStyles(() => createStyles({
   noImg: {
     fontSize: '1.5rem',
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
   },
   hasImg: {
     width: '100%',
+    height: '100%',
+  },
+  pic: {
+    display: 'block',
+    width: '100%',
+    height: '100%',
   },
 }));
 
@@ -35,12 +44,17 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     className,
     hidden,
     onClick,
+    noSave = true,
+    onLoad,
   } = props;
 
   // [beforeLoading, rendered, failed]
   const [_state, setState] = React.useState(0);
 
-  const state = React.useMemo(() => (src === undefined ? 2 : _state), [_state, src]);
+  const state = React.useMemo(() => {
+    if (onLoad && src === undefined) onLoad(false);
+    return (src === undefined ? 2 : _state);
+  }, [_state, src]);
 
   return (
     // eslint-disable-next-line
@@ -62,14 +76,19 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
           <div>{alt}</div>
         </div>
       )}
-      <img
-        className={className}
-        style={{ display: (state === 1) ? '' : 'none' }}
-        src={src}
-        alt={alt}
-        onLoad={() => setState(1)}
-        onError={() => setState(2)}
-      />
+      {(src) ? (
+        <picture className={classes.pic}>
+          <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
+          <img
+            className={className}
+            style={{ display: (state === 1) ? 'block' : 'none' }}
+            src={`${src}${noSave ? '?nosave' : ''}`}
+            alt={alt}
+            onLoad={() => { if (onLoad) { onLoad(true); } setState(1); }}
+            onError={() => { if (onLoad) { onLoad(true); } setState(2); }}
+          />
+        </picture>
+      ) : null}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-/* language=Javascript */
+// language=Javascript
 const path = require('path');
 
 const base = path.resolve('src', 'server', 'sequelize');

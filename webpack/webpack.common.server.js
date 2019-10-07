@@ -5,10 +5,16 @@ const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
   context: resolve('src/server'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias: {
+      '@client': resolve(__dirname, '..', 'src/client'),
+      '@server': resolve(__dirname, '..', 'src/server'),
+      '@common': resolve(__dirname, '..', 'src/common'),
+    },
   },
   module: {
     rules: [

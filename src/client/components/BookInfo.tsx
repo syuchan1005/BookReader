@@ -1,33 +1,30 @@
 import * as React from 'react';
 import {
-  Button,
   Card,
   CardActionArea,
   CardActions,
   CardContent,
   createStyles,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Icon,
   IconButton,
-  InputAdornment,
   makeStyles,
   Menu,
   MenuItem,
-  TextField,
   Theme,
 } from '@material-ui/core';
+import { orange as color } from '@material-ui/core/colors';
 import { useMutation } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
-import { BookInfo as QLBookInfo, BookInfoResult, Result } from '../../common/GraphqlTypes';
+import DeleteDialog from '@client/components/dialogs/DeleteDialog';
+import EditDialog from '@client/components/dialogs/EditDialog';
+import { BookInfo as QLBookInfo, BookInfoResult, Result } from '@common/GraphqlTypes';
 import Img from './Img';
-import SelectBookInfoThumbnailDialog from './SelectBookInfoThumbnailDialog';
+import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 
 interface BookInfoProps extends QLBookInfo {
+  style?: React.CSSProperties;
+
   onClick?: Function;
   onDeleted?: Function;
   onEdit?: () => void;
@@ -66,15 +63,26 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     zIndex: 1,
     padding: 0,
   },
+  historyLabel: {
+    position: 'absolute',
+    top: 0,
+    left: theme.spacing(1),
+    background: color['800'],
+    color: theme.palette.common.white,
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+  },
 }));
 
 const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
+    style,
     id: infoId,
     thumbnail,
     name,
     count,
+    history,
     onClick,
     onDeleted,
     onEdit,
@@ -143,9 +151,12 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   };
 
   return (
-    <Card className={classes.card}>
+    <Card className={classes.card} style={style}>
       <CardActions className={classes.headerMenu}>
-        <IconButton onClick={(event) => setMenuAnchor(event.currentTarget)}>
+        <IconButton
+          onClick={(event) => setMenuAnchor(event.currentTarget)}
+          aria-label="menu"
+        >
           <Icon>more_vert</Icon>
         </IconButton>
         <Menu
@@ -169,76 +180,34 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
           alt={name}
           className={classes.thumbnail}
+          noSave={false}
         />
         <CardContent className={classes.cardContent}>
           <div>{count}</div>
         </CardContent>
+        {(history) ? (
+          <div className={classes.historyLabel}>History</div>
+        ) : null}
       </CardActionArea>
 
-      <Dialog open={askDelete} onClose={() => !delLoading && setAskDelete(false)}>
-        <DialogTitle>Delete book info</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {`Do you want to delete \`${name}\`?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setAskDelete(false)}
-            disabled={delLoading}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => deleteBookInfo()}
-            disabled={delLoading}
-          >
-            delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        open={askDelete}
+        loading={delLoading}
+        bookInfo={name}
+        onClose={() => setAskDelete(false)}
+        onClickDelete={() => deleteBookInfo()}
+      />
 
-      <Dialog open={editDialog} onClose={() => !editLoading && setEditDialog(false)}>
-        <DialogTitle>Edit book info</DialogTitle>
-        <DialogContent>
-          <TextField
-            color="secondary"
-            autoFocus
-            label="Book info name"
-            value={editContent.name}
-            // @ts-ignore
-            onChange={(event) => setEditContent({ ...editContent, name: event.target.value })}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setEditContent({ ...editContent, name })}>
-                    <Icon>restore</Icon>
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            disabled={editLoading}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setEditDialog(false)}
-            disabled={editLoading}
-          >
-            close
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => editBookInfo()}
-            disabled={editLoading}
-          >
-            edit
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <EditDialog
+        info
+        open={editDialog}
+        loading={editLoading}
+        fieldValue={editContent.name}
+        onChange={(n) => setEditContent({ ...editContent, name: n })}
+        onClose={() => setEditDialog(false)}
+        onClickRestore={() => setEditContent({ ...editContent, name })}
+        onClickEdit={() => editBookInfo()}
+      />
 
       <SelectBookInfoThumbnailDialog
         open={!!selectDialog}

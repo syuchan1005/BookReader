@@ -7,13 +7,16 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-const dist = resolve('dist/client');
-
 module.exports = {
   context: resolve('src/client'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias: {
+      '@client': resolve(__dirname, '..', 'src/client'),
+      '@server': resolve(__dirname, '..', 'src/server'),
+      '@common': resolve(__dirname, '..', 'src/common'),
+    },
   },
   module: {
     rules: [
@@ -41,6 +44,7 @@ module.exports = {
         enforce: 'pre',
         test: /\.js$/,
         loader: 'source-map-loader',
+        exclude: [resolve('node_modules')],
       },
       {
         test: /\.css$/,
@@ -97,14 +101,11 @@ module.exports = {
     ),
     new WorkboxWebpackPlugin.InjectManifest({
       swSrc: './src/client/service-worker.js',
-      swDest: `${dist}/service-worker.js`,
-      globDirectory: dist,
-      globPatterns: ['*.{html,js}'],
+      swDest: 'service-worker.js',
       exclude: [
         /\.map$/,
         /icons\//,
         /favicon\.ico$/,
-        /manifest\.json$/,
       ],
     }),
   ],
