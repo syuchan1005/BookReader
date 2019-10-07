@@ -5,6 +5,7 @@ const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
   context: resolve('src/server'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.

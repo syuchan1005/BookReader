@@ -181,7 +181,6 @@ const Info: React.FC = (props: InfoProps) => {
       <AddBookDialog
         open={open}
         infoId={match.params.id}
-        offset={bookList ? 0 : bookList.length}
         onAdded={refetch}
         onClose={() => setOpen(false)}
       />

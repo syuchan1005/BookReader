@@ -20,7 +20,6 @@ import { Result } from '@common/GraphqlTypes';
 interface AddBookDialogProps {
   open: boolean;
   infoId: string;
-  offset: number;
   onAdded?: Function;
   onClose?: Function;
 }
@@ -65,7 +64,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     infoId,
     onAdded,
     onClose,
-    offset,
   } = props;
 
   const [addBooks, setAddBooks] = React.useState([]);
@@ -135,10 +133,18 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const dropFiles = React.useCallback((files) => {
     setAddBooks([
       ...addBooks,
-      ...files.map((f, i) => ({
-        file: f,
-        number: `${addBooks.length + i + 1 + offset}`,
-      })),
+      ...files.map((f, i) => {
+        let nums = f.name.match(/\d+/);
+        if (nums) {
+          nums = nums[nums.length - 1];
+        } else {
+          nums = `${addBooks.length + i + 1}`;
+        }
+        return {
+          file: f,
+          number: nums,
+        };
+      }),
     ]);
   }, [addBooks]);
 

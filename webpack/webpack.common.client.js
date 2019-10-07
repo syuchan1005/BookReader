@@ -7,8 +7,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-const dist = resolve('dist/client');
-
 module.exports = {
   context: resolve('src/client'),
   resolve: {
@@ -108,8 +106,6 @@ module.exports = {
         /\.map$/,
         /icons\//,
         /favicon\.ico$/,
-        /manifest\.json$/,
-        /robots\.txt$/,
       ],
     }),
   ],

@@ -52,7 +52,8 @@ module.exports = merge(commonConfig, {
   plugins: [
     // enable HMR globally
     new webpack.HotModuleReplacementPlugin(),
-    // prints more readable module names in the browser console on HMR updates
-    new webpack.NamedModulesPlugin(),
   ],
+  optimization: {
+    namedModules: true,
+  },
 });

@@ -161,10 +161,18 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const dropFiles = React.useCallback((files) => {
     setAddBooks([
       ...addBooks,
-      ...files.map((f, i) => ({
-        file: f,
-        number: `${addBooks.length + i + 1}`,
-      })),
+      ...files.map((f, i) => {
+        let nums = f.name.match(/\d+/);
+        if (nums) {
+          nums = Number(nums[nums.length - 1]).toString(10);
+        } else {
+          nums = `${addBooks.length + i + 1}`;
+        }
+        return {
+          file: f,
+          number: nums,
+        };
+      }),
     ]);
   }, [addBooks]);
 

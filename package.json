@@ -9,7 +9,7 @@
       "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && node dist/server\"",
       "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
       "serve": "npm-run-all --parallel serve:*",
-      "build": "npm run build:client && npm run build:server -- -p",
+      "build": "npm run build:client && npm run build:server -- --mode production",
       "start": "node dist/server",
       "lint": "eslint src/**/*.*",
       "db:migrate": "ts-node node_modules/.bin/sequelize db:migrate"
