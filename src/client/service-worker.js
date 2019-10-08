@@ -32,6 +32,13 @@ addEventListener('message', (event) => {
     case 'BOOK_REMOVE':
       cb = (cache, urls) => urls.forEach((k) => cache.delete(k));
       break;
+    case 'PURGE_CACHE':
+      event.waitUntil((async () => {
+        await Promise.all(caches.keys().map((k) => caches.delete(k)));
+        const client = await self.clients.get(event.clientId);
+        if (client) client.postMessage({ type: 'PURGE_CACHE', state: 'Finish' });
+      })());
+      return;
   }
   if (cb) {
     const pad = event.data.pages.toString(10).length;

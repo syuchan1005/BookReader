@@ -183,7 +183,16 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const purgeCache = () => {
     props.persistor.purge()
       .then(() => {
-        window.location.reload();
+        if (store.wb) {
+          navigator.serviceWorker.addEventListener('message', () => {
+            window.location.reload();
+          });
+          store.wb.messageSW({
+            type: 'PURGE_CACHE',
+          });
+        } else {
+          window.location.reload();
+        }
       });
   };
 
