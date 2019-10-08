@@ -23,7 +23,6 @@ import {
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useLocalStore, Observer } from 'mobx-react';
-import { CachePersistor } from 'apollo-cache-persist';
 
 import Home from './pages/Home';
 import Info from './pages/Info';
@@ -60,7 +59,7 @@ const themes = {
 
 interface AppProps {
   wb: any;
-  persistor: CachePersistor<any>;
+  persistor: any;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -238,7 +237,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 open={!!menuAnchorEl}
                 onClose={() => setMenuAnchorEl(null)}
               >
-                <ListItem>
+                <ListItem style={{ outline: '0' }}>
                   <ListItemText>History</ListItemText>
                   <MSwitch
                     checked={store.history}
