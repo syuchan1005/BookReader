@@ -116,17 +116,18 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
           <div className={classes.selectGrid}>
             {[...Array(count).keys()]
               .map((i) => i.toString(10).padStart(data.book.pages.toString(10).length, '0'))
-              .map((n) => `/book/${bookId}/${n}_125x.jpg`)
-              .map((th, i) => (
-                <Card key={th}>
+              .map((n, i) => (
+                <Card key={`/book/${bookId}/${n}_125x.jpg`}>
                   <CardActionArea
                     onClick={() => changeThumbnail({
-                      variables: { th },
+                      variables: {
+                        th: `/book/${bookId}/${n}.jpg`,
+                      },
                     })}
                   >
                     <Img
                       className={classes.thumbnail}
-                      src={th}
+                      src={`/book/${bookId}/${n}_125x.jpg`}
                       alt={(i + 1).toString(10)}
                       minWidth={125}
                       minHeight={150}
