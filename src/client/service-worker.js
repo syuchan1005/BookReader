@@ -34,7 +34,8 @@ addEventListener('message', (event) => {
       break;
     case 'PURGE_CACHE':
       event.waitUntil((async () => {
-        await Promise.all(caches.keys().map((k) => caches.delete(k)));
+        const ks = await caches.keys();
+        await Promise.all(ks.map((k) => caches.delete(k)));
         const client = await self.clients.get(event.clientId);
         if (client) client.postMessage({ type: 'PURGE_CACHE', state: 'Finish' });
       })());
