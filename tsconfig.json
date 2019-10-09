@@ -17,6 +17,10 @@
       "@client*" :["src/client*"],
       "@server*" :["src/server*"],
       "@common*" :["src/common*"]
-    }
-  }
+    },
+    "typeRoots": ["node_modules/@types", "src/@types"]
+  },
+  "files": ["src/@types/graphql.d.ts"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }

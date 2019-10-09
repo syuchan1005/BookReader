@@ -14,7 +14,8 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import * as DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
+import * as EditBookMutation from '@client/graphqls/Book_editBook.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -97,14 +98,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(gql`
-      mutation delete($id: ID!) {
-          del: deleteBook(id: $id) {
-              success
-              code
-          }
-      }
-  `, {
+  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(DeleteBookMutation, {
     variables: {
       id: bookId,
     },
@@ -114,14 +108,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(gql`
-      mutation edit($id: ID! $number: String $thumbnail: String) {
-          edit: editBook(id: $id number: $number thumbnail: $thumbnail) {
-              success
-              code
-          }
-      }
-  `, {
+  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(EditBookMutation, {
     variables: {
       id: bookId,
       ...editContent,

@@ -10,13 +10,15 @@ import {
 } from '@material-ui/core';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
 import { Observer } from 'mobx-react';
+
+import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
+
+import { Book as BookType } from '@common/GraphqlTypes';
+import useDebounceValue from '@client/hooks/useDebounceValue';
 
 import db from '../Database';
 import Img from '../components/Img';
-import { Book as BookType } from '../../common/GraphqlTypes';
-import useDebounceValue from '../hooks/useDebounceValue';
 
 interface BookProps {
   store: any;
@@ -94,22 +96,7 @@ const Book: React.FC = (props: BookProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ book: BookType }>(gql`
-      query ($id: ID!) {
-          book(id: $id) {
-              id
-              number
-              pages
-              info {
-                  id
-                  name
-              }
-              
-              nextBook
-              prevBook
-          }
-      }
-  `, {
+  } = useQuery<{ book: BookType }>(BookQuery, {
     variables: {
       id: match.params.id,
     },

@@ -1,0 +1,6 @@
+mutation edit($id: ID! $name: String $thumbnail: String) {
+    edit: editBookInfo(id: $id name: $name thumbnail: $thumbnail) {
+        success
+        code
+    }
+}

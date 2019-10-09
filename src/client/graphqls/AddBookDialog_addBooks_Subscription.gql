@@ -1,0 +1,3 @@
+subscription ($id: ID!){
+    addBooks(id: $id)
+}

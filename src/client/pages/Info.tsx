@@ -1,7 +1,6 @@
 import * as React from 'react';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
 import {
   makeStyles,
   createStyles,
@@ -10,6 +9,8 @@ import {
   Theme,
   useTheme,
 } from '@material-ui/core';
+
+import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
 
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
@@ -66,24 +67,7 @@ const Info: React.FC = (props: InfoProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(gql`
-      query ($id: ID!){
-          bookInfo(id: $id) {
-              id
-              name
-              books {
-                  id
-                  number
-                  pages
-                  thumbnail
-                  
-                  info {
-                      id
-                  }
-              }
-          }
-      }
-  `, {
+  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
     variables: {
       id: match.params.id,
     },

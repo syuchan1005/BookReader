@@ -10,7 +10,9 @@ import {
   Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import * as BookInfoQuery from '@client/graphqls/SelectBookInfoThumbnailDialog_bookInfo.gql';
+import * as EditBookInfoMutation from '@client/graphqls/SelectBookInfoThumbnailDialog_editBookInfo.gql';
+
 import { BookInfo as BookInfoType, Result } from '@common/GraphqlTypes';
 import Book from '@client/components/Book';
 
@@ -52,46 +54,25 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     loading: infoLoading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(gql`
-      query ($id: ID!){
-          bookInfo(id: $id) {
-              id
-              name
-              books {
-                  id
-                  number
-                  pages
-                  thumbnail
-
-                  info {
-                      id
-                  }
-              }
-          }
-      }
-  `, {
+  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
     skip: !open,
     variables: {
       id: infoId,
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(gql`
-    mutation ($id: ID! $th: String){
-        edit: editBookInfo(id: $id thumbnail: $th) {
-            success
-            code
-        }
-    }
-  `, {
-    variables: {
-      id: infoId,
+  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(
+    EditBookInfoMutation,
+    {
+      variables: {
+        id: infoId,
+      },
+      onCompleted({ edit: { success } }) {
+        if (success && onClose) onClose();
+        if (success && onEdit) onEdit();
+      },
     },
-    onCompleted({ edit: { success } }) {
-      if (success && onClose) onClose();
-      if (success && onEdit) onEdit();
-    },
-  });
+  );
 
   const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);
 

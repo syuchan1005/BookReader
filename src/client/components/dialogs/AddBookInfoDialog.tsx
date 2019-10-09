@@ -13,8 +13,12 @@ import {
   Switch,
   TextField, Theme,
 } from '@material-ui/core';
-import gql from 'graphql-tag';
 import { useMutation, useSubscription } from '@apollo/react-hooks';
+
+import * as AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
+import * as AddBookInfoSubscription from '@client/graphqls/AddBookInfoDialog_addBookInfo_Subscription.gql';
+import * as AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
+
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
 import { Result } from '@common/GraphqlTypes';
@@ -92,14 +96,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setAddBookInfoAbort(undefined);
   };
 
-  const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(gql`
-      mutation add($name: String! $books: [InputBook!] $compress: Upload) {
-          add: addBookInfo(name: $name books: $books, compressBooks: $compress) {
-              success
-              code
-          }
-      }
-  `, {
+  const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
     variables: {
       name,
       books: (isCompress ? null : addBooks),
@@ -128,28 +125,20 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
   });
 
-  const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(gql`
-      mutation add($histories: [BookInfoHistory!]!) {
-          add: addBookInfoHistories(histories: $histories) {
-              success
-              code
-          }
-      }
-  `, {
-    onCompleted({ add: { success } }) {
-      closeDialog();
-      if (success && onAdded) onAdded();
+  const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(
+    AddBookInfoHistoriesMutation,
+    {
+      onCompleted({ add: { success } }) {
+        closeDialog();
+        if (success && onAdded) onAdded();
+      },
+      variables: {
+        histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
+      },
     },
-    variables: {
-      histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
-    },
-  });
+  );
 
-  const { data: subscriptionData } = useSubscription(gql`
-    subscription ($name: String!){
-        addBookInfo(name: $name)
-    }
-  `, {
+  const { data: subscriptionData } = useSubscription(AddBookInfoSubscription, {
     skip: !subscriptionName,
     variables: {
       name: subscriptionName,

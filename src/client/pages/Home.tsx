@@ -12,6 +12,8 @@ import { useObserver } from 'mobx-react';
 import { Waypoint } from 'react-waypoint';
 import useReactRouter from 'use-react-router';
 
+import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
+
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { BookInfoList as BookInfoListType } from '@common/GraphqlTypes';
@@ -91,20 +93,7 @@ const Home: React.FC = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useQuery<{ bookInfos: BookInfoListType }>(gql`
-      query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean){
-          bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history) {
-              length
-              infos {
-                  id
-                  name
-                  count
-                  thumbnail
-                  history
-              }
-          }
-      }
-  `, {
+  } = useQuery<{ bookInfos: BookInfoListType }>(BookInfosQuery, {
     variables: {
       offset: 0,
       limit: 10,
