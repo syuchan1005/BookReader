@@ -217,4 +217,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   );
 };
 
+// @ts-ignore
+Book.whyDidYouRender = true;
+
 export default Book;

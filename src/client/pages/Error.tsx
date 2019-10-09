@@ -20,4 +20,7 @@ const Error: React.FC = (props: ErrorProps) => {
   );
 };
 
+// @ts-ignore
+Error.whyDidYouRender = true;
+
 export default Error;

@@ -59,4 +59,7 @@ const FileField: React.FC<FileFieldProps> = (props: FileFieldProps) => {
   );
 };
 
+// @ts-ignore
+FileField.whyDidYouRender = true;
+
 export default FileField;

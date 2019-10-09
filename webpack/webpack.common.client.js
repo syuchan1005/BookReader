@@ -20,14 +20,6 @@ module.exports = {
   },
   module: {
     rules: [
-      /*
-      {
-        enforce: 'pre',
-        test: /\.(ts|tsx)?$/,
-        loader: 'tslint-loader',
-        exclude: [resolve('node_modules')],
-      },
-      */
       {
         test: /\.(ts|tsx)?$/,
         use: [
@@ -73,6 +65,11 @@ module.exports = {
       {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'url-loader?limit=10000&mimetype=image/svg+xml',
+      },
+      {
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        loader: 'graphql-tag/loader',
       },
     ],
   },

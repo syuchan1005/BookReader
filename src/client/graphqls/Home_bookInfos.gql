@@ -1,0 +1,12 @@
+query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean){
+    bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history) {
+        length
+        infos {
+            id
+            name
+            count
+            thumbnail
+            history
+        }
+    }
+}

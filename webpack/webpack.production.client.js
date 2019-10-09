@@ -2,6 +2,8 @@
 const { resolve } = require('path');
 const merge = require('webpack-merge');
 
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+
 const commonConfig = require('./webpack.common.client');
 
 const dist = resolve('dist/client');
@@ -15,5 +17,10 @@ module.exports = merge(commonConfig, {
     publicPath: '/',
   },
   devtool: 'source-map',
-  plugins: [],
+  plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      openAnalyzer: false,
+    }),
+  ],
 });

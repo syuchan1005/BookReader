@@ -233,4 +233,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   );
 };
 
+// @ts-ignore
+AddBookDialog.whyDidYouRender = true;
+
 export default AddBookDialog;

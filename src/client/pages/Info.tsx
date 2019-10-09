@@ -191,4 +191,7 @@ const Info: React.FC = (props: InfoProps) => {
   );
 };
 
+// @ts-ignore
+Info.whyDidYouRender = true;
+
 export default Info;

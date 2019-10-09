@@ -7,7 +7,6 @@ import {
   makeStyles,
   Theme, useTheme,
 } from '@material-ui/core';
-import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import { useObserver } from 'mobx-react';
 import { Waypoint } from 'react-waypoint';
@@ -223,5 +222,8 @@ const Home: React.FC = (props: HomeProps) => {
     </div>
   );
 };
+
+// @ts-ignore
+Home.whyDidYouRender = true;
 
 export default Home;

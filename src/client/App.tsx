@@ -300,4 +300,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   );
 };
 
+// @ts-ignore
+App.whyDidYouRender = true;
+
 export default App;

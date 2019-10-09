@@ -151,4 +151,7 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
   );
 };
 
+// @ts-ignore
+SelectBookInfoThumbnailDialog.whyDidYouRender = true;
+
 export default SelectBookInfoThumbnailDialog;
