@@ -7,7 +7,7 @@ workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
 const BookImageCacheName = workbox.core.cacheNames.runtime;
 workbox.routing.registerRoute(
-  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d*)x(\d*))?\.jpg(\.webp)?/,
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?/,
   new workbox.strategies.CacheFirst({
     cacheName: BookImageCacheName,
   }),

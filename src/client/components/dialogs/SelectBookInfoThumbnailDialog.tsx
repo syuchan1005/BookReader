@@ -125,6 +125,8 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                 name={data.bookInfo.name}
                 {...book}
                 onClick={() => changeThumbnail({ variables: { th: book.thumbnail } })}
+                thumbnailNoSave
+                thumbnailSize={125}
               />
             ))}
             {(count < data.bookInfo.books.length) && (

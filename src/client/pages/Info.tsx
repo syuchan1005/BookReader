@@ -8,6 +8,7 @@ import {
   Fab,
   Icon,
   Theme,
+  useTheme,
 } from '@material-ui/core';
 
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
@@ -56,6 +57,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Info: React.FC = (props: InfoProps) => {
   const classes = useStyles(props);
+  const theme = useTheme();
   const { match, history } = useReactRouter();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
@@ -157,6 +159,7 @@ const Info: React.FC = (props: InfoProps) => {
                 onClick={() => clickBook(book)}
                 onDeleted={() => onDeletedBook(book)}
                 onEdit={() => refetch()}
+                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
               />
             ),
           )

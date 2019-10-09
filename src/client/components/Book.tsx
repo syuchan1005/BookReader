@@ -23,6 +23,8 @@ import Img from './Img';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
 interface BookProps extends QLBook {
+  thumbnailSize?: number;
+  thumbnailNoSave?: boolean;
   name: string;
   reading?: boolean;
   onClick?: Function;
@@ -74,6 +76,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const Book: React.FC<BookProps> = (props: BookProps) => {
   const classes = useStyles(props);
   const {
+    thumbnailSize = 200,
+    thumbnailNoSave,
     thumbnail,
     number,
     pages,
@@ -172,7 +176,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
       )}
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
-          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
+          src={thumbnail ? `${thumbnail.replace('.jpg', `_${thumbnailSize}x0.jpg`)}${(thumbnailNoSave) ? '?nosave' : ''}` : undefined}
           alt={number}
           className={classes.thumbnail}
           noSave={false}

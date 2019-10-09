@@ -24,6 +24,7 @@ import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDial
 
 interface BookInfoProps extends QLBookInfo {
   style?: React.CSSProperties;
+  thumbnailSize?: number;
 
   onClick?: Function;
   onDeleted?: Function;
@@ -78,6 +79,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
     style,
+    thumbnailSize = 200,
     id: infoId,
     thumbnail,
     name,
@@ -177,7 +179,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
-          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
+          src={thumbnail ? thumbnail.replace('.jpg', `_${thumbnailSize}x0.jpg`) : undefined}
           alt={name}
           className={classes.thumbnail}
           noSave={false}

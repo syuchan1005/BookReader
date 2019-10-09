@@ -33,7 +33,7 @@ app.use(Serve('storage/cache/'));
 
 app.use(async (ctx, next) => {
   const { url } = ctx.req;
-  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)_(\d*)x(\d*)\.jpg(\?nosave)?$/);
+  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)_(\d+)x(\d+)\.jpg(\?nosave)?$/);
   if (match) {
     const origImgPath = `storage/book/${match[1]}/${match[2]}.jpg`;
     const stats = await fs.stat(origImgPath);
@@ -43,7 +43,8 @@ app.use(async (ctx, next) => {
           const atoi = (s) => (s ? (Number(s) || null) : null);
           (useIM ? im : gm)(path.resolve(origImgPath))
             .resize(atoi(match[3]), atoi(match[4]))
-            .quality(85)
+            .quality(70)
+            .interlace('Line')
             .stream((err, stdout, stderr) => {
               if (err) {
                 reject(err);
@@ -82,7 +83,7 @@ app.use(async (ctx, next) => {
 
 app.use(async (ctx, next) => {
   const { url } = ctx.req;
-  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d*)x(\d*))?\.jpg\.webp(\?nosave)?$/);
+  const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg\.webp(\?nosave)?$/);
   if (match) {
     const origImgPath = `storage/book/${match[1]}/${match[2]}.jpg`;
     const stats = await fs.stat(origImgPath);

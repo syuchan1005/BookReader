@@ -5,7 +5,7 @@ import {
   Fab,
   Icon,
   makeStyles,
-  Theme,
+  Theme, useTheme,
 } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -79,6 +79,7 @@ const Home: React.FC = (props: HomeProps) => {
   // eslint-disable-next-line
   props.store.barTitle = '';
   const classes = useStyles(props);
+  const theme = useTheme();
   const { history } = useReactRouter();
 
   const [search, setSearch] = React.useState(null);
@@ -179,6 +180,7 @@ const Home: React.FC = (props: HomeProps) => {
             onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
             onDeleted={(books) => onDeletedBookInfo(info, books)}
             onEdit={() => refetch({ offset: 0, limit })}
+            thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
           />
         ))}
         {(isLoadingMore) && (

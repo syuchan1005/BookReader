@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const path = require('path');
 const { promises: fs } = require('fs');
 
@@ -41,7 +42,7 @@ const readdirRecursively = async (dir, files = []) => {
   const files = await readdirRecursively('./storage');
 
   await asyncForEach(files.filter((s) => s.includes('_200x'))
-    .map((s) => [s, s.replace('/storage', '/storage/cache')]), async (s) => {
+    .map((s) => [s, s.replace('/storage', '/storage/cache').replace('_200x', '_200x0')]), async (s) => {
     await mkdirpIfNotExists(path.join(s[1], '..'));
     await fs.rename(s[0], s[1]);
   });
