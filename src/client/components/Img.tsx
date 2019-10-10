@@ -7,6 +7,7 @@ interface ImgProps {
   minWidth?: number;
   minHeight?: number;
   className?: any;
+  style?: any;
   hidden?: boolean | 'false' | 'true';
   noSave?: boolean;
 
@@ -42,6 +43,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     minWidth = 150,
     minHeight = 200,
     className,
+    style,
     hidden,
     onClick,
     noSave = true,
@@ -61,7 +63,11 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     <div
       aria-hidden={hidden}
       className={state !== 1 ? classes.noImg : classes.hasImg}
-      style={{ ...(state !== 1 ? { minWidth, minHeight } : {}), display: hidden === true ? 'none' : undefined }}
+      style={{
+        ...style,
+        ...(state !== 1 ? { minWidth, minHeight } : {}),
+        display: hidden === true ? 'none' : undefined,
+      }}
       onClick={onClick}
     >
       {(state === 0) && (
@@ -92,5 +98,8 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     </div>
   );
 };
+
+// @ts-ignore
+Img.whyDidYouRender = true;
 
 export default Img;

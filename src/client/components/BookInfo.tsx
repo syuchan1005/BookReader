@@ -14,7 +14,8 @@ import {
 } from '@material-ui/core';
 import { orange as color } from '@material-ui/core/colors';
 import { useMutation } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import * as DeleteBookInfoMutation from '@client/graphqls/BookInfo_deleteBookInfo.gql';
+import * as EditBookInfoMutation from '@client/graphqls/BookInfo_editBookInfo.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -24,6 +25,7 @@ import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDial
 
 interface BookInfoProps extends QLBookInfo {
   style?: React.CSSProperties;
+  thumbnailSize?: number;
 
   onClick?: Function;
   onDeleted?: Function;
@@ -78,6 +80,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
     style,
+    thumbnailSize = 200,
     id: infoId,
     thumbnail,
     name,
@@ -96,44 +99,32 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
-  const [deleteBookInfo, { loading: delLoading }] = useMutation<{ del: BookInfoResult }>(gql`
-      mutation delete($id: ID!) {
-          del: deleteBookInfo(id: $id) {
-              success
-              code
-              books {
-                  id
-                  pages
-              }
-          }
-      }
-  `, {
-    variables: {
-      id: infoId,
+  const [deleteBookInfo, { loading: delLoading }] = useMutation<{ del: BookInfoResult }>(
+    DeleteBookInfoMutation,
+    {
+      variables: {
+        id: infoId,
+      },
+      onCompleted({ del }) {
+        setAskDelete(!del.success);
+        if (del.success && onDeleted) onDeleted(del.books);
+      },
     },
-    onCompleted({ del }) {
-      setAskDelete(!del.success);
-      if (del.success && onDeleted) onDeleted(del.books);
-    },
-  });
+  );
 
-  const [editBookInfo, { loading: editLoading }] = useMutation<{ edit: Result }>(gql`
-    mutation edit($id: ID! $name: String $thumbnail: String) {
-        edit: editBookInfo(id: $id name: $name thumbnail: $thumbnail) {
-            success
-            code
-        }
-    }
-  `, {
-    variables: {
-      id: infoId,
-      ...editContent,
+  const [editBookInfo, { loading: editLoading }] = useMutation<{ edit: Result }>(
+    EditBookInfoMutation,
+    {
+      variables: {
+        id: infoId,
+        ...editContent,
+      },
+      onCompleted({ edit }) {
+        setEditDialog(!edit.success);
+        if (edit.success && onEdit) onEdit();
+      },
     },
-    onCompleted({ edit }) {
-      setEditDialog(!edit.success);
-      if (edit.success && onEdit) onEdit();
-    },
-  });
+  );
 
   const clickEditBookInfo = () => {
     setMenuAnchor(null);
@@ -177,7 +168,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
-          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
+          src={thumbnail ? thumbnail.replace('.jpg', `_${thumbnailSize}x0.jpg`) : undefined}
           alt={name}
           className={classes.thumbnail}
           noSave={false}
@@ -218,5 +209,8 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     </Card>
   );
 };
+
+// @ts-ignore
+BookInfo.whyDidYouRender = true;
 
 export default BookInfo;

@@ -4,19 +4,23 @@ import {
   makeStyles,
   Theme,
   MuiThemeProvider,
-  IconButton,
-  Icon,
-  Slider, Button, useTheme, createMuiTheme,
+  Slider,
+  Button,
+  useTheme,
+  createMuiTheme, Menu, MenuItem,
 } from '@material-ui/core';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
 import { Observer } from 'mobx-react';
 
+import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
+
+import { Book as BookType } from '@common/GraphqlTypes';
+import useDebounceValue from '@client/hooks/useDebounceValue';
+
+import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import Img from '../components/Img';
-import { Book as BookType } from '../../common/GraphqlTypes';
-import useDebounceValue from '../hooks/useDebounceValue';
 
 interface BookProps {
   store: any;
@@ -94,22 +98,7 @@ const Book: React.FC = (props: BookProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ book: BookType }>(gql`
-      query ($id: ID!) {
-          book(id: $id) {
-              id
-              number
-              pages
-              info {
-                  id
-                  name
-              }
-              
-              nextBook
-              prevBook
-          }
-      }
-  `, {
+  } = useQuery<{ book: BookType }>(BookQuery, {
     variables: {
       id: match.params.id,
     },
@@ -162,6 +151,34 @@ const Book: React.FC = (props: BookProps) => {
     ...theme,
     direction: readOrder === 1 ? 'rtl' : 'ltr',
   }), [theme, readOrder]);
+
+  const effectTheme = React.useMemo(() => createMuiTheme({
+    ...theme,
+    palette: {
+      primary: {
+        main: orange['700'],
+      },
+    },
+  }), [theme]);
+
+  const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
+  const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
+  const [effectPercentage, setEffectPercentage] = React.useState(0);
+
+  const effectBackGround = React.useMemo(() => {
+    switch (effect) {
+      case 'dark':
+        return {
+          backgroundColor: `rgba(0, 0, 0, ${effectPercentage / 100}`,
+        };
+      case 'paper':
+        return {
+          backgroundColor: `rgba(255, 250, 240, ${effectPercentage / 100}`,
+        };
+      default:
+        return undefined;
+    }
+  }, [effect, effectPercentage]);
 
   const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
@@ -281,10 +298,15 @@ const Book: React.FC = (props: BookProps) => {
   const pages = [...Array(data.book.pages).keys()]
     .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
 
+  const clickEffect = (eff) => {
+    setEffect(eff);
+    setEffectMenuAnchor(null);
+  };
+
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
-      <div className={classes.overlay}>
+      <div className={classes.overlay} style={effectBackGround}>
         <Observer>
           {() => (props.store.showAppBar ? (
             // eslint-disable-next-line
@@ -297,9 +319,7 @@ const Book: React.FC = (props: BookProps) => {
           {() => (props.store.showAppBar ? (
             // eslint-disable-next-line
             <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
-              <IconButton size="small" onClick={decrement}>
-                <Icon style={{ color: 'white' }}>keyboard_arrow_left</Icon>
-              </IconButton>
+              <div />
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
@@ -307,9 +327,23 @@ const Book: React.FC = (props: BookProps) => {
               >
                 {['L > R', 'L < R'][readOrder]}
               </Button>
-              <IconButton size="small" onClick={increment}>
-                <Icon style={{ color: 'white' }}>keyboard_arrow_right</Icon>
-              </IconButton>
+              <Button
+                aria-controls="effect menu"
+                aria-haspopup
+                onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
+                style={{ color: 'white' }}
+              >
+                {effect || 'normal'}
+              </Button>
+              <Menu
+                anchorEl={effectMenuAnchor}
+                open={Boolean(effectMenuAnchor)}
+                onClose={() => setEffectMenuAnchor(null)}
+              >
+                <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
+                <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
+                <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
+              </Menu>
               <div className={classes.bottomSlider}>
                 <MuiThemeProvider theme={sliderTheme}>
                   <Slider
@@ -322,6 +356,19 @@ const Book: React.FC = (props: BookProps) => {
                   />
                 </MuiThemeProvider>
               </div>
+              {(effect) && (
+                <div className={classes.bottomSlider}>
+                  <MuiThemeProvider theme={effectTheme}>
+                    <Slider
+                      valueLabelDisplay="auto"
+                      max={100}
+                      min={0}
+                      value={effectPercentage}
+                      onChange={(e, v: number) => setEffectPercentage(v)}
+                    />
+                  </MuiThemeProvider>
+                </div>
+              )}
             </div>
           ) : null)}
         </Observer>
@@ -358,5 +405,8 @@ const Book: React.FC = (props: BookProps) => {
     </div>
   );
 };
+
+// @ts-ignore
+Book.whyDidYouRender = true;
 
 export default Book;

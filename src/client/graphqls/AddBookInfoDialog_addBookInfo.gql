@@ -1,0 +1,6 @@
+mutation add($name: String! $books: [InputBook!] $compress: Upload) {
+    add: addBookInfo(name: $name books: $books, compressBooks: $compress) {
+        success
+        code
+    }
+}

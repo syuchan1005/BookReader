@@ -14,7 +14,8 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import * as DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
+import * as EditBookMutation from '@client/graphqls/Book_editBook.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -23,6 +24,8 @@ import Img from './Img';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
 interface BookProps extends QLBook {
+  thumbnailSize?: number;
+  thumbnailNoSave?: boolean;
   name: string;
   reading?: boolean;
   onClick?: Function;
@@ -74,6 +77,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const Book: React.FC<BookProps> = (props: BookProps) => {
   const classes = useStyles(props);
   const {
+    thumbnailSize = 200,
+    thumbnailNoSave,
     thumbnail,
     number,
     pages,
@@ -93,14 +98,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(gql`
-      mutation delete($id: ID!) {
-          del: deleteBook(id: $id) {
-              success
-              code
-          }
-      }
-  `, {
+  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(DeleteBookMutation, {
     variables: {
       id: bookId,
     },
@@ -110,14 +108,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(gql`
-      mutation edit($id: ID! $number: String $thumbnail: String) {
-          edit: editBook(id: $id number: $number thumbnail: $thumbnail) {
-              success
-              code
-          }
-      }
-  `, {
+  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(EditBookMutation, {
     variables: {
       id: bookId,
       ...editContent,
@@ -172,10 +163,10 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
       )}
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
-          src={thumbnail ? thumbnail.replace('.jpg', '_200x.jpg') : undefined}
+          src={thumbnail ? `${thumbnail.replace('.jpg', `_${thumbnailSize}x0.jpg`)}` : undefined}
           alt={number}
           className={classes.thumbnail}
-          noSave={false}
+          noSave={thumbnailNoSave}
         />
         <CardContent className={classes.cardContent}>
           <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
@@ -212,5 +203,8 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     </Card>
   );
 };
+
+// @ts-ignore
+Book.whyDidYouRender = true;
 
 export default Book;

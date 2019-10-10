@@ -1,0 +1,10 @@
+mutation delete($id: ID!) {
+    del: deleteBookInfo(id: $id) {
+        success
+        code
+        books {
+            id
+            pages
+        }
+    }
+}

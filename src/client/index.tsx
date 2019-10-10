@@ -10,11 +10,19 @@ import getClient from './apollo';
 
 const wb = regSW();
 
-getClient().then((client) => {
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line global-require
+  const whyDidYouRender = require('@welldone-software/why-did-you-render');
+  whyDidYouRender(React, {
+    collapseGroups: true,
+  });
+}
+
+getClient().then(([client, persistor]) => {
   ReactDOM.render(
     (
       <ApolloProvider client={client}>
-        <App wb={wb} />
+        <App wb={wb} persistor={persistor} />
       </ApolloProvider>
     ),
     document.getElementById('app'),

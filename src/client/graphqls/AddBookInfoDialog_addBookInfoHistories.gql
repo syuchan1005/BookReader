@@ -1,0 +1,6 @@
+mutation add($histories: [BookInfoHistory!]!) {
+    add: addBookInfoHistories(histories: $histories) {
+        success
+        code
+    }
+}

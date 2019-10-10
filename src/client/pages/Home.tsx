@@ -1,25 +1,28 @@
 import * as React from 'react';
 import {
-  Button,
+  CircularProgress,
   createStyles,
   Fab,
   Icon,
   makeStyles,
-  Theme,
+  Theme, useTheme,
 } from '@material-ui/core';
-import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import { useObserver } from 'mobx-react';
-
+import { Waypoint } from 'react-waypoint';
 import useReactRouter from 'use-react-router';
+
+import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
-import { BookInfo as BookInfoType } from '@common/GraphqlTypes';
+import { BookInfoList as BookInfoListType } from '@common/GraphqlTypes';
+import useDebounceValue from '@client/hooks/useDebounceValue';
+import useLoadMore from '@client/hooks/useLoadMore';
 
 import BookInfo from '../components/BookInfo';
 import db from '../Database';
-import useDebounceValue from '../hooks/useDebounceValue';
+
 
 interface HomeProps {
   store: any;
@@ -66,8 +69,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
   },
-  readMoreButton: {
+  loadMoreProgress: {
     gridColumn: '1 / end',
+    display: 'flex',
+    justifyContent: 'center',
   },
 }));
 
@@ -75,6 +80,7 @@ const Home: React.FC = (props: HomeProps) => {
   // eslint-disable-next-line
   props.store.barTitle = '';
   const classes = useStyles(props);
+  const theme = useTheme();
   const { history } = useReactRouter();
 
   const [search, setSearch] = React.useState(null);
@@ -87,17 +93,7 @@ const Home: React.FC = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useQuery<{ bookInfos: BookInfoType[] }>(gql`
-      query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean){
-          bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history) {
-              id
-              name
-              count
-              thumbnail
-              history
-          }
-      }
-  `, {
+  } = useQuery<{ bookInfos: BookInfoListType }>(BookInfosQuery, {
     variables: {
       offset: 0,
       limit: 10,
@@ -108,6 +104,8 @@ const Home: React.FC = (props: HomeProps) => {
       history: props.store.history || !!debounceSearch,
     },
   });
+
+  const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
 
   useObserver(() => {
     if (search !== props.store.searchText) {
@@ -124,7 +122,7 @@ const Home: React.FC = (props: HomeProps) => {
     );
   }
 
-  const infos = (data.bookInfos || []);
+  const infos = (data.bookInfos.infos || []);
   const limit = infos.length;
   const onDeletedBookInfo = (info, books) => {
     // noinspection JSIgnoredPromiseFromCall
@@ -143,15 +141,18 @@ const Home: React.FC = (props: HomeProps) => {
   };
 
   const clickLoadMore = () => {
-    // noinspection JSIgnoredPromiseFromCall,JSUnusedGlobalSymbols
-    fetchMore({
+    // @ts-ignore
+    loadMore({
       variables: {
         offset: infos.length,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
         return {
-          bookInfos: [...prev.bookInfos, ...fetchMoreResult.bookInfos],
+          bookInfos: {
+            ...fetchMoreResult.bookInfos,
+            infos: [...prev.bookInfos.infos, ...fetchMoreResult.bookInfos.infos],
+          },
         };
       },
     });
@@ -167,15 +168,17 @@ const Home: React.FC = (props: HomeProps) => {
             onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
             onDeleted={(books) => onDeletedBookInfo(info, books)}
             onEdit={() => refetch({ offset: 0, limit })}
+            thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
           />
         ))}
-        <Button
-          fullWidth
-          className={classes.readMoreButton}
-          onClick={clickLoadMore}
-        >
-          Load More
-        </Button>
+        {(isLoadingMore) && (
+          <div className={classes.loadMoreProgress}>
+            <CircularProgress color="secondary" />
+          </div>
+        )}
+        {(!isLoadingMore && infos.length < data.bookInfos.length) && (
+          <Waypoint onEnter={clickLoadMore} />
+        )}
       </div>
       <Fab
         className={classes.addButton}
@@ -208,5 +211,8 @@ const Home: React.FC = (props: HomeProps) => {
     </div>
   );
 };
+
+// @ts-ignore
+Home.whyDidYouRender = true;
 
 export default Home;

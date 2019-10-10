@@ -7,12 +7,15 @@ import {
   DialogContent,
   DialogTitle,
   makeStyles,
-  Theme,
+  Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import * as BookInfoQuery from '@client/graphqls/SelectBookInfoThumbnailDialog_bookInfo.gql';
+import * as EditBookInfoMutation from '@client/graphqls/SelectBookInfoThumbnailDialog_editBookInfo.gql';
+
 import { BookInfo as BookInfoType, Result } from '@common/GraphqlTypes';
 import Book from '@client/components/Book';
+import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -49,46 +52,25 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     loading: infoLoading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(gql`
-      query ($id: ID!){
-          bookInfo(id: $id) {
-              id
-              name
-              books {
-                  id
-                  number
-                  pages
-                  thumbnail
-
-                  info {
-                      id
-                  }
-              }
-          }
-      }
-  `, {
+  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
     skip: !open,
     variables: {
       id: infoId,
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(gql`
-    mutation ($id: ID! $th: String){
-        edit: editBookInfo(id: $id thumbnail: $th) {
-            success
-            code
-        }
-    }
-  `, {
-    variables: {
-      id: infoId,
+  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(
+    EditBookInfoMutation,
+    {
+      variables: {
+        id: infoId,
+      },
+      onCompleted({ edit: { success } }) {
+        if (success && onClose) onClose();
+        if (success && onEdit) onEdit();
+      },
     },
-    onCompleted({ edit: { success } }) {
-      if (success && onClose) onClose();
-      if (success && onEdit) onEdit();
-    },
-  });
+  );
 
   const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);
 
@@ -97,8 +79,13 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     if (onClose) onClose();
   };
 
+  const theme = useTheme();
+  const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [count, setCount] = React.useState(5);
+
   return (
-    <Dialog open={open} onClose={closeDialog}>
+    <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
 
       <DialogContent>
@@ -110,15 +97,22 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
         ) : null}
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
-            {data.bookInfo.books.map((book) => (
+            {data.bookInfo.books.slice(0, count).map((book) => (
               <Book
                 key={book.id}
                 simple
                 name={data.bookInfo.name}
                 {...book}
                 onClick={() => changeThumbnail({ variables: { th: book.thumbnail } })}
+                thumbnailNoSave
+                thumbnailSize={125}
               />
             ))}
+            {(count < data.bookInfo.books.length) && (
+              <Waypoint
+                onEnter={() => setCount(Math.min(count + 5, data.bookInfo.books.length))}
+              />
+            )}
           </div>
         ) : null}
       </DialogContent>
@@ -131,5 +125,8 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     </Dialog>
   );
 };
+
+// @ts-ignore
+SelectBookInfoThumbnailDialog.whyDidYouRender = true;
 
 export default SelectBookInfoThumbnailDialog;

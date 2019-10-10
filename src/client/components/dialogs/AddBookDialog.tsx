@@ -11,8 +11,11 @@ import {
   makeStyles,
   TextField, Theme,
 } from '@material-ui/core';
-import gql from 'graphql-tag';
 import { useMutation, useSubscription } from '@apollo/react-hooks';
+
+import * as AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
+import * as AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';
+
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
 import { Result } from '@common/GraphqlTypes';
@@ -73,14 +76,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     .useState<ProgressEvent | undefined>(undefined);
   const [addBookAbort, setAddBookAbort] = React
     .useState<() => void | undefined>(undefined);
-  const [addBook, { loading }] = useMutation<{ adds: Result[] }>(gql`
-      mutation add($id: ID!, $books: [InputBook!]!) {
-          adds: addBooks(id: $id books: $books) {
-              success
-              code
-          }
-      }
-  `, {
+  const [addBook, { loading }] = useMutation<{ adds: Result[] }>(AddBooksMutation, {
     variables: {
       id: infoId,
       books: addBooks,
@@ -109,11 +105,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     },
   });
 
-  const { data: subscriptionData } = useSubscription(gql`
-      subscription ($id: ID!){
-          addBooks(id: $id)
-      }
-  `, {
+  const { data: subscriptionData } = useSubscription(AddBooksSubscription, {
     skip: !subscriptionId,
     variables: {
       id: subscriptionId,
@@ -134,9 +126,9 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     setAddBooks([
       ...addBooks,
       ...files.map((f, i) => {
-        let nums = f.name.match(/\d+/);
+        let nums = f.name.match(/\d+/g);
         if (nums) {
-          nums = nums[nums.length - 1];
+          nums = Number(nums[nums.length - 1]).toString(10);
         } else {
           nums = `${addBooks.length + i + 1}`;
         }
@@ -232,5 +224,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     </Dialog>
   );
 };
+
+// @ts-ignore
+AddBookDialog.whyDidYouRender = true;
 
 export default AddBookDialog;

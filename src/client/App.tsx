@@ -59,6 +59,7 @@ const themes = {
 
 interface AppProps {
   wb: any;
+  persistor: any;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -179,6 +180,25 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     }
   };
 
+  const purgeCache = () => {
+    props.persistor.purge()
+      .then(() => {
+        if (store.wb) {
+          navigator.serviceWorker.addEventListener('message', () => {
+            window.location.reload();
+          });
+          store.wb.messageSW({
+            type: 'PURGE_CACHE',
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 10 * 1000);
+        } else {
+          window.location.reload();
+        }
+      });
+  };
+
   return (
     <MuiThemeProvider theme={themes[store.theme] || themes.light}>
       <CssBaseline />
@@ -229,7 +249,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 open={!!menuAnchorEl}
                 onClose={() => setMenuAnchorEl(null)}
               >
-                <ListItem>
+                <ListItem style={{ outline: '0' }}>
                   <ListItemText>History</ListItemText>
                   <MSwitch
                     checked={store.history}
@@ -237,6 +257,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   />
                 </ListItem>
                 <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
+                <MenuItem onClick={purgeCache}>Purge Cache</MenuItem>
               </Menu>
               <Menu
                 getContentAnchorEl={null}
@@ -281,5 +302,8 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     </MuiThemeProvider>
   );
 };
+
+// @ts-ignore
+App.whyDidYouRender = true;
 
 export default App;

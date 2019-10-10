@@ -1,0 +1,6 @@
+mutation add($id: ID!, $books: [InputBook!]!) {
+    adds: addBooks(id: $id books: $books) {
+        success
+        code
+    }
+}

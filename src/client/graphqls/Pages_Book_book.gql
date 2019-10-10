@@ -1,0 +1,14 @@
+query ($id: ID!) {
+    book(id: $id) {
+        id
+        number
+        pages
+        info {
+            id
+            name
+        }
+
+        nextBook
+        prevBook
+    }
+}

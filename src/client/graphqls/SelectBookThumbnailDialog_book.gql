@@ -1,0 +1,6 @@
+query ($id: ID!){
+    book(id: $id) {
+        id
+        pages
+    }
+}

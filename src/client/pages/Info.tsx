@@ -1,14 +1,16 @@
 import * as React from 'react';
 import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
 import {
   makeStyles,
   createStyles,
   Fab,
   Icon,
   Theme,
+  useTheme,
 } from '@material-ui/core';
+
+import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
 
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
@@ -23,7 +25,7 @@ interface InfoProps {
 const useStyles = makeStyles((theme: Theme) => createStyles({
   info: {
     height: '100%',
-    marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
+    // marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
   },
   infoGrid: {
     padding: theme.spacing(1),
@@ -56,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Info: React.FC = (props: InfoProps) => {
   const classes = useStyles(props);
+  const theme = useTheme();
   const { match, history } = useReactRouter();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
@@ -64,24 +67,7 @@ const Info: React.FC = (props: InfoProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(gql`
-      query ($id: ID!){
-          bookInfo(id: $id) {
-              id
-              name
-              books {
-                  id
-                  number
-                  pages
-                  thumbnail
-                  
-                  info {
-                      id
-                  }
-              }
-          }
-      }
-  `, {
+  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
     variables: {
       id: match.params.id,
     },
@@ -157,6 +143,7 @@ const Info: React.FC = (props: InfoProps) => {
                 onClick={() => clickBook(book)}
                 onDeleted={() => onDeletedBook(book)}
                 onEdit={() => refetch()}
+                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
               />
             ),
           )
@@ -187,5 +174,8 @@ const Info: React.FC = (props: InfoProps) => {
     </div>
   );
 };
+
+// @ts-ignore
+Info.whyDidYouRender = true;
 
 export default Info;

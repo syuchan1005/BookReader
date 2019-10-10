@@ -8,12 +8,15 @@ import {
   DialogContent,
   DialogTitle,
   makeStyles,
-  Theme,
+  Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import * as BookQuery from '@client/graphqls/SelectBookThumbnailDialog_book.gql';
+import * as EditBookMutation from '@client/graphqls/SelectBookThumbnailDialog_editBook.gql';
+
 import { Book as BookType, Result } from '@common/GraphqlTypes';
 import Img from '@client/components/Img';
+import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -55,36 +58,25 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     loading: infoLoading,
     error,
     data,
-  } = useQuery<{ book: BookType }>(gql`
-      query ($id: ID!){
-          book(id: $id) {
-              id
-              pages
-          }
-      }
-  `, {
+  } = useQuery<{ book: BookType }>(BookQuery, {
     skip: !open,
     variables: {
       id: bookId,
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(gql`
-    mutation ($id: ID! $th: String){
-        edit: editBook(id: $id thumbnail: $th) {
-            success
-            code
-        }
-    }
-  `, {
-    variables: {
-      id: bookId,
+  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(
+    EditBookMutation,
+    {
+      variables: {
+        id: bookId,
+      },
+      onCompleted({ edit: { success } }) {
+        if (success && onClose) onClose();
+        if (success && onEdit) onEdit();
+      },
     },
-    onCompleted({ edit: { success } }) {
-      if (success && onClose) onClose();
-      if (success && onEdit) onEdit();
-    },
-  });
+  );
 
   const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);
 
@@ -93,8 +85,13 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     if (onClose) onClose();
   };
 
+  const theme = useTheme();
+  const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [count, setCount] = React.useState(5);
+
   return (
-    <Dialog open={open} onClose={closeDialog}>
+    <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
 
       <DialogContent>
@@ -106,19 +103,20 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
         ) : null}
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
-            {[...Array(data.book.pages).keys()]
+            {[...Array(count).keys()]
               .map((i) => i.toString(10).padStart(data.book.pages.toString(10).length, '0'))
-              .map((n) => `/book/${bookId}/${n}_125x.jpg`)
-              .map((th, i) => (
-                <Card key={th}>
+              .map((n, i) => (
+                <Card key={`/book/${bookId}/${n}_125x0.jpg`}>
                   <CardActionArea
                     onClick={() => changeThumbnail({
-                      variables: { th },
+                      variables: {
+                        th: `/book/${bookId}/${n}.jpg`,
+                      },
                     })}
                   >
                     <Img
                       className={classes.thumbnail}
-                      src={th}
+                      src={`/book/${bookId}/${n}_125x0.jpg`}
                       alt={(i + 1).toString(10)}
                       minWidth={125}
                       minHeight={150}
@@ -126,6 +124,11 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                   </CardActionArea>
                 </Card>
               ))}
+            {(count < data.book.pages) && (
+              <Waypoint
+                onEnter={() => setCount(Math.min(count + 5, data.book.pages))}
+              />
+            )}
           </div>
         ) : null}
       </DialogContent>
@@ -138,5 +141,8 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     </Dialog>
   );
 };
+
+// @ts-ignore
+SelectBookThumbnailDialog.whyDidYouRender = true;
 
 export default SelectBookThumbnailDialog;
