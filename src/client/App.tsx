@@ -190,6 +190,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
           store.wb.messageSW({
             type: 'PURGE_CACHE',
           });
+          setTimeout(() => {
+            window.location.reload();
+          }, 10 * 1000);
         } else {
           window.location.reload();
         }
