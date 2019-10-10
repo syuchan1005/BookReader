@@ -13,7 +13,9 @@ const wb = regSW();
 if (process.env.NODE_ENV !== 'production') {
   // eslint-disable-next-line global-require
   const whyDidYouRender = require('@welldone-software/why-did-you-render');
-  whyDidYouRender(React);
+  whyDidYouRender(React, {
+    collapseGroups: true,
+  });
 }
 
 getClient().then(([client, persistor]) => {

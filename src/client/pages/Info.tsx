@@ -25,7 +25,7 @@ interface InfoProps {
 const useStyles = makeStyles((theme: Theme) => createStyles({
   info: {
     height: '100%',
-    marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
+    // marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
   },
   infoGrid: {
     padding: theme.spacing(1),

@@ -151,7 +151,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setAddBooks([
       ...addBooks,
       ...files.map((f, i) => {
-        let nums = f.name.match(/\d+/);
+        let nums = f.name.match(/\d+/g);
         if (nums) {
           nums = Number(nums[nums.length - 1]).toString(10);
         } else {
