@@ -15,6 +15,7 @@ import * as EditBookInfoMutation from '@client/graphqls/SelectBookInfoThumbnailD
 
 import { BookInfo as BookInfoType, Result } from '@common/GraphqlTypes';
 import Book from '@client/components/Book';
+import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -33,9 +34,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
-  },
-  loadMoreButton: {
-    gridColumn: '1 / end',
   },
 }));
 
@@ -111,13 +109,9 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
               />
             ))}
             {(count < data.bookInfo.books.length) && (
-              <Button
-                fullWidth
-                className={classes.loadMoreButton}
-                onClick={() => setCount(Math.min(count + 5, data.bookInfo.books.length))}
-              >
-                Load More
-              </Button>
+              <Waypoint
+                onEnter={() => setCount(Math.min(count + 5, data.bookInfo.books.length))}
+              />
             )}
           </div>
         ) : null}

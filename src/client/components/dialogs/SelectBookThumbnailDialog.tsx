@@ -16,6 +16,7 @@ import * as EditBookMutation from '@client/graphqls/SelectBookThumbnailDialog_ed
 
 import { Book as BookType, Result } from '@common/GraphqlTypes';
 import Img from '@client/components/Img';
+import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -39,9 +40,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     width: '100%',
     minHeight: '100%',
     objectFit: 'contain',
-  },
-  loadMoreButton: {
-    gridColumn: '1 / end',
   },
 }));
 
@@ -127,13 +125,9 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                 </Card>
               ))}
             {(count < data.book.pages) && (
-              <Button
-                fullWidth
-                className={classes.loadMoreButton}
-                onClick={() => setCount(Math.min(count + 5, data.book.pages))}
-              >
-                Load More
-              </Button>
+              <Waypoint
+                onEnter={() => setCount(Math.min(count + 5, data.book.pages))}
+              />
             )}
           </div>
         ) : null}
