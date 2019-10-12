@@ -98,6 +98,7 @@ export default async () => {
           `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
           {
             lazy: true,
+            reconnect: true,
           },
         )),
         createUploadLink({
