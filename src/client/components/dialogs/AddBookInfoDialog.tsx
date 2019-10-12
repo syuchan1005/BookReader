@@ -323,7 +323,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
       })()}
 
       <DialogActions>
-        <Button onClick={() => setShowAddHistory(!showAddHistory)}>
+        <Button onClick={() => setShowAddHistory(!showAddHistory)} disabled={loading}>
           {`Add ${showAddHistory ? 'books' : 'history'}`}
         </Button>
 
