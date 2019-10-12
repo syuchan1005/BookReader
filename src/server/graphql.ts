@@ -288,7 +288,7 @@ export default class Graphql {
             {
               pubsub: {
                 key: Graphql.SubscriptionKeys.ADD_BOOK_INFO,
-                fieldName: 'AddBookInfo',
+                fieldName: 'addBookInfo',
                 name,
               },
             },
