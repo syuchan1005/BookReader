@@ -61,7 +61,6 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   return (
     // eslint-disable-next-line
     <div
-      aria-hidden={hidden}
       className={state !== 1 ? classes.noImg : classes.hasImg}
       style={{
         ...style,
