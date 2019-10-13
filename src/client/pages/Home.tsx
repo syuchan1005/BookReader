@@ -14,6 +14,7 @@ import useReactRouter from 'use-react-router';
 
 import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
+import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { BookInfoList as BookInfoListType } from '@common/GraphqlTypes';
@@ -32,7 +33,6 @@ interface HomeProps {
 const useStyles = makeStyles((theme: Theme) => createStyles({
   home: {
     height: '100%',
-    // marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
   },
   homeGrid: {
     padding: theme.spacing(1),
@@ -52,14 +52,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   fab: {
     position: 'fixed',
-    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
     zIndex: 2,
   },
   addButton: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(11)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)}px)`,
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,

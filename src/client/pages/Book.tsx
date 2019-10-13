@@ -17,6 +17,7 @@ import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 
 import { Book as BookType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
+import { commonTheme } from '@client/App';
 
 import { orange } from '@material-ui/core/colors';
 import db from '../Database';
@@ -44,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     width: '100%',
     height: '100%',
     objectFit: 'contain',
-    paddingTop: 'env(safe-area-inset-top)',
+    paddingTop: commonTheme.safeArea.top,
   },
   overlay: {
     top: '0',
@@ -69,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     borderRadius: theme.spacing(1),
     position: 'absolute',
     '&.top': {
-      top: `calc(${theme.spacing(/* appBar */8 + 2)}px + env(safe-area-inset-top))`,
+      ...commonTheme.appbar(theme, 'top', `+ ${theme.spacing(2)}px`),
       whiteSpace: 'nowrap',
     },
     '&.bottom': {

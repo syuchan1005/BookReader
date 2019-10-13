@@ -12,6 +12,7 @@ import {
 
 import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
 
+import { commonTheme } from '@client/App';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 import Book from '../components/Book';
@@ -25,7 +26,6 @@ interface InfoProps {
 const useStyles = makeStyles((theme: Theme) => createStyles({
   info: {
     height: '100%',
-    // marginBottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(10)}px)`,
   },
   infoGrid: {
     padding: theme.spacing(1),
@@ -42,14 +42,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   fab: {
     position: 'fixed',
-    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(2)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
     zIndex: 2,
   },
   addButton: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: `calc(env(safe-area-inset-bottom, 0) + ${theme.spacing(11)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)}px)`,
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,

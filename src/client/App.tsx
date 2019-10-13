@@ -1,34 +1,55 @@
 import * as React from 'react';
-import { Router, Route, Switch } from 'react-router-dom';
+import { Route, Router, Switch } from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
-  CssBaseline,
   AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Icon,
-  MuiThemeProvider,
   createMuiTheme,
-  makeStyles,
   createStyles,
+  CssBaseline,
+  Icon,
+  IconButton,
   InputBase,
-  Menu,
-  MenuItem,
-  Theme,
   ListItem,
   ListItemText,
+  makeStyles,
+  Menu,
+  MenuItem,
+  MuiThemeProvider,
   Switch as MSwitch,
+  Theme,
+  Toolbar,
+  Typography,
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
-import { useLocalStore, Observer } from 'mobx-react';
+import { Observer, useLocalStore } from 'mobx-react';
 
 import Home from './pages/Home';
 import Info from './pages/Info';
 import Book from './pages/Book';
 import Error from './pages/Error';
 import useMatchMedia from './hooks/useMatchMedia';
+
+export const commonTheme = {
+  safeArea: {
+    top: 'env(safe-area-inset-top)',
+    bottom: 'env(safe-area-inset-bottom)',
+    right: 'env(safe-area-inset-right)',
+    left: 'env(safe-area-inset-left)',
+  },
+  appbar: (theme: Theme, styleName: string, calcOption?: string) => Object.fromEntries(
+    Object.keys(theme.mixins.toolbar).map<[string, string | object]>((key) => {
+      const val = theme.mixins.toolbar[key];
+      if (key === 'minHeight') {
+        return [styleName, `calc(${commonTheme.safeArea.top} + ${val}px${calcOption || ''})`];
+      }
+      return [key, {
+        // @ts-ignore
+        [styleName]: `calc(${commonTheme.safeArea.top} + ${val.minHeight}px${calcOption || ''})`,
+      }];
+    }),
+  ),
+};
 
 const themes = {
   light: createMuiTheme({
@@ -62,6 +83,7 @@ interface AppProps {
   persistor: any;
 }
 
+// @ts-ignore
 const useStyles = makeStyles((theme: Theme) => createStyles({
   backIcon: {
     color: 'white',
@@ -72,10 +94,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     flexGrow: 1,
   },
   appBar: {
-    '& + .appbar--margin': {
-      paddingTop: 'calc(env(safe-area-inset-top, 0) + 64px)',
-    },
-    paddingTop: 'env(safe-area-inset-top)',
+    '& + .appbar--margin': commonTheme.appbar(theme, 'paddingTop'),
+    paddingTop: commonTheme.safeArea.top,
   },
   search: {
     position: 'relative',
@@ -162,8 +182,12 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     // https://stackoverflow.com/questions/5573096/detecting-webp-support
     new Promise((resolve) => {
       const imgElem = window.document.createElement('img');
-      imgElem.onload = () => { resolve(imgElem.width === 2 && imgElem.height === 1); };
-      imgElem.onerror = () => { resolve(false); };
+      imgElem.onload = () => {
+        resolve(imgElem.width === 2 && imgElem.height === 1);
+      };
+      imgElem.onerror = () => {
+        resolve(false);
+      };
       // noinspection SpellCheckingInspection
       imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
     }).then((r: boolean) => {
@@ -225,7 +249,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                     }}
                     inputProps={{ 'aria-label': 'search' }}
                     value={store.searchText}
-                    onChange={(e) => { store.searchText = e.target.value; }}
+                    onChange={(e) => {
+                      store.searchText = e.target.value;
+                    }}
                   />
                 </div>
               ) : null}
@@ -253,7 +279,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   <ListItemText>History</ListItemText>
                   <MSwitch
                     checked={store.history}
-                    onChange={(e) => { store.history = e.target.checked; }}
+                    onChange={(e) => {
+                      store.history = e.target.checked;
+                    }}
                   />
                 </ListItem>
                 <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
