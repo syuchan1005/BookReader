@@ -62,7 +62,6 @@ export default class Graphql {
       schema: makeExecutableSchema({
         typeDefs,
         resolvers: {
-          Book: this.Book,
           /* handler(parent, args, context, info) */
           Query,
           Mutation,
@@ -288,7 +287,7 @@ export default class Graphql {
             {
               pubsub: {
                 key: Graphql.SubscriptionKeys.ADD_BOOK_INFO,
-                fieldName: 'AddBookInfo',
+                fieldName: 'addBookInfo',
                 name,
               },
             },
@@ -594,7 +593,7 @@ export default class Graphql {
         deleteTempFolder?: (resolve, reject) => void,
       ) {
         let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
-          (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/.test(f),
+          (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
         ));
         if (files.length <= 0) {
           if (deleteTempFolder) await new Promise(deleteTempFolder);
@@ -621,7 +620,7 @@ export default class Graphql {
         await asyncForEach(files, async (f, i) => {
           const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
           const dist = `storage/book/${bookId}/${fileName}`;
-          if (/\.jpe?g$/.test(f)) {
+          if (/\.jpe?g$/i.test(f)) {
             await renameFile(f, dist);
           } else {
             await new Promise((resolve) => {
@@ -714,7 +713,8 @@ export default class Graphql {
         const { mimetype, filename } = awaitFile;
         let archiveType = archiveTypes[mimetype];
         if (!archiveType) {
-          archiveType = [...new Set(Object.values(archiveTypes))].find((ext) => filename.endsWith(`.${ext}`));
+          archiveType = [...new Set(Object.values(archiveTypes))]
+            .find((ext) => filename.endsWith(`.${ext}`));
         }
         if (!archiveType) {
           return {
@@ -727,28 +727,6 @@ export default class Graphql {
           ...awaitFile,
           archiveType,
         };
-      },
-    };
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get Book() {
-    return {
-      nextBook: async (parent) => {
-        if (!parent || !parent.info || !parent.info.infoId) return null;
-        const books = await BookModel.findAll({
-          where: { infoId: parent.info.infoId },
-        });
-        const nowIndex = books.findIndex((book) => book.id === parent.bookId);
-        return (books[nowIndex + 1] || {}).id;
-      },
-      prevBook: async (parent) => {
-        if (!parent || !parent.info || !parent.info.infoId) return null;
-        const books = await BookModel.findAll({
-          where: { infoId: parent.info.infoId },
-        });
-        const nowIndex = books.findIndex((book) => book.id === parent.bookId);
-        return (books[nowIndex - 1] || {}).id;
       },
     };
   }
