@@ -17,6 +17,7 @@ import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 
 import { Book as BookType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
+import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import { commonTheme } from '@client/App';
 
 import { orange } from '@material-ui/core/colors';
@@ -114,6 +115,11 @@ const Book: React.FC = (props: BookProps) => {
   const debouncePage = useDebounceValue(page, 200);
   const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
 
+  const [prevBook, nextBook] = usePrevNextBook(
+    data ? data.book.info.id : undefined,
+    match.params.id,
+  );
+
   const setShowAppBar = (val) => {
     let v = val;
     if (v === undefined) v = !props.store.showAppBar;
@@ -123,7 +129,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const increment = () => {
     if (page === data.book.pages - 1) {
-      setRouteButton([false, !!(data.book && data.book.nextBook)]);
+      setRouteButton([false, !!(data.book && nextBook)]);
     } else if (page === 0 && routeButton[0]) {
       setRouteButton([false, false]);
       return;
@@ -136,7 +142,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const decrement = () => {
     if (page === 0) {
-      setRouteButton([!!(data.book && data.book.prevBook), false]);
+      setRouteButton([!!(data.book && prevBook), false]);
     } else if (page === data.book.pages - 1 && routeButton[1]) {
       setRouteButton([false, false]);
       return;
@@ -268,7 +274,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const clickRouteButton = (e, i) => {
     e.stopPropagation();
-    const bookId = [data.book.prevBook, data.book.nextBook][i];
+    const bookId = [prevBook, nextBook][i];
     if (!bookId) return;
     db.infoReads.put({
       infoId: data.book.info.id,

@@ -62,7 +62,6 @@ export default class Graphql {
       schema: makeExecutableSchema({
         typeDefs,
         resolvers: {
-          Book: this.Book,
           /* handler(parent, args, context, info) */
           Query,
           Mutation,
@@ -728,28 +727,6 @@ export default class Graphql {
           ...awaitFile,
           archiveType,
         };
-      },
-    };
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get Book() {
-    return {
-      nextBook: async (parent) => {
-        if (!parent || !parent.info || !parent.info.infoId) return null;
-        const books = await BookModel.findAll({
-          where: { infoId: parent.info.infoId },
-        });
-        const nowIndex = books.findIndex((book) => book.id === parent.bookId);
-        return (books[nowIndex + 1] || {}).id;
-      },
-      prevBook: async (parent) => {
-        if (!parent || !parent.info || !parent.info.infoId) return null;
-        const books = await BookModel.findAll({
-          where: { infoId: parent.info.infoId },
-        });
-        const nowIndex = books.findIndex((book) => book.id === parent.bookId);
-        return (books[nowIndex - 1] || {}).id;
       },
     };
   }

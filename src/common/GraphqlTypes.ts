@@ -14,9 +14,6 @@ export interface Book {
   pages: number;
   // infoId: string;
   info: BookInfo;
-
-  nextBook?: string | null;
-  prevBook?: string | null;
 }
 
 export interface Result {

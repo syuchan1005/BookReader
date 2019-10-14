@@ -57,9 +57,6 @@ type Book {
 
     # infoId: ID!
     info: BookInfo
-
-    prevBook: ID
-    nextBook: ID
 }
 
 type BookInfoList {

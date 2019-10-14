@@ -7,8 +7,5 @@ query ($id: ID!) {
             id
             name
         }
-
-        nextBook
-        prevBook
     }
 }
