@@ -114,44 +114,59 @@ const Book: React.FC = (props: BookProps) => {
   const [page, setPage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
   const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
+  const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
+  const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
+  const [effectPercentage, setEffectPercentage] = React.useState(0);
+  const [isPageSet, setPageSet] = React.useState(false);
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
     match.params.id,
   );
 
-  const setShowAppBar = (val) => {
+  const setShowAppBar = React.useCallback((val) => {
     let v = val;
     if (v === undefined) v = !props.store.showAppBar;
     // eslint-disable-next-line
     props.store.showAppBar = v;
-  };
+    // eslint-disable-next-line react/destructuring-assignment
+  }, [props.store.showAppBar]);
 
-  const increment = () => {
+  const increment = React.useCallback(() => {
+    let preRoute = [];
     if (page === data.book.pages - 1) {
-      setRouteButton([false, !!(data.book && nextBook)]);
+      preRoute = [false, !!(data.book && nextBook)];
     } else if (page === 0 && routeButton[0]) {
-      setRouteButton([false, false]);
+      preRoute = [false, false];
       return;
     } else {
-      setRouteButton([false, false]);
+      preRoute = [false, false];
+    }
+    if (preRoute[0] !== routeButton[0] || preRoute[1] !== routeButton[1]) {
+      setRouteButton(preRoute);
     }
     setPage(Math.min(page + 1, data.book.pages - 1));
     if (props.store.showAppBar) setShowAppBar(false);
-  };
+    // eslint-disable-next-line react/destructuring-assignment
+  }, [page, data, nextBook, routeButton[0], props.store.showAppBar]);
 
-  const decrement = () => {
+  const decrement = React.useCallback(() => {
+    let preRoute = [];
     if (page === 0) {
-      setRouteButton([!!(data.book && prevBook), false]);
+      preRoute = [!!(data.book && prevBook), false];
     } else if (page === data.book.pages - 1 && routeButton[1]) {
-      setRouteButton([false, false]);
+      preRoute = [false, false];
       return;
     } else {
-      setRouteButton([false, false]);
+      preRoute = [false, false];
+    }
+    if (preRoute[0] !== routeButton[0] || preRoute[1] !== routeButton[1]) {
+      setRouteButton(preRoute);
     }
     setPage(Math.max(page - 1, 0));
     if (props.store.showAppBar) setShowAppBar(false);
-  };
+    // eslint-disable-next-line react/destructuring-assignment
+  }, [page, data, prevBook, routeButton[1], props.store.showAppBar]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -168,10 +183,6 @@ const Book: React.FC = (props: BookProps) => {
     },
   }), [theme]);
 
-  const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
-  const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
-  const [effectPercentage, setEffectPercentage] = React.useState(0);
-
   const effectBackGround = React.useMemo(() => {
     switch (effect) {
       case 'dark':
@@ -187,7 +198,6 @@ const Book: React.FC = (props: BookProps) => {
     }
   }, [effect, effectPercentage]);
 
-  const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
     setShowAppBar(false);
     // eslint-disable-next-line
@@ -210,40 +220,41 @@ const Book: React.FC = (props: BookProps) => {
     };
   }, []);
 
-  if (isPageSet) {
-    db.bookReads.put({
-      bookId: match.params.id,
-      page,
-    }).catch(() => { /* ignored */
-    });
-  }
-
-  window.document.onkeydown = ({ key }) => {
-    switch (key) {
-      case 'ArrowRight':
-        if (readOrder === 0) increment();
-        else if (readOrder === 1) decrement();
-        break;
-      case 'ArrowLeft':
-        if (readOrder === 0) decrement();
-        else if (readOrder === 1) increment();
-        break;
-      case 'ArrowUp':
-        if (readOrder === 2) decrement();
-        else if (readOrder === 3) increment();
-        break;
-      case 'ArrowDown':
-        if (readOrder === 2) increment();
-        else if (readOrder === 3) decrement();
-        break;
-      default:
+  React.useEffect(() => {
+    if (isPageSet) {
+      db.bookReads.put({
+        bookId: match.params.id,
+        page,
+      }).catch(() => { /* ignored */
+      });
     }
-  };
+  }, [isPageSet, page]);
 
-  // eslint-disable-next-line
-  props.store.barTitle = 'Book';
+  React.useEffect(() => {
+    window.document.onkeydown = ({ key }) => {
+      switch (key) {
+        case 'ArrowRight':
+          if (readOrder === 0) increment();
+          else if (readOrder === 1) decrement();
+          break;
+        case 'ArrowLeft':
+          if (readOrder === 0) decrement();
+          else if (readOrder === 1) increment();
+          break;
+        case 'ArrowUp':
+          if (readOrder === 2) decrement();
+          else if (readOrder === 3) increment();
+          break;
+        case 'ArrowDown':
+          if (readOrder === 2) increment();
+          else if (readOrder === 3) decrement();
+          break;
+        default:
+      }
+    };
+  }, [readOrder, increment, decrement]);
 
-  const clickPage = (event) => {
+  const clickPage = React.useCallback((event) => {
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     const percentY = event.nativeEvent.y / event.target.offsetHeight;
     switch (readOrder) {
@@ -270,9 +281,9 @@ const Book: React.FC = (props: BookProps) => {
       default:
         setShowAppBar(undefined);
     }
-  };
+  }, [readOrder, increment, decrement]);
 
-  const clickRouteButton = (e, i) => {
+  const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
     const bookId = [prevBook, nextBook][i];
     if (!bookId) return;
@@ -285,7 +296,24 @@ const Book: React.FC = (props: BookProps) => {
     setTimeout(() => {
       history.replace(`/book/${bookId}`);
     });
-  };
+  }, [prevBook, nextBook, data, history]);
+
+  // eslint-disable-next-line
+  props.store.barTitle = 'Book';
+
+  const pages = React.useMemo(() => {
+    if (!data || !data.book) return [];
+    const sizes = [document.body.offsetWidth, document.body.offsetHeight];
+    sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
+    const pad = data.book.pages.toString(10).length;
+    return [...Array(data.book.pages).keys()]
+      .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
+  }, [data]);
+
+  const clickEffect = React.useCallback((eff) => {
+    setEffect(eff);
+    setEffectMenuAnchor(null);
+  }, []);
 
   if (loading || error || !data || !data.book) {
     return (
@@ -298,17 +326,6 @@ const Book: React.FC = (props: BookProps) => {
   }
   // eslint-disable-next-line
   props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
-
-  const sizes = [document.body.offsetWidth, document.body.offsetHeight];
-  sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
-  const pad = data.book.pages.toString(10).length;
-  const pages = [...Array(data.book.pages).keys()]
-    .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
-
-  const clickEffect = (eff) => {
-    setEffect(eff);
-    setEffectMenuAnchor(null);
-  };
 
   return (
     // eslint-disable-next-line
