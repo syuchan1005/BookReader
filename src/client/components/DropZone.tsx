@@ -4,6 +4,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
 
 import { archiveTypes } from '@common/Common';
+import useOS from '@client/hooks/useOS';
 
 interface FileFieldProps {
   onChange?<T extends File>
@@ -28,10 +29,12 @@ const DropZone: React.FC<FileFieldProps> = (props: FileFieldProps) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop: onChange });
 
+  const os = useOS();
+
   const acceptType = `${Object.keys(archiveTypes).join(',')},${[...new Set(Object.values(archiveTypes))].map((a) => `.${a}`).join(',')}`;
   return (
     <div {...getRootProps()} className={`${classes.dropZone}${isDragActive ? ' dragging' : ''}`}>
-      <input {...getInputProps()} accept={acceptType} />
+      <input {...getInputProps()} accept={os === 'iOS' ? undefined : acceptType} />
       {
         isDragActive
           ? <p>Drop the files here ...</p>
