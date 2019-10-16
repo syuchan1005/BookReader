@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     borderRadius: theme.spacing(1),
     position: 'absolute',
     '&.top': {
-      ...commonTheme.appbar(theme, 'top', `+ ${theme.spacing(2)}px`),
+      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}px`),
       whiteSpace: 'nowrap',
     },
     '&.bottom': {
