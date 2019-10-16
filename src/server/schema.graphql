@@ -20,6 +20,8 @@ type Mutation {
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
+
+    test(time: Int = 3000): Boolean
 }
 
 type Subscription {

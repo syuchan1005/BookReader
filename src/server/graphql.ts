@@ -48,6 +48,8 @@ export default class Graphql {
 
   private readonly pubsub: PubSub;
 
+  private gqlMiddleware; // : (ctx: any, next: Promise<any>) => any;
+
   get server() {
     // eslint-disable-next-line no-underscore-dangle
     return this._server;
@@ -197,6 +199,10 @@ export default class Graphql {
   get Mutation() {
     // noinspection JSUnusedGlobalSymbols
     return {
+      test: async (parent, { time }) => {
+        await (new Promise((r) => setTimeout(r, time)));
+        return true;
+      },
       addBookInfo: async (parent, {
         name,
         thumbnail,
@@ -735,10 +741,13 @@ export default class Graphql {
     await mkdirpIfNotExists('storage/bookInfo');
     await mkdirpIfNotExists('storage/book');
     await mkdirpIfNotExists('storage/cache/book');
-    await mkdirpIfNotExists('storage/cache/bookInfo');
 
     // eslint-disable-next-line no-underscore-dangle
-    app.use(this._server.getMiddleware({}));
+    if (!this.gqlMiddleware) this.gqlMiddleware = this._server.getMiddleware({});
+    app.use((ctx, next) => {
+      ctx.request.socket.setTimeout(15 * 60 * 1000);
+      return this.gqlMiddleware(ctx, next);
+    });
   }
 
   useSubscription(httpServer) {
