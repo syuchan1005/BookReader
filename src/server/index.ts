@@ -7,7 +7,7 @@ import * as Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 import * as gm from 'gm';
 
-import Graphql from './graphql';
+import GraphQL from './graphql';
 import Database from './sequelize/models';
 import { mkdirpIfNotExists } from './Util';
 
@@ -25,7 +25,7 @@ let useIM = true;
 })();
 
 const app = new Koa();
-const graphql = new Graphql((useIM ? im : gm));
+const graphql = new GraphQL((useIM ? im : gm));
 
 app.use(Serve('storage/'));
 
