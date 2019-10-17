@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
-  Button, CircularProgress,
+  Button,
+  CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
@@ -8,10 +9,14 @@ import {
   DialogTitle,
   Grid,
   Icon,
-  IconButton, LinearProgress, List, ListItem,
+  IconButton,
+  LinearProgress,
+  List,
+  ListItem,
   makeStyles,
   Switch,
-  TextField, Theme,
+  TextField,
+  Theme,
 } from '@material-ui/core';
 import { useMutation, useSubscription } from '@apollo/react-hooks';
 
@@ -52,15 +57,17 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     flexDirection: 'column',
     alignItems: 'center',
   },
-  progressMessage: {
-    marginTop: theme.spacing(2),
-  },
   addBookInfoProgress: {
     display: 'grid',
     alignItems: 'center',
-    gridTemplateColumns: '1fr 64px',
+    gridTemplateColumns: '1fr 64px [end]',
     columnGap: theme.spacing(1),
     width: 300,
+  },
+  progressMessage: {
+    marginTop: theme.spacing(2),
+    gridColumn: '1 / end',
+    textAlign: 'center',
   },
 }));
 
@@ -253,27 +260,36 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             </DialogContent>
           );
         }
-        if (subscriptionData
-          && (!addBookInfoProgress
-            || addBookInfoProgress.loaded / addBookInfoProgress.total > 97)) {
+        if (subscriptionData || addBookInfoProgress || addBookInfoAbort || loading) {
           return (
-            <DialogContent className={classes.addBookInfoSubscription}>
-              <CircularProgress color="secondary" />
-              <div className={classes.progressMessage}>{subscriptionData.addBookInfo}</div>
-            </DialogContent>
-          );
-        }
-        if (addBookInfoProgress || addBookInfoAbort) {
-          return (
-            <DialogContent className={classes.addBookInfoProgress}>
-              {addBookInfoProgress && (
-                <LinearProgress
-                  variant="determinate"
-                  value={(addBookInfoProgress.loaded / addBookInfoProgress.total) * 100}
-                />
-              )}
-              {addBookInfoAbort && (
-                <Button onClick={addBookInfoAbort}>Abort</Button>
+            <DialogContent
+              className={
+                (addBookInfoProgress
+                  && (addBookInfoProgress.loaded / addBookInfoProgress.total < 97))
+                  ? classes.addBookInfoProgress
+                  : classes.addBookInfoSubscription
+              }
+            >
+              {(addBookInfoProgress
+                && (addBookInfoProgress.loaded / addBookInfoProgress.total < 97))
+                ? (
+                  <>
+                    {addBookInfoProgress && (
+                      <LinearProgress
+                        variant="determinate"
+                        value={(addBookInfoProgress.loaded / addBookInfoProgress.total) * 100}
+                      />
+                    )}
+                    {addBookInfoAbort && (
+                      <Button onClick={addBookInfoAbort}>Abort</Button>
+                    )}
+                  </>
+                )
+                : (
+                  <CircularProgress color="secondary" />
+                )}
+              {(subscriptionData) && (
+                <div className={classes.progressMessage}>{subscriptionData.addBookInfo}</div>
               )}
             </DialogContent>
           );
