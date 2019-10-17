@@ -4,7 +4,7 @@ import * as path from 'path';
 import {
   ApolloServer,
   makeExecutableSchema,
-  PubSub,
+  PubSub, PubSubEngine,
 } from 'apollo-server-koa';
 import { SubClass } from 'gm';
 
@@ -29,7 +29,7 @@ export default class GraphQL {
 
   private readonly gqlKoaMiddleware; // : (ctx: any, next: Promise<any>) => any;
 
-  private readonly pubsub: PubSub;
+  private readonly pubsub: PubSubEngine;
 
   constructor(gmModule) {
     this.gm = gmModule;

@@ -254,7 +254,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
           );
         }
         if (subscriptionData
-          && (!addBookInfoProgress || addBookInfoProgress.loaded === addBookInfoProgress.total)) {
+          && (!addBookInfoProgress
+            || addBookInfoProgress.loaded / addBookInfoProgress.total > 97)) {
           return (
             <DialogContent className={classes.addBookInfoSubscription}>
               <CircularProgress color="secondary" />
