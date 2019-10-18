@@ -23,6 +23,7 @@ import {
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { Observer, useLocalStore } from 'mobx-react';
+import { useSnackbar } from 'notistack';
 
 import Home from './pages/Home';
 import Info from './pages/Info';
@@ -173,22 +174,31 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
   const [cacheAnchorEl, setCacheAnchorEl] = React.useState(null);
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const listener = (location) => {
     setShowBack(['/info', '/book'].some((s) => location.pathname.startsWith(s)));
   };
+
   history.listen(listener);
+
   React.useEffect(() => {
     listener(window.location);
+
+    if (store.wb) {
+      store.wb.addEventListener('waiting', () => {
+        enqueueSnackbar('Update here! Please reload.', {
+          variant: 'warning',
+          persist: true,
+        });
+      });
+    }
 
     // https://stackoverflow.com/questions/5573096/detecting-webp-support
     new Promise((resolve) => {
       const imgElem = window.document.createElement('img');
-      imgElem.onload = () => {
-        resolve(imgElem.width === 2 && imgElem.height === 1);
-      };
-      imgElem.onerror = () => {
-        resolve(false);
-      };
+      imgElem.onload = () => { resolve(imgElem.width === 2 && imgElem.height === 1); };
+      imgElem.onerror = () => { resolve(false); };
       // noinspection SpellCheckingInspection
       imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
     }).then((r: boolean) => {
