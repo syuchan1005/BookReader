@@ -171,6 +171,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
+  const [cacheAnchorEl, setCacheAnchorEl] = React.useState(null);
 
   const listener = (location) => {
     setShowBack(['/info', '/book'].some((s) => location.pathname.startsWith(s)));
@@ -204,10 +205,10 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     }
   };
 
-  const purgeCache = () => {
-    props.persistor.purge()
+  const purgeCache = (i) => {
+    (i !== 1 ? props.persistor.purge() : Promise.resolve())
       .then(() => {
-        if (store.wb) {
+        if (store.wb && i === 1) {
           navigator.serviceWorker.addEventListener('message', () => {
             window.location.reload();
           });
@@ -285,7 +286,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   />
                 </ListItem>
                 <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
-                <MenuItem onClick={purgeCache}>Purge Cache</MenuItem>
+                <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
+                  Cache Control
+                </MenuItem>
               </Menu>
               <Menu
                 getContentAnchorEl={null}
@@ -303,6 +306,28 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                     onClick={() => {
                       store.sortOrder = order;
                       setSortAnchorEl(null);
+                    }}
+                  >
+                    {order}
+                  </MenuItem>
+                ))}
+              </Menu>
+              <Menu
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  horizontal: 'center',
+                  vertical: 'bottom',
+                }}
+                anchorEl={cacheAnchorEl}
+                open={!!cacheAnchorEl}
+                onClose={() => setCacheAnchorEl(null)}
+              >
+                {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
+                  <MenuItem
+                    key={order}
+                    onClick={() => {
+                      purgeCache(i);
+                      // setCacheAnchorEl(null);
                     }}
                   >
                     {order}
