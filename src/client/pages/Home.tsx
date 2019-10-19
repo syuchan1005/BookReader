@@ -7,10 +7,9 @@ import {
   makeStyles,
   Theme, useTheme,
 } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 import { useQuery } from '@apollo/react-hooks';
-import { useObserver } from 'mobx-react';
 import { Waypoint } from 'react-waypoint';
-import useReactRouter from 'use-react-router';
 
 import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
@@ -20,13 +19,13 @@ import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { BookInfoList as BookInfoListType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import useLoadMore from '@client/hooks/useLoadMore';
+import { useGlobalStore } from '@client/store/StoreProvider';
 
 import BookInfo from '../components/BookInfo';
 import db from '../Database';
 
 
 interface HomeProps {
-  store: any;
   children?: React.ReactElement;
 }
 
@@ -49,12 +48,17 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: '2rem',
+    whiteSpace: 'pre',
+    textAlign: 'center',
   },
   fab: {
     position: 'fixed',
     bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
     zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(2),
+    },
   },
   addButton: {
     position: 'fixed',
@@ -63,6 +67,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(11),
+    },
   },
   [theme.breakpoints.down('xs')]: {
     homeGrid: {
@@ -77,16 +84,22 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Home: React.FC = (props: HomeProps) => {
-  // eslint-disable-next-line
-  props.store.barTitle = '';
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
-  const { history } = useReactRouter();
+  const history = useHistory();
 
-  const [search, setSearch] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
-  const debounceSearch = useDebounceValue(search, 800);
+  const debounceSearch = useDebounceValue(store.searchText, 800);
+
+  React.useEffect(() => {
+    dispatch({
+      barTitle: '',
+      showBackRouteArrow: false,
+    });
+  }, []);
+
   const {
     refetch,
     loading,
@@ -98,49 +111,31 @@ const Home: React.FC = (props: HomeProps) => {
       offset: 0,
       limit: 10,
       search: debounceSearch || '',
-      // eslint-disable-next-line react/destructuring-assignment
-      order: props.store.sortOrder,
-      // eslint-disable-next-line react/destructuring-assignment
-      history: props.store.history || !!debounceSearch,
+      order: store.sortOrder,
+      history: store.history || !!debounceSearch,
     },
   });
 
   const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
 
-  useObserver(() => {
-    if (search !== props.store.searchText) {
-      setSearch(props.store.searchText);
-    }
-  });
-
-  if (loading || error) {
-    return (
-      <div className={classes.loading}>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-      </div>
-    );
-  }
-
-  const infos = (data.bookInfos.infos || []);
-  const limit = infos.length;
-  const onDeletedBookInfo = (info, books) => {
+  const infos = React.useMemo(() => (data ? data.bookInfos.infos : []), [data]);
+  const onDeletedBookInfo = React.useCallback((info, books) => {
     // noinspection JSIgnoredPromiseFromCall
-    refetch({ offset: 0, limit });
+    refetch({ offset: 0, limit: infos.length });
     // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(info.id);
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
-    if (props.store.wb) {
-      books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
+    if (store.wb) {
+      books.map(({ id: bookId, pages }) => store.wb.messageSW({
         type: 'BOOK_REMOVE',
         bookId,
         pages,
       }));
     }
-  };
+  }, [refetch, store, infos]);
 
-  const clickLoadMore = () => {
+  const clickLoadMore = React.useCallback(() => {
     // @ts-ignore
     loadMore({
       variables: {
@@ -156,41 +151,56 @@ const Home: React.FC = (props: HomeProps) => {
         };
       },
     });
-  };
+  }, [loadMore, infos]);
+
+  const refetchAll = React.useCallback(() => {
+    // noinspection JSIgnoredPromiseFromCall
+    refetch({ offset: 0, limit: infos.length || 10 });
+  }, [refetch, infos]);
 
   return (
     <div className={classes.home}>
-      <div className={classes.homeGrid}>
-        {infos.map((info) => (
-          <BookInfo
-            key={info.id}
-            {...info}
-            onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
-            onDeleted={(books) => onDeletedBookInfo(info, books)}
-            onEdit={() => refetch({ offset: 0, limit })}
-            thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
-          />
-        ))}
-        {(isLoadingMore) && (
-          <div className={classes.loadMoreProgress}>
-            <CircularProgress color="secondary" />
+      {(loading || error) ? (
+        <div className={classes.loading}>
+          {loading && 'Loading'}
+          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+        </div>
+      ) : (
+        <>
+          <div className={classes.homeGrid}>
+            {infos.map((info) => (
+              <BookInfo
+                key={info.id}
+                {...info}
+                onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
+                onDeleted={(books) => onDeletedBookInfo(info, books)}
+                onEdit={refetchAll}
+                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
+              />
+            ))}
+            {(isLoadingMore) && (
+              <div className={classes.loadMoreProgress}>
+                <CircularProgress color="secondary" />
+              </div>
+            )}
+            {(!isLoadingMore && infos.length < data.bookInfos.length) && (
+              <Waypoint onEnter={clickLoadMore} />
+            )}
           </div>
-        )}
-        {(!isLoadingMore && infos.length < data.bookInfos.length) && (
-          <Waypoint onEnter={clickLoadMore} />
-        )}
-      </div>
-      <Fab
-        className={classes.addButton}
-        onClick={() => setOpen(true)}
-        aria-label="add"
-      >
-        <Icon>add</Icon>
-      </Fab>
+          <Fab
+            className={classes.addButton}
+            onClick={() => setOpen(true)}
+            aria-label="add"
+          >
+            <Icon>add</Icon>
+          </Fab>
+        </>
+      )}
+
       <Fab
         color="secondary"
         className={classes.fab}
-        onClick={() => refetch({ offset: 0, limit })}
+        onClick={refetchAll}
         aria-label="refetch"
       >
         <Icon>refresh</Icon>
@@ -198,7 +208,7 @@ const Home: React.FC = (props: HomeProps) => {
 
       <AddBookInfoDialog
         open={open}
-        onAdded={() => refetch({ offset: 0, limit })}
+        onAdded={refetchAll}
         onClose={() => setOpen(false)}
       />
 
@@ -206,7 +216,7 @@ const Home: React.FC = (props: HomeProps) => {
         open={!!openAddBook}
         infoId={openAddBook}
         onClose={() => setOpenAddBook(undefined)}
-        onAdded={() => refetch({ offset: 0, limit })}
+        onAdded={refetchAll}
       />
     </div>
   );

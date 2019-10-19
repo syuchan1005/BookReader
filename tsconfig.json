@@ -1,13 +1,14 @@
 {
+  "extends": "./tsconfig.webworker",
   "compilerOptions": {
     "lib": [
       "es5",
       "es6",
+      "es2019",
       "dom"
     ],
-    "target": "es6",
+    "target": "es5",
     "module": "commonjs",
-    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
@@ -18,9 +19,11 @@
       "@server*" :["src/server*"],
       "@common*" :["src/common*"]
     },
-    "typeRoots": ["node_modules/@types", "src/@types"]
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "esModuleInterop": true,
+    "downlevelIteration": true
   },
   "files": ["src/@types/graphql.d.ts"],
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": ["src/common/*", "src/client/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "src/client/service-worker.js"]
 }

@@ -1,26 +1,26 @@
 import * as React from 'react';
 import {
-  Button, CircularProgress,
+  Button,
+  CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   Icon,
-  IconButton, LinearProgress, List, ListItem,
+  IconButton,
+  LinearProgress,
+  List,
+  ListItem,
   makeStyles,
-  Switch,
-  TextField, Theme,
+  TextField,
+  Theme,
 } from '@material-ui/core';
-import { useMutation, useSubscription } from '@apollo/react-hooks';
+import { useMutation } from '@apollo/react-hooks';
 
 import * as AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
-import * as AddBookInfoSubscription from '@client/graphqls/AddBookInfoDialog_addBookInfo_Subscription.gql';
 import * as AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
 
-import FileField from '@client/components/FileField';
-import DropZone from '@client/components/DropZone';
 import { Result } from '@common/GraphqlTypes';
 
 interface AddBookInfoDialogProps {
@@ -52,15 +52,17 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     flexDirection: 'column',
     alignItems: 'center',
   },
-  progressMessage: {
-    marginTop: theme.spacing(2),
-  },
   addBookInfoProgress: {
     display: 'grid',
     alignItems: 'center',
-    gridTemplateColumns: '1fr 64px',
+    gridTemplateColumns: '1fr 64px [end]',
     columnGap: theme.spacing(1),
     width: 300,
+  },
+  progressMessage: {
+    marginTop: theme.spacing(2),
+    gridColumn: '1 / end',
+    textAlign: 'center',
   },
 }));
 
@@ -68,12 +70,9 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const classes = useStyles(props);
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');
-  const [addBooks, setAddBooks] = React.useState([]);
-  const [isCompress, setIsCompress] = React.useState(false);
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
-  const [subscriptionName, setSubscriptionName] = React.useState<string | undefined>(undefined);
   const [addBookInfoProgress, setAddBookInfoProgress] = React
     .useState<ProgressEvent | undefined>(undefined);
   const [addBookInfoAbort, setAddBookInfoAbort] = React
@@ -88,10 +87,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const closeDialog = () => {
     if (onClose) onClose();
     setName('');
-    setAddBooks([]);
     setShowAddHistory(false);
     setAddHistories([]);
-    setSubscriptionName(undefined);
     setAddBookInfoProgress(undefined);
     setAddBookInfoAbort(undefined);
   };
@@ -99,18 +96,13 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
     variables: {
       name,
-      books: (isCompress ? null : addBooks),
-      compress: (isCompress ? (addBooks[0] || {}).file : null),
     },
-    onCompleted({ add }) {
+    onCompleted(d) {
+      if (!d) return;
       setAddBookInfoProgress(undefined);
       setAddBookInfoAbort(undefined);
-      setSubscriptionName(undefined);
       closeDialog();
-      if (add.success && onAdded) onAdded();
-    },
-    onError() {
-      setSubscriptionName(undefined);
+      if (d.add.success && onAdded) onAdded();
     },
     context: {
       fetchOptions: {
@@ -128,9 +120,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(
     AddBookInfoHistoriesMutation,
     {
-      onCompleted({ add: { success } }) {
+      onCompleted(d) {
+        if (!d) return;
         closeDialog();
-        if (success && onAdded) onAdded();
+        if (d.add.success && onAdded) onAdded();
       },
       variables: {
         histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
@@ -138,49 +131,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
   );
 
-  const { data: subscriptionData } = useSubscription(AddBookInfoSubscription, {
-    skip: !subscriptionName,
-    variables: {
-      name: subscriptionName,
-    },
-  });
-
   const loading = React.useMemo(() => addLoading || histLoading, [addLoading, histLoading]);
-
-  const dropFiles = React.useCallback((files) => {
-    setAddBooks([
-      ...addBooks,
-      ...files.map((f, i) => {
-        let nums = f.name.match(/\d+/g);
-        if (nums) {
-          nums = Number(nums[nums.length - 1]).toString(10);
-        } else {
-          nums = `${addBooks.length + i + 1}`;
-        }
-        return {
-          file: f,
-          number: nums,
-        };
-      }),
-    ]);
-  }, [addBooks]);
-
-  const changeAddBook = React.useCallback((i, obj) => {
-    const books = [
-      ...addBooks,
-    ];
-    books[i] = {
-      ...books[i],
-      ...obj,
-    };
-    setAddBooks(books);
-  }, [addBooks]);
-
-  const showBooks = React.useMemo(() => {
-    if (!isCompress) return addBooks;
-    if (addBooks.length <= 0) return [];
-    return [addBooks[0]];
-  }, [isCompress, addBooks]);
 
   const addHistoriesEntity = () => {
     const a = [...(addHistories.filter((h) => h.name))];
@@ -253,27 +204,34 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             </DialogContent>
           );
         }
-        if (subscriptionData
-          && (!addBookInfoProgress || addBookInfoProgress.loaded === addBookInfoProgress.total)) {
+        if (addBookInfoProgress || addBookInfoAbort || loading) {
           return (
-            <DialogContent className={classes.addBookInfoSubscription}>
-              <CircularProgress color="secondary" />
-              <div className={classes.progressMessage}>{subscriptionData.addBookInfo}</div>
-            </DialogContent>
-          );
-        }
-        if (addBookInfoProgress || addBookInfoAbort) {
-          return (
-            <DialogContent className={classes.addBookInfoProgress}>
-              {addBookInfoProgress && (
-                <LinearProgress
-                  variant="determinate"
-                  value={(addBookInfoProgress.loaded / addBookInfoProgress.total) * 100}
-                />
-              )}
-              {addBookInfoAbort && (
-                <Button onClick={addBookInfoAbort}>Abort</Button>
-              )}
+            <DialogContent
+              className={
+                (addBookInfoProgress
+                  && (addBookInfoProgress.loaded / addBookInfoProgress.total < 97))
+                  ? classes.addBookInfoProgress
+                  : classes.addBookInfoSubscription
+              }
+            >
+              {(addBookInfoProgress
+                && ((addBookInfoProgress.loaded / addBookInfoProgress.total) < 97))
+                ? (
+                  <>
+                    {addBookInfoProgress && (
+                      <LinearProgress
+                        variant="determinate"
+                        value={(addBookInfoProgress.loaded / addBookInfoProgress.total) * 100}
+                      />
+                    )}
+                    {addBookInfoAbort && (
+                      <Button onClick={addBookInfoAbort}>Abort</Button>
+                    )}
+                  </>
+                )
+                : (
+                  <CircularProgress color="secondary" />
+                )}
             </DialogContent>
           );
         }
@@ -287,37 +245,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
               // @ts-ignore
               onChange={(event) => setName(event.target.value)}
             />
-            <Grid container alignItems="center" spacing={1}>
-              <Grid item>Books</Grid>
-              <Grid item>
-                <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
-              </Grid>
-              <Grid item>Compress Books</Grid>
-            </Grid>
-            <div>
-              {showBooks.map(({ file, number }, i) => (
-                <div key={`${file.name} ${number}`} className={classes.listItem}>
-                  <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-                  {isCompress ? null : (
-                    <TextField
-                      color="secondary"
-                      label="Number"
-                      value={number}
-                      // @ts-ignore
-                      onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                      margin="none"
-                      autoFocus
-                    />
-                  )}
-                  <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                    <Icon>clear</Icon>
-                  </IconButton>
-                </div>
-              ))}
-            </div>
-            {(isCompress && addBooks.length >= 1) ? null : (
-              <DropZone onChange={dropFiles} />
-            )}
           </DialogContent>
         );
       })()}
@@ -340,7 +267,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             } else {
               // noinspection JSIgnoredPromiseFromCall
               addBookInfo();
-              setSubscriptionName(name);
             }
           }}
           disabled={loading}

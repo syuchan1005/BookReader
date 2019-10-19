@@ -65,9 +65,10 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
       variables: {
         id: infoId,
       },
-      onCompleted({ edit: { success } }) {
-        if (success && onClose) onClose();
-        if (success && onEdit) onEdit();
+      onCompleted(d) {
+        if (!d) return;
+        if (d.edit.success && onClose) onClose();
+        if (d.edit.success && onEdit) onEdit();
       },
     },
   );

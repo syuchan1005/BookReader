@@ -81,11 +81,12 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       id: infoId,
       books: addBooks,
     },
-    onCompleted({ adds }) {
+    onCompleted(d) {
+      if (!d) return;
       setAddBookProgress(undefined);
       setAddBookAbort(undefined);
       setSubscriptionId(undefined);
-      const success = adds.every((a) => a.success);
+      const success = d.adds.every((a) => a.success);
       if (onClose && success) onClose();
       if (success && onAdded) onAdded();
     },
@@ -156,7 +157,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       <DialogTitle>Add book</DialogTitle>
       {(() => {
         if (subscriptionData
-          && (!addBookProgress || addBookProgress.loaded === addBookProgress.total)) {
+          && (!addBookProgress
+            || (addBookProgress.loaded / addBookProgress.total) < 97)) {
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />

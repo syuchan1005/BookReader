@@ -1,5 +1,4 @@
 import * as React from 'react';
-import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
 import {
   makeStyles,
@@ -9,17 +8,21 @@ import {
   Theme,
   useTheme,
 } from '@material-ui/core';
+import { useParams, useHistory } from 'react-router-dom';
+
+import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 
 import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
 
 import { commonTheme } from '@client/App';
+import { useGlobalStore } from '@client/store/StoreProvider';
+
+import db from '@client/Database';
+
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
-import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
-import Book from '../components/Book';
-import db from '../Database';
+import Book from '@client/components/Book';
 
 interface InfoProps {
-  store: any;
   children?: React.ReactElement;
 }
 
@@ -40,11 +43,24 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       gridTemplateColumns: 'repeat(auto-fill, 150px)',
     },
   },
+  loading: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    whiteSpace: 'pre',
+    textAlign: 'center',
+  },
   fab: {
     position: 'fixed',
     bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
     zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(2),
+    },
   },
   addButton: {
     position: 'fixed',
@@ -53,13 +69,18 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(11),
+    },
   },
 }));
 
 const Info: React.FC = (props: InfoProps) => {
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
-  const { match, history } = useReactRouter();
+  const history = useHistory();
+  const params = useParams<{ id: string }>();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const {
@@ -69,19 +90,22 @@ const Info: React.FC = (props: InfoProps) => {
     data,
   } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
     variables: {
-      id: match.params.id,
+      id: params.id,
+    },
+    onCompleted(d) {
+      if (!d) return;
+      dispatch({ barTitle: d.bookInfo.name });
     },
   });
 
-  // eslint-disable-next-line
-  props.store.barTitle = 'Book';
-
-  // eslint-disable-next-line
-  props.store.backRoute = '/';
-
   React.useEffect(() => {
+    dispatch({
+      barTitle: 'Book',
+      backRoute: '/',
+      showBackRouteArrow: true,
+    });
     let unMounted = false;
-    db.infoReads.get(match.params.id).then((read) => {
+    db.infoReads.get(params.id).then((read) => {
       if (read && !unMounted) {
         setReadId(read.bookId);
       }
@@ -89,73 +113,69 @@ const Info: React.FC = (props: InfoProps) => {
     return () => {
       unMounted = true;
     };
-  });
+  }, []);
 
-  if (loading || error || !data || !data.bookInfo) {
-    return (
-      <div>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-        {(!data || !data.bookInfo) && 'Empty'}
-      </div>
-    );
-  }
-
-  // eslint-disable-next-line
-  props.store.barTitle = data.bookInfo.name;
-
-  const clickBook = (book) => {
+  const clickBook = React.useCallback((book) => {
     db.infoReads.put({
-      infoId: match.params.id,
+      infoId: params.id,
       bookId: book.id,
     }).catch(() => { /* ignored */
     });
     history.push(`/book/${book.id}`);
-  };
+  }, [params, history]);
 
-  const bookList = data.bookInfo.books;
+  const bookList = React.useMemo(() => (data ? data.bookInfo.books : []), [data]);
 
-  const onDeletedBook = ({ id: bookId, pages }: BookType) => {
+  const onDeletedBook = React.useCallback(({ id: bookId, pages }: BookType) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch();
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.delete(bookId);
-    if (props.store.wb) {
-      props.store.wb.messageSW({
+    if (store.wb) {
+      store.wb.messageSW({
         type: 'BOOK_REMOVE',
         bookId,
         pages,
       });
     }
-  };
+  }, [refetch, store]);
 
   return (
     <div className={classes.info}>
-      <div className={classes.infoGrid}>
-        {// @ts-ignore
-          (bookList && bookList.length > 0) && bookList.map(
-            (book) => (
-              <Book
-                {...book}
-                name={data.bookInfo.name}
-                reading={readId === book.id}
-                key={book.id}
-                onClick={() => clickBook(book)}
-                onDeleted={() => onDeletedBook(book)}
-                onEdit={() => refetch()}
-                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
-              />
-            ),
-          )
-        }
-      </div>
-      <Fab
-        className={classes.addButton}
-        onClick={() => setOpen(true)}
-        aria-label="add"
-      >
-        <Icon>add</Icon>
-      </Fab>
+      {(loading || error) ? (
+        <div className={classes.loading}>
+          {loading && 'Loading'}
+          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+        </div>
+      ) : (
+        <>
+          <div className={classes.infoGrid}>
+            {// @ts-ignore
+              (bookList && bookList.length > 0) && bookList.map(
+                (book) => (
+                  <Book
+                    {...book}
+                    name={data.bookInfo.name}
+                    reading={readId === book.id}
+                    key={book.id}
+                    onClick={() => clickBook(book)}
+                    onDeleted={() => onDeletedBook(book)}
+                    onEdit={() => refetch()}
+                    thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
+                  />
+                ),
+              )
+            }
+          </div>
+          <Fab
+            className={classes.addButton}
+            onClick={() => setOpen(true)}
+            aria-label="add"
+          >
+            <Icon>add</Icon>
+          </Fab>
+        </>
+      )}
       <Fab
         color="secondary"
         className={classes.fab}
@@ -167,7 +187,7 @@ const Info: React.FC = (props: InfoProps) => {
 
       <AddBookDialog
         open={open}
-        infoId={match.params.id}
+        infoId={params.id}
         onAdded={refetch}
         onClose={() => setOpen(false)}
       />
