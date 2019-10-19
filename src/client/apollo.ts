@@ -1,5 +1,5 @@
 import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
 import { createUploadLink } from 'apollo-upload-client';
 import { WebSocketLink } from 'apollo-link-ws';
@@ -70,7 +70,8 @@ const customFetch = (uri1: any, options: any) => {
   return fetch(uri1, options);
 };
 
-export default async () => {
+export default async ()
+  : Promise<[ApolloClient<NormalizedCacheObject>, CachePersistor<NormalizedCacheObject>]> => {
   const cache = new InMemoryCache({
     freezeResults: false,
   });

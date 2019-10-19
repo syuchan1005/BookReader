@@ -38,18 +38,40 @@ export const commonTheme = {
     right: 'env(safe-area-inset-right)',
     left: 'env(safe-area-inset-left)',
   },
-  appbar: (theme: Theme, styleName: string, calcOption?: string) => Object.fromEntries(
-    Object.keys(theme.mixins.toolbar).map<[string, string | object]>((key) => {
+  appbar: (
+    theme: Theme,
+    styleName: string,
+    calcOption?: string,
+  ) => Object.keys(theme.mixins.toolbar)
+    .map((key) => {
       const val = theme.mixins.toolbar[key];
       if (key === 'minHeight') {
-        return [styleName, `calc(${commonTheme.safeArea.top} + ${val}px${calcOption || ''})`];
+        return [
+          [styleName, `calc(${commonTheme.safeArea.top} + ${val}px${calcOption || ''})`],
+          ['fallbacks', {
+            [styleName]: (calcOption) ? `calc(${val}px${calcOption})` : val,
+          }],
+        ];
       }
-      return [key, {
+      return [
+        [key, {
+          // @ts-ignore
+          [styleName]: `calc(${commonTheme.safeArea.top} + ${val.minHeight}px${calcOption || ''})`,
+          fallbacks: {
+            // @ts-ignore
+            [styleName]: (calcOption) ? `calc(${val.minHeight}px${calcOption})` : val.minHeight,
+          },
+        }],
+      ];
+    })
+    .reduce((o, props) => {
+      props.forEach(([k, v]) => {
         // @ts-ignore
-        [styleName]: `calc(${commonTheme.safeArea.top} + ${val.minHeight}px${calcOption || ''})`,
-      }];
-    }),
-  ),
+        // eslint-disable-next-line no-param-reassign
+        o[k] = v;
+      });
+      return o;
+    }, {}),
 };
 
 const themes = {
@@ -124,6 +146,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   inputRoot: {
     color: 'inherit',
+    width: '100%',
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 7),
@@ -197,8 +220,12 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     // https://stackoverflow.com/questions/5573096/detecting-webp-support
     new Promise((resolve) => {
       const imgElem = window.document.createElement('img');
-      imgElem.onload = () => { resolve(imgElem.width === 2 && imgElem.height === 1); };
-      imgElem.onerror = () => { resolve(false); };
+      imgElem.onload = () => {
+        resolve(imgElem.width === 2 && imgElem.height === 1);
+      };
+      imgElem.onerror = () => {
+        resolve(false);
+      };
       // noinspection SpellCheckingInspection
       imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
     }).then((r: boolean) => {

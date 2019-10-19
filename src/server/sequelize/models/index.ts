@@ -1,5 +1,5 @@
 import { Sequelize, Model } from 'sequelize';
-import baseConfig from '../config';
+import * as baseConfig from '../config';
 
 /* models */
 import bookInfo from './bookInfo';

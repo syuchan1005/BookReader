@@ -55,6 +55,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
     right: theme.spacing(2),
     zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(2),
+    },
   },
   addButton: {
     position: 'fixed',
@@ -63,6 +66,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(11),
+    },
   },
   [theme.breakpoints.down('xs')]: {
     homeGrid: {
