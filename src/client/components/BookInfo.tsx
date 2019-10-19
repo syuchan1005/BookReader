@@ -105,9 +105,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       variables: {
         id: infoId,
       },
-      onCompleted({ del }) {
-        setAskDelete(!del.success);
-        if (del.success && onDeleted) onDeleted(del.books);
+      onCompleted(d) {
+        if (!d) return;
+        setAskDelete(!d.del.success);
+        if (d.del.success && onDeleted) onDeleted(d.del.books);
       },
     },
   );
@@ -119,9 +120,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         id: infoId,
         ...editContent,
       },
-      onCompleted({ edit }) {
-        setEditDialog(!edit.success);
-        if (edit.success && onEdit) onEdit();
+      onCompleted(d) {
+        if (!d) return;
+        setEditDialog(!d.edit.success);
+        if (d.edit.success && onEdit) onEdit();
       },
     },
   );

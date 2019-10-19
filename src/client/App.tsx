@@ -229,7 +229,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     } else {
       history.goBack();
     }
-  }, [history, store]);
+  }, [history, store, dispatch]);
 
   const purgeCache = React.useCallback((i) => {
     (i !== 1 ? props.persistor.purge() : Promise.resolve())

@@ -97,11 +97,12 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     variables: {
       name,
     },
-    onCompleted({ add }) {
+    onCompleted(d) {
+      if (!d) return;
       setAddBookInfoProgress(undefined);
       setAddBookInfoAbort(undefined);
       closeDialog();
-      if (add.success && onAdded) onAdded();
+      if (d.add.success && onAdded) onAdded();
     },
     context: {
       fetchOptions: {
@@ -119,9 +120,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(
     AddBookInfoHistoriesMutation,
     {
-      onCompleted({ add: { success } }) {
+      onCompleted(d) {
+        if (!d) return;
         closeDialog();
-        if (success && onAdded) onAdded();
+        if (d.add.success && onAdded) onAdded();
       },
       variables: {
         histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),

@@ -90,6 +90,16 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridColumn: '1 / span 3',
     margin: theme.spacing(0, 2),
   },
+  loading: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    whiteSpace: 'pre',
+    textAlign: 'center',
+  },
 }));
 
 const Book: React.FC = (props: BookProps) => {
@@ -97,21 +107,6 @@ const Book: React.FC = (props: BookProps) => {
   const classes = useStyles(props);
   const history = useHistory();
   const params = useParams<{ id: string }>();
-  const {
-    loading,
-    error,
-    data,
-  } = useQuery<{ book: BookType }>(BookQuery, {
-    variables: {
-      id: params.id,
-    },
-    onCompleted({ book }) {
-      dispatch({
-        backRoute: `/info/${book.info.id}`,
-        barTitle: `${book.info.name} No.${book.number}`,
-      });
-    },
-  });
 
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
@@ -122,16 +117,36 @@ const Book: React.FC = (props: BookProps) => {
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [isPageSet, setPageSet] = React.useState(false);
 
-  const [prevBook, nextBook] = usePrevNextBook(
-    data ? data.book.info.id : undefined,
-    params.id,
-  );
-
   const setShowAppBar = React.useCallback((val) => {
     let v = val;
     if (v === undefined) v = !store.showAppBar;
     dispatch({ showAppBar: v });
   }, [store.showAppBar]);
+
+  const {
+    loading,
+    error,
+    data,
+  } = useQuery<{ book: BookType }>(BookQuery, {
+    variables: {
+      id: params.id,
+    },
+    onCompleted(d) {
+      if (!d) return;
+      dispatch({
+        backRoute: `/info/${d.book.info.id}`,
+        barTitle: `${d.book.info.name} No.${d.book.number}`,
+      });
+    },
+    onError() {
+      setShowAppBar(true);
+    },
+  });
+
+  const [prevBook, nextBook] = usePrevNextBook(
+    data ? data.book.info.id : undefined,
+    params.id,
+  );
 
   const increment = React.useCallback(() => {
     let preRoute = [];
@@ -315,12 +330,13 @@ const Book: React.FC = (props: BookProps) => {
     setEffectMenuAnchor(null);
   }, []);
 
-  if (loading || error || !data || !data.book) {
+  if (loading || error) {
     return (
-      <div>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-        {(!data || !data.book) && 'Empty'}
+      <div className={classes.loading}>
+        <div>
+          {loading && 'Loading'}
+          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+        </div>
       </div>
     );
   }

@@ -48,6 +48,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: '2rem',
+    whiteSpace: 'pre',
+    textAlign: 'center',
   },
   fab: {
     position: 'fixed',
@@ -156,44 +158,45 @@ const Home: React.FC = (props: HomeProps) => {
     refetch({ offset: 0, limit: infos.length || 10 });
   }, [refetch, infos]);
 
-  if (loading || error) {
-    return (
-      <div className={classes.loading}>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-      </div>
-    );
-  }
-
   return (
     <div className={classes.home}>
-      <div className={classes.homeGrid}>
-        {infos.map((info) => (
-          <BookInfo
-            key={info.id}
-            {...info}
-            onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
-            onDeleted={(books) => onDeletedBookInfo(info, books)}
-            onEdit={refetchAll}
-            thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
-          />
-        ))}
-        {(isLoadingMore) && (
-          <div className={classes.loadMoreProgress}>
-            <CircularProgress color="secondary" />
+      {(loading || error) ? (
+        <div className={classes.loading}>
+          {loading && 'Loading'}
+          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+        </div>
+      ) : (
+        <>
+          <div className={classes.homeGrid}>
+            {infos.map((info) => (
+              <BookInfo
+                key={info.id}
+                {...info}
+                onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
+                onDeleted={(books) => onDeletedBookInfo(info, books)}
+                onEdit={refetchAll}
+                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
+              />
+            ))}
+            {(isLoadingMore) && (
+              <div className={classes.loadMoreProgress}>
+                <CircularProgress color="secondary" />
+              </div>
+            )}
+            {(!isLoadingMore && infos.length < data.bookInfos.length) && (
+              <Waypoint onEnter={clickLoadMore} />
+            )}
           </div>
-        )}
-        {(!isLoadingMore && infos.length < data.bookInfos.length) && (
-          <Waypoint onEnter={clickLoadMore} />
-        )}
-      </div>
-      <Fab
-        className={classes.addButton}
-        onClick={() => setOpen(true)}
-        aria-label="add"
-      >
-        <Icon>add</Icon>
-      </Fab>
+          <Fab
+            className={classes.addButton}
+            onClick={() => setOpen(true)}
+            aria-label="add"
+          >
+            <Icon>add</Icon>
+          </Fab>
+        </>
+      )}
+
       <Fab
         color="secondary"
         className={classes.fab}

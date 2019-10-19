@@ -81,11 +81,12 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       id: infoId,
       books: addBooks,
     },
-    onCompleted({ adds }) {
+    onCompleted(d) {
+      if (!d) return;
       setAddBookProgress(undefined);
       setAddBookAbort(undefined);
       setSubscriptionId(undefined);
-      const success = adds.every((a) => a.success);
+      const success = d.adds.every((a) => a.success);
       if (onClose && success) onClose();
       if (success && onAdded) onAdded();
     },

@@ -43,6 +43,16 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       gridTemplateColumns: 'repeat(auto-fill, 150px)',
     },
   },
+  loading: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    whiteSpace: 'pre',
+    textAlign: 'center',
+  },
   fab: {
     position: 'fixed',
     bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
@@ -82,8 +92,9 @@ const Info: React.FC = (props: InfoProps) => {
     variables: {
       id: params.id,
     },
-    onCompleted({ bookInfo }) {
-      dispatch({ barTitle: bookInfo.name });
+    onCompleted(d) {
+      if (!d) return;
+      dispatch({ barTitle: d.bookInfo.name });
     },
   });
 
@@ -104,28 +115,18 @@ const Info: React.FC = (props: InfoProps) => {
     };
   }, []);
 
-  if (loading || error || !data || !data.bookInfo) {
-    return (
-      <div>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-        {(!data || !data.bookInfo) && 'Empty'}
-      </div>
-    );
-  }
-
-  const clickBook = (book) => {
+  const clickBook = React.useCallback((book) => {
     db.infoReads.put({
       infoId: params.id,
       bookId: book.id,
     }).catch(() => { /* ignored */
     });
     history.push(`/book/${book.id}`);
-  };
+  }, [params, history]);
 
-  const bookList = data.bookInfo.books;
+  const bookList = React.useMemo(() => (data ? data.bookInfo.books : []), [data]);
 
-  const onDeletedBook = ({ id: bookId, pages }: BookType) => {
+  const onDeletedBook = React.useCallback(({ id: bookId, pages }: BookType) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch();
     // noinspection JSIgnoredPromiseFromCall
@@ -137,35 +138,44 @@ const Info: React.FC = (props: InfoProps) => {
         pages,
       });
     }
-  };
+  }, [refetch, store]);
 
   return (
     <div className={classes.info}>
-      <div className={classes.infoGrid}>
-        {// @ts-ignore
-          (bookList && bookList.length > 0) && bookList.map(
-            (book) => (
-              <Book
-                {...book}
-                name={data.bookInfo.name}
-                reading={readId === book.id}
-                key={book.id}
-                onClick={() => clickBook(book)}
-                onDeleted={() => onDeletedBook(book)}
-                onEdit={() => refetch()}
-                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
-              />
-            ),
-          )
-        }
-      </div>
-      <Fab
-        className={classes.addButton}
-        onClick={() => setOpen(true)}
-        aria-label="add"
-      >
-        <Icon>add</Icon>
-      </Fab>
+      {(loading || error) ? (
+        <div className={classes.loading}>
+          {loading && 'Loading'}
+          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+        </div>
+      ) : (
+        <>
+          <div className={classes.infoGrid}>
+            {// @ts-ignore
+              (bookList && bookList.length > 0) && bookList.map(
+                (book) => (
+                  <Book
+                    {...book}
+                    name={data.bookInfo.name}
+                    reading={readId === book.id}
+                    key={book.id}
+                    onClick={() => clickBook(book)}
+                    onDeleted={() => onDeletedBook(book)}
+                    onEdit={() => refetch()}
+                    thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
+                  />
+                ),
+              )
+            }
+          </div>
+          <Fab
+            className={classes.addButton}
+            onClick={() => setOpen(true)}
+            aria-label="add"
+          >
+            <Icon>add</Icon>
+          </Fab>
+        </>
+      )}
       <Fab
         color="secondary"
         className={classes.fab}
