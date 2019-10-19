@@ -9,7 +9,7 @@ type Query {
 
 type Mutation {
     ## BookInfo
-    addBookInfo(name: String!, thumbnail: Upload, books: [InputBook!], compressBooks: Upload): ResultWithInfoId!
+    addBookInfo(name: String!, thumbnail: Upload): ResultWithInfoId!
     editBookInfo(id: ID!, name: String, thumbnail: String): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 

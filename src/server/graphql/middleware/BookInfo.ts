@@ -1,8 +1,6 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import { promises as fs } from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 
 import * as uuidv4 from 'uuid/v4';
 import * as rimraf from 'rimraf';
@@ -19,9 +17,8 @@ import BookInfoModel from '@server/sequelize/models/bookInfo';
 import ModelUtil from '@server/ModelUtil';
 import BookModel from '@server/sequelize/models/book';
 import Errors from '@server/Errors';
-import { asyncForEach, asyncMap } from '@server/Util';
+import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
-import GQLUtil from '@server/graphql/GQLUtil';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -114,8 +111,6 @@ class BookInfo extends GQLMiddleware {
       addBookInfo: async (parent, {
         name,
         thumbnail,
-        books,
-        compressBooks,
       }): Promise<ResultWithInfoId> => {
         const infoId = uuidv4();
         let thumbnailStream;
@@ -142,96 +137,6 @@ class BookInfo extends GQLMiddleware {
           await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Thumbnail Saved' });
         }
 
-        let result;
-        if (compressBooks) {
-          const tempPath = `${os.tmpdir()}/bookReader/${infoId}`;
-          const type = await GQLUtil.checkArchiveType(compressBooks);
-          if (type.success === false) {
-            return type;
-          }
-          const { createReadStream, archiveType } = type;
-
-          await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Extract Files...' });
-          await GQLUtil.extractCompressFile(tempPath, archiveType, createReadStream);
-          let booksFolderPath = '/';
-          let bookFolders = [];
-          for (let i = 0; i < 10; i += 1) {
-            const tempBooksFolder = path.join(tempPath, booksFolderPath);
-            // eslint-disable-next-line no-await-in-loop
-            const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
-            const dirs = dirents.filter((d) => d.isDirectory());
-            if (dirs.length > 1) {
-              bookFolders = dirs.map((d) => d.name);
-              break;
-            } else if (dirs.length === 1) {
-              booksFolderPath = path.join(booksFolderPath, dirs[0].name);
-            } else {
-              break;
-            }
-          }
-          if (bookFolders.length === 0) {
-            return {
-              success: false,
-              code: 'QL0006',
-              message: Errors.QL0006,
-            };
-          }
-          await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Move Files...' });
-          result = await asyncMap(bookFolders, (p, i) => {
-            const folderPath = path.join(tempPath, booksFolderPath, p);
-            let nums = p.match(/\d+/g);
-            if (nums) {
-              nums = Number(nums[nums.length - 1]).toString(10);
-            } else {
-              nums = `${i + 1}`;
-            }
-            return GQLUtil.addBookFromLocalPath(
-              this.gm,
-              folderPath,
-              infoId,
-              uuidv4(),
-              nums,
-              undefined,
-              (resolve) => {
-                rimraf(folderPath, () => resolve());
-              },
-            );
-          });
-          await new Promise((resolve) => rimraf(tempPath, resolve));
-        } else if (books) {
-          await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Add Books...' });
-          result = await GQLUtil.Mutation.addBooks(
-            this.gm,
-            this.pubsub,
-            undefined,
-            { id: infoId, books },
-            undefined,
-            undefined,
-            {
-              pubsub: {
-                key: SubscriptionKeys.ADD_BOOK_INFO,
-                fieldName: 'addBookInfo',
-                name,
-              },
-            },
-          );
-        }
-        if (compressBooks || books) {
-          if (!result) {
-            return {
-              success: false,
-              code: 'Unknown',
-              message: Errors.Unknown,
-            };
-          }
-          if (!result.every((r) => r.success)) {
-            return {
-              success: false,
-              code: 'QL0006',
-              message: Errors.QL0006,
-            };
-          }
-        }
         return {
           success: true,
           infoId,

@@ -7,14 +7,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   Icon,
   IconButton,
   LinearProgress,
   List,
   ListItem,
   makeStyles,
-  Switch,
   TextField,
   Theme,
 } from '@material-ui/core';
@@ -24,8 +22,6 @@ import * as AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBook
 import * as AddBookInfoSubscription from '@client/graphqls/AddBookInfoDialog_addBookInfo_Subscription.gql';
 import * as AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
 
-import FileField from '@client/components/FileField';
-import DropZone from '@client/components/DropZone';
 import { Result } from '@common/GraphqlTypes';
 
 interface AddBookInfoDialogProps {
@@ -75,8 +71,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const classes = useStyles(props);
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');
-  const [addBooks, setAddBooks] = React.useState([]);
-  const [isCompress, setIsCompress] = React.useState(false);
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
@@ -95,7 +89,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const closeDialog = () => {
     if (onClose) onClose();
     setName('');
-    setAddBooks([]);
     setShowAddHistory(false);
     setAddHistories([]);
     setSubscriptionName(undefined);
@@ -106,8 +99,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
     variables: {
       name,
-      books: (isCompress ? null : addBooks),
-      compress: (isCompress ? (addBooks[0] || {}).file : null),
     },
     onCompleted({ add }) {
       setAddBookInfoProgress(undefined);
@@ -153,41 +144,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   });
 
   const loading = React.useMemo(() => addLoading || histLoading, [addLoading, histLoading]);
-
-  const dropFiles = React.useCallback((files) => {
-    setAddBooks([
-      ...addBooks,
-      ...files.map((f, i) => {
-        let nums = f.name.match(/\d+/g);
-        if (nums) {
-          nums = Number(nums[nums.length - 1]).toString(10);
-        } else {
-          nums = `${addBooks.length + i + 1}`;
-        }
-        return {
-          file: f,
-          number: nums,
-        };
-      }),
-    ]);
-  }, [addBooks]);
-
-  const changeAddBook = React.useCallback((i, obj) => {
-    const books = [
-      ...addBooks,
-    ];
-    books[i] = {
-      ...books[i],
-      ...obj,
-    };
-    setAddBooks(books);
-  }, [addBooks]);
-
-  const showBooks = React.useMemo(() => {
-    if (!isCompress) return addBooks;
-    if (addBooks.length <= 0) return [];
-    return [addBooks[0]];
-  }, [isCompress, addBooks]);
 
   const addHistoriesEntity = () => {
     const a = [...(addHistories.filter((h) => h.name))];
@@ -304,37 +260,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
               // @ts-ignore
               onChange={(event) => setName(event.target.value)}
             />
-            <Grid container alignItems="center" spacing={1}>
-              <Grid item>Books</Grid>
-              <Grid item>
-                <Switch checked={isCompress} onChange={(e) => setIsCompress(e.target.checked)} />
-              </Grid>
-              <Grid item>Compress Books</Grid>
-            </Grid>
-            <div>
-              {showBooks.map(({ file, number }, i) => (
-                <div key={`${file.name} ${number}`} className={classes.listItem}>
-                  <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-                  {isCompress ? null : (
-                    <TextField
-                      color="secondary"
-                      label="Number"
-                      value={number}
-                      // @ts-ignore
-                      onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                      margin="none"
-                      autoFocus
-                    />
-                  )}
-                  <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                    <Icon>clear</Icon>
-                  </IconButton>
-                </div>
-              ))}
-            </div>
-            {(isCompress && addBooks.length >= 1) ? null : (
-              <DropZone onChange={dropFiles} />
-            )}
           </DialogContent>
         );
       })()}

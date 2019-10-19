@@ -1,5 +1,5 @@
-mutation add($name: String! $books: [InputBook!] $compress: Upload) {
-    add: addBookInfo(name: $name books: $books, compressBooks: $compress) {
+mutation add($name: String!) {
+    add: addBookInfo(name: $name) {
         success
         code
     }
