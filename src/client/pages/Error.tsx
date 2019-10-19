@@ -17,11 +17,17 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  oops: {
+    margin: theme.spacing(2),
+  },
   backButton: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(3),
   },
   backIcon: {
-    marginRight: theme.spacing(1),
+    transform: 'rotate(-35deg)',
+    marginRight: theme.spacing(0.75),
+    marginLeft: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -38,7 +44,11 @@ const Error: React.FC = (props) => {
 
   return (
     <div className={classes.error}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 17">
+      <svg
+        className={classes.oops}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 38 17"
+      >
         <defs>
           <linearGradient id="g">
             <stop stopColor="#FF0018" offset="0%" />
