@@ -271,7 +271,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
               }
             >
               {(addBookInfoProgress
-                && (addBookInfoProgress.loaded / addBookInfoProgress.total < 97))
+                && ((addBookInfoProgress.loaded / addBookInfoProgress.total) < 97))
                 ? (
                   <>
                     {addBookInfoProgress && (

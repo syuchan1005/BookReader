@@ -179,12 +179,18 @@ class BookInfo extends GQLMiddleware {
           await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Move Files...' });
           result = await asyncMap(bookFolders, (p, i) => {
             const folderPath = path.join(tempPath, booksFolderPath, p);
+            let nums = p.match(/\d+/g);
+            if (nums) {
+              nums = Number(nums[nums.length - 1]).toString(10);
+            } else {
+              nums = `${i + 1}`;
+            }
             return GQLUtil.addBookFromLocalPath(
               this.gm,
               folderPath,
               infoId,
               uuidv4(),
-              `${i + 1}`,
+              nums,
               undefined,
               (resolve) => {
                 rimraf(folderPath, () => resolve());

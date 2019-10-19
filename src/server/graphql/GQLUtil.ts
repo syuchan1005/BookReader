@@ -111,7 +111,7 @@ const GQLUtil = {
     number: string,
     argThumbnail?: string,
     deleteTempFolder?: (resolve, reject) => void,
-  ) {
+  ): Promise<Result> {
     let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
       (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
     ));

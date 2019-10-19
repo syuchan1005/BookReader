@@ -18,6 +18,7 @@ type Mutation {
     ## Book
     addBook(id: ID!, number: String!, file: Upload!): Result!
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
+    addCompressBook(id: ID!, file: Upload!): [ResultWithBookResults!]!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
 }
@@ -76,6 +77,14 @@ type ResultWithInfoId {
     message: String
 
     infoId: ID
+}
+
+type ResultWithBookResults {
+    success: Boolean!
+    code: String
+    message: String
+
+    bookResults: [Result!]
 }
 
 type BookInfoResult {

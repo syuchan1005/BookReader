@@ -26,6 +26,10 @@ export interface ResultWithInfoId extends Result {
   infoId?: string;
 }
 
+export interface ResultWithBookResults extends Result {
+  bookResults?: Result[];
+}
+
 export interface BookInfoResult {
   success: boolean;
   code?: string;
