@@ -16,10 +16,9 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
-import { useMutation, useSubscription } from '@apollo/react-hooks';
+import { useMutation } from '@apollo/react-hooks';
 
 import * as AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
-import * as AddBookInfoSubscription from '@client/graphqls/AddBookInfoDialog_addBookInfo_Subscription.gql';
 import * as AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
 
 import { Result } from '@common/GraphqlTypes';
@@ -74,7 +73,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
-  const [subscriptionName, setSubscriptionName] = React.useState<string | undefined>(undefined);
   const [addBookInfoProgress, setAddBookInfoProgress] = React
     .useState<ProgressEvent | undefined>(undefined);
   const [addBookInfoAbort, setAddBookInfoAbort] = React
@@ -91,7 +89,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setName('');
     setShowAddHistory(false);
     setAddHistories([]);
-    setSubscriptionName(undefined);
     setAddBookInfoProgress(undefined);
     setAddBookInfoAbort(undefined);
   };
@@ -103,12 +100,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     onCompleted({ add }) {
       setAddBookInfoProgress(undefined);
       setAddBookInfoAbort(undefined);
-      setSubscriptionName(undefined);
       closeDialog();
       if (add.success && onAdded) onAdded();
-    },
-    onError() {
-      setSubscriptionName(undefined);
     },
     context: {
       fetchOptions: {
@@ -135,13 +128,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
       },
     },
   );
-
-  const { data: subscriptionData } = useSubscription(AddBookInfoSubscription, {
-    skip: !subscriptionName,
-    variables: {
-      name: subscriptionName,
-    },
-  });
 
   const loading = React.useMemo(() => addLoading || histLoading, [addLoading, histLoading]);
 
@@ -216,7 +202,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             </DialogContent>
           );
         }
-        if (subscriptionData || addBookInfoProgress || addBookInfoAbort || loading) {
+        if (addBookInfoProgress || addBookInfoAbort || loading) {
           return (
             <DialogContent
               className={
@@ -244,9 +230,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
                 : (
                   <CircularProgress color="secondary" />
                 )}
-              {(subscriptionData) && (
-                <div className={classes.progressMessage}>{subscriptionData.addBookInfo}</div>
-              )}
             </DialogContent>
           );
         }
@@ -282,7 +265,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             } else {
               // noinspection JSIgnoredPromiseFromCall
               addBookInfo();
-              setSubscriptionName(name);
             }
           }}
           disabled={loading}

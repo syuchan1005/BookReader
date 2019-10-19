@@ -2,8 +2,8 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import { promises as fs } from 'fs';
 
-import * as uuidv4 from 'uuid/v4';
-import * as rimraf from 'rimraf';
+import uuidv4 from 'uuid/v4';
+import rimraf from 'rimraf';
 import { Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';

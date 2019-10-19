@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as path from 'path';
+import path from 'path';
 
 import {
   ApolloServer,
@@ -9,7 +9,7 @@ import {
 import { SubClass } from 'gm';
 
 // @ts-ignore
-import * as typeDefs from '@server/schema.graphql';
+import typeDefs from '@server/schema.graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import {
   mkdirpIfNotExists,

@@ -1,11 +1,11 @@
 import { promises as fs } from 'fs';
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 import { Readable } from 'stream';
 
-import * as unzipper from 'unzipper';
-import * as uuidv4 from 'uuid/v4';
-import * as rimraf from 'rimraf';
+import unzipper from 'unzipper';
+import uuidv4 from 'uuid/v4';
+import rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
