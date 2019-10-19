@@ -96,7 +96,7 @@ const Book: React.FC = (props: BookProps) => {
   const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const history = useHistory();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const {
     loading,
     error,
@@ -204,6 +204,7 @@ const Book: React.FC = (props: BookProps) => {
     dispatch({
       needContentMargin: false,
       barTitle: 'Book',
+      showBackRouteArrow: true,
     });
 
     db.bookReads.get(params.id).then((read) => {

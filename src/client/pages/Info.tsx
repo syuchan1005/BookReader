@@ -70,7 +70,7 @@ const Info: React.FC = (props: InfoProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const {
@@ -88,7 +88,11 @@ const Info: React.FC = (props: InfoProps) => {
   });
 
   React.useEffect(() => {
-    dispatch({ barTitle: 'Book', backRoute: '/' });
+    dispatch({
+      barTitle: 'Book',
+      backRoute: '/',
+      showBackRouteArrow: true,
+    });
     let unMounted = false;
     db.infoReads.get(params.id).then((read) => {
       if (read && !unMounted) {

@@ -92,7 +92,10 @@ const Home: React.FC = (props: HomeProps) => {
   const debounceSearch = useDebounceValue(store.searchText, 800);
 
   React.useEffect(() => {
-    dispatch({ barTitle: '' });
+    dispatch({
+      barTitle: '',
+      showBackRouteArrow: false,
+    });
   }, []);
 
   const {
@@ -113,20 +116,10 @@ const Home: React.FC = (props: HomeProps) => {
 
   const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
 
-  if (loading || error) {
-    return (
-      <div className={classes.loading}>
-        {loading && 'Loading'}
-        {error && `Error: ${error}`}
-      </div>
-    );
-  }
-
-  const infos = (data.bookInfos.infos || []);
-  const limit = infos.length;
-  const onDeletedBookInfo = (info, books) => {
+  const infos = React.useMemo(() => (data ? data.bookInfos.infos : []), [data]);
+  const onDeletedBookInfo = React.useCallback((info, books) => {
     // noinspection JSIgnoredPromiseFromCall
-    refetch({ offset: 0, limit });
+    refetch({ offset: 0, limit: infos.length });
     // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(info.id);
     // noinspection JSIgnoredPromiseFromCall
@@ -138,9 +131,9 @@ const Home: React.FC = (props: HomeProps) => {
         pages,
       }));
     }
-  };
+  }, [refetch, store, infos]);
 
-  const clickLoadMore = () => {
+  const clickLoadMore = React.useCallback(() => {
     // @ts-ignore
     loadMore({
       variables: {
@@ -156,7 +149,21 @@ const Home: React.FC = (props: HomeProps) => {
         };
       },
     });
-  };
+  }, [loadMore, infos]);
+
+  const refetchAll = React.useCallback(() => {
+    // noinspection JSIgnoredPromiseFromCall
+    refetch({ offset: 0, limit: infos.length || 10 });
+  }, [refetch, infos]);
+
+  if (loading || error) {
+    return (
+      <div className={classes.loading}>
+        {loading && 'Loading'}
+        {error && `Error: ${error}`}
+      </div>
+    );
+  }
 
   return (
     <div className={classes.home}>
@@ -167,7 +174,7 @@ const Home: React.FC = (props: HomeProps) => {
             {...info}
             onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
             onDeleted={(books) => onDeletedBookInfo(info, books)}
-            onEdit={() => refetch({ offset: 0, limit })}
+            onEdit={refetchAll}
             thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
           />
         ))}
@@ -190,7 +197,7 @@ const Home: React.FC = (props: HomeProps) => {
       <Fab
         color="secondary"
         className={classes.fab}
-        onClick={() => refetch({ offset: 0, limit })}
+        onClick={refetchAll}
         aria-label="refetch"
       >
         <Icon>refresh</Icon>
@@ -198,7 +205,7 @@ const Home: React.FC = (props: HomeProps) => {
 
       <AddBookInfoDialog
         open={open}
-        onAdded={() => refetch({ offset: 0, limit })}
+        onAdded={refetchAll}
         onClose={() => setOpen(false)}
       />
 
@@ -206,7 +213,7 @@ const Home: React.FC = (props: HomeProps) => {
         open={!!openAddBook}
         infoId={openAddBook}
         onClose={() => setOpenAddBook(undefined)}
-        onAdded={() => refetch({ offset: 0, limit })}
+        onAdded={refetchAll}
       />
     </div>
   );

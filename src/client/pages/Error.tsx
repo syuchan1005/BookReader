@@ -8,7 +8,9 @@ const Error: React.FC = () => {
   const history = useHistory();
 
   React.useEffect(() => {
-    dispatch({ barTitle: 'Error' });
+    dispatch({
+      barTitle: 'Error',
+    });
   }, []);
 
   return (

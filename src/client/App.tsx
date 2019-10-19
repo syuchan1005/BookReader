@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { Route, Router, Switch } from 'react-router-dom';
+import {
+  Route,
+  Router,
+  Switch,
+} from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
   AppBar,
@@ -173,38 +177,27 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
 
-  React.useEffect(() => {
-    dispatch({ wb: props.wb });
-  }, []);
-
-
   const theme = useMatchMedia(
     ['(prefers-color-scheme: dark)', '(prefers-color-scheme: light)'],
     ['dark', 'light'],
     'light',
   );
 
-  if (store.theme !== theme) {
-    dispatch({ theme });
-  }
+  React.useEffect(() => {
+    if (store.theme !== theme) {
+      dispatch({ theme });
+    }
+  }, [theme]);
 
-  const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
   const [cacheAnchorEl, setCacheAnchorEl] = React.useState(null);
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const listener = (location) => {
-    setShowBack(['/info', '/book'].some((s) => location.pathname.startsWith(s)));
-  };
-
-  history.listen(listener);
-
   React.useEffect(() => {
-    listener(window.location);
-
     if (props.wb) {
+      dispatch({ wb: props.wb });
       props.wb.addEventListener('waiting', () => {
         enqueueSnackbar('Update here! Please reload.', {
           variant: 'warning',
@@ -229,16 +222,16 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     });
   }, []);
 
-  const clickBack = () => {
+  const clickBack = React.useCallback(() => {
     if (store.backRoute) {
       history.push(store.backRoute);
       dispatch({ backRoute: undefined });
     } else {
       history.goBack();
     }
-  };
+  }, [history, store]);
 
-  const purgeCache = (i) => {
+  const purgeCache = React.useCallback((i) => {
     (i !== 1 ? props.persistor.purge() : Promise.resolve())
       .then(() => {
         if (store.wb && i === 1) {
@@ -255,7 +248,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
           window.location.reload();
         }
       });
-  };
+  }, [store]);
 
   return (
     <MuiThemeProvider theme={themes[store.theme] || themes.light}>
@@ -263,7 +256,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       {store.showAppBar && (
         <AppBar className={classes.appBar}>
           <Toolbar>
-            {isShowBack && (
+            {store.showBackRouteArrow && (
               <IconButton className={classes.backIcon} onClick={clickBack}>
                 <Icon>arrow_back</Icon>
               </IconButton>
@@ -372,10 +365,10 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       <main className={store.needContentMargin ? 'appbar--margin' : ''}>
         <Router history={history}>
           <Switch>
-            <Route exact path="/" render={(p) => <Home {...p} store={store} />} />
-            <Route exact path="/info/:id" render={(p) => <Info {...p} store={store} />} />
-            <Route exact path="/book/:id" render={(p) => <Book {...p} store={store} />} />
-            <Route render={(p) => <Error {...p} store={store} />} />
+            <Route exact path="/" component={Home} />
+            <Route exact path="/info/:id" component={Info} />
+            <Route exact path="/book/:id" component={Book} />
+            <Route component={Error} />
           </Switch>
         </Router>
       </main>
