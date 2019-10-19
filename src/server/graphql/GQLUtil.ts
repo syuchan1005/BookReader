@@ -9,7 +9,7 @@ import * as rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
-import { PubSub } from 'apollo-server-koa';
+import { PubSubEngine } from 'apollo-server-koa';
 
 import { Result } from '@common/GraphqlTypes';
 import { archiveTypes } from '@common/Common';
@@ -25,7 +25,7 @@ import BookModel from '@server/sequelize/models/book';
 
 const GQLUtil = {
   Mutation: {
-    addBook: async (gm: SubClass, pubsub: PubSub, parent, {
+    addBook: async (gm: SubClass, pubsub: PubSubEngine, parent, {
       id: infoId,
       number,
       file,
@@ -86,7 +86,7 @@ const GQLUtil = {
         },
       );
     },
-    addBooks: async (gm: SubClass, pubsub: PubSub, parent, {
+    addBooks: async (gm: SubClass, pubsub: PubSubEngine, parent, {
       id: infoId,
       books,
     }, context, info, customData): Promise<Result[]> => asyncMap(books,

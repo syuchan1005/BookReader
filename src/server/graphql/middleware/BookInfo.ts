@@ -11,7 +11,7 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
-  BookInfoList, BookInfo as BookInfoType, Result, BookInfoResult,
+  BookInfoList, BookInfo as BookInfoType, Result, BookInfoResult, ResultWithInfoId,
 } from '@common/GraphqlTypes';
 
 import Database from '@server/sequelize/models';
@@ -116,7 +116,7 @@ class BookInfo extends GQLMiddleware {
         thumbnail,
         books,
         compressBooks,
-      }): Promise<Result> => {
+      }): Promise<ResultWithInfoId> => {
         const infoId = uuidv4();
         let thumbnailStream;
         if (thumbnail) {
@@ -226,7 +226,10 @@ class BookInfo extends GQLMiddleware {
             };
           }
         }
-        return { success: true };
+        return {
+          success: true,
+          infoId,
+        };
       },
       editBookInfo: async (parent, { id: infoId, name, thumbnail }): Promise<Result> => {
         if (name === undefined && thumbnail === undefined) {

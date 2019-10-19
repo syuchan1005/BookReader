@@ -22,6 +22,10 @@ export interface Result {
   message?: string;
 }
 
+export interface ResultWithInfoId extends Result {
+  infoId?: string;
+}
+
 export interface BookInfoResult {
   success: boolean;
   code?: string;
