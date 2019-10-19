@@ -9,15 +9,15 @@ import {
   useTheme,
   createMuiTheme, Menu, MenuItem,
 } from '@material-ui/core';
-import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
-import { Observer } from 'mobx-react';
+import { useParams, useHistory } from 'react-router-dom';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 
 import { Book as BookType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
+import { useGlobalStore } from '@client/store/StoreProvider';
 import { commonTheme } from '@client/App';
 
 import { orange } from '@material-ui/core/colors';
@@ -25,7 +25,6 @@ import db from '../Database';
 import Img from '../components/Img';
 
 interface BookProps {
-  store: any;
   children?: React.ReactElement;
 }
 
@@ -94,19 +93,23 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Book: React.FC = (props: BookProps) => {
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
-  const { match, history } = useReactRouter();
+  const history = useHistory();
+  const params = useParams();
   const {
     loading,
     error,
     data,
   } = useQuery<{ book: BookType }>(BookQuery, {
     variables: {
-      id: match.params.id,
+      id: params.id,
     },
     onCompleted({ book }) {
-      // eslint-disable-next-line no-param-reassign
-      props.store.backRoute = `/info/${book.info.id}`;
+      dispatch({
+        backRoute: `/info/${book.info.id}`,
+        barTitle: `${book.info.name} No.${book.number}`,
+      });
     },
   });
 
@@ -121,16 +124,14 @@ const Book: React.FC = (props: BookProps) => {
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
-    match.params.id,
+    params.id,
   );
 
   const setShowAppBar = React.useCallback((val) => {
     let v = val;
-    if (v === undefined) v = !props.store.showAppBar;
-    // eslint-disable-next-line
-    props.store.showAppBar = v;
-    // eslint-disable-next-line react/destructuring-assignment
-  }, [props.store.showAppBar]);
+    if (v === undefined) v = !store.showAppBar;
+    dispatch({ showAppBar: v });
+  }, [store.showAppBar]);
 
   const increment = React.useCallback(() => {
     let preRoute = [];
@@ -146,9 +147,9 @@ const Book: React.FC = (props: BookProps) => {
       setRouteButton(preRoute);
     }
     setPage(Math.min(page + 1, data.book.pages - 1));
-    if (props.store.showAppBar) setShowAppBar(false);
+    if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, routeButton[0], props.store.showAppBar]);
+  }, [page, data, nextBook, routeButton[0], store.showAppBar]);
 
   const decrement = React.useCallback(() => {
     let preRoute = [];
@@ -164,9 +165,9 @@ const Book: React.FC = (props: BookProps) => {
       setRouteButton(preRoute);
     }
     setPage(Math.max(page - 1, 0));
-    if (props.store.showAppBar) setShowAppBar(false);
+    if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, routeButton[1], props.store.showAppBar]);
+  }, [page, data, prevBook, routeButton[1], store.showAppBar]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -200,10 +201,12 @@ const Book: React.FC = (props: BookProps) => {
 
   React.useEffect(() => {
     setShowAppBar(false);
-    // eslint-disable-next-line
-    props.store.needContentMargin = false;
+    dispatch({
+      needContentMargin: false,
+      barTitle: 'Book',
+    });
 
-    db.bookReads.get(match.params.id).then((read) => {
+    db.bookReads.get(params.id).then((read) => {
       if (read) {
         setPage(read.page);
       }
@@ -215,15 +218,14 @@ const Book: React.FC = (props: BookProps) => {
       // remove onkeydown
       window.document.onkeydown = () => {
       };
-      // eslint-disable-next-line
-      props.store.needContentMargin = true;
+      dispatch({ needContentMargin: true });
     };
   }, []);
 
   React.useEffect(() => {
     if (isPageSet) {
       db.bookReads.put({
-        bookId: match.params.id,
+        bookId: params.id,
         page,
       }).catch(() => { /* ignored */
       });
@@ -298,16 +300,13 @@ const Book: React.FC = (props: BookProps) => {
     });
   }, [prevBook, nextBook, data, history]);
 
-  // eslint-disable-next-line
-  props.store.barTitle = 'Book';
-
   const pages = React.useMemo(() => {
     if (!data || !data.book) return [];
     const sizes = [document.body.offsetWidth, document.body.offsetHeight];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
     const pad = data.book.pages.toString(10).length;
     return [...Array(data.book.pages).keys()]
-      .map((i) => `/book/${match.params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
+      .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
   }, [data]);
 
   const clickEffect = React.useCallback((eff) => {
@@ -324,24 +323,18 @@ const Book: React.FC = (props: BookProps) => {
       </div>
     );
   }
-  // eslint-disable-next-line
-  props.store.barTitle = `${data.book.info.name} No.${data.book.number}`;
 
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
       <div className={classes.overlay} style={effectBackGround}>
-        <Observer>
-          {() => (props.store.showAppBar ? (
-            // eslint-disable-next-line
+        {store.showAppBar && (
+          <>
+            {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
               <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
             </div>
-          ) : null)}
-        </Observer>
-        <Observer>
-          {() => (props.store.showAppBar ? (
-            // eslint-disable-next-line
+            {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
               <div />
               <Button
@@ -394,21 +387,21 @@ const Book: React.FC = (props: BookProps) => {
                 </div>
               )}
             </div>
-          ) : null)}
-        </Observer>
+          </>
+        )}
         {(routeButton.some((a) => a)) ? (
           // eslint-disable-next-line
           <div className={`${classes.overlayContent} center`} onClick={(e) => { e.stopPropagation(); setRouteButton([false, false]); }}>
-            {routeButton[1] ? (
+            {routeButton[1] && (
               <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
                 to Next book
               </Button>
-            ) : null}
-            {routeButton[0] ? (
+            )}
+            {routeButton[0] && (
               <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
                 to Prev book
               </Button>
-            ) : null}
+            )}
           </div>
         ) : null}
       </div>

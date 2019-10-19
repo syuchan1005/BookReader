@@ -7,10 +7,9 @@ import {
   makeStyles,
   Theme, useTheme,
 } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 import { useQuery } from '@apollo/react-hooks';
-import { useObserver } from 'mobx-react';
 import { Waypoint } from 'react-waypoint';
-import useReactRouter from 'use-react-router';
 
 import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
@@ -20,13 +19,13 @@ import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import { BookInfoList as BookInfoListType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import useLoadMore from '@client/hooks/useLoadMore';
+import { useGlobalStore } from '@client/store/StoreProvider';
 
 import BookInfo from '../components/BookInfo';
 import db from '../Database';
 
 
 interface HomeProps {
-  store: any;
   children?: React.ReactElement;
 }
 
@@ -83,16 +82,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Home: React.FC = (props: HomeProps) => {
-  // eslint-disable-next-line
-  props.store.barTitle = '';
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
-  const { history } = useReactRouter();
+  const history = useHistory();
 
-  const [search, setSearch] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
-  const debounceSearch = useDebounceValue(search, 800);
+  const debounceSearch = useDebounceValue(store.searchText, 800);
+
+  React.useEffect(() => {
+    dispatch({ barTitle: '' });
+  }, []);
+
   const {
     refetch,
     loading,
@@ -104,20 +106,12 @@ const Home: React.FC = (props: HomeProps) => {
       offset: 0,
       limit: 10,
       search: debounceSearch || '',
-      // eslint-disable-next-line react/destructuring-assignment
-      order: props.store.sortOrder,
-      // eslint-disable-next-line react/destructuring-assignment
-      history: props.store.history || !!debounceSearch,
+      order: store.sortOrder,
+      history: store.history || !!debounceSearch,
     },
   });
 
   const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
-
-  useObserver(() => {
-    if (search !== props.store.searchText) {
-      setSearch(props.store.searchText);
-    }
-  });
 
   if (loading || error) {
     return (
@@ -137,8 +131,8 @@ const Home: React.FC = (props: HomeProps) => {
     db.infoReads.delete(info.id);
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
-    if (props.store.wb) {
-      books.map(({ id: bookId, pages }) => props.store.wb.messageSW({
+    if (store.wb) {
+      books.map(({ id: bookId, pages }) => store.wb.messageSW({
         type: 'BOOK_REMOVE',
         bookId,
         pages,

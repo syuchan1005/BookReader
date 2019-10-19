@@ -1,5 +1,4 @@
 import * as React from 'react';
-import useReactRouter from 'use-react-router';
 import { useQuery } from '@apollo/react-hooks';
 import {
   makeStyles,
@@ -9,17 +8,21 @@ import {
   Theme,
   useTheme,
 } from '@material-ui/core';
+import { useParams, useHistory } from 'react-router-dom';
+
+import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 
 import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
 
 import { commonTheme } from '@client/App';
+import { useGlobalStore } from '@client/store/StoreProvider';
+
+import db from '@client/Database';
+
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
-import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
-import Book from '../components/Book';
-import db from '../Database';
+import Book from '@client/components/Book';
 
 interface InfoProps {
-  store: any;
   children?: React.ReactElement;
 }
 
@@ -63,9 +66,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Info: React.FC = (props: InfoProps) => {
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
-  const { match, history } = useReactRouter();
+  const history = useHistory();
+  const params = useParams();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const {
@@ -75,19 +80,17 @@ const Info: React.FC = (props: InfoProps) => {
     data,
   } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
     variables: {
-      id: match.params.id,
+      id: params.id,
+    },
+    onCompleted({ bookInfo }) {
+      dispatch({ barTitle: bookInfo.name });
     },
   });
 
-  // eslint-disable-next-line
-  props.store.barTitle = 'Book';
-
-  // eslint-disable-next-line
-  props.store.backRoute = '/';
-
   React.useEffect(() => {
+    dispatch({ barTitle: 'Book', backRoute: '/' });
     let unMounted = false;
-    db.infoReads.get(match.params.id).then((read) => {
+    db.infoReads.get(params.id).then((read) => {
       if (read && !unMounted) {
         setReadId(read.bookId);
       }
@@ -95,7 +98,7 @@ const Info: React.FC = (props: InfoProps) => {
     return () => {
       unMounted = true;
     };
-  });
+  }, []);
 
   if (loading || error || !data || !data.bookInfo) {
     return (
@@ -107,12 +110,9 @@ const Info: React.FC = (props: InfoProps) => {
     );
   }
 
-  // eslint-disable-next-line
-  props.store.barTitle = data.bookInfo.name;
-
   const clickBook = (book) => {
     db.infoReads.put({
-      infoId: match.params.id,
+      infoId: params.id,
       bookId: book.id,
     }).catch(() => { /* ignored */
     });
@@ -126,8 +126,8 @@ const Info: React.FC = (props: InfoProps) => {
     refetch();
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.delete(bookId);
-    if (props.store.wb) {
-      props.store.wb.messageSW({
+    if (store.wb) {
+      store.wb.messageSW({
         type: 'BOOK_REMOVE',
         bookId,
         pages,
@@ -173,7 +173,7 @@ const Info: React.FC = (props: InfoProps) => {
 
       <AddBookDialog
         open={open}
-        infoId={match.params.id}
+        infoId={params.id}
         onAdded={refetch}
         onClose={() => setOpen(false)}
       />

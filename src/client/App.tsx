@@ -22,14 +22,16 @@ import {
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
-import { Observer, useLocalStore } from 'mobx-react';
 import { useSnackbar } from 'notistack';
+
+import { useGlobalStore } from '@client/store/StoreProvider';
+import useMatchMedia from '@client/hooks/useMatchMedia';
+import { SortOrder } from '@client/store/reducers';
 
 import Home from './pages/Home';
 import Info from './pages/Info';
 import Book from './pages/Book';
 import Error from './pages/Error';
-import useMatchMedia from './hooks/useMatchMedia';
 
 export const commonTheme = {
   safeArea: {
@@ -95,7 +97,7 @@ const themes = {
       },
       secondary: {
         main: colors.blue.A400,
-        contrastText: colors.common.white,
+        contrastText: colors.common.black,
       },
     },
   }),
@@ -168,19 +170,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const history = createBrowserHistory();
 
 const App: React.FC<AppProps> = (props: AppProps) => {
-  const store = useLocalStore(() => ({
-    showAppBar: true,
-    needContentMargin: true,
-    barTitle: 'Book Reader',
-    backRoute: undefined,
-    wb: props.wb,
-    searchText: '',
-    sortOrder: 'Update_Newest',
-    history: false,
-    theme: 'light',
-    webp: false,
-  }));
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
+
+  React.useEffect(() => {
+    dispatch({ wb: props.wb });
+  }, []);
+
 
   const theme = useMatchMedia(
     ['(prefers-color-scheme: dark)', '(prefers-color-scheme: light)'],
@@ -189,7 +185,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   );
 
   if (store.theme !== theme) {
-    store.theme = theme;
+    dispatch({ theme });
   }
 
   const [isShowBack, setShowBack] = React.useState(history.location.pathname.startsWith('/info'));
@@ -208,8 +204,8 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   React.useEffect(() => {
     listener(window.location);
 
-    if (store.wb) {
-      store.wb.addEventListener('waiting', () => {
+    if (props.wb) {
+      props.wb.addEventListener('waiting', () => {
         enqueueSnackbar('Update here! Please reload.', {
           variant: 'warning',
           persist: true,
@@ -229,14 +225,14 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       // noinspection SpellCheckingInspection
       imgElem.src = 'data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACyAgCdASoCAAEALmk0mk0iIiIiIgBoSygABc6zbAAA/v56QAAAAA==';
     }).then((r: boolean) => {
-      store.webp = r;
+      dispatch({ webp: r });
     });
   }, []);
 
   const clickBack = () => {
     if (store.backRoute) {
       history.push(store.backRoute);
-      store.backRoute = undefined;
+      dispatch({ backRoute: undefined });
     } else {
       history.goBack();
     }
@@ -264,131 +260,125 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   return (
     <MuiThemeProvider theme={themes[store.theme] || themes.light}>
       <CssBaseline />
-      <Observer>
-        {() => (store.showAppBar ? (
-          <AppBar className={classes.appBar}>
-            <Toolbar>
-              {isShowBack && (
-                <IconButton className={classes.backIcon} onClick={clickBack}>
-                  <Icon>arrow_back</Icon>
-                </IconButton>
-              )}
-              <Typography variant="h6" className={classes.title} noWrap>{store.barTitle}</Typography>
-              {(history.location.pathname === '/') ? (
-                <div className={classes.search}>
-                  <div className={classes.searchIcon}>
-                    <Icon>search</Icon>
-                  </div>
-                  <InputBase
-                    placeholder="Search…"
-                    classes={{
-                      root: classes.inputRoot,
-                      input: classes.inputInput,
-                    }}
-                    inputProps={{ 'aria-label': 'search' }}
-                    value={store.searchText}
-                    onChange={(e) => {
-                      store.searchText = e.target.value;
-                    }}
-                  />
+      {store.showAppBar && (
+        <AppBar className={classes.appBar}>
+          <Toolbar>
+            {isShowBack && (
+              <IconButton className={classes.backIcon} onClick={clickBack}>
+                <Icon>arrow_back</Icon>
+              </IconButton>
+            )}
+            <Typography variant="h6" className={classes.title} noWrap>{store.barTitle}</Typography>
+            {(history.location.pathname === '/') && (
+              <div className={classes.search}>
+                <div className={classes.searchIcon}>
+                  <Icon>search</Icon>
                 </div>
-              ) : null}
-              {(history.location.pathname === '/') ? (
-                <IconButton
-                  size="small"
-                  className={classes.sortIcon}
-                  onClick={(event) => setMenuAnchorEl(event.currentTarget)}
-                  aria-label="sort"
+                <InputBase
+                  placeholder="Search…"
+                  classes={{
+                    root: classes.inputRoot,
+                    input: classes.inputInput,
+                  }}
+                  inputProps={{ 'aria-label': 'search' }}
+                  value={store.searchText}
+                  onChange={(e) => {
+                    dispatch({ searchText: e.target.value });
+                  }}
+                />
+              </div>
+            )}
+            {(history.location.pathname === '/') && (
+              <IconButton
+                size="small"
+                className={classes.sortIcon}
+                onClick={(event) => setMenuAnchorEl(event.currentTarget)}
+                aria-label="sort"
+              >
+                <Icon>sort</Icon>
+              </IconButton>
+            )}
+            <Menu
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                horizontal: 'center',
+                vertical: 'bottom',
+              }}
+              anchorEl={menuAnchorEl}
+              open={!!menuAnchorEl}
+              onClose={() => setMenuAnchorEl(null)}
+            >
+              <ListItem style={{ outline: '0' }}>
+                <ListItemText>History</ListItemText>
+                <MSwitch
+                  checked={store.history}
+                  onChange={(e) => {
+                    dispatch({ history: e.target.checked });
+                  }}
+                />
+              </ListItem>
+              <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
+              <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
+                Cache Control
+              </MenuItem>
+            </Menu>
+            <Menu
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                horizontal: 'center',
+                vertical: 'bottom',
+              }}
+              anchorEl={sortAnchorEl}
+              open={!!sortAnchorEl}
+              onClose={() => setSortAnchorEl(null)}
+            >
+              {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest'].map((order: SortOrder) => (
+                <MenuItem
+                  key={order}
+                  onClick={() => {
+                    dispatch({ sortOrder: order });
+                    setSortAnchorEl(null);
+                  }}
                 >
-                  <Icon>sort</Icon>
-                </IconButton>
-              ) : null}
-              <Menu
-                getContentAnchorEl={null}
-                anchorOrigin={{
-                  horizontal: 'center',
-                  vertical: 'bottom',
-                }}
-                anchorEl={menuAnchorEl}
-                open={!!menuAnchorEl}
-                onClose={() => setMenuAnchorEl(null)}
-              >
-                <ListItem style={{ outline: '0' }}>
-                  <ListItemText>History</ListItemText>
-                  <MSwitch
-                    checked={store.history}
-                    onChange={(e) => {
-                      store.history = e.target.checked;
-                    }}
-                  />
-                </ListItem>
-                <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
-                <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
-                  Cache Control
+                  {order}
                 </MenuItem>
-              </Menu>
-              <Menu
-                getContentAnchorEl={null}
-                anchorOrigin={{
-                  horizontal: 'center',
-                  vertical: 'bottom',
-                }}
-                anchorEl={sortAnchorEl}
-                open={!!sortAnchorEl}
-                onClose={() => setSortAnchorEl(null)}
-              >
-                {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest'].map((order) => (
-                  <MenuItem
-                    key={order}
-                    onClick={() => {
-                      store.sortOrder = order;
-                      setSortAnchorEl(null);
-                    }}
-                  >
-                    {order}
-                  </MenuItem>
-                ))}
-              </Menu>
-              <Menu
-                getContentAnchorEl={null}
-                anchorOrigin={{
-                  horizontal: 'center',
-                  vertical: 'bottom',
-                }}
-                anchorEl={cacheAnchorEl}
-                open={!!cacheAnchorEl}
-                onClose={() => setCacheAnchorEl(null)}
-              >
-                {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
-                  <MenuItem
-                    key={order}
-                    onClick={() => {
-                      purgeCache(i);
-                      // setCacheAnchorEl(null);
-                    }}
-                  >
-                    {order}
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Toolbar>
-          </AppBar>
-        ) : null)}
-      </Observer>
-      <Observer>
-        {() => (
-          <main className={store.needContentMargin ? 'appbar--margin' : ''}>
-            <Router history={history}>
-              <Switch>
-                <Route exact path="/" render={(p) => <Home {...p} store={store} />} />
-                <Route exact path="/info/:id" render={(p) => <Info {...p} store={store} />} />
-                <Route exact path="/book/:id" render={(p) => <Book {...p} store={store} />} />
-                <Route render={(p) => <Error {...p} store={store} />} />
-              </Switch>
-            </Router>
-          </main>
-        )}
-      </Observer>
+              ))}
+            </Menu>
+            <Menu
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                horizontal: 'center',
+                vertical: 'bottom',
+              }}
+              anchorEl={cacheAnchorEl}
+              open={!!cacheAnchorEl}
+              onClose={() => setCacheAnchorEl(null)}
+            >
+              {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
+                <MenuItem
+                  key={order}
+                  onClick={() => {
+                    purgeCache(i);
+                    // setCacheAnchorEl(null);
+                  }}
+                >
+                  {order}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Toolbar>
+        </AppBar>
+      )}
+      <main className={store.needContentMargin ? 'appbar--margin' : ''}>
+        <Router history={history}>
+          <Switch>
+            <Route exact path="/" render={(p) => <Home {...p} store={store} />} />
+            <Route exact path="/info/:id" render={(p) => <Info {...p} store={store} />} />
+            <Route exact path="/book/:id" render={(p) => <Book {...p} store={store} />} />
+            <Route render={(p) => <Error {...p} store={store} />} />
+          </Switch>
+        </Router>
+      </main>
     </MuiThemeProvider>
   );
 };

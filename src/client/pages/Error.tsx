@@ -1,16 +1,15 @@
 import * as React from 'react';
 import { Button } from '@material-ui/core';
-import useReactRouter from 'use-react-router';
+import { useHistory } from 'react-router-dom';
+import { useGlobalStore } from '@client/store/StoreProvider';
 
-interface ErrorProps {
-  store: any;
-  children?: React.ReactElement;
-}
+const Error: React.FC = () => {
+  const { dispatch } = useGlobalStore();
+  const history = useHistory();
 
-const Error: React.FC = (props: ErrorProps) => {
-  // eslint-disable-next-line
-  props.store.barTitle = 'Error';
-  const { history } = useReactRouter();
+  React.useEffect(() => {
+    dispatch({ barTitle: 'Error' });
+  }, []);
 
   return (
     <div>

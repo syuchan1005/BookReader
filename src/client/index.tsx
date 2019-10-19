@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { SnackbarProvider } from 'notistack';
 
+import StoreProvider from '@client/store/StoreProvider';
 import regSW from './registerServiceWorker';
 import App from './App';
 
@@ -22,11 +23,13 @@ if (process.env.NODE_ENV !== 'production') {
 getClient().then(([client, persistor]) => {
   ReactDOM.render(
     (
-      <SnackbarProvider maxSnack={3}>
-        <ApolloProvider client={client}>
-          <App wb={wb} persistor={persistor} />
-        </ApolloProvider>
-      </SnackbarProvider>
+      <StoreProvider>
+        <SnackbarProvider maxSnack={3}>
+          <ApolloProvider client={client}>
+            <App wb={wb} persistor={persistor} />
+          </ApolloProvider>
+        </SnackbarProvider>
+      </StoreProvider>
     ),
     document.getElementById('app'),
   );
