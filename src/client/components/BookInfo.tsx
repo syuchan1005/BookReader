@@ -159,7 +159,6 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
             vertical: 'bottom',
           }}
           anchorEl={menuAnchor}
-          keepMounted
           open={Boolean(menuAnchor)}
           onClose={() => setMenuAnchor(null)}
         >
