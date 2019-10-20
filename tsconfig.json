@@ -8,7 +8,7 @@
       "dom"
     ],
     "target": "es5",
-    "module": "commonjs",
+    "module": "es2015",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,

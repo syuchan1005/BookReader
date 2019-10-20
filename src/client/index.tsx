@@ -9,6 +9,9 @@ import regSW from './registerServiceWorker';
 import App from './App';
 
 import getClient from './apollo';
+import db from './Database';
+
+// TODO: material-icons と Roboto をこっちで内包する
 
 const wb = regSW();
 
@@ -20,7 +23,10 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-getClient().then(([client, persistor]) => {
+(async () => {
+  await db.connect();
+  const [client, persistor] = await getClient();
+
   ReactDOM.render(
     (
       <StoreProvider>
@@ -33,4 +39,4 @@ getClient().then(([client, persistor]) => {
     ),
     document.getElementById('app'),
   );
-});
+})();
