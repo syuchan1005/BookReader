@@ -2,8 +2,7 @@
   "extends": "./tsconfig",
   "compilerOptions": {
     "target": "es6",
-    "module": "commonjs",
-    "moduleResolution": "node"
+    "module": "commonjs"
   },
   "include": ["src/common/*", "src/server/*"]
 }

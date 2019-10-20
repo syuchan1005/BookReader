@@ -1,11 +1,11 @@
 {
-  "extends": "./tsconfig.webworker",
   "compilerOptions": {
     "lib": [
       "es5",
       "es6",
       "es2019",
-      "dom"
+      "dom",
+      "webworker"
     ],
     "target": "es5",
     "module": "es2015",
@@ -20,6 +20,7 @@
       "@common*" :["src/common*"]
     },
     "typeRoots": ["node_modules/@types", "src/@types"],
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "downlevelIteration": true
   },
