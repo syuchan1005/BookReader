@@ -198,11 +198,13 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   React.useEffect(() => {
     if (props.wb) {
       dispatch({ wb: props.wb });
-      props.wb.addEventListener('waiting', () => {
-        enqueueSnackbar('Update here! Please reload.', {
-          variant: 'warning',
-          persist: true,
-        });
+      props.wb.addEventListener('installed', (event) => {
+        if (event.isUpdate) {
+          enqueueSnackbar('Update here! Please reload.', {
+            variant: 'warning',
+            persist: true,
+          });
+        }
       });
     }
 

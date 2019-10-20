@@ -216,11 +216,13 @@ const Book: React.FC = (props: BookProps) => {
 
   React.useEffect(() => {
     setShowAppBar(false);
-    dispatch({
+    const update = {
       needContentMargin: false,
       barTitle: 'Book',
       showBackRouteArrow: true,
-    });
+    };
+    if (data) delete update.barTitle;
+    dispatch(update);
 
     db.bookReads.get(params.id).then((read) => {
       if (read) {

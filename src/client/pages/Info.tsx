@@ -99,11 +99,13 @@ const Info: React.FC = (props: InfoProps) => {
   });
 
   React.useEffect(() => {
-    dispatch({
+    const update = {
       barTitle: 'Book',
       backRoute: '/',
       showBackRouteArrow: true,
-    });
+    };
+    if (data) delete update.barTitle;
+    dispatch(update);
     let unMounted = false;
     db.infoReads.get(params.id).then((read) => {
       if (read && !unMounted) {
