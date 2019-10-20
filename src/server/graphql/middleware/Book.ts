@@ -140,7 +140,9 @@ class Book extends GQLMiddleware {
             (resolve) => {
               rimraf(folderPath, () => resolve());
             },
-          );
+          ).catch((e) => {
+            throw e;
+          });
         });
         await new Promise((resolve) => rimraf(tempPath, resolve));
         return {

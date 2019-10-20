@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {
-  Button, CircularProgress,
+  Button, Checkbox, CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
+  DialogTitle, FormControlLabel,
   Icon,
   IconButton, LinearProgress,
   makeStyles,
@@ -13,12 +13,13 @@ import {
 } from '@material-ui/core';
 import { useMutation, useSubscription } from '@apollo/react-hooks';
 
+import * as AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
 import * as AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
 import * as AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
-import { Result } from '@common/GraphqlTypes';
+import { Result, ResultWithBookResults } from '@common/GraphqlTypes';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -35,7 +36,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   dialogContent: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
   },
   listItem: {
     width: '100%',
@@ -76,7 +76,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     .useState<ProgressEvent | undefined>(undefined);
   const [addBookAbort, setAddBookAbort] = React
     .useState<() => void | undefined>(undefined);
-  const [addBook, { loading }] = useMutation<{ adds: Result[] }>(AddBooksMutation, {
+
+  const [isCompressed, setCompressed] = React.useState(false);
+
+  const [addBook, { loading: addBookLoading }] = useMutation<{ adds: Result[] }>(AddBooksMutation, {
     variables: {
       id: infoId,
       books: addBooks,
@@ -91,6 +94,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       if (success && onAdded) onAdded();
     },
     onError() {
+      setAddBookProgress(undefined);
+      setAddBookAbort(undefined);
       setSubscriptionId(undefined);
     },
     context: {
@@ -105,6 +110,45 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       },
     },
   });
+
+  const [addCompressBook, {
+    loading: addCompressBookLoading,
+  }] = useMutation<{ add: ResultWithBookResults }>(
+    AddCompressBookMutation,
+    {
+      variables: {
+        id: infoId,
+        file: (addBooks[0] || {}).file,
+      },
+      onCompleted(d) {
+        if (!d) return;
+        setAddBookProgress(undefined);
+        setAddBookAbort(undefined);
+        if (onClose && d.add.success) onClose();
+        if (d.add.success && onAdded) onAdded();
+      },
+      onError() {
+        setAddBookProgress(undefined);
+        setAddBookAbort(undefined);
+      },
+      context: {
+        fetchOptions: {
+          useUpload: true,
+          onProgress: (ev: ProgressEvent) => {
+            setAddBookProgress(ev);
+          },
+          onAbortPossible: (abortFunc) => {
+            setAddBookAbort(() => abortFunc);
+          },
+        },
+      },
+    },
+  );
+
+  const loading = React.useMemo(
+    () => addBookLoading || addCompressBookLoading,
+    [addBookLoading, addCompressBookLoading],
+  );
 
   const { data: subscriptionData } = useSubscription(AddBooksSubscription, {
     skip: !subscriptionId,
@@ -183,26 +227,46 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         }
         return (
           <DialogContent className={classes.dialogContent}>
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={isCompressed}
+                  onChange={(e) => setCompressed(e.target.checked)}
+                />
+              )}
+              label="Compressed"
+            />
             <div>
-              {addBooks.map(({ file, number }, i) => (
+              {(isCompressed
+                ? [addBooks[0]].filter((a) => a)
+                : addBooks
+              ).map(({ file, number }, i) => (
                 <div key={`${file.name} ${number}`} className={classes.listItem}>
-                  <FileField file={file} onChange={(f) => changeAddBook(i, { file: f })} />
-                  <TextField
-                    color="secondary"
-                    label="Number"
-                    value={number}
-                    // @ts-ignore
-                    onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                    margin="none"
-                    autoFocus
+                  <FileField
+                    file={file}
+                    onChange={(f) => changeAddBook(i, { file: f })}
+                    style={isCompressed ? { gridColumn: '1 / span 2' } : undefined}
                   />
+                  {(!isCompressed) && (
+                    <TextField
+                      color="secondary"
+                      label="Number"
+                      value={number}
+                      // @ts-ignore
+                      onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                      margin="none"
+                      autoFocus
+                    />
+                  )}
                   <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
                     <Icon>clear</Icon>
                   </IconButton>
                 </div>
               ))}
             </div>
-            <DropZone onChange={dropFiles} />
+            {((isCompressed && addBooks.length === 0) || !isCompressed) && (
+              <DropZone onChange={dropFiles} />
+            )}
           </DialogContent>
         );
       })()}
@@ -212,9 +276,14 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         </Button>
         <Button
           onClick={() => {
-            // noinspection JSIgnoredPromiseFromCall
-            addBook();
-            setSubscriptionId(infoId);
+            if (isCompressed) {
+              // noinspection JSIgnoredPromiseFromCall
+              addCompressBook();
+            } else {
+              // noinspection JSIgnoredPromiseFromCall
+              addBook();
+              setSubscriptionId(infoId);
+            }
           }}
           disabled={loading}
           variant="contained"
