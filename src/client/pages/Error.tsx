@@ -19,6 +19,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   oops: {
     margin: theme.spacing(2),
+    maxWidth: '70vw',
+    maxHeight: '30vw',
   },
   backButton: {
     marginTop: theme.spacing(3),
