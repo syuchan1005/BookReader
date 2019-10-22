@@ -86,6 +86,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     },
     onCompleted(d) {
       if (!d) return;
+      setAddBooks([]);
       setAddBookProgress(undefined);
       setAddBookAbort(undefined);
       setSubscriptionId(undefined);
@@ -122,6 +123,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       },
       onCompleted(d) {
         if (!d) return;
+        setAddBooks([]);
         setAddBookProgress(undefined);
         setAddBookAbort(undefined);
         if (onClose && d.add.success) onClose();
