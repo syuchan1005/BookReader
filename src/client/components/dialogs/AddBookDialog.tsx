@@ -124,6 +124,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       onCompleted(d) {
         if (!d) return;
         setAddBooks([]);
+        setSubscriptionId(undefined);
         setAddBookProgress(undefined);
         setAddBookAbort(undefined);
         if (onClose && d.add.success) onClose();
@@ -132,6 +133,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       onError() {
         setAddBookProgress(undefined);
         setAddBookAbort(undefined);
+        setSubscriptionId(undefined);
       },
       context: {
         fetchOptions: {
@@ -278,13 +280,13 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         </Button>
         <Button
           onClick={() => {
+            setSubscriptionId(infoId);
             if (isCompressed) {
               // noinspection JSIgnoredPromiseFromCall
               addCompressBook();
             } else {
               // noinspection JSIgnoredPromiseFromCall
               addBook();
-              setSubscriptionId(infoId);
             }
           }}
           disabled={loading}
