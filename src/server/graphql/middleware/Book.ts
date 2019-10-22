@@ -88,11 +88,11 @@ class Book extends GQLMiddleware {
         }
         const { createReadStream, archiveType } = type;
 
-        /*
-        await this.pubsub.publish(
-          SubscriptionKeys.ADD_BOOK_INFO,
-          { name, addBookInfo: 'Extract Files...' });
-        */
+        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: 'Extract Book...',
+        });
+
         await GQLUtil.extractCompressFile(tempPath, archiveType, createReadStream);
         let booksFolderPath = '/';
         let bookFolders = [];
@@ -117,11 +117,12 @@ class Book extends GQLMiddleware {
             message: Errors.QL0006,
           };
         }
-        /*
-        await this.pubsub.publish(
-          SubscriptionKeys.ADD_BOOK_INFO,
-          { name, addBookInfo: 'Move Files...' });
-        */
+
+        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: 'Move Book...',
+        });
+
         const results = await asyncMap(bookFolders, (p, i) => {
           const folderPath = path.join(tempPath, booksFolderPath, p);
           let nums = p.match(/\d+/g);
