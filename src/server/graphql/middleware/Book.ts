@@ -1,7 +1,6 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import os from 'os';
 import path from 'path';
-import { promises as fs } from 'fs';
 
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
@@ -94,22 +93,8 @@ class Book extends GQLMiddleware {
         });
 
         await GQLUtil.extractCompressFile(tempPath, archiveType, createReadStream);
-        let booksFolderPath = '/';
-        let bookFolders = [];
-        for (let i = 0; i < 10; i += 1) {
-          const tempBooksFolder = path.join(tempPath, booksFolderPath);
-          // eslint-disable-next-line no-await-in-loop
-          const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
-          const dirs = dirents.filter((d) => d.isDirectory());
-          if (dirs.length > 1) {
-            bookFolders = dirs.map((d) => d.name);
-            break;
-          } else if (dirs.length === 1) {
-            booksFolderPath = path.join(booksFolderPath, dirs[0].name);
-          } else {
-            break;
-          }
-        }
+
+        const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {
           return {
             success: false,

@@ -26,6 +26,8 @@ interface AddBookDialogProps {
   infoId: string;
   onAdded?: Function;
   onClose?: Function;
+
+  children?: React.ReactNode;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -67,6 +69,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     infoId,
     onAdded,
     onClose,
+    children,
   } = props;
 
   const [addBooks, setAddBooks] = React.useState([]);
@@ -275,6 +278,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         );
       })()}
       <DialogActions>
+        {children}
         <Button onClick={closeDialog} disabled={loading}>
           close
         </Button>

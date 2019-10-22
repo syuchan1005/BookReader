@@ -11,8 +11,6 @@ import App from './App';
 import getClient from './apollo';
 import db from './Database';
 
-// TODO: material-icons と Roboto をこっちで内包する
-
 const wb = regSW();
 
 if (process.env.NODE_ENV !== 'production') {

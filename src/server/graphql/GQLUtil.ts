@@ -228,6 +228,34 @@ const GQLUtil = {
       });
     }
   },
+  async extractCompressFileFromBuffer(tempPath, archiveType: string, buffer: Buffer) {
+    if (archiveType === 'zip') {
+      await new Promise((resolve) => {
+        unzipper.Open.buffer(buffer)
+          .then(({ files }) => asyncForEach(files, async (f) => {
+            const b = await f.buffer();
+            await mkdirpIfNotExists(path.join(tempPath, f.path, '..'));
+            await fs.writeFile(path.join(tempPath, f.path), b);
+          }))
+          .then(resolve);
+      });
+    } else if (archiveType === 'rar') {
+      await new Promise((resolve, reject) => {
+        const extractor = createExtractorFromData(buffer);
+        // eslint-disable-next-line camelcase
+        const [obj_state, obj_header] = extractor.extractAll();
+        if (obj_state.state !== 'SUCCESS') {
+          reject(new Error('Unrar failed'));
+        }
+        // eslint-disable-next-line camelcase
+        asyncForEach(obj_header.files, async (f) => {
+          if (f.fileHeader.flags.directory) return;
+          await mkdirpIfNotExists(path.join(tempPath, f.fileHeader.name, '..'));
+          await fs.writeFile(path.join(tempPath, f.fileHeader.name), f.extract[1]);
+        }).then(resolve);
+      });
+    }
+  },
   async checkArchiveType(file) {
     const awaitFile = await file;
     const { mimetype, filename } = awaitFile;
@@ -247,6 +275,117 @@ const GQLUtil = {
       ...awaitFile,
       archiveType,
     };
+  },
+  async searchBookFolders(tempPath: string) {
+    let booksFolderPath = '/';
+    let bookFolders = [];
+    for (let i = 0; i < 10; i += 1) {
+      const tempBooksFolder = path.join(tempPath, booksFolderPath);
+      // eslint-disable-next-line no-await-in-loop
+      const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
+      const dirs = dirents.filter((d) => d.isDirectory());
+      if (dirs.length > 1) {
+        bookFolders = dirs.map((d) => d.name);
+        break;
+      } else if (dirs.length === 1) {
+        booksFolderPath = path.join(booksFolderPath, dirs[0].name);
+      } else {
+        break;
+      }
+    }
+    return {
+      booksFolderPath,
+      bookFolders,
+    };
+  },
+  async batchCompressFile(
+    gm: SubClass,
+    pubsub: PubSubEngine,
+    infoId: string,
+    batchId: string,
+    tempPath: string,
+    file,
+  ) {
+    const extractBookNotify = () => pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        message: 'Extract Book...',
+        finished: false,
+      },
+    });
+
+    await extractBookNotify();
+    const notifyId = setInterval(extractBookNotify, 30 * 1000);
+
+    await GQLUtil.extractCompressFileFromBuffer(tempPath, file.archiveType, file.buffer)
+      .catch((e) => {
+        clearInterval(notifyId);
+        throw e;
+      });
+
+    clearInterval(notifyId);
+
+    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        message: 'Search Book...',
+        finished: false,
+      },
+    });
+
+    const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
+    if (bookFolders.length === 0) {
+      throw new Error('not found book folder');
+    }
+
+    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        message: 'Move Book...',
+        finished: false,
+      },
+    });
+
+    await asyncMap(bookFolders, async (p, i) => {
+      const folderPath = path.join(tempPath, booksFolderPath, p);
+      let nums = p.match(/\d+/g);
+      if (nums) {
+        nums = Number(nums[nums.length - 1]).toString(10);
+      } else {
+        nums = `${i + 1}`;
+      }
+
+      await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+        id: batchId,
+        addCompressBookBatch: {
+          message: `Move Book (${nums}) ...`,
+          finished: false,
+        },
+      });
+
+      return GQLUtil.addBookFromLocalPath(
+        gm,
+        folderPath,
+        infoId,
+        uuidv4(),
+        nums,
+        undefined,
+        (resolve) => {
+          rimraf(folderPath, () => resolve());
+        },
+      ).catch((e) => {
+        throw e;
+      });
+    });
+    await new Promise((resolve) => rimraf(tempPath, resolve));
+
+    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        finished: true,
+        message: 'Finish',
+      },
+    });
   },
 };
 

@@ -6,7 +6,7 @@ import {
   Fab,
   Icon,
   Theme,
-  useTheme,
+  useTheme, Button,
 } from '@material-ui/core';
 import { useParams, useHistory } from 'react-router-dom';
 
@@ -21,6 +21,7 @@ import db from '@client/Database';
 
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import Book from '@client/components/Book';
+import AddCompressBookBatchDialog from '@client/components/dialogs/AddCompressBookBatchDialog';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -83,6 +84,7 @@ const Info: React.FC = (props: InfoProps) => {
   const params = useParams<{ id: string }>();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const [batchOpen, setBatchOpen] = React.useState(false);
   const {
     refetch,
     loading,
@@ -192,6 +194,21 @@ const Info: React.FC = (props: InfoProps) => {
         infoId={params.id}
         onAdded={refetch}
         onClose={() => setOpen(false)}
+      >
+        <Button
+          variant="outlined"
+          onClick={() => { setOpen(false); setBatchOpen(true); }}
+        >
+          batch
+        </Button>
+        <div style={{ width: '100%' }} />
+      </AddBookDialog>
+
+      <AddCompressBookBatchDialog
+        open={batchOpen}
+        infoId={params.id}
+        onAdded={() => refetch()}
+        onClose={() => setBatchOpen(false)}
       />
     </div>
   );
