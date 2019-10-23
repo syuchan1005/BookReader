@@ -66,7 +66,7 @@ const GQLUtil = {
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
-          [customData.pubsub.fieldName]: 'Extract Book...',
+          [customData.pubsub.fieldName]: `Extract Book (${number}) ...`,
         });
       }
       // extract
@@ -75,7 +75,7 @@ const GQLUtil = {
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
-          [customData.pubsub.fieldName]: 'Move Book...',
+          [customData.pubsub.fieldName]: `Move Book (${number}) ...`,
         });
       }
       return GQLUtil.addBookFromLocalPath(

@@ -108,7 +108,7 @@ class Book extends GQLMiddleware {
           addBooks: 'Move Book...',
         });
 
-        const results = await asyncMap(bookFolders, (p, i) => {
+        const results = await asyncMap(bookFolders, async (p, i) => {
           const folderPath = path.join(tempPath, booksFolderPath, p);
           let nums = p.match(/\d+/g);
           if (nums) {
@@ -116,6 +116,12 @@ class Book extends GQLMiddleware {
           } else {
             nums = `${i + 1}`;
           }
+
+          await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+            id: infoId,
+            addBooks: `Move Book (${nums}) ...`,
+          });
+
           return GQLUtil.addBookFromLocalPath(
             this.gm,
             folderPath,
