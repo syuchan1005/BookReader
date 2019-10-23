@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { createReadStream as createReadStreamFS, promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
 import { Readable } from 'stream';
@@ -18,7 +18,11 @@ import { SubscriptionKeys } from '@server/graphql';
 import BookInfoModel from '@server/sequelize/models/bookInfo';
 import Errors from '@server/Errors';
 import {
-  asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile,
+  asyncForEach,
+  asyncMap,
+  mkdirpIfNotExists,
+  readdirRecursively,
+  renameFile,
 } from '@server/Util';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/book';
@@ -62,7 +66,7 @@ const GQLUtil = {
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
-          [customData.pubsub.fieldName]: 'Extract Book...',
+          [customData.pubsub.fieldName]: `Extract Book (${number}) ...`,
         });
       }
       // extract
@@ -71,7 +75,7 @@ const GQLUtil = {
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
-          [customData.pubsub.fieldName]: 'Move Book...',
+          [customData.pubsub.fieldName]: `Move Book (${number}) ...`,
         });
       }
       return GQLUtil.addBookFromLocalPath(
@@ -247,6 +251,123 @@ const GQLUtil = {
       ...awaitFile,
       archiveType,
     };
+  },
+  async searchBookFolders(tempPath: string) {
+    let booksFolderPath = '/';
+    let bookFolders = [];
+    for (let i = 0; i < 10; i += 1) {
+      const tempBooksFolder = path.join(tempPath, booksFolderPath);
+      // eslint-disable-next-line no-await-in-loop
+      const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
+      const dirs = dirents.filter((d) => d.isDirectory());
+      if (dirs.length > 1) {
+        bookFolders = dirs.map((d) => d.name);
+        break;
+      } else if (dirs.length === 1) {
+        booksFolderPath = path.join(booksFolderPath, dirs[0].name);
+      } else {
+        break;
+      }
+    }
+    return {
+      booksFolderPath,
+      bookFolders,
+    };
+  },
+  async batchCompressFile(
+    gm: SubClass,
+    pubsub: PubSubEngine,
+    infoId: string,
+    batchId: string,
+    tempPath: string,
+    file: { path: string, archiveType: string },
+  ) {
+    const extractBookNotify = () => pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        message: 'Extract Book...',
+        finished: false,
+      },
+    });
+
+    await extractBookNotify();
+    const timeId = setTimeout(extractBookNotify, 1500);
+    const notifyId = setInterval(extractBookNotify, 30 * 1000);
+
+    await GQLUtil.extractCompressFile(
+      tempPath,
+      file.archiveType,
+      () => createReadStreamFS(file.path),
+    ).catch((e) => {
+      clearTimeout(timeId);
+      clearInterval(notifyId);
+      throw e;
+    });
+
+    clearTimeout(timeId);
+    clearInterval(notifyId);
+
+    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        message: 'Search Book...',
+        finished: false,
+      },
+    });
+
+    const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
+    if (bookFolders.length === 0) {
+      throw new Error('not found book folder');
+    }
+
+    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        message: 'Move Book...',
+        finished: false,
+      },
+    });
+
+    await asyncMap(bookFolders, async (p, i) => {
+      const folderPath = path.join(tempPath, booksFolderPath, p);
+      let nums = p.match(/\d+/g);
+      if (nums) {
+        nums = Number(nums[nums.length - 1]).toString(10);
+      } else {
+        nums = `${i + 1}`;
+      }
+
+      await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+        id: batchId,
+        addCompressBookBatch: {
+          message: `Move Book (${nums}) ...`,
+          finished: false,
+        },
+      });
+
+      return GQLUtil.addBookFromLocalPath(
+        gm,
+        folderPath,
+        infoId,
+        uuidv4(),
+        nums,
+        undefined,
+        (resolve) => {
+          rimraf(folderPath, () => resolve());
+        },
+      ).catch((e) => {
+        throw e;
+      });
+    });
+    await new Promise((resolve) => rimraf(tempPath, resolve));
+
+    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
+      id: batchId,
+      addCompressBookBatch: {
+        finished: true,
+        message: 'Finish',
+      },
+    });
   },
 };
 

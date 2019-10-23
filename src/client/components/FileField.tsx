@@ -11,6 +11,7 @@ import { archiveTypes } from '@common/Common';
 interface FileFieldProps {
   file?: File;
   onChange?: Function;
+  style?: React.CSSProperties;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -30,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const FileField: React.FC<FileFieldProps> = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const inputRef = React.useRef(null);
-  const { file, onChange } = props;
+  const { file, onChange, style } = props;
 
   const onFilePicked = (event) => {
     const { files } = event.target;
@@ -44,6 +45,7 @@ const FileField: React.FC<FileFieldProps> = (props: FileFieldProps) => {
     <Button
       onClick={() => inputRef.current.click()}
       className={classes.fileField}
+      style={style}
     >
       <p className={classes.fieldLabel}>
         {file.name || 'Upload'}

@@ -1,14 +1,14 @@
 {
-  "extends": "./tsconfig.webworker",
   "compilerOptions": {
     "lib": [
       "es5",
       "es6",
       "es2019",
-      "dom"
+      "dom",
+      "webworker"
     ],
     "target": "es5",
-    "module": "commonjs",
+    "module": "es2015",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
@@ -20,6 +20,7 @@
       "@common*" :["src/common*"]
     },
     "typeRoots": ["node_modules/@types", "src/@types"],
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "downlevelIteration": true
   },

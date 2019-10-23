@@ -97,7 +97,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: '2rem',
-    whiteSpace: 'pre',
+    whiteSpace: 'pre-line',
     textAlign: 'center',
   },
 }));
@@ -216,11 +216,13 @@ const Book: React.FC = (props: BookProps) => {
 
   React.useEffect(() => {
     setShowAppBar(false);
-    dispatch({
+    const update = {
       needContentMargin: false,
       barTitle: 'Book',
       showBackRouteArrow: true,
-    });
+    };
+    if (data) delete update.barTitle;
+    dispatch(update);
 
     db.bookReads.get(params.id).then((read) => {
       if (read) {

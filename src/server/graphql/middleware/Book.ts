@@ -1,7 +1,6 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import os from 'os';
 import path from 'path';
-import { promises as fs } from 'fs';
 
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
@@ -88,28 +87,14 @@ class Book extends GQLMiddleware {
         }
         const { createReadStream, archiveType } = type;
 
-        /*
-        await this.pubsub.publish(
-          SubscriptionKeys.ADD_BOOK_INFO,
-          { name, addBookInfo: 'Extract Files...' });
-        */
+        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: 'Extract Book...',
+        });
+
         await GQLUtil.extractCompressFile(tempPath, archiveType, createReadStream);
-        let booksFolderPath = '/';
-        let bookFolders = [];
-        for (let i = 0; i < 10; i += 1) {
-          const tempBooksFolder = path.join(tempPath, booksFolderPath);
-          // eslint-disable-next-line no-await-in-loop
-          const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
-          const dirs = dirents.filter((d) => d.isDirectory());
-          if (dirs.length > 1) {
-            bookFolders = dirs.map((d) => d.name);
-            break;
-          } else if (dirs.length === 1) {
-            booksFolderPath = path.join(booksFolderPath, dirs[0].name);
-          } else {
-            break;
-          }
-        }
+
+        const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {
           return {
             success: false,
@@ -117,12 +102,13 @@ class Book extends GQLMiddleware {
             message: Errors.QL0006,
           };
         }
-        /*
-        await this.pubsub.publish(
-          SubscriptionKeys.ADD_BOOK_INFO,
-          { name, addBookInfo: 'Move Files...' });
-        */
-        const results = await asyncMap(bookFolders, (p, i) => {
+
+        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: 'Move Book...',
+        });
+
+        const results = await asyncMap(bookFolders, async (p, i) => {
           const folderPath = path.join(tempPath, booksFolderPath, p);
           let nums = p.match(/\d+/g);
           if (nums) {
@@ -130,6 +116,12 @@ class Book extends GQLMiddleware {
           } else {
             nums = `${i + 1}`;
           }
+
+          await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+            id: infoId,
+            addBooks: `Move Book (${nums}) ...`,
+          });
+
           return GQLUtil.addBookFromLocalPath(
             this.gm,
             folderPath,
@@ -140,7 +132,9 @@ class Book extends GQLMiddleware {
             (resolve) => {
               rimraf(folderPath, () => resolve());
             },
-          );
+          ).catch((e) => {
+            throw e;
+          });
         });
         await new Promise((resolve) => rimraf(tempPath, resolve));
         return {

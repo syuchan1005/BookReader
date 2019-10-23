@@ -5,6 +5,10 @@ workbox.core.skipWaiting(); workbox.core.clientsClaim();
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
+// https://github.com/GoogleChrome/workbox/issues/1599
+workbox.routing.registerRoute(/^https:\/\/fonts\.googleapis\.com/, new workbox.strategies.StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
+workbox.routing.registerRoute(/^https:\/\/fonts\.gstatic\.com/, new workbox.strategies.CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new workbox.cacheableResponse.Plugin({ statuses: [0, 200] }), new workbox.expiration.Plugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
+
 const BookImageCacheName = workbox.core.cacheNames.runtime;
 workbox.routing.registerRoute(
   /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?/,

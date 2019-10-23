@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: '2rem',
-    whiteSpace: 'pre',
+    whiteSpace: 'pre-line',
     textAlign: 'center',
   },
   fab: {

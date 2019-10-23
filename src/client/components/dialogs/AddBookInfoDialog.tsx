@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Icon,
   IconButton,
-  LinearProgress,
   List,
   ListItem,
   makeStyles,
@@ -29,7 +28,6 @@ interface AddBookInfoDialogProps {
   onClose?: Function;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const useStyles = makeStyles((theme: Theme) => createStyles({
   dialog: {
     width: '100%',
@@ -47,17 +45,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridColumnGap: theme.spacing(1),
     gridTemplateColumns: '1fr 55px 30px',
   },
-  addBookInfoSubscription: {
+  addBookInfoProgress: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-  },
-  addBookInfoProgress: {
-    display: 'grid',
-    alignItems: 'center',
-    gridTemplateColumns: '1fr 64px [end]',
-    columnGap: theme.spacing(1),
-    width: 300,
   },
   progressMessage: {
     marginTop: theme.spacing(2),
@@ -73,10 +64,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
-  const [addBookInfoProgress, setAddBookInfoProgress] = React
-    .useState<ProgressEvent | undefined>(undefined);
-  const [addBookInfoAbort, setAddBookInfoAbort] = React
-    .useState<() => void | undefined>(undefined);
 
   const changeAddHistories = (index, field, value) => {
     const a = [...addHistories];
@@ -89,8 +76,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setName('');
     setShowAddHistory(false);
     setAddHistories([]);
-    setAddBookInfoProgress(undefined);
-    setAddBookInfoAbort(undefined);
   };
 
   const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
@@ -99,21 +84,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
     onCompleted(d) {
       if (!d) return;
-      setAddBookInfoProgress(undefined);
-      setAddBookInfoAbort(undefined);
       closeDialog();
       if (d.add.success && onAdded) onAdded();
-    },
-    context: {
-      fetchOptions: {
-        useUpload: true,
-        onProgress: (ev: ProgressEvent) => {
-          setAddBookInfoProgress(ev);
-        },
-        onAbortPossible: (abortFunc) => {
-          setAddBookInfoAbort(() => abortFunc);
-        },
-      },
     },
   });
 
@@ -204,34 +176,12 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             </DialogContent>
           );
         }
-        if (addBookInfoProgress || addBookInfoAbort || loading) {
+        if (loading) {
           return (
             <DialogContent
-              className={
-                (addBookInfoProgress
-                  && (addBookInfoProgress.loaded / addBookInfoProgress.total < 97))
-                  ? classes.addBookInfoProgress
-                  : classes.addBookInfoSubscription
-              }
+              className={classes.addBookInfoProgress}
             >
-              {(addBookInfoProgress
-                && ((addBookInfoProgress.loaded / addBookInfoProgress.total) < 97))
-                ? (
-                  <>
-                    {addBookInfoProgress && (
-                      <LinearProgress
-                        variant="determinate"
-                        value={(addBookInfoProgress.loaded / addBookInfoProgress.total) * 100}
-                      />
-                    )}
-                    {addBookInfoAbort && (
-                      <Button onClick={addBookInfoAbort}>Abort</Button>
-                    )}
-                  </>
-                )
-                : (
-                  <CircularProgress color="secondary" />
-                )}
+              <CircularProgress color="secondary" />
             </DialogContent>
           );
         }

@@ -18,7 +18,8 @@ type Mutation {
     ## Book
     addBook(id: ID!, number: String!, file: Upload!): Result!
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
-    addCompressBook(id: ID!, file: Upload!): [ResultWithBookResults!]!
+    addCompressBook(id: ID!, file: Upload!): ResultWithBookResults!
+    addCompressBookBatch(id: ID!, file: Upload!): ID!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
 }
@@ -26,6 +27,7 @@ type Mutation {
 type Subscription {
     addBookInfo(name: String!): String!
     addBooks(id: ID!): String!
+    addCompressBookBatch(id: ID!): BatchSubscription!
 }
 
 enum BookInfoOrder {
@@ -92,6 +94,12 @@ type BookInfoResult {
     code: String
     message: String
     books: [Book!]!
+}
+
+type BatchSubscription {
+    finished: Boolean!
+    message: String
+    error: String
 }
 
 input InputBook {
