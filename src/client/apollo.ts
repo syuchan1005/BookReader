@@ -8,7 +8,7 @@ import { getMainDefinition } from 'apollo-utilities';
 import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
 
-const uri = `//${window.location.hostname}:${Number(window.location.port) + 1}/graphql`;
+const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 
 const parseHeaders = (rawHeaders: any) => {
   const headers = new Headers();
