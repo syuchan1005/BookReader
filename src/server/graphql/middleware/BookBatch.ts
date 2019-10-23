@@ -1,6 +1,7 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import os from 'os';
+import { promises as fs, createWriteStream } from 'fs';
 
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
@@ -17,27 +18,31 @@ class BookBatch extends GQLMiddleware {
 
         const type = await GQLUtil.checkArchiveType(file);
         if (type.success === false) {
-          return type;
+          return null;
         }
         const { createReadStream, archiveType } = type;
 
-        const readStream = createReadStream();
-        const buffer: Buffer = await new Promise((resolve, reject) => {
-          const chunks = [];
-          readStream.once('error', (err) => reject(err));
-          readStream.once('end', () => resolve(Buffer.concat(chunks)));
-          readStream.on('data', (c) => chunks.push(c));
+        const tempPath = `${os.tmpdir()}/bookReader/${batchId}`;
+        const filePath = `${tempPath}.${archiveType}`;
+
+        await new Promise((resolve) => {
+          const writable = createWriteStream(filePath);
+          createReadStream()
+            .pipe(writable)
+            .on('finish', resolve);
         });
 
-        const tempPath = `${os.tmpdir()}/bookReader/${batchId}`;
         GQLUtil.batchCompressFile(
           this.gm,
           this.pubsub,
           id,
           batchId,
           tempPath,
-          { buffer, archiveType },
-        ).catch((e) => {
+          { path: filePath, archiveType },
+        ).then(() => {
+          fs.unlink(filePath);
+        }).catch((e) => {
+          fs.unlink(filePath);
           new Promise((resolve) => rimraf(tempPath, resolve))
             .then(() => {
               this.pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {

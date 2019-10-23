@@ -1,14 +1,17 @@
 import * as React from 'react';
 import {
-  Theme,
-  makeStyles,
+  Button,
+  CircularProgress,
   createStyles,
   Dialog,
-  DialogActions, DialogContent,
+  DialogActions,
+  DialogContent,
   DialogTitle,
-  Button,
   Icon,
-  IconButton, LinearProgress, CircularProgress,
+  IconButton,
+  LinearProgress,
+  makeStyles,
+  Theme,
 } from '@material-ui/core';
 import { useMutation, useSubscription } from '@apollo/react-hooks';
 
@@ -85,7 +88,12 @@ const AddCompressBookBatchDialog: React.FC<AddCompressBookBatchDialogProps> = (
           setAddBookProgress(ev);
         },
         onAbortPossible: (abortFunc) => {
-          setAddBookAbort(() => abortFunc);
+          const abort = () => {
+            abortFunc();
+            setAddBookProgress(undefined);
+            setAddBookAbort(undefined);
+          };
+          setAddBookAbort(() => abort);
         },
       },
     },
@@ -140,8 +148,12 @@ const AddCompressBookBatchDialog: React.FC<AddCompressBookBatchDialogProps> = (
           )}
         </DialogContent>
       ) : (
-        <DialogContent className={sData ? classes.addBookSubscription : classes.addBookProgress}>
-          {(!sData) ? (
+        <DialogContent
+          className={!(bookProgress || bookAbort)
+            ? classes.addBookSubscription
+            : classes.addBookProgress}
+        >
+          {(bookProgress || bookAbort) ? (
             <>
               {bookProgress && (
                 <LinearProgress
@@ -156,7 +168,9 @@ const AddCompressBookBatchDialog: React.FC<AddCompressBookBatchDialogProps> = (
           ) : (
             <>
               <CircularProgress color="secondary" />
-              <div className={classes.progressMessage}>{sData.add.message}</div>
+              {(sData) && (
+                <div className={classes.progressMessage}>{sData.add.message}</div>
+              )}
             </>
           )}
         </DialogContent>

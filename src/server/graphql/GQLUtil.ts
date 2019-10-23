@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { createReadStream as createReadStreamFS, promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
 import { Readable } from 'stream';
@@ -18,7 +18,11 @@ import { SubscriptionKeys } from '@server/graphql';
 import BookInfoModel from '@server/sequelize/models/bookInfo';
 import Errors from '@server/Errors';
 import {
-  asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile,
+  asyncForEach,
+  asyncMap,
+  mkdirpIfNotExists,
+  readdirRecursively,
+  renameFile,
 } from '@server/Util';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/book';
@@ -228,34 +232,6 @@ const GQLUtil = {
       });
     }
   },
-  async extractCompressFileFromBuffer(tempPath, archiveType: string, buffer: Buffer) {
-    if (archiveType === 'zip') {
-      await new Promise((resolve) => {
-        unzipper.Open.buffer(buffer)
-          .then(({ files }) => asyncForEach(files, async (f) => {
-            const b = await f.buffer();
-            await mkdirpIfNotExists(path.join(tempPath, f.path, '..'));
-            await fs.writeFile(path.join(tempPath, f.path), b);
-          }))
-          .then(resolve);
-      });
-    } else if (archiveType === 'rar') {
-      await new Promise((resolve, reject) => {
-        const extractor = createExtractorFromData(buffer);
-        // eslint-disable-next-line camelcase
-        const [obj_state, obj_header] = extractor.extractAll();
-        if (obj_state.state !== 'SUCCESS') {
-          reject(new Error('Unrar failed'));
-        }
-        // eslint-disable-next-line camelcase
-        asyncForEach(obj_header.files, async (f) => {
-          if (f.fileHeader.flags.directory) return;
-          await mkdirpIfNotExists(path.join(tempPath, f.fileHeader.name, '..'));
-          await fs.writeFile(path.join(tempPath, f.fileHeader.name), f.extract[1]);
-        }).then(resolve);
-      });
-    }
-  },
   async checkArchiveType(file) {
     const awaitFile = await file;
     const { mimetype, filename } = awaitFile;
@@ -304,7 +280,7 @@ const GQLUtil = {
     infoId: string,
     batchId: string,
     tempPath: string,
-    file,
+    file: { path: string, archiveType: string },
   ) {
     const extractBookNotify = () => pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
       id: batchId,
@@ -315,14 +291,20 @@ const GQLUtil = {
     });
 
     await extractBookNotify();
+    const timeId = setTimeout(extractBookNotify, 1500);
     const notifyId = setInterval(extractBookNotify, 30 * 1000);
 
-    await GQLUtil.extractCompressFileFromBuffer(tempPath, file.archiveType, file.buffer)
-      .catch((e) => {
-        clearInterval(notifyId);
-        throw e;
-      });
+    await GQLUtil.extractCompressFile(
+      tempPath,
+      file.archiveType,
+      () => createReadStreamFS(file.path),
+    ).catch((e) => {
+      clearTimeout(timeId);
+      clearInterval(notifyId);
+      throw e;
+    });
 
+    clearTimeout(timeId);
     clearInterval(notifyId);
 
     await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
