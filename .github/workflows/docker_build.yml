@@ -10,6 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: test
-        run: ccat ${GITHUB_EVENT_PATH}
+        run: cat ${GITHUB_EVENT_PATH}
 #    - name: Build the Docker image
 #      run: docker build . --file Dockerfile --tag docker.pkg.github.com/syuchan1005/bookreader/BookReader:${cat ${GITHUB_EVENT_PATH} | jq -r '.commits[0]'}
