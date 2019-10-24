@@ -3,8 +3,7 @@ name: Docker Image CI
 on:
   push:
     tags:
-#      - '[0-9.]+*'
-      - '*'
+      - '[0-9.]+*'
 
 jobs:
   build:
@@ -18,9 +17,7 @@ jobs:
           docker build . \
           --file Dockerfile \
           --tag docker.pkg.github.com/syuchan1005/bookreader/book_reader:$(cat ${GITHUB_EVENT_PATH} | jq -r ".ref" | grep -Po "([^/]+)$")
-      - name: check images
-        run: docker images
       - name: Deploy github-package-registry (docker)
         run: |
-          docker login docker.pkg.github.com -u "${{ secrets.GITHUB_USERNAME }}" -p "${{ secrets.GITHUB_TOKEN }}" \
+          docker login docker.pkg.github.com -u syuchan1005 -p "${{ secrets.GITHUB_TOKEN }}" \
           && docker push docker.pkg.github.com/syuchan1005/bookreader/book_reader:$(cat ${GITHUB_EVENT_PATH} | jq -r ".ref" | grep -Po "([^/]+)$")
