@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-        with:
-          ref: ${cat ${GITHUB_EVENT_PATH} | jq -r ".after"}
+      - name: checkout tag
+        run: git checkout ${cat ${GITHUB_EVENT_PATH} | jq -r ".ref"}
       - name: Build the Docker image
         run: |
           docker build . \
           --file Dockerfile \
-          --tag docker.pkg.github.com/syuchan1005/bookreader/BookReader:${cat ${GITHUB_EVENT_PATH} | jq -r ".ref"}
+          --tag docker.pkg.github.com/syuchan1005/bookreader/BookReader:${cat ${GITHUB_EVENT_PATH} | jq -r ".ref" | grep -Po "([^/]+)$"}
       - name: check images
         run: docker images
