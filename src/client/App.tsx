@@ -1,9 +1,5 @@
 import * as React from 'react';
-import {
-  Route,
-  Router,
-  Switch,
-} from 'react-router-dom';
+import { Route, Router, Switch } from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
   AppBar,
@@ -12,6 +8,7 @@ import {
   CssBaseline,
   Icon,
   IconButton,
+  InputAdornment,
   InputBase,
   ListItem,
   ListItemText,
@@ -86,6 +83,7 @@ const themes = {
       type: 'light',
       primary: {
         main: colors.green['500'],
+        contrastText: colors.common.white,
       },
       secondary: {
         main: colors.blue.A700,
@@ -98,6 +96,7 @@ const themes = {
       type: 'dark',
       primary: {
         main: colors.green['600'],
+        contrastText: colors.common.white,
       },
       secondary: {
         main: colors.blue.A400,
@@ -252,8 +251,13 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       });
   }, [store]);
 
+  const provideTheme = React.useMemo(
+    () => themes[store.theme] || themes.light,
+    [store.theme, themes],
+  );
+
   return (
-    <MuiThemeProvider theme={themes[store.theme] || themes.light}>
+    <MuiThemeProvider theme={provideTheme}>
       <CssBaseline />
       {store.showAppBar && (
         <AppBar className={classes.appBar}>
@@ -276,6 +280,19 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                     input: classes.inputInput,
                   }}
                   inputProps={{ 'aria-label': 'search' }}
+                  endAdornment={(store.searchText) ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        style={{ color: provideTheme.palette.primary.contrastText }}
+                        onClick={() => {
+                          dispatch({ searchText: '' });
+                        }}
+                      >
+                        <Icon>clear</Icon>
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined}
                   value={store.searchText}
                   onChange={(e) => {
                     dispatch({ searchText: e.target.value });
