@@ -22,5 +22,5 @@ jobs:
         run: docker images
       - name: Deploy github-package-registry (docker)
         run: |
-          docker login docker.pkg.github.com -u "${{ secrets.GITHUB_USERNAME }}" -p "${{ secrets.GITHUB_PASSWORD }}" \
+          docker login docker.pkg.github.com -u "${{ secrets.GITHUB_USERNAME }}" -p "${{ secrets.GITHUB_TOKEN }}" \
           && docker push docker.pkg.github.com/syuchan1005/bookreader/book_reader:$(cat ${GITHUB_EVENT_PATH} | jq -r ".ref" | grep -Po "([^/]+)$")
