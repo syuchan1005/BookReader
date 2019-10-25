@@ -1,4 +1,4 @@
-FROM node:13.0.1-alpine as build
+FROM node:12.13.0-alpine as build
 
 COPY . /build
 
@@ -14,7 +14,7 @@ RUN npm ci && npm run build \
     && mv package.json /bookReader/ \
     && mv package-lock.json /bookReader/
 
-FROM node:13.0.1-alpine
+FROM node:12.13.0-alpine
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
