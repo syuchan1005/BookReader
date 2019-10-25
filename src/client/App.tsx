@@ -1,9 +1,5 @@
 import * as React from 'react';
-import {
-  Route,
-  Router,
-  Switch,
-} from 'react-router-dom';
+import { Route, Router, Switch } from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
   AppBar,
@@ -12,6 +8,7 @@ import {
   CssBaseline,
   Icon,
   IconButton,
+  InputAdornment,
   InputBase,
   ListItem,
   ListItemText,
@@ -27,15 +24,16 @@ import {
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
+import loadable from '@loadable/component';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
 import { SortOrder } from '@client/store/reducers';
 
-import Home from './pages/Home';
-import Info from './pages/Info';
-import Book from './pages/Book';
-import Error from './pages/Error';
+const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
+const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
+const Book = loadable(() => import(/* webpackChunkName: 'Book' */ './pages/Book'));
+const Error = loadable(() => import(/* webpackChunkName: 'Error' */ './pages/Error'));
 
 export const commonTheme = {
   safeArea: {
@@ -86,6 +84,7 @@ const themes = {
       type: 'light',
       primary: {
         main: colors.green['500'],
+        contrastText: colors.common.white,
       },
       secondary: {
         main: colors.blue.A700,
@@ -98,6 +97,7 @@ const themes = {
       type: 'dark',
       primary: {
         main: colors.green['600'],
+        contrastText: colors.common.white,
       },
       secondary: {
         main: colors.blue.A400,
@@ -252,8 +252,13 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       });
   }, [store]);
 
+  const provideTheme = React.useMemo(
+    () => themes[store.theme] || themes.light,
+    [store.theme, themes],
+  );
+
   return (
-    <MuiThemeProvider theme={themes[store.theme] || themes.light}>
+    <MuiThemeProvider theme={provideTheme}>
       <CssBaseline />
       {store.showAppBar && (
         <AppBar className={classes.appBar}>
@@ -276,6 +281,19 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                     input: classes.inputInput,
                   }}
                   inputProps={{ 'aria-label': 'search' }}
+                  endAdornment={(store.searchText) ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        style={{ color: provideTheme.palette.primary.contrastText }}
+                        onClick={() => {
+                          dispatch({ searchText: '' });
+                        }}
+                      >
+                        <Icon>clear</Icon>
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined}
                   value={store.searchText}
                   onChange={(e) => {
                     dispatch({ searchText: e.target.value });
