@@ -23,6 +23,14 @@ module.exports = merge(commonConfig, {
     hot: true,
     watchContentBase: true,
     contentBase: resolve('public'),
+    stats: {
+      version: false,
+      builtAt: false,
+      hash: false,
+      assets: false,
+      entrypoints: false,
+      modules: false,
+    },
     historyApiFallback: {
       historyApiFallback: true,
     },

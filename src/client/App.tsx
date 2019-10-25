@@ -24,15 +24,16 @@ import {
 import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
+import loadable from '@loadable/component';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
 import { SortOrder } from '@client/store/reducers';
 
-import Home from './pages/Home';
-import Info from './pages/Info';
-import Book from './pages/Book';
-import Error from './pages/Error';
+const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
+const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
+const Book = loadable(() => import(/* webpackChunkName: 'Book' */ './pages/Book'));
+const Error = loadable(() => import(/* webpackChunkName: 'Error' */ './pages/Error'));
 
 export const commonTheme = {
   safeArea: {

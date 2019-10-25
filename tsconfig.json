@@ -7,7 +7,7 @@
       "dom"
     ],
     "target": "es5",
-    "module": "es2015",
+    "module": "esnext",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
@@ -25,5 +25,8 @@
   },
   "files": ["src/@types/graphql.d.ts"],
   "include": ["src/common/*", "src/client/*"],
-  "exclude": ["node_modules", "**/*.spec.ts", "src/client/service-worker.js"]
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }
