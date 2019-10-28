@@ -30,6 +30,7 @@ class BookInfo extends GQLMiddleware {
         search,
         order,
         history,
+        invisible,
       }): Promise<BookInfoList> => {
         const where = (search) ? {
           name: {
@@ -39,6 +40,10 @@ class BookInfo extends GQLMiddleware {
         if (!history) {
           // @ts-ignore
           where.history = false;
+        }
+        if (!invisible) {
+          // @ts-ignore
+          where.invisible = false;
         }
         const [infos, len] = await Database.sequelize.transaction(async (transaction) => {
           const bookInfos = await BookInfoModel.findAll({
@@ -149,8 +154,9 @@ class BookInfo extends GQLMiddleware {
         name,
         thumbnail,
         finished,
+        invisible,
       }): Promise<Result> => {
-        if (name === undefined && thumbnail === undefined && finished === undefined) {
+        if (![name, thumbnail, finished, invisible].some((v) => v !== undefined)) {
           return {
             success: false,
             code: 'QL0005',
@@ -167,7 +173,12 @@ class BookInfo extends GQLMiddleware {
             message: Errors.QL0001,
           };
         }
-        const val = Object.entries({ name, thumbnail, finished }).reduce((o, e) => {
+        const val = Object.entries({
+          name,
+          thumbnail,
+          finished,
+          invisible,
+        }).reduce((o, e) => {
           if (e[1] !== undefined && info[e[0]] !== e[1]) {
             // eslint-disable-next-line no-param-reassign,prefer-destructuring
             o[e[0]] = e[1];

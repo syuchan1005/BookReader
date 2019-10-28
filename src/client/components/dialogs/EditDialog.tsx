@@ -22,10 +22,9 @@ interface EditDialogProps {
   info?: boolean;
 
   fieldValue: any;
-  onChange?: (value: string) => void;
-
-  fieldCheck?: boolean;
-  onChangeCheck?: (value: boolean) => void;
+  finished?: boolean;
+  invisible?: boolean;
+  onChange?: (key: string, event: React.ChangeEvent<HTMLInputElement>) => void;
 
   onClickRestore?: () => void;
   onClickEdit?: () => void;
@@ -49,8 +48,8 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
     info,
     fieldValue,
     onChange,
-    fieldCheck,
-    onChangeCheck,
+    finished,
+    invisible,
     onClickRestore,
     onClickEdit,
     onClose,
@@ -62,16 +61,28 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
       <DialogContent className={classes.content}>
         {(info) && (
-          <FormControlLabel
-            className={classes.checkbox}
-            label="Finished"
-            control={(
-              <Checkbox
-                checked={fieldCheck}
-                onChange={(e) => (onChangeCheck && onChangeCheck(e.target.checked))}
-              />
-            )}
-          />
+          <>
+            <FormControlLabel
+              className={classes.checkbox}
+              label="Finished"
+              control={(
+                <Checkbox
+                  checked={finished}
+                  onChange={(e) => (onChange && onChange('finished', e))}
+                />
+              )}
+            />
+            <FormControlLabel
+              className={classes.checkbox}
+              label="Invisible"
+              control={(
+                <Checkbox
+                  checked={invisible}
+                  onChange={(e) => (onChange && onChange('invisible', e))}
+                />
+              )}
+            />
+          </>
         )}
         <TextField
           color="secondary"
@@ -79,7 +90,7 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
           label={info ? 'Book info name' : 'Book number'}
           value={fieldValue}
           // @ts-ignore
-          onChange={(event) => (onChange && onChange(event.target.value))}
+          onChange={(event) => (onChange && onChange(info ? 'name' : 'number', event))}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">

@@ -11,6 +11,7 @@ const util = {
       count: model.count,
       history: model.history,
       finished: model.finished,
+      invisible: model.invisible,
       books: convertBook && model.books
         ? model.books.map((b) => util.book(b, false, model.id))
         : [],

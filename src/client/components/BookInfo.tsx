@@ -89,6 +89,12 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: theme.spacing(1, 3),
     transform: 'rotate(45deg)',
   },
+  invisibleLabel: {
+    position: 'absolute',
+    right: theme.spacing(1.5),
+    bottom: `calc(2rem + ${theme.spacing(1)}px)`,
+    color: 'white',
+  },
 }));
 
 const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
@@ -102,6 +108,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     count,
     history,
     finished,
+    invisible,
     onClick,
     onDeleted,
     onEdit,
@@ -113,6 +120,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const [editContent, setEditContent] = React.useState({
     name,
     finished,
+    invisible,
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
@@ -160,6 +168,14 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     setSelectDialog(infoId);
   };
 
+  const onChangeEvent = (k, e) => {
+    if (k === 'name') {
+      setEditContent({ ...editContent, name: e.target.value });
+    } else {
+      setEditContent({ ...editContent, [k]: e.target.checked });
+    }
+  };
+
   return (
     <Card className={classes.card} style={style}>
       <CardActions className={classes.headerMenu}>
@@ -200,6 +216,9 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         {(finished) ? (
           <div className={classes.finishedLabel}>finished</div>
         ) : null}
+        {(invisible) ? (
+          <Icon className={classes.invisibleLabel}>visibility_off</Icon>
+        ) : null}
       </CardActionArea>
 
       <DeleteDialog
@@ -215,9 +234,9 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         open={editDialog}
         loading={editLoading}
         fieldValue={editContent.name}
-        onChange={(n) => setEditContent({ ...editContent, name: n })}
-        fieldCheck={editContent.finished}
-        onChangeCheck={(f) => setEditContent({ ...editContent, finished: f })}
+        onChange={onChangeEvent}
+        finished={editContent.finished}
+        invisible={editContent.invisible}
         onClose={() => setEditDialog(false)}
         onClickRestore={() => setEditContent({ ...editContent, name })}
         onClickEdit={() => editBookInfo()}

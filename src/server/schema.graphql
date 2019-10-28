@@ -1,7 +1,14 @@
 scalar Upload
 
 type Query {
-    bookInfos(limit: Int = 10 offset: Int = 0 search: String order: BookInfoOrder = Update_Newest history: Boolean = false): BookInfoList!
+    bookInfos(
+        limit: Int = 10
+        offset: Int = 0
+        search: String
+        order: BookInfoOrder = Update_Newest
+        history: Boolean = false
+        invisible: Boolean = false
+    ): BookInfoList!
     bookInfo(id: ID!): BookInfo
     books(id: ID offset: Int = 0 limit: Int = 10 order: BookOrder = ASC): [Book!]!
     book(id: ID!): Book
@@ -10,7 +17,7 @@ type Query {
 type Mutation {
     ## BookInfo
     addBookInfo(name: String!, thumbnail: Upload, finished: Boolean = false): ResultWithInfoId!
-    editBookInfo(id: ID!, name: String, thumbnail: String, finished: Boolean): Result!
+    editBookInfo(id: ID!, name: String, thumbnail: String, finished: Boolean invisible: Boolean): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 
     addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
@@ -52,8 +59,9 @@ type BookInfo {
     name: String!
     thumbnail: String
     count: Int!
-    finished: Boolean!
     history: Boolean!
+    finished: Boolean!
+    invisible: Boolean!
 
     books(order: BookOrder = ASC): [Book!]!
 }

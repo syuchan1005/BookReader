@@ -3,20 +3,21 @@ import { Route, Router, Switch } from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
   AppBar,
+  Checkbox,
   createMuiTheme,
   createStyles,
   CssBaseline,
+  FormControlLabel,
   Icon,
   IconButton,
   InputAdornment,
   InputBase,
   ListItem,
-  ListItemText,
+  ListSubheader,
   makeStyles,
   Menu,
   MenuItem,
   MuiThemeProvider,
-  Switch as MSwitch,
   Theme,
   Toolbar,
   Typography,
@@ -321,13 +322,31 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               open={!!menuAnchorEl}
               onClose={() => setMenuAnchorEl(null)}
             >
-              <ListItem style={{ outline: '0' }}>
-                <ListItemText>History</ListItemText>
-                <MSwitch
-                  checked={store.history}
-                  onChange={(e) => {
-                    dispatch({ history: e.target.checked });
-                  }}
+              <ListSubheader style={{ lineHeight: 'normal' }}>
+                Show
+              </ListSubheader>
+              <ListItem style={{ outline: 0 }}>
+                <FormControlLabel
+                  control={(
+                    <Checkbox
+                      checked={store.history}
+                      onChange={(e) => {
+                        dispatch({ history: e.target.checked });
+                      }}
+                    />
+                  )}
+                  label="History"
+                />
+                <FormControlLabel
+                  control={(
+                    <Checkbox
+                      checked={store.invisible}
+                      onChange={(e) => {
+                        dispatch({ invisible: e.target.checked });
+                      }}
+                    />
+                  )}
+                  label="Invisible"
                 />
               </ListItem>
               <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
