@@ -13,6 +13,7 @@ export interface IState {
   searchText: string;
   sortOrder: SortOrder;
   history: boolean;
+  invisible: boolean;
   theme: 'light' | 'dark';
   webp: boolean;
 }
@@ -27,6 +28,7 @@ export const initialState: IState = {
   searchText: '',
   sortOrder: 'Update_Newest',
   history: false,
+  invisible: false,
   theme: 'light',
   webp: false,
 };

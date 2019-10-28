@@ -12,6 +12,10 @@ export default class bookInfo extends Model {
 
   public history!: boolean;
 
+  public finished!: boolean;
+
+  public invisible!: boolean;
+
   public readonly createdAt!: Date;
 
   public readonly updatedAt!: Date;
@@ -55,6 +59,16 @@ export default class bookInfo extends Model {
         type: DataTypes.INTEGER,
       },
       history: {
+        allowNull: false,
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
+      },
+      finished: {
+        allowNull: false,
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
+      },
+      invisible: {
         allowNull: false,
         defaultValue: false,
         type: DataTypes.BOOLEAN,

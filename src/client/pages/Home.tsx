@@ -113,6 +113,7 @@ const Home: React.FC = (props: HomeProps) => {
       search: debounceSearch || '',
       order: store.sortOrder,
       history: store.history || !!debounceSearch,
+      invisible: store.invisible || !!debounceSearch,
     },
   });
 

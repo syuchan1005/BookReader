@@ -7,14 +7,16 @@ import {
   Slider,
   Button,
   useTheme,
-  createMuiTheme, Menu, MenuItem,
+  createMuiTheme, Menu, MenuItem, Icon, IconButton,
 } from '@material-ui/core';
-import { useQuery } from '@apollo/react-hooks';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
+import { useWindowSize } from 'react-use';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
+import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
 
-import { Book as BookType } from '@common/GraphqlTypes';
+import { Book as BookType, Result } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -23,6 +25,7 @@ import { commonTheme } from '@client/App';
 import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import Img from '../components/Img';
+import DeleteDialog from '../components/dialogs/DeleteDialog';
 
 interface BookProps {
   children?: React.ReactElement;
@@ -116,6 +119,12 @@ const Book: React.FC = (props: BookProps) => {
   const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [isPageSet, setPageSet] = React.useState(false);
+  const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
+  const [deleteNumbers, setDeleteNumbers] = React.useState([]);
+  const [showOriginalImage, setShowOriginalImage] = React.useState(false);
+
+  const windowSize = useWindowSize();
+  const { width, height } = useDebounceValue(windowSize, 800);
 
   const setShowAppBar = React.useCallback((val) => {
     let v = val;
@@ -137,9 +146,25 @@ const Book: React.FC = (props: BookProps) => {
         backRoute: `/info/${d.book.info.id}`,
         barTitle: `${d.book.info.name} No.${d.book.number}`,
       });
+      if (isPageSet && page >= d.book.pages) {
+        setPage(d.book.pages - 1);
+      }
     },
     onError() {
       setShowAppBar(true);
+    },
+  });
+
+  const [deletePage, {
+    loading: deleteLoading,
+  }] = useMutation<{ del: Result }>(DeleteMutation, {
+    variables: {
+      id: params.id,
+      numbers: deleteNumbers,
+    },
+    onCompleted() {
+      setDeleteNumbers([]);
+      window.location.reload();
     },
   });
 
@@ -226,7 +251,9 @@ const Book: React.FC = (props: BookProps) => {
 
     db.bookReads.get(params.id).then((read) => {
       if (read) {
-        setPage(read.page);
+        let p = read.page;
+        if (data && p >= data.book.pages) p = data.book.pages - 1;
+        setPage(Math.max(p, 0));
       }
       setPageSet(true);
     });
@@ -320,12 +347,13 @@ const Book: React.FC = (props: BookProps) => {
 
   const pages = React.useMemo(() => {
     if (!data || !data.book) return [];
-    const sizes = [document.body.offsetWidth, document.body.offsetHeight];
+    const sizes = [width, height];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
     const pad = data.book.pages.toString(10).length;
+    const suffix = showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
     return [...Array(data.book.pages).keys()]
-      .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
-  }, [data]);
+      .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}${suffix}.jpg`);
+  }, [data, showOriginalImage, width, height]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -355,7 +383,44 @@ const Book: React.FC = (props: BookProps) => {
             </div>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
-              <div />
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <IconButton
+                  size="small"
+                  style={{ color: 'white' }}
+                  aria-label="settings"
+                  onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
+                >
+                  <Icon>settings</Icon>
+                </IconButton>
+              </div>
+              <Menu
+                anchorEl={settingsMenuAnchor}
+                open={Boolean(settingsMenuAnchor)}
+                onClose={() => setSettingsMenuAnchor(null)}
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem
+                  onClick={() => setDeleteNumbers([debouncePage])}
+                >
+                  Remove this page
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setShowOriginalImage(!showOriginalImage)}
+                >
+                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                </MenuItem>
+              </Menu>
+              <DeleteDialog
+                open={deleteNumbers && deleteNumbers.length > 0}
+                loading={deleteLoading}
+                onClickDelete={() => deletePage()}
+                onClose={() => setDeleteNumbers([])}
+                page={(debouncePage + 1).toString(10)}
+              />
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}

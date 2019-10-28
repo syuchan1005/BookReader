@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'flex',
     justifyContent: 'flex-end',
   },
-  cardContent: {
+  countLabel: {
     position: 'absolute',
     bottom: '0',
     right: '0',
@@ -74,6 +74,27 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: theme.spacing(1),
     borderRadius: theme.spacing(1),
   },
+  finishedLabel: {
+    position: 'absolute',
+    bottom: theme.spacing(1),
+    left: theme.spacing(-3.5),
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
+    height: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(1, 3),
+    transform: 'rotate(45deg)',
+  },
+  invisibleLabel: {
+    position: 'absolute',
+    right: theme.spacing(1.5),
+    bottom: `calc(2rem + ${theme.spacing(1)}px)`,
+    color: 'white',
+  },
 }));
 
 const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
@@ -86,6 +107,8 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     name,
     count,
     history,
+    finished,
+    invisible,
     onClick,
     onDeleted,
     onEdit,
@@ -96,6 +119,8 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const [editDialog, setEditDialog] = React.useState(false);
   const [editContent, setEditContent] = React.useState({
     name,
+    finished,
+    invisible,
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
@@ -143,6 +168,14 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     setSelectDialog(infoId);
   };
 
+  const onChangeEvent = (k, e) => {
+    if (k === 'name') {
+      setEditContent({ ...editContent, name: e.target.value });
+    } else {
+      setEditContent({ ...editContent, [k]: e.target.checked });
+    }
+  };
+
   return (
     <Card className={classes.card} style={style}>
       <CardActions className={classes.headerMenu}>
@@ -174,11 +207,17 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           className={classes.thumbnail}
           noSave={false}
         />
-        <CardContent className={classes.cardContent}>
+        <CardContent className={classes.countLabel}>
           <div>{count}</div>
         </CardContent>
         {(history) ? (
           <div className={classes.historyLabel}>History</div>
+        ) : null}
+        {(finished) ? (
+          <div className={classes.finishedLabel}>finished</div>
+        ) : null}
+        {(invisible) ? (
+          <Icon className={classes.invisibleLabel}>visibility_off</Icon>
         ) : null}
       </CardActionArea>
 
@@ -195,7 +234,9 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         open={editDialog}
         loading={editLoading}
         fieldValue={editContent.name}
-        onChange={(n) => setEditContent({ ...editContent, name: n })}
+        onChange={onChangeEvent}
+        finished={editContent.finished}
+        invisible={editContent.invisible}
         onClose={() => setEditDialog(false)}
         onClickRestore={() => setEditContent({ ...editContent, name })}
         onClickEdit={() => editBookInfo()}

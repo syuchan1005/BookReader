@@ -1,5 +1,5 @@
-query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean){
-    bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history) {
+query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean $invisible: Boolean){
+    bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history invisible: $invisible) {
         length
         infos {
             id
@@ -7,6 +7,8 @@ query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history
             count
             thumbnail
             history
+            finished
+            invisible
         }
     }
 }

@@ -1,7 +1,14 @@
 scalar Upload
 
 type Query {
-    bookInfos(limit: Int = 10 offset: Int = 0 search: String order: BookInfoOrder = Update_Newest history: Boolean = false): BookInfoList!
+    bookInfos(
+        limit: Int = 10
+        offset: Int = 0
+        search: String
+        order: BookInfoOrder = Update_Newest
+        history: Boolean = false
+        invisible: Boolean = false
+    ): BookInfoList!
     bookInfo(id: ID!): BookInfo
     books(id: ID offset: Int = 0 limit: Int = 10 order: BookOrder = ASC): [Book!]!
     book(id: ID!): Book
@@ -9,8 +16,8 @@ type Query {
 
 type Mutation {
     ## BookInfo
-    addBookInfo(name: String!, thumbnail: Upload): ResultWithInfoId!
-    editBookInfo(id: ID!, name: String, thumbnail: String): Result!
+    addBookInfo(name: String!, thumbnail: Upload, finished: Boolean = false): ResultWithInfoId!
+    editBookInfo(id: ID!, name: String, thumbnail: String, finished: Boolean invisible: Boolean): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 
     addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
@@ -19,9 +26,14 @@ type Mutation {
     addBook(id: ID!, number: String!, file: Upload!): Result!
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
     addCompressBook(id: ID!, file: Upload!): ResultWithBookResults!
-    addCompressBookBatch(id: ID!, file: Upload!): ID!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
+
+    ## BookBatch
+    addCompressBookBatch(id: ID!, file: Upload!): ID!
+
+    ## Page
+    deletePages(id: ID! numbers: [Int!]!): Result!
 }
 
 type Subscription {
@@ -48,6 +60,8 @@ type BookInfo {
     thumbnail: String
     count: Int!
     history: Boolean!
+    finished: Boolean!
+    invisible: Boolean!
 
     books(order: BookOrder = ASC): [Book!]!
 }

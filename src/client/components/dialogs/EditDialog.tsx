@@ -1,14 +1,18 @@
 import * as React from 'react';
 import {
   Button,
+  Checkbox,
+  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Icon,
   IconButton,
   InputAdornment,
-  TextField,
+  makeStyles,
+  TextField, Theme,
 } from '@material-ui/core';
 
 interface EditDialogProps {
@@ -18,12 +22,24 @@ interface EditDialogProps {
   info?: boolean;
 
   fieldValue: any;
-  onChange?: (value: string) => void;
+  finished?: boolean;
+  invisible?: boolean;
+  onChange?: (key: string, event: React.ChangeEvent<HTMLInputElement>) => void;
 
   onClickRestore?: () => void;
   onClickEdit?: () => void;
   onClose?: () => void;
 }
+
+const useStyles = makeStyles((theme: Theme) => createStyles({
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  checkbox: {
+    marginBottom: theme.spacing(1),
+  },
+}));
 
 const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
   const {
@@ -32,22 +48,49 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
     info,
     fieldValue,
     onChange,
+    finished,
+    invisible,
     onClickRestore,
     onClickEdit,
     onClose,
   } = props;
+  const classes = useStyles(props);
 
   return (
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
-      <DialogContent>
+      <DialogContent className={classes.content}>
+        {(info) && (
+          <>
+            <FormControlLabel
+              className={classes.checkbox}
+              label="Finished"
+              control={(
+                <Checkbox
+                  checked={finished}
+                  onChange={(e) => (onChange && onChange('finished', e))}
+                />
+              )}
+            />
+            <FormControlLabel
+              className={classes.checkbox}
+              label="Invisible"
+              control={(
+                <Checkbox
+                  checked={invisible}
+                  onChange={(e) => (onChange && onChange('invisible', e))}
+                />
+              )}
+            />
+          </>
+        )}
         <TextField
           color="secondary"
           autoFocus
           label={info ? 'Book info name' : 'Book number'}
           value={fieldValue}
           // @ts-ignore
-          onChange={(event) => (onChange && onChange(event.target.value))}
+          onChange={(event) => (onChange && onChange(info ? 'name' : 'number', event))}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
