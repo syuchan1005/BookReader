@@ -10,6 +10,7 @@ const util = {
       thumbnail: model.thumbnail,
       count: model.count,
       history: model.history,
+      finished: model.finished,
       books: convertBook && model.books
         ? model.books.map((b) => util.book(b, false, model.id))
         : [],

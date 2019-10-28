@@ -111,6 +111,7 @@ class BookInfo extends GQLMiddleware {
       addBookInfo: async (parent, {
         name,
         thumbnail,
+        finished,
       }): Promise<ResultWithInfoId> => {
         const infoId = uuidv4();
         let thumbnailStream;
@@ -129,6 +130,7 @@ class BookInfo extends GQLMiddleware {
           id: infoId,
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
+          finished,
         });
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
 
@@ -142,8 +144,13 @@ class BookInfo extends GQLMiddleware {
           infoId,
         };
       },
-      editBookInfo: async (parent, { id: infoId, name, thumbnail }): Promise<Result> => {
-        if (name === undefined && thumbnail === undefined) {
+      editBookInfo: async (parent, {
+        id: infoId,
+        name,
+        thumbnail,
+        finished,
+      }): Promise<Result> => {
+        if (name === undefined && thumbnail === undefined && finished === undefined) {
           return {
             success: false,
             code: 'QL0005',
@@ -160,7 +167,7 @@ class BookInfo extends GQLMiddleware {
             message: Errors.QL0001,
           };
         }
-        const val = Object.entries({ name, thumbnail }).reduce((o, e) => {
+        const val = Object.entries({ name, thumbnail, finished }).reduce((o, e) => {
           if (e[1] !== undefined && info[e[0]] !== e[1]) {
             // eslint-disable-next-line no-param-reassign,prefer-destructuring
             o[e[0]] = e[1];
