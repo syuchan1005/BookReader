@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
+import { useWindowSize } from 'react-use';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
@@ -120,6 +121,10 @@ const Book: React.FC = (props: BookProps) => {
   const [isPageSet, setPageSet] = React.useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [deleteNumbers, setDeleteNumbers] = React.useState([]);
+  const [showOriginalImage, setShowOriginalImage] = React.useState(false);
+
+  const windowSize = useWindowSize();
+  const { width, height } = useDebounceValue(windowSize, 800);
 
   const setShowAppBar = React.useCallback((val) => {
     let v = val;
@@ -342,12 +347,13 @@ const Book: React.FC = (props: BookProps) => {
 
   const pages = React.useMemo(() => {
     if (!data || !data.book) return [];
-    const sizes = [document.body.offsetWidth, document.body.offsetHeight];
+    const sizes = [width, height];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
     const pad = data.book.pages.toString(10).length;
+    const suffix = showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
     return [...Array(data.book.pages).keys()]
-      .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}_${sizes[0]}x${sizes[1]}.jpg`);
-  }, [data]);
+      .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}${suffix}.jpg`);
+  }, [data, showOriginalImage, width, height]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -401,6 +407,11 @@ const Book: React.FC = (props: BookProps) => {
                   onClick={() => setDeleteNumbers([debouncePage])}
                 >
                   Remove this page
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setShowOriginalImage(!showOriginalImage)}
+                >
+                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
                 </MenuItem>
               </Menu>
               <DeleteDialog
