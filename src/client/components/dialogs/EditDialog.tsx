@@ -1,14 +1,18 @@
 import * as React from 'react';
 import {
   Button,
+  Checkbox,
+  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Icon,
   IconButton,
   InputAdornment,
-  TextField,
+  makeStyles,
+  TextField, Theme,
 } from '@material-ui/core';
 
 interface EditDialogProps {
@@ -20,10 +24,23 @@ interface EditDialogProps {
   fieldValue: any;
   onChange?: (value: string) => void;
 
+  fieldCheck?: boolean;
+  onChangeCheck?: (value: boolean) => void;
+
   onClickRestore?: () => void;
   onClickEdit?: () => void;
   onClose?: () => void;
 }
+
+const useStyles = makeStyles((theme: Theme) => createStyles({
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  checkbox: {
+    marginBottom: theme.spacing(1),
+  },
+}));
 
 const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
   const {
@@ -32,15 +49,30 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
     info,
     fieldValue,
     onChange,
+    fieldCheck,
+    onChangeCheck,
     onClickRestore,
     onClickEdit,
     onClose,
   } = props;
+  const classes = useStyles(props);
 
   return (
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
-      <DialogContent>
+      <DialogContent className={classes.content}>
+        {(info) && (
+          <FormControlLabel
+            className={classes.checkbox}
+            label="Finished"
+            control={(
+              <Checkbox
+                checked={fieldCheck}
+                onChange={(e) => (onChangeCheck && onChangeCheck(e.target.checked))}
+              />
+            )}
+          />
+        )}
         <TextField
           color="secondary"
           autoFocus

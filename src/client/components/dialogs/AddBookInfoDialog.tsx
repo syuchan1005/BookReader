@@ -1,12 +1,12 @@
 import * as React from 'react';
 import {
-  Button,
+  Button, Checkbox,
   CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
+  DialogTitle, FormControlLabel,
   Icon,
   IconButton,
   List,
@@ -32,6 +32,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   dialog: {
     width: '100%',
     height: '100%',
+  },
+  addContent: {
+    display: 'flex',
+    flexDirection: 'column',
   },
   listItem: {
     width: '100%',
@@ -61,6 +65,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const classes = useStyles(props);
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');
+  const [finished, setFinished] = React.useState(false);
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
@@ -81,6 +86,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
     variables: {
       name,
+      finished,
     },
     onCompleted(d) {
       if (!d) return;
@@ -186,7 +192,16 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
           );
         }
         return (
-          <DialogContent>
+          <DialogContent className={classes.addContent}>
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={finished}
+                  onChange={(e) => setFinished(e.target.checked)}
+                />
+              )}
+              label="Finished"
+            />
             <TextField
               color="secondary"
               autoFocus
