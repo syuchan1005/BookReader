@@ -1,0 +1,6 @@
+mutation ($id: ID! $numbers: [Int!]!){
+    del: deletePages(id: $id numbers: $numbers) {
+        success
+        code
+    }
+}

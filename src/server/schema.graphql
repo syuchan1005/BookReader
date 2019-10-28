@@ -19,9 +19,14 @@ type Mutation {
     addBook(id: ID!, number: String!, file: Upload!): Result!
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
     addCompressBook(id: ID!, file: Upload!): ResultWithBookResults!
-    addCompressBookBatch(id: ID!, file: Upload!): ID!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
+
+    ## BookBatch
+    addCompressBookBatch(id: ID!, file: Upload!): ID!
+
+    ## Page
+    deletePages(id: ID! numbers: [Int!]!): Result!
 }
 
 type Subscription {

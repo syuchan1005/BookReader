@@ -14,6 +14,7 @@ interface DeleteDialogProps {
 
   book?: string;
   bookInfo?: string;
+  page?: string;
 
   onClose?: () => void;
   onClickDelete?: () => void;
@@ -25,6 +26,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = (props: DeleteDialogProps) => 
     loading,
     book,
     bookInfo,
+    page,
     onClose,
     onClickDelete,
   } = props;
@@ -34,10 +36,11 @@ const DeleteDialog: React.FC<DeleteDialogProps> = (props: DeleteDialogProps) => 
       <DialogTitle>
         {bookInfo && 'Delete book info'}
         {book && 'Delete book'}
+        {page && 'Delete page'}
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {`Do you want to delete \`${bookInfo || book}\`?`}
+          {`Do you want to delete \`${bookInfo || book || page}\`?`}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
