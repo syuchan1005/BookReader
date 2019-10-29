@@ -16,6 +16,7 @@ export interface IState {
   invisible: boolean;
   theme: 'light' | 'dark';
   webp: boolean;
+  readOrder: number;
 }
 
 export const initialState: IState = {
@@ -31,6 +32,7 @@ export const initialState: IState = {
   invisible: false,
   theme: 'light',
   webp: false,
+  readOrder: 0, // LtoR, RtoL
 };
 
 const rootReducer = (prevState, action) => {

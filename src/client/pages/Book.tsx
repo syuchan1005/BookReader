@@ -124,6 +124,17 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridTemplateColumns: '150px',
     gridTemplateRows: '100px auto',
   },
+  pageProgress: {
+    display: 'inline-flex',
+    position: 'absolute',
+    width: '100%',
+    height: theme.spacing(0.5),
+    bottom: 0,
+    '& > div': {
+      height: 'inherit',
+      background: theme.palette.secondary.main,
+    },
+  },
 }));
 
 const Book: React.FC = (props: BookProps) => {
@@ -135,7 +146,6 @@ const Book: React.FC = (props: BookProps) => {
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, setPage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
-  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
   const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
   const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
   const [effectPercentage, setEffectPercentage] = React.useState(0);
@@ -247,8 +257,8 @@ const Book: React.FC = (props: BookProps) => {
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
     ...theme,
-    direction: readOrder === 1 ? 'rtl' : 'ltr',
-  }), [theme, readOrder]);
+    direction: store.readOrder === 1 ? 'rtl' : 'ltr',
+  }), [theme, store.readOrder]);
 
   const effectTheme = React.useMemo(() => createMuiTheme({
     ...theme,
@@ -316,30 +326,21 @@ const Book: React.FC = (props: BookProps) => {
     window.document.onkeydown = ({ key }) => {
       switch (key) {
         case 'ArrowRight':
-          if (readOrder === 0) increment();
-          else if (readOrder === 1) decrement();
+          if (store.readOrder === 0) increment();
+          else if (store.readOrder === 1) decrement();
           break;
         case 'ArrowLeft':
-          if (readOrder === 0) decrement();
-          else if (readOrder === 1) increment();
-          break;
-        case 'ArrowUp':
-          if (readOrder === 2) decrement();
-          else if (readOrder === 3) increment();
-          break;
-        case 'ArrowDown':
-          if (readOrder === 2) increment();
-          else if (readOrder === 3) decrement();
+          if (store.readOrder === 0) decrement();
+          else if (store.readOrder === 1) increment();
           break;
         default:
       }
     };
-  }, [readOrder, increment, decrement]);
+  }, [store.readOrder, increment, decrement]);
 
   const clickPage = React.useCallback((event) => {
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
-    const percentY = event.nativeEvent.y / event.target.offsetHeight;
-    switch (readOrder) {
+    switch (store.readOrder) {
       case 0:
         if (percentX <= 0.2) decrement();
         else if (percentX >= 0.8) increment();
@@ -350,20 +351,10 @@ const Book: React.FC = (props: BookProps) => {
         else if (percentX >= 0.8) decrement();
         else setShowAppBar(undefined);
         break;
-      case 2:
-        if (percentY <= 0.2) decrement();
-        else if (percentY >= 0.8) increment();
-        else setShowAppBar(undefined);
-        break;
-      case 3:
-        if (percentY <= 0.2) increment();
-        else if (percentY >= 0.8) decrement();
-        else setShowAppBar(undefined);
-        break;
       default:
         setShowAppBar(undefined);
     }
-  }, [readOrder, increment, decrement]);
+  }, [store.readOrder, increment, decrement]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -511,9 +502,9 @@ const Book: React.FC = (props: BookProps) => {
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                onClick={() => setReadOrder((readOrder + 1) % 2)}
+                onClick={() => dispatch({ readOrder: (store.readOrder + 1) % 2 })}
               >
-                {['L > R', 'L < R'][readOrder]}
+                {['L > R', 'L < R'][store.readOrder]}
               </Button>
               <Button
                 aria-controls="effect menu"
@@ -590,6 +581,10 @@ const Book: React.FC = (props: BookProps) => {
         {(debouncePage <= data.book.pages - 2) ? (
           <Img src={pages[debouncePage + 1]} hidden />
         ) : null}
+      </div>
+
+      <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
+        <div style={{ width: `${((page + 1) / data.book.pages) * 100}%` }} />
       </div>
     </div>
   );
