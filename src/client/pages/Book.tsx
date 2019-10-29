@@ -7,7 +7,16 @@ import {
   Slider,
   Button,
   useTheme,
-  createMuiTheme, Menu, MenuItem, Icon, IconButton,
+  createMuiTheme,
+  Menu,
+  MenuItem,
+  Icon,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
@@ -15,6 +24,7 @@ import { useWindowSize } from 'react-use';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
+import * as SplitMutation from '@client/graphqls/Pages_Page_split.gql';
 
 import { Book as BookType, Result } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
@@ -103,6 +113,16 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     whiteSpace: 'pre-line',
     textAlign: 'center',
   },
+  splitButtonWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  splitButton: {
+    display: 'grid',
+    gridTemplateColumns: '150px',
+    gridTemplateRows: '100px auto',
+  },
 }));
 
 const Book: React.FC = (props: BookProps) => {
@@ -122,6 +142,7 @@ const Book: React.FC = (props: BookProps) => {
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [deleteNumbers, setDeleteNumbers] = React.useState([]);
   const [showOriginalImage, setShowOriginalImage] = React.useState(false);
+  const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
 
   const windowSize = useWindowSize();
   const { width, height } = useDebounceValue(windowSize, 800);
@@ -164,6 +185,19 @@ const Book: React.FC = (props: BookProps) => {
     },
     onCompleted() {
       setDeleteNumbers([]);
+      window.location.reload();
+    },
+  });
+
+  const [splitPage, {
+    loading: splitLoading,
+  }] = useMutation<{ split: Result }>(SplitMutation, {
+    variables: {
+      id: params.id,
+      start: page,
+    },
+    onCompleted() {
+      setOpenSplitDialog(false);
       window.location.reload();
     },
   });
@@ -404,6 +438,11 @@ const Book: React.FC = (props: BookProps) => {
                 }}
               >
                 <MenuItem
+                  onClick={() => setOpenSplitDialog(true)}
+                >
+                  Split after page
+                </MenuItem>
+                <MenuItem
                   onClick={() => setDeleteNumbers([debouncePage])}
                 >
                   Remove this page
@@ -421,6 +460,53 @@ const Book: React.FC = (props: BookProps) => {
                 onClose={() => setDeleteNumbers([])}
                 page={(debouncePage + 1).toString(10)}
               />
+              <Dialog
+                open={openSplitDialog}
+                onClose={() => !splitLoading && setOpenSplitDialog(false)}
+              >
+                <DialogTitle>Split page</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Do you want to split page?
+                  </DialogContentText>
+
+                  <div className={classes.splitButtonWrapper}>
+                    <Button
+                      classes={{ label: classes.splitButton }}
+                      onClick={() => splitPage({ variables: { type: 'VERTICAL' } })}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
+                        <polygon
+                          points="10,10 140,10 140,80 10,80"
+                          style={{ fill: 'rgba(0, 0, 0, 0)', stroke: '#000', strokeWidth: 3 }}
+                        />
+                        <line x1="75" y1="0" x2="75" y2="100" strokeWidth="5" stroke="red" />
+                      </svg>
+                      Vertical
+                    </Button>
+
+                    <Button
+                      classes={{ label: classes.splitButton }}
+                      onClick={() => splitPage({ variables: { type: 'HORIZONTAL' } })}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
+                        <polygon
+                          points="10,10 140,10 140,80 10,80"
+                          style={{ fill: 'rgba(0, 0, 0, 0)', stroke: '#000', strokeWidth: 3 }}
+                        />
+                        <line x1="0" y1="45" x2="150" y2="45" strokeWidth="5" stroke="blue" />
+                      </svg>
+                      Horizontal
+                    </Button>
+                  </div>
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={() => setOpenSplitDialog(false)} disabled={splitLoading}>
+                    close
+                  </Button>
+                </DialogActions>
+              </Dialog>
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
