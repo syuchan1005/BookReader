@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     paddingTop: commonTheme.safeArea.top,
   },
   overlay: {
+    zIndex: 1,
     top: '0',
     position: 'fixed',
     width: '100%',
@@ -262,11 +263,11 @@ const Book: React.FC = (props: BookProps) => {
     switch (effect) {
       case 'dark':
         return {
-          backgroundColor: `rgba(0, 0, 0, ${effectPercentage / 100}`,
+          filter: `brightness(${100 - effectPercentage}%)`,
         };
       case 'paper':
         return {
-          backgroundColor: `rgba(255, 250, 240, ${effectPercentage / 100}`,
+          filter: `sepia(${effectPercentage}%)`,
         };
       default:
         return undefined;
@@ -408,7 +409,7 @@ const Book: React.FC = (props: BookProps) => {
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
-      <div className={classes.overlay} style={effectBackGround}>
+      <div className={classes.overlay}>
         {store.showAppBar && (
           <>
             {/* eslint-disable-next-line */}
@@ -581,6 +582,7 @@ const Book: React.FC = (props: BookProps) => {
           <Img src={pages[debouncePage - 1]} hidden />
         ) : null}
         <Img
+          imgStyle={effectBackGround}
           src={pages[debouncePage]}
           alt={(debouncePage + 1).toString(10)}
           className={classes.pageImage}
