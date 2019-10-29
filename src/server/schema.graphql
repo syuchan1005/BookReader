@@ -34,6 +34,7 @@ type Mutation {
 
     ## Page
     deletePages(id: ID! numbers: [Int!]!): Result!
+    splitPages(id: ID! start: Int! type: SplitType = VERTICAL): Result!
 }
 
 type Subscription {
@@ -52,6 +53,11 @@ enum BookInfoOrder {
 enum BookOrder {
     ASC
     DESC
+}
+
+enum SplitType {
+    VERTICAL
+    HORIZONTAL
 }
 
 type BookInfo {

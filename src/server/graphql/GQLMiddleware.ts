@@ -4,6 +4,8 @@ import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
 export default abstract class GQLMiddleware {
   protected readonly gm: SubClass;
 
+  protected readonly useIM: boolean;
+
   protected readonly server: ApolloServer;
 
   protected readonly pubsub: PubSubEngine;

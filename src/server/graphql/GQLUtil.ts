@@ -7,7 +7,7 @@ import unzipper from 'unzipper';
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
-import { orderBy as naturalOrderBy } from 'natural-orderby';
+import { orderBy, orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
@@ -367,6 +367,16 @@ const GQLUtil = {
         finished: true,
         message: 'Finish',
       },
+    });
+  },
+  async numberingFiles(folderPath: string, pad: number, fileList?: string[]) {
+    const files = fileList || orderBy(await fs.readdir(folderPath));
+    return asyncMap(files, (f, i) => {
+      const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
+      if (dist !== f) {
+        return renameFile(`${folderPath}/${f}`, `${folderPath}/${dist}`);
+      }
+      return Promise.resolve();
     });
   },
 };

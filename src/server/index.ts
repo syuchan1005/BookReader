@@ -18,14 +18,16 @@ let useIM = true;
   useIM = await new Promise((resolve) => {
     im(10, 10)
       .stream((err, stdout, stderr) => {
-        stdout.once('end', () => resolve(true));
+        if (err) resolve(false);
         stderr.once('data', () => resolve(false));
+        stdout.once('error', () => resolve(false));
+        stdout.once('end', () => resolve(true));
       });
   });
 })();
 
 const app = new Koa();
-const graphql = new GraphQL((useIM ? im : gm));
+const graphql = new GraphQL((useIM ? im : gm), useIM);
 
 app.use(Serve('storage/'));
 

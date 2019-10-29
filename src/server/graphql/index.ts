@@ -24,6 +24,8 @@ export const SubscriptionKeys = {
 export default class GraphQL {
   private readonly gm: SubClass;
 
+  private readonly useIM: boolean;
+
   private readonly middlewares: { [key: string]: GQLMiddleware };
 
   public readonly server: ApolloServer;
@@ -32,8 +34,9 @@ export default class GraphQL {
 
   private readonly pubsub: PubSubEngine;
 
-  constructor(gmModule) {
+  constructor(gmModule, useIM) {
     this.gm = gmModule;
+    this.useIM = useIM;
     this.pubsub = new PubSub();
 
     // @ts-ignore
