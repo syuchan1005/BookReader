@@ -18,6 +18,7 @@ import {
   DialogContentText,
   DialogActions,
 } from '@material-ui/core';
+import Swiper from 'react-id-swiper';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
@@ -53,6 +54,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  pageContainer: {
+    direction: 'rtl',
+    width: '100%',
+    height: '100%',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden',
+    listStyle: 'none',
+    padding: 0,
+    '& > .swiper-wrapper': {
+      zIndex: 'inherit',
+    },
   },
   pageImage: {
     width: '100%',
@@ -144,7 +158,7 @@ const Book: React.FC = (props: BookProps) => {
   const params = useParams<{ id: string }>();
 
   const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
-  const [page, setPage] = React.useState(0);
+  const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
   const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
   const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
@@ -154,9 +168,23 @@ const Book: React.FC = (props: BookProps) => {
   const [deleteNumbers, setDeleteNumbers] = React.useState([]);
   const [showOriginalImage, setShowOriginalImage] = React.useState(false);
   const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
+  const [swiper, setSwiper] = React.useState(null);
 
   const windowSize = useWindowSize();
   const { width, height } = useDebounceValue(windowSize, 800);
+
+  const setPage = React.useCallback((s) => {
+    if (swiper) {
+      swiper.slideTo(s, 0, false);
+      updatePage(s);
+    }
+  }, [swiper]);
+
+  const updateSwiper = React.useCallback((s) => {
+    if (!s) return;
+    s.on('slideChange', () => updatePage(s.realIndex));
+    setSwiper(s);
+  }, [isPageSet, page]);
 
   const setShowAppBar = React.useCallback((val) => {
     let v = val;
@@ -294,15 +322,6 @@ const Book: React.FC = (props: BookProps) => {
     if (data) delete update.barTitle;
     dispatch(update);
 
-    db.bookReads.get(params.id).then((read) => {
-      if (read) {
-        let p = read.page;
-        if (data && p >= data.book.pages) p = data.book.pages - 1;
-        setPage(Math.max(p, 0));
-      }
-      setPageSet(true);
-    });
-
     return () => {
       setShowAppBar(true);
       // remove onkeydown
@@ -311,6 +330,18 @@ const Book: React.FC = (props: BookProps) => {
       dispatch({ needContentMargin: true });
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!swiper) return;
+    db.bookReads.get(params.id).then((read) => {
+      if (read) {
+        let p = read.page;
+        if (data && p >= data.book.pages) p = data.book.pages - 1;
+        setPage(Math.max(p, 0));
+      }
+      setPageSet(true);
+    });
+  }, [swiper]);
 
   React.useEffect(() => {
     if (isPageSet) {
@@ -400,7 +431,7 @@ const Book: React.FC = (props: BookProps) => {
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
-      <div className={classes.overlay}>
+      <div className={classes.overlay} style={{ pointerEvents: store.showAppBar ? undefined : 'none' }}>
         {store.showAppBar && (
           <>
             {/* eslint-disable-next-line */}
@@ -568,23 +599,24 @@ const Book: React.FC = (props: BookProps) => {
         ) : null}
       </div>
 
-      <div className={classes.page}>
-        {(debouncePage >= 1) ? (
-          <Img src={pages[debouncePage - 1]} hidden />
-        ) : null}
-        <Img
-          imgStyle={effectBackGround}
-          src={pages[debouncePage]}
-          alt={(debouncePage + 1).toString(10)}
-          className={classes.pageImage}
-        />
-        {(debouncePage <= data.book.pages - 2) ? (
-          <Img src={pages[debouncePage + 1]} hidden />
-        ) : null}
-      </div>
+      <Swiper
+        getSwiper={updateSwiper}
+        containerClass={classes.pageContainer}
+      >
+        {pages.map((t, i) => ((Math.abs(i - debouncePage) <= 1) ? (
+          <div className={classes.page} key={t}>
+            <Img
+              imgStyle={effectBackGround}
+              src={t}
+              alt={(debouncePage + 1).toString(10)}
+              className={classes.pageImage}
+            />
+          </div>
+        ) : (<div key={t} />)))}
+      </Swiper>
 
       <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
-        <div style={{ width: `${((page + 1) / data.book.pages) * 100}%` }} />
+        <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
       </div>
     </div>
   );

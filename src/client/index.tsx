@@ -1,3 +1,5 @@
+import 'react-id-swiper/lib/styles/css/swiper.css';
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 

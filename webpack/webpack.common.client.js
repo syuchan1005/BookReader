@@ -37,7 +37,11 @@ module.exports = {
         enforce: 'pre',
         test: /\.js$/,
         loader: 'source-map-loader',
-        exclude: [resolve('node_modules')],
+        exclude: [
+          resolve('node_modules'),
+          /node_modules\/(?!(swiper|dom7)\/).*/,
+          /\.test\.js(x)?$/,
+        ],
       },
       {
         test: /\.css$/,
