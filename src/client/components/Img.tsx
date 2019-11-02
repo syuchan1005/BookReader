@@ -100,7 +100,4 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   );
 };
 
-// @ts-ignore
-Img.whyDidYouRender = true;
-
 export default Img;

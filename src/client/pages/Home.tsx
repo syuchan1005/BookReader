@@ -224,7 +224,4 @@ const Home: React.FC = (props: HomeProps) => {
   );
 };
 
-// @ts-ignore
-Home.whyDidYouRender = true;
-
 export default Home;

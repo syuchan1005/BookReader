@@ -63,7 +63,4 @@ const DeleteDialog: React.FC<DeleteDialogProps> = (props: DeleteDialogProps) => 
   );
 };
 
-// @ts-ignore
-DeleteDialog.whyDidYouRender = true;
-
 export default DeleteDialog;

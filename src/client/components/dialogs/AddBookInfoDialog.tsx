@@ -245,7 +245,4 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   );
 };
 
-// @ts-ignore
-AddBookInfoDialog.whyDidYouRender = true;
-
 export default AddBookInfoDialog;

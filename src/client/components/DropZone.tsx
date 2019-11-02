@@ -62,7 +62,4 @@ const DropZone: React.FC<FileFieldProps> = (props: FileFieldProps) => {
   );
 };
 
-// @ts-ignore
-DropZone.whyDidYouRender = true;
-
 export default DropZone;

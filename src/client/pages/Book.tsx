@@ -622,7 +622,4 @@ const Book: React.FC = (props: BookProps) => {
   );
 };
 
-// @ts-ignore
-Book.whyDidYouRender = true;
-
 export default Book;
