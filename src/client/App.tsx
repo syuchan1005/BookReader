@@ -325,29 +325,19 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               <ListSubheader style={{ lineHeight: 'normal' }}>
                 Show
               </ListSubheader>
-              <ListItem style={{ outline: 0 }}>
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      checked={store.history}
-                      onChange={(e) => {
-                        dispatch({ history: e.target.checked });
-                      }}
-                    />
-                  )}
-                  label="History"
-                />
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      checked={store.invisible}
-                      onChange={(e) => {
-                        dispatch({ invisible: e.target.checked });
-                      }}
-                    />
-                  )}
-                  label="Invisible"
-                />
+              <ListItem style={{ outline: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                {Object.entries({ normal: 'Normal', history: 'History', invisible: 'Invisible' }).map(([k, v]) => (
+                  <FormControlLabel
+                    key={k}
+                    control={(
+                      <Checkbox
+                        checked={store[k]}
+                        onChange={(e) => dispatch({ [k]: e.target.checked })}
+                      />
+                    )}
+                    label={v}
+                  />
+                ))}
               </ListItem>
               <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
               <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
@@ -414,8 +404,5 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     </MuiThemeProvider>
   );
 };
-
-// @ts-ignore
-App.whyDidYouRender = true;
 
 export default App;

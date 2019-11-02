@@ -8,6 +8,7 @@ interface ImgProps {
   minHeight?: number;
   className?: any;
   style?: any;
+  imgStyle?: any;
   hidden?: boolean | 'false' | 'true';
   noSave?: boolean;
 
@@ -44,6 +45,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     minHeight = 200,
     className,
     style,
+    imgStyle,
     hidden,
     onClick,
     noSave = true,
@@ -86,7 +88,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
           <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
           <img
             className={className}
-            style={{ display: (state === 1) ? 'block' : 'none' }}
+            style={{ ...imgStyle, display: (state === 1) ? 'block' : 'none' }}
             src={`${src}${noSave ? '?nosave' : ''}`}
             alt={alt}
             onLoad={() => { if (onLoad) { onLoad(true); } setState(1); }}
@@ -97,8 +99,5 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
     </div>
   );
 };
-
-// @ts-ignore
-Img.whyDidYouRender = true;
 
 export default Img;

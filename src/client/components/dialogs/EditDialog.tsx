@@ -123,7 +123,4 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
   );
 };
 
-// @ts-ignore
-EditDialog.whyDidYouRender = true;
-
 export default EditDialog;

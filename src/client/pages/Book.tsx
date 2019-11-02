@@ -7,14 +7,25 @@ import {
   Slider,
   Button,
   useTheme,
-  createMuiTheme, Menu, MenuItem, Icon, IconButton,
+  createMuiTheme,
+  Menu,
+  MenuItem,
+  Icon,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@material-ui/core';
+import Swiper from 'react-id-swiper';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
+import * as SplitMutation from '@client/graphqls/Pages_Page_split.gql';
 
 import { Book as BookType, Result } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
@@ -44,6 +55,32 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  pageContainerRTL: {
+    direction: 'rtl',
+    width: '100%',
+    height: '100%',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden',
+    listStyle: 'none',
+    padding: 0,
+    '& > .swiper-wrapper': {
+      zIndex: 'inherit',
+    },
+  },
+  pageContainerLTR: {
+    direction: 'ltr',
+    width: '100%',
+    height: '100%',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden',
+    listStyle: 'none',
+    padding: 0,
+    '& > .swiper-wrapper': {
+      zIndex: 'inherit',
+    },
+  },
   pageImage: {
     width: '100%',
     height: '100%',
@@ -51,6 +88,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     paddingTop: commonTheme.safeArea.top,
   },
   overlay: {
+    zIndex: 1,
     top: '0',
     position: 'fixed',
     width: '100%',
@@ -103,6 +141,27 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     whiteSpace: 'pre-line',
     textAlign: 'center',
   },
+  splitButtonWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  splitButton: {
+    display: 'grid',
+    gridTemplateColumns: '150px',
+    gridTemplateRows: '100px auto',
+  },
+  pageProgress: {
+    display: 'inline-flex',
+    position: 'absolute',
+    width: '100%',
+    height: theme.spacing(0.5),
+    bottom: 0,
+    '& > div': {
+      height: 'inherit',
+      background: theme.palette.secondary.main,
+    },
+  },
 }));
 
 const Book: React.FC = (props: BookProps) => {
@@ -111,10 +170,8 @@ const Book: React.FC = (props: BookProps) => {
   const history = useHistory();
   const params = useParams<{ id: string }>();
 
-  const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
-  const [page, setPage] = React.useState(0);
+  const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
-  const [readOrder, setReadOrder] = React.useState(0); // LtoR, RtoL
   const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
   const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
   const [effectPercentage, setEffectPercentage] = React.useState(0);
@@ -122,9 +179,26 @@ const Book: React.FC = (props: BookProps) => {
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [deleteNumbers, setDeleteNumbers] = React.useState([]);
   const [showOriginalImage, setShowOriginalImage] = React.useState(false);
+  const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
+  const [swiper, setSwiper] = React.useState(null);
+  const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
 
   const windowSize = useWindowSize();
   const { width, height } = useDebounceValue(windowSize, 800);
+
+  const setPage = React.useCallback((s) => {
+    if (swiper) {
+      swiper.slideTo(s, 0, false);
+      updatePage(s);
+    }
+  }, [swiper]);
+
+  const updateSwiper = React.useCallback((s) => {
+    if (!s) return;
+    setReBuildSwiper(false);
+    s.on('slideChange', () => updatePage(s.realIndex));
+    setSwiper(s);
+  }, [isPageSet, page]);
 
   const setShowAppBar = React.useCallback((val) => {
     let v = val;
@@ -168,52 +242,41 @@ const Book: React.FC = (props: BookProps) => {
     },
   });
 
+  const [splitPage, {
+    loading: splitLoading,
+  }] = useMutation<{ split: Result }>(SplitMutation, {
+    variables: {
+      id: params.id,
+      start: page,
+    },
+    onCompleted() {
+      setOpenSplitDialog(false);
+      window.location.reload();
+    },
+  });
+
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
     params.id,
   );
 
   const increment = React.useCallback(() => {
-    let preRoute = [];
-    if (page === data.book.pages - 1) {
-      preRoute = [false, !!(data.book && nextBook)];
-    } else if (page === 0 && routeButton[0]) {
-      preRoute = [false, false];
-      return;
-    } else {
-      preRoute = [false, false];
-    }
-    if (preRoute[0] !== routeButton[0] || preRoute[1] !== routeButton[1]) {
-      setRouteButton(preRoute);
-    }
     setPage(Math.min(page + 1, data.book.pages - 1));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, routeButton[0], store.showAppBar]);
+  }, [page, data, nextBook, store.showAppBar]);
 
   const decrement = React.useCallback(() => {
-    let preRoute = [];
-    if (page === 0) {
-      preRoute = [!!(data.book && prevBook), false];
-    } else if (page === data.book.pages - 1 && routeButton[1]) {
-      preRoute = [false, false];
-      return;
-    } else {
-      preRoute = [false, false];
-    }
-    if (preRoute[0] !== routeButton[0] || preRoute[1] !== routeButton[1]) {
-      setRouteButton(preRoute);
-    }
     setPage(Math.max(page - 1, 0));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, routeButton[1], store.showAppBar]);
+  }, [page, data, prevBook, store.showAppBar]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
     ...theme,
-    direction: readOrder === 1 ? 'rtl' : 'ltr',
-  }), [theme, readOrder]);
+    direction: store.readOrder === 1 ? 'rtl' : 'ltr',
+  }), [theme, store.readOrder]);
 
   const effectTheme = React.useMemo(() => createMuiTheme({
     ...theme,
@@ -228,11 +291,11 @@ const Book: React.FC = (props: BookProps) => {
     switch (effect) {
       case 'dark':
         return {
-          backgroundColor: `rgba(0, 0, 0, ${effectPercentage / 100}`,
+          filter: `brightness(${100 - effectPercentage}%)`,
         };
       case 'paper':
         return {
-          backgroundColor: `rgba(255, 250, 240, ${effectPercentage / 100}`,
+          filter: `sepia(${effectPercentage}%)`,
         };
       default:
         return undefined;
@@ -249,15 +312,6 @@ const Book: React.FC = (props: BookProps) => {
     if (data) delete update.barTitle;
     dispatch(update);
 
-    db.bookReads.get(params.id).then((read) => {
-      if (read) {
-        let p = read.page;
-        if (data && p >= data.book.pages) p = data.book.pages - 1;
-        setPage(Math.max(p, 0));
-      }
-      setPageSet(true);
-    });
-
     return () => {
       setShowAppBar(true);
       // remove onkeydown
@@ -266,6 +320,18 @@ const Book: React.FC = (props: BookProps) => {
       dispatch({ needContentMargin: true });
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!swiper) return;
+    db.bookReads.get(params.id).then((read) => {
+      if (read) {
+        let p = read.page;
+        if (data && p >= data.book.pages) p = data.book.pages - 1;
+        setPage(Math.max(p, 0));
+      }
+      setPageSet(true);
+    });
+  }, [swiper]);
 
   React.useEffect(() => {
     if (isPageSet) {
@@ -281,30 +347,21 @@ const Book: React.FC = (props: BookProps) => {
     window.document.onkeydown = ({ key }) => {
       switch (key) {
         case 'ArrowRight':
-          if (readOrder === 0) increment();
-          else if (readOrder === 1) decrement();
+          if (store.readOrder === 0) increment();
+          else if (store.readOrder === 1) decrement();
           break;
         case 'ArrowLeft':
-          if (readOrder === 0) decrement();
-          else if (readOrder === 1) increment();
-          break;
-        case 'ArrowUp':
-          if (readOrder === 2) decrement();
-          else if (readOrder === 3) increment();
-          break;
-        case 'ArrowDown':
-          if (readOrder === 2) increment();
-          else if (readOrder === 3) decrement();
+          if (store.readOrder === 0) decrement();
+          else if (store.readOrder === 1) increment();
           break;
         default:
       }
     };
-  }, [readOrder, increment, decrement]);
+  }, [store.readOrder, increment, decrement]);
 
   const clickPage = React.useCallback((event) => {
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
-    const percentY = event.nativeEvent.y / event.target.offsetHeight;
-    switch (readOrder) {
+    switch (store.readOrder) {
       case 0:
         if (percentX <= 0.2) decrement();
         else if (percentX >= 0.8) increment();
@@ -315,20 +372,10 @@ const Book: React.FC = (props: BookProps) => {
         else if (percentX >= 0.8) decrement();
         else setShowAppBar(undefined);
         break;
-      case 2:
-        if (percentY <= 0.2) decrement();
-        else if (percentY >= 0.8) increment();
-        else setShowAppBar(undefined);
-        break;
-      case 3:
-        if (percentY <= 0.2) increment();
-        else if (percentY >= 0.8) decrement();
-        else setShowAppBar(undefined);
-        break;
       default:
         setShowAppBar(undefined);
     }
-  }, [readOrder, increment, decrement]);
+  }, [store.readOrder, increment, decrement]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -374,12 +421,30 @@ const Book: React.FC = (props: BookProps) => {
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
-      <div className={classes.overlay} style={effectBackGround}>
+      {/* eslint-disable-next-line */}
+      <div
+        className={classes.overlay}
+        style={{ pointerEvents: store.showAppBar ? undefined : 'none' }}
+        onClick={(e) => { if (store.showAppBar) { e.stopPropagation(); setShowAppBar(false); } }}
+      >
         {store.showAppBar && (
           <>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
               <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
+            </div>
+            {/* eslint-disable-next-line */}
+            <div className={`${classes.overlayContent} center`} onClick={(e) => e.stopPropagation()}>
+              {(nextBook && swiper && swiper.isEnd) && (
+                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                  to Next book
+                </Button>
+              )}
+              {(prevBook && swiper && swiper.isBeginning) && (
+                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
+                  to Prev book
+                </Button>
+              )}
             </div>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
@@ -404,6 +469,11 @@ const Book: React.FC = (props: BookProps) => {
                 }}
               >
                 <MenuItem
+                  onClick={() => setOpenSplitDialog(true)}
+                >
+                  Split after page
+                </MenuItem>
+                <MenuItem
                   onClick={() => setDeleteNumbers([debouncePage])}
                 >
                   Remove this page
@@ -421,12 +491,62 @@ const Book: React.FC = (props: BookProps) => {
                 onClose={() => setDeleteNumbers([])}
                 page={(debouncePage + 1).toString(10)}
               />
+              <Dialog
+                open={openSplitDialog}
+                onClose={() => !splitLoading && setOpenSplitDialog(false)}
+              >
+                <DialogTitle>Split page</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Do you want to split page?
+                  </DialogContentText>
+
+                  <div className={classes.splitButtonWrapper}>
+                    <Button
+                      classes={{ label: classes.splitButton }}
+                      onClick={() => splitPage({ variables: { type: 'VERTICAL' } })}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
+                        <polygon
+                          points="10,10 140,10 140,80 10,80"
+                          style={{ fill: 'rgba(0, 0, 0, 0)', stroke: '#000', strokeWidth: 3 }}
+                        />
+                        <line x1="75" y1="0" x2="75" y2="100" strokeWidth="5" stroke="red" />
+                      </svg>
+                      Vertical
+                    </Button>
+
+                    <Button
+                      classes={{ label: classes.splitButton }}
+                      onClick={() => splitPage({ variables: { type: 'HORIZONTAL' } })}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
+                        <polygon
+                          points="10,10 140,10 140,80 10,80"
+                          style={{ fill: 'rgba(0, 0, 0, 0)', stroke: '#000', strokeWidth: 3 }}
+                        />
+                        <line x1="0" y1="45" x2="150" y2="45" strokeWidth="5" stroke="blue" />
+                      </svg>
+                      Horizontal
+                    </Button>
+                  </div>
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={() => setOpenSplitDialog(false)} disabled={splitLoading}>
+                    close
+                  </Button>
+                </DialogActions>
+              </Dialog>
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                onClick={() => setReadOrder((readOrder + 1) % 2)}
+                onClick={() => {
+                  dispatch({ readOrder: (store.readOrder + 1) % 2 });
+                  setReBuildSwiper(true);
+                }}
               >
-                {['L > R', 'L < R'][readOrder]}
+                {['L > R', 'L < R'][store.readOrder]}
               </Button>
               <Button
                 aria-controls="effect menu"
@@ -473,41 +593,30 @@ const Book: React.FC = (props: BookProps) => {
             </div>
           </>
         )}
-        {(routeButton.some((a) => a)) ? (
-          // eslint-disable-next-line
-          <div className={`${classes.overlayContent} center`} onClick={(e) => { e.stopPropagation(); setRouteButton([false, false]); }}>
-            {routeButton[1] && (
-              <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
-                to Next book
-              </Button>
-            )}
-            {routeButton[0] && (
-              <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
-                to Prev book
-              </Button>
-            )}
-          </div>
-        ) : null}
       </div>
 
-      <div className={classes.page}>
-        {(debouncePage >= 1) ? (
-          <Img src={pages[debouncePage - 1]} hidden />
-        ) : null}
-        <Img
-          src={pages[debouncePage]}
-          alt={(debouncePage + 1).toString(10)}
-          className={classes.pageImage}
-        />
-        {(debouncePage <= data.book.pages - 2) ? (
-          <Img src={pages[debouncePage + 1]} hidden />
-        ) : null}
+      <Swiper
+        rebuildOnUpdate={rebuildSwiper}
+        getSwiper={updateSwiper}
+        containerClass={store.readOrder === 0 ? classes.pageContainerLTR : classes.pageContainerRTL}
+      >
+        {pages.map((t, i) => ((Math.abs(i - debouncePage) <= 1) ? (
+          <div className={classes.page} key={t}>
+            <Img
+              imgStyle={effectBackGround}
+              src={t}
+              alt={(debouncePage + 1).toString(10)}
+              className={classes.pageImage}
+            />
+          </div>
+        ) : (<div key={t} />)))}
+      </Swiper>
+
+      <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
+        <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
       </div>
     </div>
   );
 };
-
-// @ts-ignore
-Book.whyDidYouRender = true;
 
 export default Book;

@@ -252,7 +252,4 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   );
 };
 
-// @ts-ignore
-BookInfo.whyDidYouRender = true;
-
 export default BookInfo;

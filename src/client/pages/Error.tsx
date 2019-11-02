@@ -77,7 +77,4 @@ const Error: React.FC = (props) => {
   );
 };
 
-// @ts-ignore
-Error.whyDidYouRender = true;
-
 export default Error;

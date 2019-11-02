@@ -6,6 +6,7 @@ type Query {
         offset: Int = 0
         search: String
         order: BookInfoOrder = Update_Newest
+        normal: Boolean = true
         history: Boolean = false
         invisible: Boolean = false
     ): BookInfoList!
@@ -34,6 +35,7 @@ type Mutation {
 
     ## Page
     deletePages(id: ID! numbers: [Int!]!): Result!
+    splitPages(id: ID! start: Int! type: SplitType = VERTICAL): Result!
 }
 
 type Subscription {
@@ -52,6 +54,11 @@ enum BookInfoOrder {
 enum BookOrder {
     ASC
     DESC
+}
+
+enum SplitType {
+    VERTICAL
+    HORIZONTAL
 }
 
 type BookInfo {

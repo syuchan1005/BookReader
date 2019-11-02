@@ -1,11 +1,14 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import { promises as fs } from 'fs';
+import { orderBy } from 'natural-orderby';
 
 import { Result } from '@common/GraphqlTypes';
 import BookModel from '@server/sequelize/models/book';
-import Errors from '../../Errors';
-import { asyncMap, renameFile } from '../../Util';
+import { asyncForEach } from '@server/Util';
+import Errors from '@server/Errors';
+
+import GQLUtil from '../GQLUtil';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -39,17 +42,106 @@ class Page extends GQLMiddleware {
 
         pad = (book.pages - numbers.length).toString(10).length;
 
-        const files = await fs.readdir(bookPath);
-        await asyncMap(files, (f, i) => {
-          const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
-          if (dist !== f) {
-            return renameFile(`${bookPath}/${f}`, `${bookPath}/${dist}`);
-          }
-          return Promise.resolve();
-        });
+        await GQLUtil.numberingFiles(bookPath, pad);
 
         await BookModel.update({
           pages: book.pages - numbers.length,
+        }, {
+          where: {
+            id: bookId,
+          },
+        });
+
+        return {
+          success: true,
+        };
+      },
+      splitPages: async (parent, { id: bookId, start, type }): Promise<Result> => {
+        const book = await BookModel.findOne({ where: { id: bookId } });
+        if (!book) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
+
+        if (start >= book.pages || start < 0) {
+          return {
+            success: false,
+            code: 'QL0007',
+            message: Errors.QL0007,
+          };
+        }
+
+        const cropOption = type === 'VERTICAL' ? '2x1@' : '1x2@';
+        const bookPath = `storage/book/${bookId}`;
+        let files = await fs.readdir(bookPath);
+        let pages = 0;
+        await asyncForEach(orderBy(files), async (f, i) => {
+          if (i < start) {
+            pages += 1;
+            return;
+          }
+
+          if (this.useIM) {
+            await new Promise((resolve, reject) => {
+              this.gm(`${bookPath}/${f}`)
+                .out('-crop', cropOption)
+                .repage('+')
+                .write(`${bookPath}/${f.replace('.jpg', '-%d.jpg')}`, (err) => {
+                  if (err) reject(err);
+                  else {
+                    fs.unlink(`${bookPath}/${f}`)
+                      .then(() => {
+                        pages += 2;
+                        resolve();
+                      });
+                  }
+                });
+            });
+          } else {
+            const size = await new Promise<{ width: number, height: number }>((resolve, reject) => {
+              this.gm(`${bookPath}/${f}`)
+                .size((err, s) => {
+                  if (err) reject(err);
+                  else resolve(s);
+                });
+            });
+
+            const crops = type === 'VERTICAL' ? [
+              [size.width / 2, size.height, 0, 0],
+              [size.width / 2, size.height, size.width / 2, 0],
+            ] : [
+              [size.width, size.height / 2, 0, 0],
+              [size.width, size.height / 2, 0, size.height / 2],
+            ];
+
+            await asyncForEach(crops, (crop, fileIndex) => new Promise((resolve, reject) => {
+              this.gm(`${bookPath}/${f}`)
+                // @ts-ignore
+                .crop(...crop)
+                .write(`${bookPath}/${f.replace('.jpg', `-${fileIndex}.jpg`)}`, (err) => {
+                  if (err) reject(err);
+                  else {
+                    pages += 1;
+                    resolve();
+                  }
+                });
+            }));
+
+            await fs.unlink(`${bookPath}/${f}`);
+          }
+        });
+
+        files = orderBy((await fs.readdir(bookPath)), [
+          (v) => Number(v.match(/\d+/g)[0]),
+          (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
+        ], ['asc', 'desc']);
+        await GQLUtil.numberingFiles(bookPath, pages.toString(10).length, files);
+
+        await BookModel.update({
+          pages,
         }, {
           where: {
             id: bookId,

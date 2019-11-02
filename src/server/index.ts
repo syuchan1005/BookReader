@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs, createReadStream } from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 
@@ -18,31 +18,54 @@ let useIM = true;
   useIM = await new Promise((resolve) => {
     im(10, 10)
       .stream((err, stdout, stderr) => {
-        stdout.once('end', () => resolve(true));
+        if (err) resolve(false);
         stderr.once('data', () => resolve(false));
+        stdout.once('error', () => resolve(false));
+        stdout.once('end', () => resolve(true));
       });
   });
 })();
 
 const app = new Koa();
-const graphql = new GraphQL((useIM ? im : gm));
+const graphql = new GraphQL((useIM ? im : gm), useIM);
 
 app.use(Serve('storage/'));
 
 app.use(Serve('storage/cache/'));
+
+const getSize = (p): Promise<{
+  width: number,
+  height: number,
+}> => new Promise((resolve, reject) => {
+  (useIM ? im : gm)(p)
+    .size((err, value) => {
+      if (err) reject(err);
+      else resolve(value);
+    });
+});
 
 app.use(async (ctx, next) => {
   const { url } = ctx.req;
   const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)_(\d+)x(\d+)\.jpg(\?nosave)?$/);
   if (match) {
     const origImgPath = `storage/book/${match[1]}/${match[2]}.jpg`;
+    const atoi = (s) => (s ? (Number(s) || null) : null);
+
+    const sizes = { width: atoi(match[3]), height: atoi(match[4]) };
+
     const stats = await fs.stat(origImgPath);
     if (stats.isFile()) {
+      const imageSize = await getSize(origImgPath);
+      if (sizes.width >= imageSize.width || sizes.height >= imageSize.height) {
+        ctx.body = createReadStream(origImgPath);
+        ctx.type = 'image/jpeg';
+        return;
+      }
+
       try {
         const b = await new Promise((resolve, reject) => {
-          const atoi = (s) => (s ? (Number(s) || null) : null);
           (useIM ? im : gm)(path.resolve(origImgPath))
-            .resize(atoi(match[3]), atoi(match[4]))
+            .resize(sizes.width, sizes.height)
             .quality(70)
             .interlace('Line')
             .stream((err, stdout, stderr) => {
@@ -87,12 +110,16 @@ app.use(async (ctx, next) => {
   if (match) {
     const origImgPath = `storage/book/${match[1]}/${match[2]}.jpg`;
     const stats = await fs.stat(origImgPath);
+
     if (stats.isFile()) {
       let command = `cwebp ${origImgPath} -quiet`;
       if (match[3]) {
         const w = Number(match[4]) || 0;
         const h = Number(match[5]) || 0;
-        if (w > 0 || h > 0) {
+
+        const imageSize = await getSize(origImgPath);
+        if (!(w >= imageSize.width || h >= imageSize.height)
+          && (w > 0 || h > 0)) {
           command += ` -resize ${w} ${h}`;
         }
       }

@@ -1,3 +1,5 @@
+import 'react-id-swiper/lib/styles/css/swiper.css';
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
@@ -12,14 +14,6 @@ import getClient from './apollo';
 import db from './Database';
 
 const wb = regSW();
-
-if (process.env.NODE_ENV !== 'production') {
-  // eslint-disable-next-line global-require
-  const whyDidYouRender = require('@welldone-software/why-did-you-render');
-  whyDidYouRender(React, {
-    collapseGroups: true,
-  });
-}
 
 (async () => {
   await db.connect();

@@ -12,10 +12,12 @@ export interface IState {
   wb: any;
   searchText: string;
   sortOrder: SortOrder;
+  normal: boolean;
   history: boolean;
   invisible: boolean;
   theme: 'light' | 'dark';
   webp: boolean;
+  readOrder: number;
 }
 
 export const initialState: IState = {
@@ -27,10 +29,12 @@ export const initialState: IState = {
   wb: undefined,
   searchText: '',
   sortOrder: 'Update_Newest',
+  normal: true,
   history: false,
   invisible: false,
   theme: 'light',
   webp: false,
+  readOrder: 0, // LtoR, RtoL
 };
 
 const rootReducer = (prevState, action) => {
