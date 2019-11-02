@@ -55,8 +55,21 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pageContainer: {
+  pageContainerRTL: {
     direction: 'rtl',
+    width: '100%',
+    height: '100%',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden',
+    listStyle: 'none',
+    padding: 0,
+    '& > .swiper-wrapper': {
+      zIndex: 'inherit',
+    },
+  },
+  pageContainerLTR: {
+    direction: 'ltr',
     width: '100%',
     height: '100%',
     margin: '0 auto',
@@ -157,7 +170,6 @@ const Book: React.FC = (props: BookProps) => {
   const history = useHistory();
   const params = useParams<{ id: string }>();
 
-  const [routeButton, setRouteButton] = React.useState([false, false]); // prev, next
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
   const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
@@ -169,6 +181,7 @@ const Book: React.FC = (props: BookProps) => {
   const [showOriginalImage, setShowOriginalImage] = React.useState(false);
   const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
   const [swiper, setSwiper] = React.useState(null);
+  const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
 
   const windowSize = useWindowSize();
   const { width, height } = useDebounceValue(windowSize, 800);
@@ -182,6 +195,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const updateSwiper = React.useCallback((s) => {
     if (!s) return;
+    setReBuildSwiper(false);
     s.on('slideChange', () => updatePage(s.realIndex));
     setSwiper(s);
   }, [isPageSet, page]);
@@ -247,40 +261,16 @@ const Book: React.FC = (props: BookProps) => {
   );
 
   const increment = React.useCallback(() => {
-    let preRoute = [];
-    if (page === data.book.pages - 1) {
-      preRoute = [false, !!(data.book && nextBook)];
-    } else if (page === 0 && routeButton[0]) {
-      preRoute = [false, false];
-      return;
-    } else {
-      preRoute = [false, false];
-    }
-    if (preRoute[0] !== routeButton[0] || preRoute[1] !== routeButton[1]) {
-      setRouteButton(preRoute);
-    }
     setPage(Math.min(page + 1, data.book.pages - 1));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, routeButton[0], store.showAppBar]);
+  }, [page, data, nextBook, store.showAppBar]);
 
   const decrement = React.useCallback(() => {
-    let preRoute = [];
-    if (page === 0) {
-      preRoute = [!!(data.book && prevBook), false];
-    } else if (page === data.book.pages - 1 && routeButton[1]) {
-      preRoute = [false, false];
-      return;
-    } else {
-      preRoute = [false, false];
-    }
-    if (preRoute[0] !== routeButton[0] || preRoute[1] !== routeButton[1]) {
-      setRouteButton(preRoute);
-    }
     setPage(Math.max(page - 1, 0));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, routeButton[1], store.showAppBar]);
+  }, [page, data, prevBook, store.showAppBar]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -431,12 +421,30 @@ const Book: React.FC = (props: BookProps) => {
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
-      <div className={classes.overlay} style={{ pointerEvents: store.showAppBar ? undefined : 'none' }}>
+      {/* eslint-disable-next-line */}
+      <div
+        className={classes.overlay}
+        style={{ pointerEvents: store.showAppBar ? undefined : 'none' }}
+        onClick={(e) => { if (store.showAppBar) { e.stopPropagation(); setShowAppBar(false); } }}
+      >
         {store.showAppBar && (
           <>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
               <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
+            </div>
+            {/* eslint-disable-next-line */}
+            <div className={`${classes.overlayContent} center`} onClick={(e) => e.stopPropagation()}>
+              {(nextBook && swiper && swiper.isEnd) && (
+                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                  to Next book
+                </Button>
+              )}
+              {(prevBook && swiper && swiper.isBeginning) && (
+                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
+                  to Prev book
+                </Button>
+              )}
             </div>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
@@ -533,7 +541,10 @@ const Book: React.FC = (props: BookProps) => {
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                onClick={() => dispatch({ readOrder: (store.readOrder + 1) % 2 })}
+                onClick={() => {
+                  dispatch({ readOrder: (store.readOrder + 1) % 2 });
+                  setReBuildSwiper(true);
+                }}
               >
                 {['L > R', 'L < R'][store.readOrder]}
               </Button>
@@ -582,26 +593,12 @@ const Book: React.FC = (props: BookProps) => {
             </div>
           </>
         )}
-        {(routeButton.some((a) => a)) ? (
-          // eslint-disable-next-line
-          <div className={`${classes.overlayContent} center`} onClick={(e) => { e.stopPropagation(); setRouteButton([false, false]); }}>
-            {routeButton[1] && (
-              <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
-                to Next book
-              </Button>
-            )}
-            {routeButton[0] && (
-              <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
-                to Prev book
-              </Button>
-            )}
-          </div>
-        ) : null}
       </div>
 
       <Swiper
+        rebuildOnUpdate={rebuildSwiper}
         getSwiper={updateSwiper}
-        containerClass={classes.pageContainer}
+        containerClass={store.readOrder === 0 ? classes.pageContainerLTR : classes.pageContainerRTL}
       >
         {pages.map((t, i) => ((Math.abs(i - debouncePage) <= 1) ? (
           <div className={classes.page} key={t}>
