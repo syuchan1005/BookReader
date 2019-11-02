@@ -18,7 +18,9 @@ import {
   DialogContentText,
   DialogActions,
 } from '@material-ui/core';
-import Swiper from 'react-id-swiper';
+// import Swiper from 'react-id-swiper';
+import { Swiper } from 'swiper/js/swiper.esm';
+import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
@@ -595,7 +597,8 @@ const Book: React.FC = (props: BookProps) => {
         )}
       </div>
 
-      <Swiper
+      <SwiperCustom
+        Swiper={Swiper}
         rebuildOnUpdate={rebuildSwiper}
         getSwiper={updateSwiper}
         containerClass={store.readOrder === 0 ? classes.pageContainerLTR : classes.pageContainerRTL}
@@ -610,7 +613,7 @@ const Book: React.FC = (props: BookProps) => {
             />
           </div>
         ) : (<div key={t} />)))}
-      </Swiper>
+      </SwiperCustom>
 
       <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
         <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
