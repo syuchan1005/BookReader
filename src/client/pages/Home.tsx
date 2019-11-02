@@ -5,7 +5,7 @@ import {
   Fab,
   Icon,
   makeStyles,
-  Theme, useTheme,
+  Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useQuery } from '@apollo/react-hooks';
@@ -96,6 +96,7 @@ const Home: React.FC = (props: HomeProps) => {
   React.useEffect(() => {
     dispatch({
       barTitle: '',
+      barSubTitle: '',
       showBackRouteArrow: false,
     });
   }, []);
@@ -160,6 +161,8 @@ const Home: React.FC = (props: HomeProps) => {
     refetch({ offset: 0, limit: infos.length || 10 });
   }, [refetch, infos]);
 
+  const downXs = useMediaQuery(theme.breakpoints.down('xs'));
+
   return (
     <div className={classes.home}>
       {(loading || error) ? (
@@ -177,7 +180,7 @@ const Home: React.FC = (props: HomeProps) => {
                 onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
                 onDeleted={(books) => onDeletedBookInfo(info, books)}
                 onEdit={refetchAll}
-                thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
+                thumbnailSize={downXs ? 150 : 200}
               />
             ))}
             {(isLoadingMore) && (

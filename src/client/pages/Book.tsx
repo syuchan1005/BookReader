@@ -220,7 +220,8 @@ const Book: React.FC = (props: BookProps) => {
       if (!d) return;
       dispatch({
         backRoute: `/info/${d.book.info.id}`,
-        barTitle: `${d.book.info.name} No.${d.book.number}`,
+        barTitle: d.book.info.name,
+        barSubTitle: `No.${d.book.number}`,
       });
       if (isPageSet && page >= d.book.pages) {
         setPage(d.book.pages - 1);
@@ -309,9 +310,13 @@ const Book: React.FC = (props: BookProps) => {
     const update = {
       needContentMargin: false,
       barTitle: 'Book',
+      barSubTitle: '',
       showBackRouteArrow: true,
     };
-    if (data) delete update.barTitle;
+    if (data) {
+      delete update.barTitle;
+      delete update.barSubTitle;
+    }
     dispatch(update);
 
     return () => {
@@ -436,7 +441,7 @@ const Book: React.FC = (props: BookProps) => {
               <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
             </div>
             {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} center`} onClick={(e) => e.stopPropagation()}>
+            <div className={`${classes.overlayContent} center`}>
               {(nextBook && swiper && swiper.isEnd) && (
                 <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
                   to Next book

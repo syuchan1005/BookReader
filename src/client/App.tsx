@@ -116,12 +116,21 @@ interface AppProps {
 // @ts-ignore
 const useStyles = makeStyles((theme: Theme) => createStyles({
   backIcon: {
-    color: 'white',
+    color: theme.palette.primary.contrastText,
     marginRight: theme.spacing(1),
   },
   title: {
-    color: 'white',
+    color: theme.palette.primary.contrastText,
+    marginRight: theme.spacing(1),
+  },
+  subTitle: {
     flexGrow: 1,
+    color: theme.palette.primary.contrastText,
+    fontSize: '1.25rem',
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontWeight: 500,
+    lineHeight: 1.6,
+    letterSpacing: '0.0075em',
   },
   appBar: {
     '& + .appbar--margin': commonTheme.appbar(theme, 'paddingTop'),
@@ -269,7 +278,14 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <Icon>arrow_back</Icon>
               </IconButton>
             )}
-            <Typography variant="h6" className={classes.title} noWrap>{store.barTitle}</Typography>
+            <Typography
+              variant="h6"
+              className={classes.title}
+              noWrap
+            >
+              {store.barTitle}
+            </Typography>
+            <div className={classes.subTitle}>{store.barSubTitle}</div>
             {(history.location.pathname === '/') && (
               <div className={classes.search}>
                 <div className={classes.searchIcon}>

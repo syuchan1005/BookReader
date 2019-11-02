@@ -41,6 +41,7 @@ const Error: React.FC = (props) => {
   React.useEffect(() => {
     dispatch({
       barTitle: 'Error',
+      barSubTitle: '',
     });
   }, []);
 

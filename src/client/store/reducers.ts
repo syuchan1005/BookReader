@@ -7,6 +7,7 @@ export interface IState {
   showAppBar: boolean;
   needContentMargin: boolean;
   barTitle: string;
+  barSubTitle: string;
   showBackRouteArrow: boolean;
   backRoute: string;
   wb: any;
@@ -24,6 +25,7 @@ export const initialState: IState = {
   showAppBar: true,
   needContentMargin: true,
   barTitle: 'Book Reader',
+  barSubTitle: '',
   showBackRouteArrow: false,
   backRoute: undefined,
   wb: undefined,
