@@ -18,7 +18,6 @@ import {
   DialogContentText,
   DialogActions,
 } from '@material-ui/core';
-// import Swiper from 'react-id-swiper';
 import { Swiper } from 'swiper/js/swiper.esm';
 import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
@@ -39,6 +38,7 @@ import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import Img from '../components/Img';
 import DeleteDialog from '../components/dialogs/DeleteDialog';
+import useNetworkType from '../hooks/useNetworkType';
 
 interface BookProps {
   children?: React.ReactElement;
@@ -413,6 +413,12 @@ const Book: React.FC = (props: BookProps) => {
     setEffect(eff);
     setEffectMenuAnchor(null);
   }, []);
+
+  const networkType = useNetworkType();
+
+  React.useEffect(() => {
+    setShowOriginalImage(networkType === 'ethernet');
+  }, [networkType]);
 
   if (loading || error) {
     return (
