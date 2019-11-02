@@ -12,6 +12,7 @@ export interface IState {
   wb: any;
   searchText: string;
   sortOrder: SortOrder;
+  normal: boolean;
   history: boolean;
   invisible: boolean;
   theme: 'light' | 'dark';
@@ -28,6 +29,7 @@ export const initialState: IState = {
   wb: undefined,
   searchText: '',
   sortOrder: 'Update_Newest',
+  normal: true,
   history: false,
   invisible: false,
   theme: 'light',

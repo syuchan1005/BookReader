@@ -112,6 +112,7 @@ const Home: React.FC = (props: HomeProps) => {
       limit: 10,
       search: debounceSearch || '',
       order: store.sortOrder,
+      normal: store.normal || !!debounceSearch,
       history: store.history || !!debounceSearch,
       invisible: store.invisible || !!debounceSearch,
     },

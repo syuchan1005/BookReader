@@ -31,19 +31,32 @@ class BookInfo extends GQLMiddleware {
         order,
         history,
         invisible,
+        normal,
       }): Promise<BookInfoList> => {
-        const where = (search) ? {
-          name: {
+        let where: { [key: string]: any } = {};
+        if (search) {
+          where.name = {
             [Op.like]: `%${search}%`,
-          },
-        } : {};
-        if (!history) {
-          // @ts-ignore
-          where.history = false;
+          };
         }
-        if (!invisible) {
-          // @ts-ignore
-          where.invisible = false;
+        if (!normal && !history && !invisible) return { length: 0, infos: [] };
+        if (normal) {
+          if (!history && !invisible) {
+            where = { ...where, history, invisible };
+          } else if (!history) {
+            where.history = false;
+          } else if (!invisible) {
+            where.invisible = false;
+          }
+        } else {
+          // eslint-disable-next-line
+          if (history && invisible) {
+            where = { ...where, [Op.or]: { history, invisible } };
+          } else if (history) {
+            where.history = true;
+          } else if (invisible) {
+            where.invisible = true;
+          }
         }
         const [infos, len] = await Database.sequelize.transaction(async (transaction) => {
           const bookInfos = await BookInfoModel.findAll({

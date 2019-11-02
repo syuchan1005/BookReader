@@ -6,6 +6,7 @@ type Query {
         offset: Int = 0
         search: String
         order: BookInfoOrder = Update_Newest
+        normal: Boolean = true
         history: Boolean = false
         invisible: Boolean = false
     ): BookInfoList!
