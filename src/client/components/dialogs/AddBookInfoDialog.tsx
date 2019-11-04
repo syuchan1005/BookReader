@@ -143,7 +143,8 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
             <DialogContent>
               <List>
                 {addHistories.map((h, i) => (
-                  <ListItem className={classes.historyListItem} key={`${h.name} ${h.count}`}>
+                  // eslint-disable-next-line react/no-array-index-key
+                  <ListItem className={classes.historyListItem} key={i}>
                     <TextField
                       placeholder="name"
                       value={h.name}

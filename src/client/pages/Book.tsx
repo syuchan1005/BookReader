@@ -23,6 +23,7 @@ import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
+import { useSnackbar } from 'notistack';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
@@ -45,6 +46,11 @@ interface BookProps {
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
+  '@global': {
+    body: {
+      overflow: 'hidden',
+    },
+  },
   book: {
     width: '100%',
     height: '100%',
@@ -127,6 +133,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      flexDirection: 'column',
+      '& > button + button': {
+        marginTop: theme.spacing(1),
+      },
     },
   },
   bottomSlider: {
@@ -340,13 +350,14 @@ const Book: React.FC = (props: BookProps) => {
     });
   }, [swiper]);
 
+  const { enqueueSnackbar } = useSnackbar();
+
   React.useEffect(() => {
     if (isPageSet) {
       db.bookReads.put({
         bookId: params.id,
         page,
-      }).catch(() => { /* ignored */
-      });
+      }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     }
   }, [isPageSet, page]);
 
@@ -391,11 +402,10 @@ const Book: React.FC = (props: BookProps) => {
     db.infoReads.put({
       infoId: data.book.info.id,
       bookId,
-    }).catch(() => { /* ignored */
-    });
+    }).catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
     history.push('/dummy');
     setTimeout(() => {
-      history.replace(`/book/${bookId}`);
+      history.push(`/book/${bookId}`);
     });
   }, [prevBook, nextBook, data, history]);
 
@@ -448,14 +458,14 @@ const Book: React.FC = (props: BookProps) => {
             </div>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} center`}>
-              {(nextBook && swiper && swiper.isEnd) && (
-                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
-                  to Next book
-                </Button>
-              )}
               {(prevBook && swiper && swiper.isBeginning) && (
                 <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
                   to Prev book
+                </Button>
+              )}
+              {(nextBook && swiper && swiper.isEnd) && (
+                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                  to Next book
                 </Button>
               )}
             </div>

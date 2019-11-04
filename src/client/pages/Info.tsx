@@ -9,6 +9,7 @@ import {
   useTheme, Button, useMediaQuery,
 } from '@material-ui/core';
 import { useParams, useHistory } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 
@@ -123,12 +124,13 @@ const Info: React.FC = (props: InfoProps) => {
     };
   }, []);
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const clickBook = React.useCallback((book) => {
     db.infoReads.put({
       infoId: params.id,
       bookId: book.id,
-    }).catch(() => { /* ignored */
-    });
+    }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     history.push(`/book/${book.id}`);
   }, [params, history]);
 
