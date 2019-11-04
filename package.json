@@ -81,6 +81,7 @@
       "clean-webpack-plugin": "^3.0.0",
       "cross-env": "^6.0.3",
       "debug": "^4.1.1",
+      "du": "^1.0.0",
       "gm": "^1.23.1",
       "graphql": "^14.5.8",
       "graphql-subscriptions": "^1.1.0",

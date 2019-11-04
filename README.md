@@ -2,7 +2,7 @@
 
 [![dockeri.co](https://dockeri.co/image/syuchan1005/book_reader)](https://hub.docker.com/r/syuchan1005/book_reader)
 
-<img src="screenshots/top.png" alt="top" width="50%"/>
+<img src="https://github.com/syuchan1005/BookReader/raw/develop/screenshots/top.jpg" alt="top" width="80%"/>
 
 ## how to use?
 

@@ -6,9 +6,10 @@ import {
   Fab,
   Icon,
   Theme,
-  useTheme, Button,
+  useTheme, Button, useMediaQuery,
 } from '@material-ui/core';
 import { useParams, useHistory } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 
@@ -96,17 +97,21 @@ const Info: React.FC = (props: InfoProps) => {
     },
     onCompleted(d) {
       if (!d) return;
-      dispatch({ barTitle: d.bookInfo.name });
+      dispatch({ barTitle: d.bookInfo.name, barSubTitle: '' });
     },
   });
 
   React.useEffect(() => {
     const update = {
       barTitle: 'Book',
+      barSubTitle: '',
       backRoute: '/',
       showBackRouteArrow: true,
     };
-    if (data) delete update.barTitle;
+    if (data) {
+      delete update.barTitle;
+      delete update.barSubTitle;
+    }
     dispatch(update);
     let unMounted = false;
     db.infoReads.get(params.id).then((read) => {
@@ -119,12 +124,13 @@ const Info: React.FC = (props: InfoProps) => {
     };
   }, []);
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const clickBook = React.useCallback((book) => {
     db.infoReads.put({
       infoId: params.id,
       bookId: book.id,
-    }).catch(() => { /* ignored */
-    });
+    }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     history.push(`/book/${book.id}`);
   }, [params, history]);
 
@@ -143,6 +149,8 @@ const Info: React.FC = (props: InfoProps) => {
       });
     }
   }, [refetch, store]);
+
+  const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
   return (
     <div className={classes.info}>
@@ -165,7 +173,7 @@ const Info: React.FC = (props: InfoProps) => {
                     onClick={() => clickBook(book)}
                     onDeleted={() => onDeletedBook(book)}
                     onEdit={() => refetch()}
-                    thumbnailSize={theme.breakpoints.down('xs') ? 150 : 200}
+                    thumbnailSize={downXs ? 150 : 200}
                   />
                 ),
               )

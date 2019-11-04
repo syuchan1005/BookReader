@@ -42,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     objectFit: 'contain',
   },
   card: {
+    width: '100%',
     margin: 'auto',
     display: 'flex',
     justifyContent: 'flex-end',

@@ -18,10 +18,12 @@ import {
   DialogContentText,
   DialogActions,
 } from '@material-ui/core';
-import Swiper from 'react-id-swiper';
+import { Swiper } from 'swiper/js/swiper.esm';
+import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
+import { useSnackbar } from 'notistack';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
@@ -37,12 +39,18 @@ import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import Img from '../components/Img';
 import DeleteDialog from '../components/dialogs/DeleteDialog';
+import useNetworkType from '../hooks/useNetworkType';
 
 interface BookProps {
   children?: React.ReactElement;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
+  '@global': {
+    body: {
+      overflow: 'hidden',
+    },
+  },
   book: {
     width: '100%',
     height: '100%',
@@ -125,6 +133,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      flexDirection: 'column',
+      '& > button + button': {
+        marginTop: theme.spacing(1),
+      },
     },
   },
   bottomSlider: {
@@ -218,7 +230,8 @@ const Book: React.FC = (props: BookProps) => {
       if (!d) return;
       dispatch({
         backRoute: `/info/${d.book.info.id}`,
-        barTitle: `${d.book.info.name} No.${d.book.number}`,
+        barTitle: d.book.info.name,
+        barSubTitle: `No.${d.book.number}`,
       });
       if (isPageSet && page >= d.book.pages) {
         setPage(d.book.pages - 1);
@@ -307,9 +320,13 @@ const Book: React.FC = (props: BookProps) => {
     const update = {
       needContentMargin: false,
       barTitle: 'Book',
+      barSubTitle: '',
       showBackRouteArrow: true,
     };
-    if (data) delete update.barTitle;
+    if (data) {
+      delete update.barTitle;
+      delete update.barSubTitle;
+    }
     dispatch(update);
 
     return () => {
@@ -333,13 +350,14 @@ const Book: React.FC = (props: BookProps) => {
     });
   }, [swiper]);
 
+  const { enqueueSnackbar } = useSnackbar();
+
   React.useEffect(() => {
     if (isPageSet) {
       db.bookReads.put({
         bookId: params.id,
         page,
-      }).catch(() => { /* ignored */
-      });
+      }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     }
   }, [isPageSet, page]);
 
@@ -384,11 +402,10 @@ const Book: React.FC = (props: BookProps) => {
     db.infoReads.put({
       infoId: data.book.info.id,
       bookId,
-    }).catch(() => { /* ignored */
-    });
+    }).catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
     history.push('/dummy');
     setTimeout(() => {
-      history.replace(`/book/${bookId}`);
+      history.push(`/book/${bookId}`);
     });
   }, [prevBook, nextBook, data, history]);
 
@@ -406,6 +423,12 @@ const Book: React.FC = (props: BookProps) => {
     setEffect(eff);
     setEffectMenuAnchor(null);
   }, []);
+
+  const networkType = useNetworkType();
+
+  React.useEffect(() => {
+    setShowOriginalImage(networkType === 'ethernet');
+  }, [networkType]);
 
   if (loading || error) {
     return (
@@ -434,15 +457,15 @@ const Book: React.FC = (props: BookProps) => {
               <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
             </div>
             {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} center`} onClick={(e) => e.stopPropagation()}>
-              {(nextBook && swiper && swiper.isEnd) && (
-                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
-                  to Next book
-                </Button>
-              )}
+            <div className={`${classes.overlayContent} center`}>
               {(prevBook && swiper && swiper.isBeginning) && (
                 <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
                   to Prev book
+                </Button>
+              )}
+              {(nextBook && swiper && swiper.isEnd) && (
+                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                  to Next book
                 </Button>
               )}
             </div>
@@ -595,7 +618,8 @@ const Book: React.FC = (props: BookProps) => {
         )}
       </div>
 
-      <Swiper
+      <SwiperCustom
+        Swiper={Swiper}
         rebuildOnUpdate={rebuildSwiper}
         getSwiper={updateSwiper}
         containerClass={store.readOrder === 0 ? classes.pageContainerLTR : classes.pageContainerRTL}
@@ -610,7 +634,7 @@ const Book: React.FC = (props: BookProps) => {
             />
           </div>
         ) : (<div key={t} />)))}
-      </Swiper>
+      </SwiperCustom>
 
       <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
         <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />

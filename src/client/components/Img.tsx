@@ -18,6 +18,8 @@ interface ImgProps {
 
 const useStyles = makeStyles(() => createStyles({
   noImg: {
+    width: '100%',
+    height: '100%',
     fontSize: '1.5rem',
     display: 'flex',
     flexDirection: 'column',
@@ -28,6 +30,10 @@ const useStyles = makeStyles(() => createStyles({
   hasImg: {
     width: '100%',
     height: '100%',
+  },
+  altText: {
+    width: '100%',
+    overflowWrap: 'break-word',
   },
   pic: {
     display: 'block',
@@ -71,17 +77,11 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
       }}
       onClick={onClick}
     >
-      {(state === 0) && (
-        <div>
-          <div>loading</div>
-          <div>{alt}</div>
-        </div>
-      )}
-      {(state === 2) && (
-        <div>
-          <div>failed</div>
-          <div>{alt}</div>
-        </div>
+      {(state === 0 || state === 2) && (
+        <>
+          <div>{state === 0 ? 'loading' : 'failed'}</div>
+          <div className={classes.altText} style={{ maxHeight: minHeight }}>{alt}</div>
+        </>
       )}
       {(src) ? (
         <picture className={classes.pic}>

@@ -65,7 +65,7 @@ export class StoreWrapper<T> {
   }
 }
 
-export class DatabaseV2 {
+export class Database {
   public readonly dbName: string;
 
   private request: IDBOpenDBRequest;
@@ -102,5 +102,5 @@ export class DatabaseV2 {
   }
 }
 
-const db = new DatabaseV2();
+const db = new Database();
 export default db;

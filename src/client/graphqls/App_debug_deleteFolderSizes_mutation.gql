@@ -1,0 +1,5 @@
+mutation {
+    debug_deleteUnusedFolders {
+        success
+    }
+}
