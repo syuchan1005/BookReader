@@ -64,14 +64,19 @@ export default class GraphQL {
           Subscription: middlewareOps('Subscription'),
         },
       }),
+      tracing: process.env.NODE_ENV !== 'production',
     });
     this.gqlKoaMiddleware = this.server.getMiddleware({});
   }
 
-  async middleware(app) {
+  static async createFolders() {
     await mkdirpIfNotExists('storage/bookInfo');
     await mkdirpIfNotExists('storage/book');
     await mkdirpIfNotExists('storage/cache/book');
+  }
+
+  async middleware(app) {
+    await GraphQL.createFolders();
 
     // eslint-disable-next-line no-underscore-dangle
     app.use((ctx, next) => {

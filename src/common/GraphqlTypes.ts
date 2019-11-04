@@ -43,3 +43,10 @@ export interface BookInfoList {
   length: number;
   infos: BookInfo[];
 }
+
+export interface DebugFolderSizes {
+  tmp: number;
+  cache: number;
+  book: number;
+  unusedBook: number;
+}

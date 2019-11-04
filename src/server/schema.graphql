@@ -1,6 +1,7 @@
 scalar Upload
 
 type Query {
+    ## BookInfo
     bookInfos(
         limit: Int = 10
         offset: Int = 0
@@ -11,8 +12,13 @@ type Query {
         invisible: Boolean = false
     ): BookInfoList!
     bookInfo(id: ID!): BookInfo
+
+    ## Book
     books(id: ID offset: Int = 0 limit: Int = 10 order: BookOrder = ASC): [Book!]!
     book(id: ID!): Book
+
+    ## Debug
+    debug_folderSize: Debug_FolderSizes!
 }
 
 type Mutation {
@@ -36,6 +42,9 @@ type Mutation {
     ## Page
     deletePages(id: ID! numbers: [Int!]!): Result!
     splitPages(id: ID! start: Int! type: SplitType = VERTICAL): Result!
+
+    ## Debug
+    debug_deleteUnusedFolders: Result!
 }
 
 type Subscription {
@@ -131,4 +140,13 @@ input InputBook {
 input BookInfoHistory {
     name: String!
     count: Int!
+}
+
+## DEBUG
+
+type Debug_FolderSizes {
+    tmp: Int!
+    cache: Int!
+    book: Int!
+    unusedBook: Int!
 }

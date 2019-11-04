@@ -2,8 +2,9 @@ import * as React from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
-  AppBar,
-  Checkbox,
+  AppBar, Button,
+  Checkbox, CircularProgress,
+  Collapse,
   createMuiTheme,
   createStyles,
   CssBaseline,
@@ -12,7 +13,9 @@ import {
   IconButton,
   InputAdornment,
   InputBase,
+  List,
   ListItem,
+  ListItemText,
   ListSubheader,
   makeStyles,
   Menu,
@@ -27,9 +30,14 @@ import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
 
+import { DebugFolderSizes } from '@common/GraphqlTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
 import { SortOrder } from '@client/store/reducers';
+import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+
+import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
+import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -202,8 +210,20 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
   const [cacheAnchorEl, setCacheAnchorEl] = React.useState(null);
+  const [debugAnchorEl, setDebugAnchorEl] = React.useState(null);
+  const [openFolderSize, setOpenFolderSize] = React.useState(false);
 
   const { enqueueSnackbar } = useSnackbar();
+
+  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<{
+    sizes: DebugFolderSizes,
+  }>(DebugFolderSizesQuery);
+
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation(DebugDeleteFolderMutation, {
+    onCompleted() {
+      refetch();
+    },
+  });
 
   React.useEffect(() => {
     if (props.wb) {
@@ -355,9 +375,11 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   />
                 ))}
               </ListItem>
-              <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>{`Sort: ${store.sortOrder}`}</MenuItem>
-              <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
-                Cache Control
+              <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
+                {`Sort: ${store.sortOrder}`}
+              </MenuItem>
+              <MenuItem onClick={(e) => setDebugAnchorEl(e.currentTarget)}>
+                Debug
               </MenuItem>
             </Menu>
             <Menu
@@ -388,6 +410,60 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 horizontal: 'center',
                 vertical: 'bottom',
               }}
+              anchorEl={debugAnchorEl}
+              open={!!debugAnchorEl}
+              onClose={() => setDebugAnchorEl(null)}
+            >
+              <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
+                Cache Control
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  getFolderSizes();
+                  setOpenFolderSize(!openFolderSize);
+                }}
+              >
+                Folder sizes
+                <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
+              </MenuItem>
+              <Collapse in={openFolderSize}>
+                <List disablePadding component="div">
+                  {(deleteLoading || loading || !data) ? (
+                    <ListItem style={{ display: 'flex', justifyContent: 'center' }}>
+                      <CircularProgress color="secondary" />
+                    </ListItem>
+                  ) : (
+                    <>
+                      {Object.entries(data.sizes)
+                        .filter(([k]) => !k.startsWith('_'))
+                        .map(([k, v]) => (
+                          <ListItem
+                            key={k}
+                            style={{ paddingLeft: 24, paddingTop: 0, paddingBottom: 0 }}
+                          >
+                            <ListItemText primary={k} secondary={`${v / 1000000} [MB]`} />
+                          </ListItem>
+                        ))}
+                      <ListItem>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => deleteUnusedFolder()}
+                        >
+                          Delete Unused
+                        </Button>
+                      </ListItem>
+                    </>
+                  )}
+                </List>
+              </Collapse>
+            </Menu>
+            <Menu
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                horizontal: 'center',
+                vertical: 'bottom',
+              }}
               anchorEl={cacheAnchorEl}
               open={!!cacheAnchorEl}
               onClose={() => setCacheAnchorEl(null)}
@@ -395,10 +471,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
                 <MenuItem
                   key={order}
-                  onClick={() => {
-                    purgeCache(i);
-                    // setCacheAnchorEl(null);
-                  }}
+                  onClick={() => purgeCache(i)}
                 >
                   {order}
                 </MenuItem>
