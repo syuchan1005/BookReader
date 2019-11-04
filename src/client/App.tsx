@@ -116,6 +116,14 @@ const themes = {
   }),
 };
 
+const wrapSize = (size) => {
+  if (!size) return '0 [B]';
+  const sizes = ['', 'K', 'M', 'G', 'T'];
+  let index = sizes.findIndex((v, i) => size / 10 ** (i * 3) < 1) - 1;
+  if (index < 0) index = sizes.length - 1;
+  return `${(size / 10 ** (index * 3)).toString(10).match(/\d+(\.\d{1,2})?/)[0]} [${sizes[index]}B]`;
+};
+
 interface AppProps {
   wb: any;
   persistor: any;
@@ -441,7 +449,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                             key={k}
                             style={{ paddingLeft: 24, paddingTop: 0, paddingBottom: 0 }}
                           >
-                            <ListItemText primary={k} secondary={`${v / 1000000} [MB]`} />
+                            <ListItemText primary={k} secondary={wrapSize(v)} />
                           </ListItem>
                         ))}
                       <ListItem>
@@ -450,7 +458,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                           variant="outlined"
                           onClick={() => deleteUnusedFolder()}
                         >
-                          Delete Unused
+                          Delete Unused and Cache
                         </Button>
                       </ListItem>
                     </>
