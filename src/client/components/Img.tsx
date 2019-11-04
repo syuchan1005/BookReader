@@ -84,7 +84,7 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
         </>
       )}
       {(src) ? (
-        <picture className={classes.pic}>
+        <picture className={classes.pic} style={{ height: state === 1 ? undefined : 0 }}>
           <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
           <img
             className={className}
