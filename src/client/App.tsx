@@ -13,7 +13,6 @@ import {
   IconButton,
   InputAdornment,
   InputBase,
-  List,
   ListItem,
   ListItemText,
   ListSubheader,
@@ -217,9 +216,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
-  const [cacheAnchorEl, setCacheAnchorEl] = React.useState(null);
   const [debugAnchorEl, setDebugAnchorEl] = React.useState(null);
   const [openFolderSize, setOpenFolderSize] = React.useState(false);
+  const [openCacheControl, setOpenCacheControl] = React.useState(null);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -400,7 +399,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               open={!!sortAnchorEl}
               onClose={() => setSortAnchorEl(null)}
             >
-              {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest'].map((order: SortOrder) => (
+              {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest', 'Name_Asc', 'Name_Desc'].map((order: SortOrder) => (
                 <MenuItem
                   key={order}
                   onClick={() => {
@@ -422,9 +421,21 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               open={!!debugAnchorEl}
               onClose={() => setDebugAnchorEl(null)}
             >
-              <MenuItem onClick={(e) => setCacheAnchorEl(e.currentTarget)}>
+              <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
                 Cache Control
+                <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
               </MenuItem>
+              <Collapse in={openCacheControl}>
+                {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
+                  <MenuItem
+                    key={order}
+                    onClick={() => purgeCache(i)}
+                    style={{ paddingLeft: provideTheme.spacing(3) }}
+                  >
+                    {order}
+                  </MenuItem>
+                ))}
+              </Collapse>
               <MenuItem
                 onClick={() => {
                   getFolderSizes();
@@ -435,55 +446,38 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
               </MenuItem>
               <Collapse in={openFolderSize}>
-                <List disablePadding component="div">
-                  {(deleteLoading || loading || !data) ? (
-                    <ListItem style={{ display: 'flex', justifyContent: 'center' }}>
-                      <CircularProgress color="secondary" />
-                    </ListItem>
-                  ) : (
-                    <>
-                      {Object.entries(data.sizes)
-                        .filter(([k]) => !k.startsWith('_'))
-                        .map(([k, v]) => (
-                          <ListItem
-                            key={k}
-                            style={{ paddingLeft: 24, paddingTop: 0, paddingBottom: 0 }}
-                          >
-                            <ListItemText primary={k} secondary={wrapSize(v)} />
-                          </ListItem>
-                        ))}
-                      <ListItem>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => deleteUnusedFolder()}
+                {(deleteLoading || loading || !data) ? (
+                  <MenuItem style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CircularProgress color="secondary" />
+                  </MenuItem>
+                ) : (
+                  <>
+                    {Object.entries(data.sizes)
+                      .filter(([k]) => !k.startsWith('_'))
+                      .map(([k, v]) => (
+                        <ListItem
+                          key={k}
+                          style={{
+                            paddingLeft: provideTheme.spacing(3),
+                            paddingTop: 0,
+                            paddingBottom: 0,
+                          }}
                         >
-                          Delete Unused and Cache
-                        </Button>
-                      </ListItem>
-                    </>
-                  )}
-                </List>
+                          <ListItemText primary={k} secondary={wrapSize(v)} />
+                        </ListItem>
+                      ))}
+                    <ListItem>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => deleteUnusedFolder()}
+                      >
+                        Delete Unused and Cache
+                      </Button>
+                    </ListItem>
+                  </>
+                )}
               </Collapse>
-            </Menu>
-            <Menu
-              getContentAnchorEl={null}
-              anchorOrigin={{
-                horizontal: 'center',
-                vertical: 'bottom',
-              }}
-              anchorEl={cacheAnchorEl}
-              open={!!cacheAnchorEl}
-              onClose={() => setCacheAnchorEl(null)}
-            >
-              {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
-                <MenuItem
-                  key={order}
-                  onClick={() => purgeCache(i)}
-                >
-                  {order}
-                </MenuItem>
-              ))}
             </Menu>
           </Toolbar>
         </AppBar>

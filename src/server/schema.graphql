@@ -59,6 +59,8 @@ enum BookInfoOrder {
     Update_Oldest
     Add_Newest
     Add_Oldest
+    Name_Asc
+    Name_Desc
 }
 
 enum BookOrder {
