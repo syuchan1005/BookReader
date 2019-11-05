@@ -379,6 +379,24 @@ const GQLUtil = {
       return Promise.resolve();
     });
   },
+  bookInfoOrderToOrderBy(order): string[] | undefined {
+    switch (order) {
+      case 'Update_Newest':
+        return ['updatedAt', 'desc'];
+      case 'Update_Oldest':
+        return ['updatedAt', 'asc'];
+      case 'Add_Newest':
+        return ['createdAt', 'asc'];
+      case 'Add_Oldest':
+        return ['createdAt', 'desc'];
+      case 'Name_Asc':
+        return ['name', 'asc'];
+      case 'Name_Desc':
+        return ['name', 'desc'];
+      default:
+        return undefined;
+    }
+  },
 };
 
 export default GQLUtil;

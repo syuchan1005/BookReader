@@ -9,7 +9,11 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
-  BookInfoList, BookInfo as BookInfoType, Result, BookInfoResult, ResultWithInfoId,
+  BookInfo as BookInfoType,
+  BookInfoList,
+  BookInfoResult,
+  Result,
+  ResultWithInfoId,
 } from '@common/GraphqlTypes';
 
 import Database from '@server/sequelize/models';
@@ -17,6 +21,7 @@ import BookInfoModel from '@server/sequelize/models/bookInfo';
 import ModelUtil from '@server/ModelUtil';
 import BookModel from '@server/sequelize/models/book';
 import Errors from '@server/Errors';
+import GQLUtil from '@server/graphql/GQLUtil.ts';
 import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
 
@@ -64,12 +69,8 @@ class BookInfo extends GQLMiddleware {
             limit,
             offset,
             where,
-            order: [
-              [
-                (order.startsWith('Add')) ? 'createdAt' : 'updatedAt',
-                (order.endsWith('Newest')) ? 'desc' : 'asc',
-              ],
-            ],
+            // @ts-ignore
+            order: [GQLUtil.bookInfoOrderToOrderBy(order)],
           });
           const length = await BookInfoModel.count({
             transaction,

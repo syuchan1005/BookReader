@@ -1,4 +1,5 @@
 scalar Upload
+scalar BigInt
 
 type Query {
     ## BookInfo
@@ -58,6 +59,8 @@ enum BookInfoOrder {
     Update_Oldest
     Add_Newest
     Add_Oldest
+    Name_Asc
+    Name_Desc
 }
 
 enum BookOrder {
@@ -145,8 +148,8 @@ input BookInfoHistory {
 ## DEBUG
 
 type Debug_FolderSizes {
-    tmp: Int!
-    cache: Int!
-    book: Int!
-    unusedBook: Int!
+    tmp: BigInt!
+    cache: BigInt!
+    book: BigInt!
+    unusedBook: BigInt!
 }
