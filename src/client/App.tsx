@@ -438,7 +438,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               </Collapse>
               <MenuItem
                 onClick={() => {
-                  getFolderSizes();
+                  if (!openFolderSize) getFolderSizes();
                   setOpenFolderSize(!openFolderSize);
                 }}
               >
