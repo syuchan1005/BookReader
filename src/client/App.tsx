@@ -116,7 +116,7 @@ const themes = {
 };
 
 const wrapSize = (size) => {
-  if (!size) return '0 [B]';
+  if (!size || size === -1) return '0 [B]';
   const sizes = ['', 'K', 'M', 'G', 'T'];
   let index = sizes.findIndex((v, i) => size / 10 ** (i * 3) < 1) - 1;
   if (index < 0) index = sizes.length - 1;
