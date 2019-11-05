@@ -1,4 +1,5 @@
 scalar Upload
+scalar BigInt
 
 type Query {
     ## BookInfo
@@ -145,8 +146,8 @@ input BookInfoHistory {
 ## DEBUG
 
 type Debug_FolderSizes {
-    tmp: Int!
-    cache: Int!
-    book: Int!
-    unusedBook: Int!
+    tmp: BigInt!
+    cache: BigInt!
+    book: BigInt!
+    unusedBook: BigInt!
 }

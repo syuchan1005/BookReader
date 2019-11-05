@@ -14,6 +14,7 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import {
   mkdirpIfNotExists,
 } from '../Util';
+import BigInt from './scalar/BigInt';
 
 export const SubscriptionKeys = {
   ADD_BOOK_INFO: 'ADD_BOOK_INFO',
@@ -58,6 +59,7 @@ export default class GraphQL {
       schema: makeExecutableSchema({
         typeDefs,
         resolvers: {
+          BigInt,
           /* handler(parent, args, context, info) */
           Query: middlewareOps('Query'),
           Mutation: middlewareOps('Mutation'),
