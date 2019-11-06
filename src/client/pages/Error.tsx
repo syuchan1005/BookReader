@@ -7,6 +7,7 @@ import {
   Icon, Typography,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
+import { hot } from 'react-hot-loader/root';
 import { useGlobalStore } from '@client/store/StoreProvider';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -78,4 +79,4 @@ const Error: React.FC = (props) => {
   );
 };
 
-export default Error;
+export default hot(Error);

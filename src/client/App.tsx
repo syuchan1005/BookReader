@@ -28,6 +28,7 @@ import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
+import { hot } from 'react-hot-loader/root';
 
 import { DebugFolderSizes } from '@common/GraphqlTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -496,4 +497,4 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   );
 };
 
-export default App;
+export default hot(App);

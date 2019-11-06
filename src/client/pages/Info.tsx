@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { hot } from 'react-hot-loader/root';
 
 import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
 
@@ -222,4 +223,4 @@ const Info: React.FC = (props: InfoProps) => {
   );
 };
 
-export default Info;
+export default hot(Info);

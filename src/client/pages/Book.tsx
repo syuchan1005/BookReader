@@ -24,6 +24,7 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
+import { hot } from 'react-hot-loader/root';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
@@ -643,4 +644,4 @@ const Book: React.FC = (props: BookProps) => {
   );
 };
 
-export default Book;
+export default hot(Book);

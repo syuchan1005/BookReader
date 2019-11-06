@@ -10,6 +10,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { useQuery } from '@apollo/react-hooks';
 import { Waypoint } from 'react-waypoint';
+import { hot } from 'react-hot-loader/root';
 
 import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
@@ -227,4 +228,4 @@ const Home: React.FC = (props: HomeProps) => {
   );
 };
 
-export default Home;
+export default hot(Home);
