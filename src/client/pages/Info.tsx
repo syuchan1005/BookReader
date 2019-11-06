@@ -153,6 +153,19 @@ const Info: React.FC = (props: InfoProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
+  const BatchButton = ({ loading: l }: { loading?: boolean }) => (
+    <>
+      <Button
+        disabled={l}
+        variant="outlined"
+        onClick={() => { setOpen(false); setBatchOpen(true); }}
+      >
+        batch
+      </Button>
+      <div style={{ width: '100%' }} />
+    </>
+  );
+
   return (
     <div className={classes.info}>
       {(loading || error) ? (
@@ -204,13 +217,7 @@ const Info: React.FC = (props: InfoProps) => {
         onAdded={refetch}
         onClose={() => setOpen(false)}
       >
-        <Button
-          variant="outlined"
-          onClick={() => { setOpen(false); setBatchOpen(true); }}
-        >
-          batch
-        </Button>
-        <div style={{ width: '100%' }} />
+        <BatchButton />
       </AddBookDialog>
 
       <AddCompressBookBatchDialog

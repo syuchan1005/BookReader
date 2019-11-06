@@ -278,7 +278,11 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         );
       })()}
       <DialogActions>
-        {children}
+        {children && React.Children.map<{ loading: boolean}, React.ReactElement>(
+          // @ts-ignore
+          children,
+          (child) => React.cloneElement(child, { loading }),
+        )}
         <Button onClick={closeDialog} disabled={loading}>
           close
         </Button>
