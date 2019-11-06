@@ -22,7 +22,7 @@ import { Swiper } from 'swiper/js/swiper.esm';
 import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
-import { useWindowSize } from 'react-use';
+import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
 import { hot } from 'react-hot-loader/root';
 
@@ -199,9 +199,9 @@ const Book: React.FC = (props: BookProps) => {
   const windowSize = useWindowSize();
   const { width, height } = useDebounceValue(windowSize, 800);
 
-  const setPage = React.useCallback((s) => {
+  const setPage = React.useCallback((s, time = 150) => {
     if (swiper) {
-      swiper.slideTo(s, 0, false);
+      swiper.slideTo(s, time, false);
       updatePage(s);
     }
   }, [swiper]);
@@ -235,7 +235,7 @@ const Book: React.FC = (props: BookProps) => {
         barSubTitle: `No.${d.book.number}`,
       });
       if (isPageSet && page >= d.book.pages) {
-        setPage(d.book.pages - 1);
+        setPage(d.book.pages - 1, 0);
       }
     },
     onError() {
@@ -345,7 +345,7 @@ const Book: React.FC = (props: BookProps) => {
       if (read) {
         let p = read.page;
         if (data && p >= data.book.pages) p = data.book.pages - 1;
-        setPage(Math.max(p, 0));
+        setPage(Math.max(p, 0), 0);
       }
       setPageSet(true);
     });
@@ -362,21 +362,8 @@ const Book: React.FC = (props: BookProps) => {
     }
   }, [isPageSet, page]);
 
-  React.useEffect(() => {
-    window.document.onkeydown = ({ key }) => {
-      switch (key) {
-        case 'ArrowRight':
-          if (store.readOrder === 0) increment();
-          else if (store.readOrder === 1) decrement();
-          break;
-        case 'ArrowLeft':
-          if (store.readOrder === 0) decrement();
-          else if (store.readOrder === 1) increment();
-          break;
-        default:
-      }
-    };
-  }, [store.readOrder, increment, decrement]);
+  useKey('ArrowRight', () => [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
+  useKey('ArrowLeft', () => [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
 
   const clickPage = React.useCallback((event) => {
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
@@ -597,7 +584,7 @@ const Book: React.FC = (props: BookProps) => {
                     max={data.book.pages}
                     min={1}
                     value={page + 1}
-                    onChange={(e, v: number) => setPage(v - 1)}
+                    onChange={(e, v: number) => setPage(v - 1, 0)}
                   />
                 </MuiThemeProvider>
               </div>
