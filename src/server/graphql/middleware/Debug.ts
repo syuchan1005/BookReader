@@ -16,7 +16,10 @@ class Debug extends GQLMiddleware {
   Query() {
     return {
       debug_folderSize: async (): Promise<DebugFolderSizes> => {
-        const tmp = await du(`${os.tmpdir()}/bookReader/`);
+        let tmp = 0;
+        try {
+          tmp = await du(`${os.tmpdir()}/bookReader/`);
+        } catch (e) { tmp = -1; }
         const cache = await du('storage/cache');
 
         const dbBookIds = (await BookModel.findAll({

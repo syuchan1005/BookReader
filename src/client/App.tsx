@@ -28,6 +28,7 @@ import { fade } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
+import { hot } from 'react-hot-loader/root';
 
 import { DebugFolderSizes } from '@common/GraphqlTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -116,7 +117,7 @@ const themes = {
 };
 
 const wrapSize = (size) => {
-  if (!size) return '0 [B]';
+  if (!size || size === -1) return '0 [B]';
   const sizes = ['', 'K', 'M', 'G', 'T'];
   let index = sizes.findIndex((v, i) => size / 10 ** (i * 3) < 1) - 1;
   if (index < 0) index = sizes.length - 1;
@@ -438,7 +439,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               </Collapse>
               <MenuItem
                 onClick={() => {
-                  getFolderSizes();
+                  if (!openFolderSize) getFolderSizes();
                   setOpenFolderSize(!openFolderSize);
                 }}
               >
@@ -496,4 +497,4 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   );
 };
 
-export default App;
+export default hot(App);
