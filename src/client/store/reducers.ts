@@ -17,6 +17,8 @@ export interface IState {
   history: boolean;
   invisible: boolean;
   theme: 'light' | 'dark';
+  primary: string;
+  secondary: string;
   webp: boolean;
   readOrder: number;
 }
@@ -35,6 +37,8 @@ export const initialState: IState = {
   history: false,
   invisible: false,
   theme: 'light',
+  primary: 'green',
+  secondary: 'blue',
   webp: false,
   readOrder: 0, // LtoR, RtoL
 };
