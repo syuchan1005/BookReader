@@ -200,11 +200,11 @@ const Book: React.FC = (props: BookProps) => {
   const { width, height } = useDebounceValue(windowSize, 800);
 
   const setPage = React.useCallback((s, time = 150) => {
-    if (swiper) {
+    if (swiper && !rebuildSwiper) {
       swiper.slideTo(s, time, false);
       updatePage(s);
     }
-  }, [swiper]);
+  }, [swiper, rebuildSwiper]);
 
   const updateSwiper = React.useCallback((s) => {
     if (!s) return;
@@ -362,6 +362,10 @@ const Book: React.FC = (props: BookProps) => {
     }
   }, [isPageSet, page]);
 
+  React.useEffect(() => {
+    setReBuildSwiper(true);
+  }, [params.id]);
+
   useKey('ArrowRight', () => [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
   useKey('ArrowLeft', () => [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
 
@@ -391,10 +395,8 @@ const Book: React.FC = (props: BookProps) => {
       infoId: data.book.info.id,
       bookId,
     }).catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
-    history.push('/dummy');
-    setTimeout(() => {
-      history.push(`/book/${bookId}`);
-    });
+    // history.push('/dummy');
+    history.push(`/book/${bookId}`);
   }, [prevBook, nextBook, data, history]);
 
   const pages = React.useMemo(() => {
