@@ -248,7 +248,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
                 ? [addBooks[0]].filter((a) => a)
                 : addBooks
               ).map(({ file, number }, i) => (
-                <div key={`${file.name} ${number}`} className={classes.listItem}>
+                <div key={`${file.name}`} className={classes.listItem}>
                   <FileField
                     file={file}
                     onChange={(f) => changeAddBook(i, { file: f })}
