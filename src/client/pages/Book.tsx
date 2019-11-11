@@ -196,6 +196,13 @@ const Book: React.FC = (props: BookProps) => {
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
 
+  React.useEffect(() => {
+    updatePage(0);
+    setSwiper(null);
+    setPageSet(false);
+    setReBuildSwiper(true);
+  }, [params.id]);
+
   const windowSize = useWindowSize();
   const { width, height } = useDebounceValue(windowSize, 800);
 
@@ -346,6 +353,8 @@ const Book: React.FC = (props: BookProps) => {
         let p = read.page;
         if (data && p >= data.book.pages) p = data.book.pages - 1;
         setPage(Math.max(p, 0), 0);
+      } else {
+        setPage(0, 0);
       }
       setPageSet(true);
     });
@@ -361,10 +370,6 @@ const Book: React.FC = (props: BookProps) => {
       }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     }
   }, [isPageSet, page]);
-
-  React.useEffect(() => {
-    setReBuildSwiper(true);
-  }, [params.id]);
 
   useKey('ArrowRight', () => [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
   useKey('ArrowLeft', () => [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
@@ -448,12 +453,12 @@ const Book: React.FC = (props: BookProps) => {
             </div>
             {/* eslint-disable-next-line */}
             <div className={`${classes.overlayContent} center`}>
-              {(prevBook && swiper && swiper.isBeginning) && (
+              {(prevBook && page === 0) && (
                 <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
                   to Prev book
                 </Button>
               )}
-              {(nextBook && swiper && swiper.isEnd) && (
+              {(nextBook && data && page === data.book.pages - 1) && (
                 <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
                   to Next book
                 </Button>
@@ -619,7 +624,7 @@ const Book: React.FC = (props: BookProps) => {
             <Img
               imgStyle={effectBackGround}
               src={t}
-              alt={(debouncePage + 1).toString(10)}
+              alt={(i + 1).toString(10)}
               className={classes.pageImage}
             />
           </div>
