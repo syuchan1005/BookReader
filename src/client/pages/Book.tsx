@@ -339,9 +339,6 @@ const Book: React.FC = (props: BookProps) => {
 
     return () => {
       setShowAppBar(true);
-      // remove onkeydown
-      window.document.onkeydown = () => {
-      };
       dispatch({ needContentMargin: true });
     };
   }, []);
