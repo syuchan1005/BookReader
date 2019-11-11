@@ -311,7 +311,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
-                        style={{ color: provideTheme.palette.primary.contrastText }}
+                        style={{ color: provideTheme.palette.common.white }}
                         onClick={() => {
                           dispatch({ searchText: '' });
                         }}
