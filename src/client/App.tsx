@@ -38,6 +38,7 @@ import { useLazyQuery, useMutation } from '@apollo/react-hooks';
 
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
+import ColorTile from '@client/components/ColorTile';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -85,35 +86,6 @@ export const commonTheme = {
       });
       return o;
     }, {}),
-};
-
-const themes = {
-  light: createMuiTheme({
-    palette: {
-      type: 'light',
-      primary: {
-        main: colors.green['500'],
-        contrastText: colors.common.white,
-      },
-      secondary: {
-        main: colors.blue.A700,
-        contrastText: colors.common.white,
-      },
-    },
-  }),
-  dark: createMuiTheme({
-    palette: {
-      type: 'dark',
-      primary: {
-        main: colors.green['600'],
-        contrastText: colors.common.white,
-      },
-      secondary: {
-        main: colors.blue.A400,
-        contrastText: colors.common.black,
-      },
-    },
-  }),
 };
 
 const wrapSize = (size) => {
@@ -221,6 +193,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const [openFolderSize, setOpenFolderSize] = React.useState(false);
   const [openCacheControl, setOpenCacheControl] = React.useState(null);
 
+  const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
+  const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
+
   const { enqueueSnackbar } = useSnackbar();
 
   const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<{
@@ -291,8 +266,14 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   }, [store]);
 
   const provideTheme = React.useMemo(
-    () => themes[store.theme] || themes.light,
-    [store.theme, themes],
+    () => createMuiTheme({
+      palette: {
+        type: store.theme,
+        primary: colors[store.primary],
+        secondary: colors[store.secondary],
+      },
+    }),
+    [store.theme, store.primary, store.secondary],
   );
 
   return (
@@ -330,7 +311,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
-                        style={{ color: provideTheme.palette.primary.contrastText }}
+                        style={{ color: provideTheme.palette.common.white }}
                         onClick={() => {
                           dispatch({ searchText: '' });
                         }}
@@ -386,6 +367,18 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
                 {`Sort: ${store.sortOrder}`}
               </MenuItem>
+              <MenuItem
+                onClick={(e) => { setColorType('primary'); setColorAnchorEl(e.currentTarget); }}
+              >
+                <span>Primary:</span>
+                <ColorTile marginLeft color={store.primary} />
+              </MenuItem>
+              <MenuItem
+                onClick={(e) => { setColorType('secondary'); setColorAnchorEl(e.currentTarget); }}
+              >
+                <span>Secondary:</span>
+                <ColorTile marginLeft color={store.secondary} />
+              </MenuItem>
               <MenuItem onClick={(e) => setDebugAnchorEl(e.currentTarget)}>
                 Debug
               </MenuItem>
@@ -411,6 +404,30 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   {order}
                 </MenuItem>
               ))}
+            </Menu>
+            <Menu
+              anchorEl={colorAnchorEl}
+              open={!!colorAnchorEl && !!colorType}
+              onClose={() => {
+                setColorAnchorEl(null);
+                setColorType(undefined);
+              }}
+              PaperProps={{
+                style: { maxHeight: provideTheme.spacing(7 * 5) },
+              }}
+            >
+              {Object.keys(colors).map((c) => ((c !== 'common') ? (
+                <MenuItem
+                  key={c}
+                  onClick={() => {
+                    dispatch({ [colorType]: c });
+                    setColorType(undefined);
+                    setColorAnchorEl(null);
+                  }}
+                >
+                  <ColorTile color={c} />
+                </MenuItem>
+              ) : null))}
             </Menu>
             <Menu
               getContentAnchorEl={null}

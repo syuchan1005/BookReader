@@ -3,6 +3,7 @@
    "version": "1.0.6-rc1",
    "private": true,
    "author": "syuchan1005<syuchan.dev@gmail.com>",
+   "license": "MIT",
    "scripts": {
       "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
       "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
