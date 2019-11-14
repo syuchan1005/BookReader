@@ -9,6 +9,12 @@ export interface GQLPlugin {
 
 export interface InternalGQLPlugin extends GQLPlugin {
   info: { name: string, version: string };
+  queries: {
+    add: {
+      name: string;
+      args: string[];
+    },
+  };
 }
 
 // eslint-disable-next-line import/prefer-default-export
@@ -33,11 +39,17 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
           const req = eval('require')(moduleName);
           const module: GQLPlugin = req.default || req;
           // eslint-disable-next-line no-eval
-          const { name, version } = eval('require')(`${moduleName}/package.json`);
+          const { name, version, bookReader } = eval('require')(`${moduleName}/package.json`);
           return {
             info: {
               name,
               version,
+            },
+            queries: bookReader ? bookReader.queries : {
+              add: {
+                name: `add${moduleName[0].toUpperCase()}${moduleName.substring(0)}`,
+                args: ['number', 'url'],
+              },
             },
             ...module,
           };
