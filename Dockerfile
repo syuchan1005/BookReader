@@ -44,4 +44,4 @@ RUN chmod +x docker-entrypoint.sh
 # "/bookReader/production.sqlite" is file
 VOLUME ["/bookReader/storage"]
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["/bookReader/docker-entrypoint.sh"]
