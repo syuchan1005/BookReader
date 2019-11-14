@@ -1,10 +1,18 @@
 import { ITypeDefinitions } from 'graphql-tools';
 
+import BookModel from '@server/sequelize/models/book';
+import BookInfoModel from '@server/sequelize/models/bookInfo';
+
 import GQLMiddleware from './GQLMiddleware';
 
 export interface GQLPlugin {
   typeDefs: ITypeDefinitions;
   middleware: GQLMiddleware;
+
+  init(models: {
+    BookModel: typeof BookModel,
+    BookInfoModel: typeof BookInfoModel,
+  }): void;
 }
 
 export interface InternalGQLPlugin extends GQLPlugin {
@@ -18,7 +26,7 @@ export interface InternalGQLPlugin extends GQLPlugin {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export const loadPlugins = (): InternalGQLPlugin[] => {
+export const loadPlugins = (init = true): InternalGQLPlugin[] => {
   const env = process.env.BOOKREADER_PLUGIN;
   if (env) {
     const modules = env.split(',')
@@ -40,6 +48,11 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
           const module: GQLPlugin = req.default || req;
           // eslint-disable-next-line no-eval
           const { name, version, bookReader } = eval('require')(`${moduleName}/package.json`);
+
+          if (init) {
+            module.init({ BookModel, BookInfoModel });
+          }
+
           return {
             info: {
               name,
