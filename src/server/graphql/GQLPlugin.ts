@@ -17,8 +17,17 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
   if (env) {
     const modules = env.split(',')
       .filter((s) => s.length > 0)
-      .map((s): InternalGQLPlugin => {
-        const moduleName = s[0] === '@' ? s : s.split('/')[1];
+      .map((s: string): InternalGQLPlugin => {
+        let moduleName = s;
+        if (moduleName[0] === '@') {
+          const at = s.indexOf('@', 1);
+          if (at === -1) {
+            moduleName = s.substring(0, at);
+          }
+        } else {
+          const strings = s.split('/');
+          moduleName = strings[1] || strings[0];
+        }
         try {
           // eslint-disable-next-line no-eval
           const req = eval('require')(moduleName);
