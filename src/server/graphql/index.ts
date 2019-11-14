@@ -76,7 +76,10 @@ export default class GraphQL {
         resolvers: {
           BigInt,
           /* handler(parent, args, context, info) */
-          Query: middlewareOps('Query'),
+          Query: {
+            ...middlewareOps('Query'),
+            plugins: () => this.plugins.map(({ info }) => info),
+          },
           Mutation: middlewareOps('Mutation'),
           Subscription: middlewareOps('Subscription'),
         },
