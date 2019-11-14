@@ -78,7 +78,7 @@ export default class GraphQL {
           /* handler(parent, args, context, info) */
           Query: {
             ...middlewareOps('Query'),
-            plugins: () => this.plugins.map(({ info }) => info),
+            plugins: () => this.plugins,
           },
           Mutation: middlewareOps('Mutation'),
           Subscription: middlewareOps('Subscription'),

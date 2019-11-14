@@ -138,8 +138,22 @@ type BatchSubscription {
 }
 
 type Plugin {
+    info: PluginInfo
+    queries: PluginQueries
+}
+
+type PluginInfo {
     name: String
     version: String
+}
+
+type PluginQueries {
+    add: CommonPluginQuery
+}
+
+type CommonPluginQuery {
+    name: String
+    args: [String!]!
 }
 
 input InputBook {

@@ -45,7 +45,8 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
               name,
               version,
             },
-            queries: bookReader ? bookReader.queries : {
+            // eslint-disable-next-line no-undef
+            queries: bookReader?.queries || {
               add: {
                 name: `add${moduleName[0].toUpperCase()}${moduleName.substring(0)}`,
                 args: ['number', 'url'],
