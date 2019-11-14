@@ -16,14 +16,15 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
   const env = process.env.BOOKREADER_PLUGIN;
   if (env) {
     const modules = env.split(',')
-      .filter((s) => s.length !== 0)
+      .filter((s) => s.length > 0)
       .map((s): InternalGQLPlugin => {
+        const moduleName = s[0] === '@' ? s : s.split('/')[1];
         try {
           // eslint-disable-next-line no-eval
-          const req = eval('require')(s);
+          const req = eval('require')(moduleName);
           const module: GQLPlugin = req.default || req;
           // eslint-disable-next-line no-eval
-          const { name, version } = eval('require')(`${s}/package.json`);
+          const { name, version } = eval('require')(`${moduleName}/package.json`);
           return {
             info: {
               name,
@@ -33,7 +34,7 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
           };
         } catch (e) {
           // eslint-disable-next-line no-console
-          console.error(`Cannot find plugin: '${s}'`);
+          console.error(`Cannot find plugin: '${moduleName} (${s})'`);
           return undefined;
         }
       });
