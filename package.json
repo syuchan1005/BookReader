@@ -89,6 +89,7 @@
       "graphql-subscriptions": "^1.1.0",
       "graphql-tag": "^2.10.1",
       "graphql-tools": "^4.0.6",
+      "graphql-tools-merge-typedefs": "^2.0.1",
       "history": "^4.10.1",
       "koa": "^2.11.0",
       "koa-static": "^5.0.0",
