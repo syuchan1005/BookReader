@@ -50,3 +50,22 @@ export interface DebugFolderSizes {
   book: number;
   unusedBook: number;
 }
+
+export interface Plugin {
+  info: PluginInfo;
+  queries: PluginQueries;
+}
+
+export interface PluginInfo {
+  name: string;
+  version: string;
+}
+
+export interface PluginQueries {
+  add: CommonPluginQuery;
+}
+
+export interface CommonPluginQuery {
+  name: string;
+  args: string[];
+}

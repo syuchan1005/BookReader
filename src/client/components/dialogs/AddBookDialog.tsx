@@ -1,25 +1,32 @@
 import * as React from 'react';
 import {
-  Button, Checkbox, CircularProgress,
+  Button,
+  CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, FormControlLabel,
+  DialogTitle,
+  FormControlLabel,
   Icon,
-  IconButton, LinearProgress,
+  IconButton,
+  LinearProgress,
   makeStyles,
-  TextField, Theme,
+  Radio,
+  RadioGroup,
+  TextField,
+  Theme,
 } from '@material-ui/core';
-import { useMutation, useSubscription } from '@apollo/react-hooks';
+import { useMutation, useQuery, useSubscription } from '@apollo/react-hooks';
 
 import * as AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
 import * as AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
 import * as AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';
+import * as PluginsQuery from '@client/graphqls/AddBookDialog_plugins.gql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
-import { Result, ResultWithBookResults } from '@common/GraphqlTypes';
+import { Plugin, Result, ResultWithBookResults } from '@common/GraphqlTypes';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -79,8 +86,12 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     .useState<ProgressEvent | undefined>(undefined);
   const [addBookAbort, setAddBookAbort] = React
     .useState<() => void | undefined>(undefined);
+  const [addType, setAddType] = React.useState('file');
+  const isCompressed = React.useMemo(() => addType === 'file_compressed', [addType]);
 
-  const [isCompressed, setCompressed] = React.useState(false);
+  const {
+    data,
+  } = useQuery<{ plugins: Plugin[] }>(PluginsQuery);
 
   const [addBook, { loading: addBookLoading }] = useMutation<{ adds: Result[] }>(AddBooksMutation, {
     variables: {
@@ -234,15 +245,22 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         }
         return (
           <DialogContent className={classes.dialogContent}>
-            <FormControlLabel
-              control={(
-                <Checkbox
-                  checked={isCompressed}
-                  onChange={(e) => setCompressed(e.target.checked)}
+            <RadioGroup
+              aria-label="add-type"
+              value={addType}
+              onChange={(e) => setAddType(e.target.value)}
+            >
+              <FormControlLabel control={<Radio />} label="File" value="file" />
+              <FormControlLabel control={<Radio />} label="Compress File" value="file_compressed" />
+              {data && data.plugins.map((plugin) => (
+                <FormControlLabel
+                  control={<Radio />}
+                  label={plugin.info.name}
+                  value={plugin.info.name}
                 />
-              )}
-              label="Compressed"
-            />
+              ))}
+            </RadioGroup>
+
             <div>
               {(isCompressed
                 ? [addBooks[0]].filter((a) => a)
@@ -278,7 +296,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         );
       })()}
       <DialogActions>
-        {children && React.Children.map<{ loading: boolean}, React.ReactElement>(
+        {children && React.Children.map<{ loading: boolean }, React.ReactElement>(
           // @ts-ignore
           children,
           (child) => React.cloneElement(child, { loading }),

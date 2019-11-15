@@ -7,7 +7,7 @@
    "scripts": {
       "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
       "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
-      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && node dist/server\"",
+      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=book-reader-test-plugin node dist/server\"",
       "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
       "serve": "npm-run-all --parallel serve:*",
       "build": "npm run build:client && npm run build:server -- --mode production",
@@ -80,6 +80,7 @@
       "apollo-server-koa": "^2.9.7",
       "apollo-upload-client": "^11.0.0",
       "apollo-utilities": "^1.3.2",
+      "book-reader-test-plugin": "file:book-reader-test-plugin",
       "clean-webpack-plugin": "^3.0.0",
       "cross-env": "^6.0.3",
       "debug": "^4.1.1",

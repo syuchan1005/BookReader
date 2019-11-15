@@ -49,16 +49,17 @@ export const loadPlugins = (init = true): InternalGQLPlugin[] => {
             module.init(Database);
           }
 
+          const queriesName = bookReader.name || moduleName;
           return {
             info: {
-              name,
+              name: bookReader.name || name,
               version,
             },
             // eslint-disable-next-line no-undef
             queries: bookReader?.queries || {
               add: {
-                name: `add${moduleName[0].toUpperCase()}${moduleName.substring(1)}`,
-                args: ['number', 'url'],
+                name: `add${queriesName[0].toUpperCase()}${queriesName.substring(1)}`,
+                args: ['id', 'number', 'url'],
               },
             },
             ...module,

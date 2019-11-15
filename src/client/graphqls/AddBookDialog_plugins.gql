@@ -1,0 +1,13 @@
+{
+    plugins {
+        info {
+            name
+        }
+        queries {
+            add {
+                name
+                args
+            }
+        }
+    }
+}

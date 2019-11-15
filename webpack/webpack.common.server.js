@@ -43,7 +43,6 @@ module.exports = {
         ],
         exclude: [resolve('node_modules')],
       },
-
       {
         enforce: 'pre',
         test: /\.js$/,
