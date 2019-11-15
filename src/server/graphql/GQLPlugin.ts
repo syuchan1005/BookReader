@@ -1,7 +1,6 @@
 import { ITypeDefinitions } from 'graphql-tools';
 
-import BookModel from '@server/sequelize/models/book';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
+import Database, { Database as IDB } from '@server/sequelize/models';
 
 import GQLMiddleware from './GQLMiddleware';
 
@@ -9,10 +8,7 @@ export interface GQLPlugin {
   typeDefs: ITypeDefinitions;
   middleware: GQLMiddleware;
 
-  init(models: {
-    BookModel: typeof BookModel,
-    BookInfoModel: typeof BookInfoModel,
-  }): void;
+  init(db: IDB): void;
 }
 
 export interface InternalGQLPlugin extends GQLPlugin {
@@ -50,7 +46,7 @@ export const loadPlugins = (init = true): InternalGQLPlugin[] => {
           const { name, version, bookReader } = eval('require')(`${moduleName}/package.json`);
 
           if (init) {
-            module.init({ BookModel, BookInfoModel });
+            module.init(Database);
           }
 
           return {

@@ -34,16 +34,20 @@ modelList.forEach((module) => {
   }
 });
 
-interface Database {
+export interface Database {
   sequelize: Sequelize;
   book: Model;
   bookInfo: Model;
+  BookModel: typeof book;
+  BookInfoModel: typeof bookInfo;
 }
 
 const db: Database = {
   sequelize,
   book: models.book,
   bookInfo: models.bookInfo,
+  BookModel: book,
+  BookInfoModel: bookInfo,
 };
 
 export default db;
