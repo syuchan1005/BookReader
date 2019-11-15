@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# -gt 1 ]; then
+if [ $# != 0 ] ; then
   npm i "$*"
 fi
 
