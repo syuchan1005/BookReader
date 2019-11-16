@@ -1,6 +1,6 @@
 {
    "name": "book-reader",
-   "version": "1.1.0-rc6",
+   "version": "1.1.1",
    "private": true,
    "author": "syuchan1005<syuchan.dev@gmail.com>",
    "license": "MIT",
