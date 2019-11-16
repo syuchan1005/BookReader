@@ -105,7 +105,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     set: setPluginEditContent,
     reset: resetPluginEditContent,
   }] = useMap<{ [key: string]: string }>({});
-  React.useEffect(resetPluginEditContent, [addType]);
+  React.useEffect(() => resetPluginEditContent(), [addType]);
 
   const {
     data,
@@ -123,7 +123,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     };
     if (selectedPlugin.queries.add.args.includes('id')) newVar.id = infoId;
     return newVar;
-  }, [selectedPlugin]);
+  }, [selectedPlugin, pluginEditContent]);
 
   const pluginMutationArgs = React.useMemo(() => {
     if (!selectedPlugin) return [];
@@ -149,6 +149,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         setAddBookProgress(undefined);
         setAddBookAbort(undefined);
         setSubscriptionId(undefined);
+        resetPluginEditContent();
         if (onClose && d.plugin.success) onClose();
         if (d.plugin.success && onAdded) onAdded();
       },
@@ -166,6 +167,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       setAddBookProgress(undefined);
       setAddBookAbort(undefined);
       setSubscriptionId(undefined);
+      resetPluginEditContent();
       const success = d.adds.every((a) => a.success);
       if (onClose && success) onClose();
       if (success && onAdded) onAdded();
@@ -203,6 +205,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         setSubscriptionId(undefined);
         setAddBookProgress(undefined);
         setAddBookAbort(undefined);
+        resetPluginEditContent();
         if (onClose && d.add.success) onClose();
         if (d.add.success && onAdded) onAdded();
       },
@@ -240,6 +243,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const closeDialog = () => {
     if (!loading) {
       if (onClose) onClose();
+      resetPluginEditContent();
       setAddBooks([]);
       setSubscriptionId(undefined);
       setAddBookProgress(undefined);
@@ -287,8 +291,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         addBook();
       }
     } else {
-      // noinspection JSIgnoredPromiseFromCall
-      addPlugin({ variables: pluginVars });
+      setTimeout(() => {
+        // noinspection JSIgnoredPromiseFromCall
+        addPlugin({ variables: pluginVars });
+      }, 100);
     }
   }, [selectedPlugin, infoId, addType]);
 

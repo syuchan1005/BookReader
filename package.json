@@ -112,10 +112,10 @@
       "sqlite3": "^4.1.0",
       "subscriptions-transport-ws": "^0.9.16",
       "swiper": "^5.2.0",
+      "ts-node": "8.5.2",
+      "typescript": "3.7.2",
       "unzipper": "^0.10.5",
       "uuid": "^3.3.3",
-      "workbox-window": "^4.3.1",
-      "ts-node": "8.5.2",
-      "typescript": "3.7.2"
+      "workbox-window": "^4.3.1"
    }
 }
