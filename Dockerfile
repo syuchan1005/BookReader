@@ -4,7 +4,8 @@ COPY . /build
 
 WORKDIR /build
 
-RUN npm ci && npm run build \
+RUN rm package-lock.json && npm install --no-optional \
+    && npm run build \
     && mkdir /bookReader \
     && mkdir /bookReader/src \
     && mv dist/ /bookReader/ \
@@ -30,7 +31,7 @@ COPY --from=build ["/bookReader/package.json", "/bookReader/package-lock.json", 
 
 WORKDIR /bookReader
 
-RUN npm ci
+RUN rm package-lock.json && npm install --only=prod
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/
