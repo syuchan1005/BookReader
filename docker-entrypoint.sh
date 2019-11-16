@@ -2,7 +2,7 @@
 
 if [ $# != 0 ] ; then
   apk add --no-cache git
-  npm i "$*"
+  npm i "$@"
 fi
 
 npm run db:migrate -- --env production
