@@ -18,6 +18,8 @@ import {
   Theme,
 } from '@material-ui/core';
 import { useMutation, useQuery, useSubscription } from '@apollo/react-hooks';
+import gql from 'graphql-tag';
+import { useMap } from 'react-use';
 
 import * as AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
 import * as AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
@@ -67,6 +69,18 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     columnGap: theme.spacing(1),
     width: 300,
   },
+  addTypeRadioRoot: {
+    padding: 0,
+    margin: theme.spacing(0, 1),
+  },
+  pluginFields: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(1, 0),
+    '& > * + *': {
+      marginTop: theme.spacing(1),
+    },
+  },
 }));
 
 const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) => {
@@ -87,11 +101,59 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const [addBookAbort, setAddBookAbort] = React
     .useState<() => void | undefined>(undefined);
   const [addType, setAddType] = React.useState('file');
-  const isCompressed = React.useMemo(() => addType === 'file_compressed', [addType]);
+  const [pluginEditContent, {
+    set: setPluginEditContent,
+    reset: resetPluginEditContent,
+  }] = useMap<{ [key: string]: string }>({});
+  React.useEffect(resetPluginEditContent, [addType]);
 
   const {
     data,
   } = useQuery<{ plugins: Plugin[] }>(PluginsQuery);
+
+  const selectedPlugin = React.useMemo(() => {
+    if (!data || addType === 'file' || addType === 'file_compressed') return undefined;
+    return data.plugins.filter(({ info: { name } }) => name === addType)[0];
+  }, [addType, data]);
+
+  const pluginVars = React.useMemo(() => {
+    if (!selectedPlugin) return {};
+    const newVar: { [key: string]: string } = {
+      ...pluginEditContent,
+    };
+    if (selectedPlugin.queries.add.args.includes('id')) newVar.id = infoId;
+    return newVar;
+  }, [selectedPlugin]);
+
+  const pluginMutationArgs = React.useMemo(() => {
+    if (!selectedPlugin) return [];
+    return [
+      selectedPlugin.queries.add.name,
+      `(${selectedPlugin.queries.add.args.map((s) => (s === 'id' ? '$id: ID!' : `$${s}: String!`))})`,
+      `(${selectedPlugin.queries.add.args.map((s) => `${s}: $${s}`)})`,
+    ];
+  }, [selectedPlugin]);
+
+  const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Result }>(
+    gql(`
+      mutation ${pluginMutationArgs[1] || ''}{
+        plugin: ${pluginMutationArgs[0]}${pluginMutationArgs[2] || ''}{
+            success
+        }
+      }
+    `),
+    {
+      onCompleted(d) {
+        if (!d) return;
+        setAddBooks([]);
+        setAddBookProgress(undefined);
+        setAddBookAbort(undefined);
+        setSubscriptionId(undefined);
+        if (onClose && d.plugin.success) onClose();
+        if (d.plugin.success && onAdded) onAdded();
+      },
+    },
+  );
 
   const [addBook, { loading: addBookLoading }] = useMutation<{ adds: Result[] }>(AddBooksMutation, {
     variables: {
@@ -164,8 +226,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   );
 
   const loading = React.useMemo(
-    () => addBookLoading || addCompressBookLoading,
-    [addBookLoading, addCompressBookLoading],
+    () => addBookLoading || addCompressBookLoading || addPluginLoading,
+    [addBookLoading, addCompressBookLoading, addPluginLoading],
   );
 
   const { data: subscriptionData } = useSubscription(AddBooksSubscription, {
@@ -214,9 +276,25 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     setAddBooks(books);
   }, [addBooks]);
 
+  const clickAddButton = React.useCallback(() => {
+    if (!selectedPlugin) {
+      setSubscriptionId(infoId);
+      if (addType === 'file_compressed') {
+        // noinspection JSIgnoredPromiseFromCall
+        addCompressBook();
+      } else {
+        // noinspection JSIgnoredPromiseFromCall
+        addBook();
+      }
+    } else {
+      // noinspection JSIgnoredPromiseFromCall
+      addPlugin({ variables: pluginVars });
+    }
+  }, [selectedPlugin, infoId, addType]);
+
   return (
     <Dialog open={open} onClose={closeDialog}>
-      <DialogTitle>Add book</DialogTitle>
+      <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
         if (subscriptionData
           && (!addBookProgress
@@ -250,47 +328,68 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
               value={addType}
               onChange={(e) => setAddType(e.target.value)}
             >
-              <FormControlLabel control={<Radio />} label="File" value="file" />
-              <FormControlLabel control={<Radio />} label="Compress File" value="file_compressed" />
+              <FormControlLabel disabled={loading} control={<Radio classes={{ root: classes.addTypeRadioRoot }} />} label="File" value="file" />
+              <FormControlLabel disabled={loading} control={<Radio classes={{ root: classes.addTypeRadioRoot }} />} label="Compress File" value="file_compressed" />
               {data && data.plugins.map((plugin) => (
                 <FormControlLabel
-                  control={<Radio />}
+                  key={plugin.info.name}
+                  disabled={loading}
+                  control={<Radio classes={{ root: classes.addTypeRadioRoot }} />}
                   label={plugin.info.name}
                   value={plugin.info.name}
                 />
               ))}
             </RadioGroup>
 
-            <div>
-              {(isCompressed
-                ? [addBooks[0]].filter((a) => a)
-                : addBooks
-              ).map(({ file, number }, i) => (
-                <div key={`${file.name}`} className={classes.listItem}>
-                  <FileField
-                    file={file}
-                    onChange={(f) => changeAddBook(i, { file: f })}
-                    style={isCompressed ? { gridColumn: '1 / span 2' } : undefined}
-                  />
-                  {(!isCompressed) && (
-                    <TextField
-                      color="secondary"
-                      label="Number"
-                      value={number}
-                      // @ts-ignore
-                      onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                      margin="none"
-                      autoFocus
-                    />
-                  )}
-                  <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
-                    <Icon>clear</Icon>
-                  </IconButton>
+            {(addType === 'file' || addType === 'file_compressed') ? (
+              <>
+                <div>
+                  {(addType === 'file_compressed'
+                    ? [addBooks[0]].filter((a) => a)
+                    : addBooks
+                  ).map(({ file, number }, i) => (
+                    <div key={`${file.name}`} className={classes.listItem}>
+                      <FileField
+                        file={file}
+                        onChange={(f) => changeAddBook(i, { file: f })}
+                        style={addType === 'file_compressed' ? { gridColumn: '1 / span 2' } : undefined}
+                      />
+                      {(addType !== 'file_compressed') && (
+                        <TextField
+                          color="secondary"
+                          label="Number"
+                          value={number}
+                          // @ts-ignore
+                          onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                          margin="none"
+                          autoFocus
+                        />
+                      )}
+                      <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                        <Icon>clear</Icon>
+                      </IconButton>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            {((isCompressed && addBooks.length === 0) || !isCompressed) && (
-              <DropZone onChange={dropFiles} />
+                {((addType === 'file_compressed' && addBooks.length === 0) || addType !== 'file_compressed') && (
+                  <DropZone onChange={dropFiles} />
+                )}
+              </>
+            ) : (
+              <div className={classes.pluginFields}>
+                {selectedPlugin.queries.add.args
+                  .filter((s) => s !== 'id')
+                  .map((label) => (
+                    <TextField
+                      key={label}
+                      color="secondary"
+                      disabled={loading}
+                      label={label}
+                      value={pluginEditContent[label] || ''}
+                      onChange={(e) => setPluginEditContent(label, e.target.value)}
+                    />
+                  ))}
+              </div>
             )}
           </DialogContent>
         );
@@ -305,16 +404,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
           close
         </Button>
         <Button
-          onClick={() => {
-            setSubscriptionId(infoId);
-            if (isCompressed) {
-              // noinspection JSIgnoredPromiseFromCall
-              addCompressBook();
-            } else {
-              // noinspection JSIgnoredPromiseFromCall
-              addBook();
-            }
-          }}
+          onClick={clickAddButton}
           disabled={loading}
           variant="contained"
           color="secondary"

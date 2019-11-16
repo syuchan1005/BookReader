@@ -15,7 +15,7 @@
       "lint": "eslint src/**/*.*",
       "db:migrate": "ts-node node_modules/.bin/sequelize db:migrate"
    },
-   "peerDependencies": {
+   "optionalDependencies": {
       "book-reader-test-plugin": "file:book-reader-test-plugin"
    },
    "devDependencies": {
