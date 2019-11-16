@@ -11,9 +11,22 @@ workbox.routing.registerRoute(/^https:\/\/fonts\.gstatic\.com/, new workbox.stra
 
 const BookImageCacheName = workbox.core.cacheNames.runtime;
 workbox.routing.registerRoute(
-  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?/,
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]/,
   new workbox.strategies.CacheFirst({
     cacheName: BookImageCacheName,
+  }),
+  'GET',
+);
+workbox.routing.registerRoute(
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?\?nosave/,
+  new workbox.strategies.CacheFirst({
+    cacheName: BookImageCacheName,
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 20,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
+      }),
+    ],
   }),
   'GET',
 );

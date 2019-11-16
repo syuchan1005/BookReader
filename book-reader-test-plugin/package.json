@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "book-reader-test-plugin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bookReader": {
+    "name": "test"
+  }
+}

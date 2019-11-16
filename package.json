@@ -1,19 +1,22 @@
 {
    "name": "book-reader",
-   "version": "1.0.6-rc1",
+   "version": "1.1.0-rc6",
    "private": true,
    "author": "syuchan1005<syuchan.dev@gmail.com>",
    "license": "MIT",
    "scripts": {
       "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
       "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
-      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && node dist/server\"",
+      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=book-reader-test-plugin node dist/server\"",
       "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
       "serve": "npm-run-all --parallel serve:*",
       "build": "npm run build:client && npm run build:server -- --mode production",
       "start": "node dist/server",
       "lint": "eslint src/**/*.*",
       "db:migrate": "ts-node node_modules/.bin/sequelize db:migrate"
+   },
+   "optionalDependencies": {
+      "book-reader-test-plugin": "file:book-reader-test-plugin"
    },
    "devDependencies": {
       "@babel/core": "^7.7.0",
@@ -89,6 +92,7 @@
       "graphql-subscriptions": "^1.1.0",
       "graphql-tag": "^2.10.1",
       "graphql-tools": "^4.0.6",
+      "graphql-tools-merge-typedefs": "^2.0.1",
       "history": "^4.10.1",
       "koa": "^2.11.0",
       "koa-static": "^5.0.0",

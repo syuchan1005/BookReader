@@ -37,7 +37,11 @@ COPY supervisord.conf /etc/
 
 COPY --from=build /bookReader /bookReader
 
+COPY docker-entrypoint.sh /bookReader/
+
+RUN chmod +x docker-entrypoint.sh
+
 # "/bookReader/production.sqlite" is file
 VOLUME ["/bookReader/storage"]
 
-CMD npm run db:migrate -- --env production; /usr/bin/supervisord
+ENTRYPOINT ["/bookReader/docker-entrypoint.sh"]

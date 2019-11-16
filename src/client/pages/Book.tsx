@@ -125,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
     '&.bottom': {
       width: '80%',
-      gridTemplateRows: '1fr 1fr',
+      gridTemplateRows: 'auto auto',
       bottom: theme.spacing(2),
     },
     '&.center': {

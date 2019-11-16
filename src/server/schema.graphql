@@ -20,6 +20,8 @@ type Query {
 
     ## Debug
     debug_folderSize: Debug_FolderSizes!
+
+    plugins: [Plugin!]!
 }
 
 type Mutation {
@@ -133,6 +135,25 @@ type BatchSubscription {
     finished: Boolean!
     message: String
     error: String
+}
+
+type Plugin {
+    info: PluginInfo!
+    queries: PluginQueries!
+}
+
+type PluginInfo {
+    name: String!
+    version: String!
+}
+
+type PluginQueries {
+    add: CommonPluginQuery!
+}
+
+type CommonPluginQuery {
+    name: String!
+    args: [String!]!
 }
 
 input InputBook {
