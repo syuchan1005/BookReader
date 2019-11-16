@@ -1,6 +1,7 @@
 #!/bin/sh
 
 if [ $# != 0 ] ; then
+  apk add --no-cache git
   npm i "$*"
 fi
 
