@@ -67,7 +67,7 @@ export default class GraphQL {
     const middlewareOps = (key) => Object.keys(this.middlewares)
       .map((k) => {
         const fun = this.middlewares[k][key];
-        return fun ? fun.bind(this)(Database, this) : {};
+        return fun ? fun.bind(this)(Database, this, SubscriptionKeys) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
     // eslint-disable-next-line no-underscore-dangle

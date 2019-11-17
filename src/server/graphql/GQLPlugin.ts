@@ -13,6 +13,7 @@ export interface InternalGQLPlugin extends GQLPlugin {
     add: {
       name: string;
       args: string[];
+      subscription?: boolean;
     },
   };
 }
@@ -52,6 +53,7 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
               add: {
                 name: `add${queriesName[0].toUpperCase()}${queriesName.substring(1)}`,
                 args: ['id', 'number', 'url'],
+                subscription: false,
               },
             },
             ...module,
