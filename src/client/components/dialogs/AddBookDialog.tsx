@@ -282,13 +282,16 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     <Dialog open={open} onClose={closeDialog}>
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
-        if (subscriptionData
-          && (!addBookProgress
-            || (addBookProgress.loaded / addBookProgress.total) < 97)) {
+        if (
+          (subscriptionData && (!addBookProgress
+          || (addBookProgress.loaded / addBookProgress.total) < 97)
+          ) || (selectedPlugin && addPluginLoading)) {
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />
-              <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
+              {(subscriptionData) && (
+                <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
+              )}
             </DialogContent>
           );
         }
