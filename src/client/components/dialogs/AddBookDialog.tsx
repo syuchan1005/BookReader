@@ -266,6 +266,9 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         addBook();
       }
     } else {
+      if (selectedPlugin.queries.add.subscription) {
+        setSubscriptionId(infoId);
+      }
       // noinspection JSIgnoredPromiseFromCall
       addPlugin({
         variables: {
