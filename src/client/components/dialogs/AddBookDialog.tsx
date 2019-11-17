@@ -112,15 +112,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     return data.plugins.filter(({ info: { name } }) => name === addType)[0];
   }, [addType, data]);
 
-  const pluginVars = React.useMemo(() => {
-    if (!selectedPlugin) return {};
-    const newVar: { [key: string]: string } = {
-      ...editContent,
-    };
-    if (selectedPlugin.queries.add.args.includes('id')) newVar.id = infoId;
-    return newVar;
-  }, [selectedPlugin, editContent]);
-
   const pluginMutationArgs = React.useMemo(() => {
     if (!selectedPlugin) return [];
     return [
@@ -275,12 +266,17 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         addBook();
       }
     } else {
-      setTimeout(() => {
-        // noinspection JSIgnoredPromiseFromCall
-        addPlugin({ variables: pluginVars });
-      }, 100);
+      // noinspection JSIgnoredPromiseFromCall
+      addPlugin({
+        variables: {
+          ...editContent,
+          ...(selectedPlugin.queries.add.args.includes('id') ? {
+            id: infoId,
+          } : {}),
+        },
+      });
     }
-  }, [selectedPlugin, infoId, addType]);
+  }, [editContent, selectedPlugin, infoId, addType]);
 
   return (
     <Dialog open={open} onClose={closeDialog}>
