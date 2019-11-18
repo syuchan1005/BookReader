@@ -18,6 +18,7 @@ import {
   DialogContentText,
   DialogActions,
 } from '@material-ui/core';
+import { CSSProperties } from '@material-ui/styles/withStyles/withStyles';
 import { Swiper } from 'swiper/js/swiper.esm';
 import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
@@ -46,6 +47,19 @@ interface BookProps {
   children?: React.ReactElement;
 }
 
+const pageContainer: CSSProperties = {
+  width: '100%',
+  height: '100%',
+  margin: '0 auto',
+  position: 'relative',
+  overflow: 'hidden',
+  listStyle: 'none',
+  padding: 0,
+  '& > .swiper-wrapper': {
+    zIndex: 'inherit',
+  },
+};
+
 const useStyles = makeStyles((theme: Theme) => createStyles({
   '@global': {
     body: {
@@ -65,30 +79,12 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     alignItems: 'center',
   },
   pageContainerRTL: {
+    ...pageContainer,
     direction: 'rtl',
-    width: '100%',
-    height: '100%',
-    margin: '0 auto',
-    position: 'relative',
-    overflow: 'hidden',
-    listStyle: 'none',
-    padding: 0,
-    '& > .swiper-wrapper': {
-      zIndex: 'inherit',
-    },
   },
   pageContainerLTR: {
+    ...pageContainer,
     direction: 'ltr',
-    width: '100%',
-    height: '100%',
-    margin: '0 auto',
-    position: 'relative',
-    overflow: 'hidden',
-    listStyle: 'none',
-    padding: 0,
-    '& > .swiper-wrapper': {
-      zIndex: 'inherit',
-    },
   },
   pageImage: {
     width: '100%',
@@ -268,7 +264,6 @@ const Book: React.FC = (props: BookProps) => {
   }] = useMutation<{ split: Result }>(SplitMutation, {
     variables: {
       id: params.id,
-      pages: [[page, data.book.pages - 1]],
     },
     onCompleted() {
       setOpenSplitDialog(false);
@@ -520,7 +515,7 @@ const Book: React.FC = (props: BookProps) => {
                     <Button
                       disabled={splitLoading}
                       classes={{ label: classes.splitButton }}
-                      onClick={() => splitPage({ variables: { type: 'VERTICAL' } })}
+                      onClick={() => splitPage({ variables: { pages: [[page, data.book.pages - 1]], type: 'VERTICAL' } })}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                         <polygon
@@ -535,7 +530,7 @@ const Book: React.FC = (props: BookProps) => {
                     <Button
                       disabled={splitLoading}
                       classes={{ label: classes.splitButton }}
-                      onClick={() => splitPage({ variables: { type: 'HORIZONTAL' } })}
+                      onClick={() => splitPage({ variables: { pages: [[page, data.book.pages - 1]], type: 'HORIZONTAL' } })}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                         <polygon
