@@ -18,6 +18,7 @@ import {
   mkdirpIfNotExists,
 } from '../Util';
 import BigInt from './scalar/BigInt';
+import IntRange from './scalar/IntRange';
 import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 
 export const SubscriptionKeys = {
@@ -76,6 +77,7 @@ export default class GraphQL {
         typeDefs: mergeTypeDefs([typeDefs, ...this.plugins.map((pl) => pl.typeDefs)]),
         resolvers: {
           BigInt,
+          IntRange,
           /* handler(parent, args, context, info) */
           Query: {
             ...middlewareOps('Query'),

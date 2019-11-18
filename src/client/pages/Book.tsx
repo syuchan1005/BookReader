@@ -518,6 +518,7 @@ const Book: React.FC = (props: BookProps) => {
 
                   <div className={classes.splitButtonWrapper}>
                     <Button
+                      disabled={splitLoading}
                       classes={{ label: classes.splitButton }}
                       onClick={() => splitPage({ variables: { type: 'VERTICAL' } })}
                     >
@@ -532,6 +533,7 @@ const Book: React.FC = (props: BookProps) => {
                     </Button>
 
                     <Button
+                      disabled={splitLoading}
                       classes={{ label: classes.splitButton }}
                       onClick={() => splitPage({ variables: { type: 'HORIZONTAL' } })}
                     >

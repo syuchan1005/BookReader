@@ -1,5 +1,6 @@
 scalar Upload
 scalar BigInt
+scalar IntRange
 
 type Query {
     ## BookInfo
