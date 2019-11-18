@@ -68,4 +68,5 @@ export interface PluginQueries {
 export interface CommonPluginQuery {
   name: string;
   args: string[];
+  subscription?: boolean;
 }

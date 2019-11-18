@@ -1,7 +1,8 @@
 #!/bin/sh
 
 if [ $# != 0 ] ; then
-  npm i "$*"
+  apk add --no-cache git
+  npm i "$@"
 fi
 
 npm run db:migrate -- --env production

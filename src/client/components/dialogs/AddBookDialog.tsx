@@ -19,7 +19,6 @@ import {
 } from '@material-ui/core';
 import { useMutation, useQuery, useSubscription } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
-import { useMap } from 'react-use';
 
 import * as AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
 import * as AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
@@ -101,11 +100,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const [addBookAbort, setAddBookAbort] = React
     .useState<() => void | undefined>(undefined);
   const [addType, setAddType] = React.useState('file');
-  const [pluginEditContent, {
-    set: setPluginEditContent,
-    reset: resetPluginEditContent,
-  }] = useMap<{ [key: string]: string }>({});
-  React.useEffect(resetPluginEditContent, [addType]);
+  const [editContent, setEditContent] = React.useState({});
+  React.useEffect(() => setEditContent({}), [addType]);
 
   const {
     data,
@@ -116,15 +112,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     return data.plugins.filter(({ info: { name } }) => name === addType)[0];
   }, [addType, data]);
 
-  const pluginVars = React.useMemo(() => {
-    if (!selectedPlugin) return {};
-    const newVar: { [key: string]: string } = {
-      ...pluginEditContent,
-    };
-    if (selectedPlugin.queries.add.args.includes('id')) newVar.id = infoId;
-    return newVar;
-  }, [selectedPlugin]);
-
   const pluginMutationArgs = React.useMemo(() => {
     if (!selectedPlugin) return [];
     return [
@@ -133,6 +120,17 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       `(${selectedPlugin.queries.add.args.map((s) => `${s}: $${s}`)})`,
     ];
   }, [selectedPlugin]);
+
+  const mutateCloseDialog = React.useCallback((success) => {
+    if (onClose && success) onClose();
+    if (success && onAdded) onAdded();
+    setAddBooks([]);
+    setAddBookProgress(undefined);
+    setAddBookAbort(undefined);
+    setSubscriptionId(undefined);
+    setAddType('file');
+    setEditContent({});
+  }, [onClose, onAdded]);
 
   const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Result }>(
     gql(`
@@ -145,12 +143,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     {
       onCompleted(d) {
         if (!d) return;
-        setAddBooks([]);
-        setAddBookProgress(undefined);
-        setAddBookAbort(undefined);
-        setSubscriptionId(undefined);
-        if (onClose && d.plugin.success) onClose();
-        if (d.plugin.success && onAdded) onAdded();
+        mutateCloseDialog(d.plugin.success);
       },
     },
   );
@@ -162,13 +155,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     },
     onCompleted(d) {
       if (!d) return;
-      setAddBooks([]);
-      setAddBookProgress(undefined);
-      setAddBookAbort(undefined);
-      setSubscriptionId(undefined);
-      const success = d.adds.every((a) => a.success);
-      if (onClose && success) onClose();
-      if (success && onAdded) onAdded();
+      mutateCloseDialog(d.adds.every((a) => a.success));
     },
     onError() {
       setAddBookProgress(undefined);
@@ -199,12 +186,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       },
       onCompleted(d) {
         if (!d) return;
-        setAddBooks([]);
-        setSubscriptionId(undefined);
-        setAddBookProgress(undefined);
-        setAddBookAbort(undefined);
-        if (onClose && d.add.success) onClose();
-        if (d.add.success && onAdded) onAdded();
+        mutateCloseDialog(d.add.success);
       },
       onError() {
         setAddBookProgress(undefined);
@@ -240,10 +222,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const closeDialog = () => {
     if (!loading) {
       if (onClose) onClose();
-      setAddBooks([]);
-      setSubscriptionId(undefined);
-      setAddBookProgress(undefined);
-      setAddBookAbort(undefined);
+      mutateCloseDialog(false);
     }
   };
 
@@ -287,22 +266,35 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         addBook();
       }
     } else {
+      if (selectedPlugin.queries.add.subscription) {
+        setSubscriptionId(infoId);
+      }
       // noinspection JSIgnoredPromiseFromCall
-      addPlugin({ variables: pluginVars });
+      addPlugin({
+        variables: {
+          ...editContent,
+          ...(selectedPlugin.queries.add.args.includes('id') ? {
+            id: infoId,
+          } : {}),
+        },
+      });
     }
-  }, [selectedPlugin, infoId, addType]);
+  }, [editContent, selectedPlugin, infoId, addType]);
 
   return (
     <Dialog open={open} onClose={closeDialog}>
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
-        if (subscriptionData
-          && (!addBookProgress
-            || (addBookProgress.loaded / addBookProgress.total) < 97)) {
+        if (
+          (subscriptionData && (!addBookProgress
+          || (addBookProgress.loaded / addBookProgress.total) < 97)
+          ) || (selectedPlugin && addPluginLoading)) {
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />
-              <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
+              {(subscriptionData) && (
+                <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
+              )}
             </DialogContent>
           );
         }
@@ -385,8 +377,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
                       color="secondary"
                       disabled={loading}
                       label={label}
-                      value={pluginEditContent[label] || ''}
-                      onChange={(e) => setPluginEditContent(label, e.target.value)}
+                      value={editContent[label] || ''}
+                      onChange={(e) => setEditContent({ ...editContent, [label]: e.target.value })}
                     />
                   ))}
               </div>
