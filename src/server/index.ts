@@ -138,7 +138,11 @@ app.use(async (ctx, next) => {
         }
         ctx.body = createReadStream(`storage/cache${url}`);
       } else {
-        ctx.body = execa(command, ['-o', '-']).stdout;
+        const cwebpExec = await execa(command, ['-o', '-'])
+          .catch((e) => {
+            throw e;
+          });
+        ctx.body = cwebpExec.stdout;
       }
 
       ctx.type = 'image/webp';
