@@ -1,3 +1,6 @@
+// import 'swiper/css/swiper.min.css';
+import 'react-id-swiper/lib/styles/css/swiper.css';
+
 import * as React from 'react';
 import {
   createStyles,
@@ -78,6 +81,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  pageContainer,
   pageContainerRTL: {
     ...pageContainer,
     direction: 'rtl',
