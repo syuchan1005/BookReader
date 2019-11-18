@@ -1,11 +1,11 @@
 import { promises as fs, createReadStream } from 'fs';
 import path from 'path';
-import { exec } from 'child_process';
 
 import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 import gm from 'gm';
+import execa from 'execa';
 
 import GraphQL from './graphql';
 import Database from './sequelize/models';
@@ -123,19 +123,6 @@ app.use(async (ctx, next) => {
           command += ` -resize ${w} ${h}`;
         }
       }
-      const webpBuffer = await new Promise((resolve, reject) => {
-        exec(`${command} -o -`, {
-          encoding: 'buffer',
-          maxBuffer: 1024 * 512,
-        }, (err, stdout) => {
-          if (err) reject(err);
-          else if (stdout.length > 0) {
-            resolve(stdout);
-          } else {
-            reject(new Error('error'));
-          }
-        });
-      });
 
       if (!ctx.response.get('Last-Modified')) {
         ctx.set('Last-Modified', stats.mtime.toUTCString());
@@ -146,11 +133,14 @@ app.use(async (ctx, next) => {
           await fs.stat(`storage/cache${url}`);
         } catch (ignored) {
           await mkdirpIfNotExists(path.join(`storage/cache${url}`, '..'));
-          await fs.writeFile(`storage/cache${url}`, webpBuffer);
+          await execa(command, ['-o', `storage/cache${url}`]);
+          // await fs.writeFile(`storage/cache${url}`, webpBuffer);
         }
+        ctx.body = createReadStream(`storage/cache${url}`);
+      } else {
+        ctx.body = execa(command, ['-o', '-']).stdout;
       }
 
-      ctx.body = webpBuffer;
       ctx.type = 'image/webp';
       return;
     }
