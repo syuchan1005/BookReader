@@ -255,7 +255,7 @@ const Book: React.FC = (props: BookProps) => {
   }] = useMutation<{ del: Result }>(DeleteMutation, {
     variables: {
       id: params.id,
-      numbers: deleteNumbers,
+      pages: deleteNumbers,
     },
     onCompleted() {
       setDeleteNumbers([]);
@@ -268,7 +268,7 @@ const Book: React.FC = (props: BookProps) => {
   }] = useMutation<{ split: Result }>(SplitMutation, {
     variables: {
       id: params.id,
-      start: page,
+      pages: [[page, data.book.pages - 1]],
     },
     onCompleted() {
       setOpenSplitDialog(false);

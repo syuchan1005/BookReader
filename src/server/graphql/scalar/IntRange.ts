@@ -1,7 +1,24 @@
 import { GraphQLScalarType, IntValueNode } from 'graphql';
 import { Kind } from 'graphql/language/kinds';
 
-const parseIntRange = (value: (Number | Number[])[] | any) => {
+export const flatRange = (range: (number | number[])[]) => {
+  if (!range) return [];
+  let arr = [];
+  range.forEach((a) => {
+    if (Array.isArray(a)) {
+      const min = Math.min(...a);
+      arr = [...arr, ...[...Array(Math.max(...a) - min + 1).keys()].map((i) => i + min)];
+    } else {
+      arr.push(a);
+    }
+  });
+
+  return arr
+    .filter((elem, index, self) => self.indexOf(elem) === index)
+    .sort((a, b) => a - b);
+};
+
+const parseIntRange = (value: (number | number[])[] | any) => {
   if (!Array.isArray(value)
     || !value.every(
       (v) => Number.isInteger(v)
@@ -13,7 +30,7 @@ const parseIntRange = (value: (Number | Number[])[] | any) => {
   return value;
 };
 
-const BigInt = new GraphQLScalarType({
+const IntRange = new GraphQLScalarType({
   name: 'IntRange',
   description: 'Int or Int[2] has array',
   serialize: parseIntRange,
@@ -49,4 +66,4 @@ const BigInt = new GraphQLScalarType({
   },
 });
 
-export default BigInt;
+export default IntRange;

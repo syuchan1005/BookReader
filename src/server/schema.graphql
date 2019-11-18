@@ -44,8 +44,8 @@ type Mutation {
     addCompressBookBatch(id: ID!, file: Upload!): ID!
 
     ## Page
-    deletePages(id: ID! numbers: [Int!]!): Result!
-    splitPages(id: ID! start: Int! type: SplitType = VERTICAL): Result!
+    deletePages(id: ID! pages: IntRange!): Result!
+    splitPages(id: ID! pages: IntRange! type: SplitType = VERTICAL): Result!
 
     ## Debug
     debug_deleteUnusedFolders: Result!

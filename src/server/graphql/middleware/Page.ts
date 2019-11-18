@@ -9,12 +9,14 @@ import { asyncForEach } from '@server/Util';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
+import { flatRange } from '../scalar/IntRange';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Mutation() {
     return {
-      deletePages: async (parent, { id: bookId, numbers }): Promise<Result> => {
+      deletePages: async (parent, { id: bookId, pages }): Promise<Result> => {
+        const numbers = flatRange(pages);
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
           return {
@@ -56,7 +58,8 @@ class Page extends GQLMiddleware {
           success: true,
         };
       },
-      splitPages: async (parent, { id: bookId, start, type }): Promise<Result> => {
+      splitPages: async (parent, { id: bookId, pages, type }): Promise<Result> => {
+        const numbers = flatRange(pages);
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
           return {
@@ -66,7 +69,9 @@ class Page extends GQLMiddleware {
           };
         }
 
-        if (start >= book.pages || start < 0) {
+        const minNum = Math.min(...numbers);
+        const maxNum = Math.max(...numbers);
+        if (book.pages < maxNum || minNum < 0) {
           return {
             success: false,
             code: 'QL0007',
@@ -77,10 +82,10 @@ class Page extends GQLMiddleware {
         const cropOption = type === 'VERTICAL' ? '2x1@' : '1x2@';
         const bookPath = `storage/book/${bookId}`;
         let files = await fs.readdir(bookPath);
-        let pages = 0;
+        let pageCount = 0;
         await asyncForEach(orderBy(files), async (f, i) => {
-          if (i < start) {
-            pages += 1;
+          if (!numbers.includes(i)) {
+            pageCount += 1;
             return;
           }
 
@@ -94,7 +99,7 @@ class Page extends GQLMiddleware {
                   else {
                     fs.unlink(`${bookPath}/${f}`)
                       .then(() => {
-                        pages += 2;
+                        pageCount += 2;
                         resolve();
                       });
                   }
@@ -124,7 +129,7 @@ class Page extends GQLMiddleware {
                 .write(`${bookPath}/${f.replace('.jpg', `-${fileIndex}.jpg`)}`, (err) => {
                   if (err) reject(err);
                   else {
-                    pages += 1;
+                    pageCount += 1;
                     resolve();
                   }
                 });
@@ -138,10 +143,10 @@ class Page extends GQLMiddleware {
           (v) => Number(v.match(/\d+/g)[0]),
           (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
         ], ['asc', 'desc']);
-        await GQLUtil.numberingFiles(bookPath, pages.toString(10).length, files);
+        await GQLUtil.numberingFiles(bookPath, pageCount.toString(10).length, files);
 
         await BookModel.update({
-          pages,
+          pages: pageCount,
         }, {
           where: {
             id: bookId,
