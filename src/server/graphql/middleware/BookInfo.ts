@@ -131,6 +131,7 @@ class BookInfo extends GQLMiddleware {
         name,
         thumbnail,
         finished,
+        invisible,
       }): Promise<ResultWithInfoId> => {
         const infoId = uuidv4();
         let thumbnailStream;
@@ -150,6 +151,7 @@ class BookInfo extends GQLMiddleware {
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
           finished,
+          invisible,
         });
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
 

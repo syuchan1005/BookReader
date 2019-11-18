@@ -66,6 +66,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');
   const [finished, setFinished] = React.useState(false);
+  const [invisible, setInvisible] = React.useState(false);
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
@@ -81,12 +82,15 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setName('');
     setShowAddHistory(false);
     setAddHistories([]);
+    setFinished(false);
+    setInvisible(false);
   };
 
   const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
     variables: {
       name,
       finished,
+      invisible,
     },
     onCompleted(d) {
       if (!d) return;
@@ -202,6 +206,15 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
                 />
               )}
               label="Finished"
+            />
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={invisible}
+                  onChange={(e) => setInvisible(e.target.checked)}
+                />
+              )}
+              label="Invisible"
             />
             <TextField
               color="secondary"
