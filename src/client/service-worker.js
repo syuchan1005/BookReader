@@ -14,6 +14,11 @@ workbox.routing.registerRoute(
   /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]/,
   new workbox.strategies.CacheFirst({
     cacheName: BookImageCacheName,
+    plugins: [
+      new workbox.cacheableResponse.Plugin({
+        statuses: [200],
+      }),
+    ],
   }),
   'GET',
 );
@@ -22,6 +27,9 @@ workbox.routing.registerRoute(
   new workbox.strategies.CacheFirst({
     cacheName: `${BookImageCacheName}-expires`,
     plugins: [
+      new workbox.cacheableResponse.Plugin({
+        statuses: [200],
+      }),
       new workbox.expiration.Plugin({
         maxEntries: 20,
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
