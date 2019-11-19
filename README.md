@@ -3,6 +3,7 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Maintainability](https://api.codeclimate.com/v1/badges/04ab4b9a433f4a70efae/maintainability)](https://codeclimate.com/github/syuchan1005/BookReader/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/04ab4b9a433f4a70efae/test_coverage)](https://codeclimate.com/github/syuchan1005/BookReader/test_coverage)
+[![GitHub Actions](https://github.com/syuchan1005/BookReader/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/syuchan1005/BookReader/actions)
 
 [![dockeri.co](https://dockeri.co/image/syuchan1005/book_reader)](https://hub.docker.com/r/syuchan1005/book_reader)
 
