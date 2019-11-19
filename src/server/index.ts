@@ -139,7 +139,7 @@ app.use(async (ctx, next) => {
         }
         ctx.body = createReadStream(`storage/cache${url}`);
       } else {
-        const cwebpExec = await execa(command, [...args, '-o', '-'])
+        const cwebpExec = await execa(command, [...args, '-o', '-'], { encoding: null })
           .catch((e) => {
             throw e;
           });
