@@ -254,14 +254,40 @@ const GQLUtil = {
   },
   async searchBookFolders(tempPath: string) {
     let booksFolderPath = '/';
-    let bookFolders = [];
+    const bookFolders = [];
     for (let i = 0; i < 10; i += 1) {
       const tempBooksFolder = path.join(tempPath, booksFolderPath);
       // eslint-disable-next-line no-await-in-loop
       const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
       const dirs = dirents.filter((d) => d.isDirectory());
       if (dirs.length > 1) {
-        bookFolders = dirs.map((d) => d.name);
+        // eslint-disable-next-line no-await-in-loop
+        await asyncForEach(dirs, async (d) => {
+          const hasMulti = d.name.match(/(\d+)-(\d+)/);
+          if (hasMulti) {
+            const min = parseInt(hasMulti[1], 10);
+            const max = parseInt(hasMulti[2], 10);
+            if (min < max) {
+              const nestNumbers = [...Array(max - min + 1).keys()].map((index) => index + min);
+              const nestFolders = await fs.readdir(
+                path.join(tempBooksFolder, d.name), { withFileTypes: true },
+              ).then((nestDirs) => nestDirs.filter((a) => a.isDirectory()));
+              const folderNumbers = nestFolders.map((f) => {
+                const inNums = f.name.match(/\d+/g);
+                if (inNums) {
+                  return parseInt(inNums[inNums.length - 1], 10);
+                }
+                return min - 1;
+              });
+              if (nestNumbers.filter((n) => !folderNumbers.includes(n)).length === 0
+              && folderNumbers.filter((n) => !nestNumbers.includes(n)).length === 0) {
+                bookFolders.push(...nestFolders.map((f) => path.join(d.name, f.name)));
+                return;
+              }
+            }
+          }
+          bookFolders.push(d.name);
+        });
         break;
       } else if (dirs.length === 1) {
         booksFolderPath = path.join(booksFolderPath, dirs[0].name);
