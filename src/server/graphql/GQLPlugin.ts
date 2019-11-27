@@ -1,5 +1,6 @@
 import { ITypeDefinitions } from 'graphql-tools';
 
+import path from 'path';
 import GQLMiddleware from './GQLMiddleware';
 
 export interface GQLPlugin {
@@ -34,6 +35,10 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
         } else {
           const strings = s.split('/');
           moduleName = strings[1] || strings[0];
+        }
+        if (s[0] === '.') {
+          // eslint-disable-next-line no-eval
+          moduleName = path.resolve(eval('require.main.filename'), `../../../${moduleName}`);
         }
         try {
           // eslint-disable-next-line no-eval

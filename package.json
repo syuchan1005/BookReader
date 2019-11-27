@@ -7,7 +7,7 @@
    "scripts": {
       "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
       "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
-      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=book-reader-test-plugin node dist/server\"",
+      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=./book-reader-test-plugin node dist/server\"",
       "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
       "serve": "npm-run-all --parallel serve:*",
       "build": "npm run build:client && npm run build:server -- --mode production",
@@ -15,15 +15,12 @@
       "lint": "eslint src/**/*.*",
       "db:migrate": "ts-node node_modules/.bin/sequelize db:migrate"
    },
-   "optionalDependencies": {
-      "book-reader-test-plugin": "file:book-reader-test-plugin"
-   },
    "devDependencies": {
       "@babel/core": "^7.7.4",
       "@babel/preset-env": "^7.7.4",
       "@types/bluebird": "^3.5.29",
       "@types/gm": "^1.18.6",
-      "@types/koa": "^2.0.52",
+      "@types/koa": "^2.11.0",
       "@types/node": "^12.12.14",
       "@types/react": "^16.9.13",
       "@types/react-dom": "^16.9.4",
@@ -55,7 +52,7 @@
       "source-map-loader": "^0.2.4",
       "terser-webpack-plugin": "^2.2.1",
       "ts-loader": "^6.2.1",
-      "url-loader": "^2.3.0",
+      "url-loader": "^3.0.0",
       "webpack": "^4.41.2",
       "webpack-bundle-analyzer": "^3.6.0",
       "webpack-cli": "^3.3.10",
