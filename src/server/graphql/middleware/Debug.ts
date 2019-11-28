@@ -7,6 +7,7 @@ import du from 'du';
 import rimraf from 'rimraf';
 
 import BookModel from '@server/sequelize/models/book';
+import BookInfoModel from '@server/sequelize/models/bookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { DebugFolderSizes, Result } from '@common/GraphqlTypes';
 import GraphQL from '../index';
@@ -39,11 +40,15 @@ class Debug extends GQLMiddleware {
           book += size;
         });
 
+        const bookInfoCount = await BookInfoModel.count();
+
         return {
           tmp,
           cache,
           book,
           unusedBook,
+          bookInfoCount,
+          bookCount: dbBookIds.length,
         };
       },
     };

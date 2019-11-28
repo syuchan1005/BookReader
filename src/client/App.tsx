@@ -379,9 +379,69 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <span>Secondary:</span>
                 <ColorTile marginLeft color={store.secondary} />
               </MenuItem>
-              <MenuItem onClick={(e) => setDebugAnchorEl(e.currentTarget)}>
+              <MenuItem onClick={() => setDebugAnchorEl(!debugAnchorEl)}>
                 Debug
+                <Icon>{`keyboard_arrow_${debugAnchorEl ? 'up' : 'down'}`}</Icon>
               </MenuItem>
+              <Collapse in={debugAnchorEl}>
+                <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
+                  Cache Control
+                  <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
+                </MenuItem>
+                <Collapse in={openCacheControl}>
+                  {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
+                    <MenuItem
+                      key={order}
+                      onClick={() => purgeCache(i)}
+                      style={{ paddingLeft: provideTheme.spacing(3) }}
+                    >
+                      {order}
+                    </MenuItem>
+                  ))}
+                </Collapse>
+                <MenuItem
+                  onClick={() => {
+                    if (!openFolderSize) getFolderSizes();
+                    setOpenFolderSize(!openFolderSize);
+                  }}
+                >
+                  Folder sizes
+                  <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
+                </MenuItem>
+                <Collapse in={openFolderSize}>
+                  {(deleteLoading || loading || !data) ? (
+                    <MenuItem style={{ display: 'flex', justifyContent: 'center' }}>
+                      <CircularProgress color="secondary" />
+                    </MenuItem>
+                  ) : (
+                    <>
+                      {Object.entries(data.sizes)
+                        .filter(([k]) => !k.startsWith('_'))
+                        .map(([k, v]) => (
+                          <ListItem
+                            key={k}
+                            style={{
+                              paddingLeft: provideTheme.spacing(3),
+                              paddingTop: 0,
+                              paddingBottom: 0,
+                            }}
+                          >
+                            <ListItemText primary={k} secondary={k.endsWith('Count') ? v : wrapSize(v)} />
+                          </ListItem>
+                        ))}
+                      <ListItem>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => deleteUnusedFolder()}
+                        >
+                            Delete Unused and Cache
+                        </Button>
+                      </ListItem>
+                    </>
+                  )}
+                </Collapse>
+              </Collapse>
             </Menu>
             <Menu
               getContentAnchorEl={null}
@@ -428,74 +488,6 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   <ColorTile color={c} />
                 </MenuItem>
               ) : null))}
-            </Menu>
-            <Menu
-              getContentAnchorEl={null}
-              anchorOrigin={{
-                horizontal: 'center',
-                vertical: 'bottom',
-              }}
-              anchorEl={debugAnchorEl}
-              open={!!debugAnchorEl}
-              onClose={() => setDebugAnchorEl(null)}
-            >
-              <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
-                Cache Control
-                <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
-              </MenuItem>
-              <Collapse in={openCacheControl}>
-                {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
-                  <MenuItem
-                    key={order}
-                    onClick={() => purgeCache(i)}
-                    style={{ paddingLeft: provideTheme.spacing(3) }}
-                  >
-                    {order}
-                  </MenuItem>
-                ))}
-              </Collapse>
-              <MenuItem
-                onClick={() => {
-                  if (!openFolderSize) getFolderSizes();
-                  setOpenFolderSize(!openFolderSize);
-                }}
-              >
-                Folder sizes
-                <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
-              </MenuItem>
-              <Collapse in={openFolderSize}>
-                {(deleteLoading || loading || !data) ? (
-                  <MenuItem style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CircularProgress color="secondary" />
-                  </MenuItem>
-                ) : (
-                  <>
-                    {Object.entries(data.sizes)
-                      .filter(([k]) => !k.startsWith('_'))
-                      .map(([k, v]) => (
-                        <ListItem
-                          key={k}
-                          style={{
-                            paddingLeft: provideTheme.spacing(3),
-                            paddingTop: 0,
-                            paddingBottom: 0,
-                          }}
-                        >
-                          <ListItemText primary={k} secondary={wrapSize(v)} />
-                        </ListItem>
-                      ))}
-                    <ListItem>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => deleteUnusedFolder()}
-                      >
-                        Delete Unused and Cache
-                      </Button>
-                    </ListItem>
-                  </>
-                )}
-              </Collapse>
             </Menu>
           </Toolbar>
         </AppBar>

@@ -49,6 +49,8 @@ export interface DebugFolderSizes {
   cache: number;
   book: number;
   unusedBook: number;
+  bookInfoCount: number;
+  bookCount: number;
 }
 
 export interface Plugin {
