@@ -1,3 +1,0 @@
-mutation ($id: ID! $file: Upload!) {
-    add: addCompressBookBatch(id: $id file: $file)
-}

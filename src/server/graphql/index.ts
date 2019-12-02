@@ -24,7 +24,6 @@ import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 export const SubscriptionKeys = {
   ADD_BOOK_INFO: 'ADD_BOOK_INFO',
   ADD_BOOKS: 'ADD_BOOKS',
-  ADD_BOOKS_BATCH: 'ADD_BOOKS_BATCH',
 };
 
 export default class GraphQL {

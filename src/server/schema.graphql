@@ -40,9 +40,6 @@ type Mutation {
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
 
-    ## BookBatch
-    addCompressBookBatch(id: ID!, file: Upload!): ID!
-
     ## Page
     deletePages(id: ID! pages: IntRange!): Result!
     splitPages(id: ID! pages: IntRange! type: SplitType = VERTICAL): Result!
@@ -54,7 +51,6 @@ type Mutation {
 type Subscription {
     addBookInfo(name: String!): String!
     addBooks(id: ID!): String!
-    addCompressBookBatch(id: ID!): BatchSubscription!
 }
 
 enum BookInfoOrder {
@@ -129,12 +125,6 @@ type BookInfoResult {
     code: String
     message: String
     books: [Book!]!
-}
-
-type BatchSubscription {
-    finished: Boolean!
-    message: String
-    error: String
 }
 
 type Plugin {

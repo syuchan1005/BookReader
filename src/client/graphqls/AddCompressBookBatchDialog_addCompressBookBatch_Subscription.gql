@@ -1,7 +1,0 @@
-subscription ($id: ID!) {
-    add: addCompressBookBatch(id: $id) {
-        finished
-        message
-        error
-    }
-}
