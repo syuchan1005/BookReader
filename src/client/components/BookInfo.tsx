@@ -108,12 +108,14 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     name,
     count,
     history,
-    finished,
-    invisible,
+    genres,
     onClick,
     onDeleted,
     onEdit,
   } = props;
+
+  const finished = React.useMemo(() => genres.includes('Finished'), [genres]);
+  const invisible = React.useMemo(() => genres.includes('Invisible'), [genres]);
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
   const [askDelete, setAskDelete] = React.useState(false);

@@ -82,8 +82,7 @@ type BookInfo {
     thumbnail: String
     count: Int!
     history: Boolean!
-    finished: Boolean!
-    invisible: Boolean!
+    genres: [String!]!
 
     books(order: BookOrder = ASC): [Book!]!
 }

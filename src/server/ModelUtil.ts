@@ -10,8 +10,7 @@ const util = {
       thumbnail: model.thumbnail,
       count: model.count,
       history: model.history,
-      finished: model.finished,
-      invisible: model.invisible,
+      genres: model.genres ? model.genres.map((g) => g.name) : [],
       books: convertBook && model.books
         ? model.books.map((b) => util.book(b, false, model.id))
         : [],

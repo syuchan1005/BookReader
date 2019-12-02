@@ -1,5 +1,6 @@
 import { DataTypes, Association, Model } from 'sequelize';
 import book from './book';
+import genre from './genre';
 
 export default class bookInfo extends Model {
   public id!: string;
@@ -12,18 +13,17 @@ export default class bookInfo extends Model {
 
   public history!: boolean;
 
-  public finished!: boolean;
-
-  public invisible!: boolean;
-
   public readonly createdAt!: Date;
 
   public readonly updatedAt!: Date;
 
   public books?: book[];
 
+  public genres?: genre[];
+
   public static associations: {
     books: Association<bookInfo, book>;
+    genres: Association<bookInfo, genre>;
   };
 
   public static async hasId(infoId: string): Promise<boolean> {
@@ -63,16 +63,6 @@ export default class bookInfo extends Model {
         defaultValue: false,
         type: DataTypes.BOOLEAN,
       },
-      finished: {
-        allowNull: false,
-        defaultValue: false,
-        type: DataTypes.BOOLEAN,
-      },
-      invisible: {
-        allowNull: false,
-        defaultValue: false,
-        type: DataTypes.BOOLEAN,
-      },
     }, {
       sequelize,
       tableName: 'bookInfos',
@@ -82,5 +72,11 @@ export default class bookInfo extends Model {
 
   public static associate() {
     bookInfo.hasMany(book, { foreignKey: 'infoId', as: 'books' });
+    bookInfo.belongsToMany(genre, {
+      through: 'infoGenres',
+      foreignKey: 'infoId',
+      as: 'genres',
+      timestamps: false,
+    });
   }
 }

@@ -4,6 +4,8 @@ import * as baseConfig from '../config';
 /* models */
 import bookInfo from './bookInfo';
 import book from './book';
+import genre from './genre';
+import infoGenre from './infoGenre';
 
 const env = process.env.NODE_ENV || 'development';
 const config = baseConfig[env];
@@ -20,8 +22,11 @@ if (config.dialect === 'sqlite') {
 const models = {
   book: undefined,
   bookInfo: undefined,
+  genre: undefined,
+  infoGenre: undefined,
 };
-const modelList = [book, bookInfo];
+
+const modelList = [book, bookInfo, genre, infoGenre];
 modelList.forEach((module) => {
   // @ts-ignore
   const modelName = module.initModel(sequelize, config);
@@ -29,9 +34,13 @@ modelList.forEach((module) => {
 });
 
 modelList.forEach((module) => {
-  if (module.associate) {
-    module.associate();
-  }
+  // @ts-ignore
+  if (module.associate) module.associate();
+});
+
+modelList.forEach((module) => {
+  // @ts-ignore
+  if (module.seed) module.seed();
 });
 
 export interface Database {

@@ -20,6 +20,7 @@ import Database from '@server/sequelize/models';
 import BookInfoModel from '@server/sequelize/models/bookInfo';
 import ModelUtil from '@server/ModelUtil';
 import BookModel from '@server/sequelize/models/book';
+import GenreModel from '@server/sequelize/models/genre';
 import Errors from '@server/Errors';
 import GQLUtil from '@server/graphql/GQLUtil.ts';
 import { asyncForEach } from '@server/Util';
@@ -71,6 +72,10 @@ class BookInfo extends GQLMiddleware {
             where,
             // @ts-ignore
             order: [GQLUtil.bookInfoOrderToOrderBy(order)],
+            include: [{
+              model: GenreModel,
+              as: 'genres',
+            }],
           });
           const length = await BookInfoModel.count({
             transaction,
