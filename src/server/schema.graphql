@@ -22,11 +22,13 @@ type Query {
     debug_folderSize: Debug_FolderSizes!
 
     plugins: [Plugin!]!
+
+    genres: [String!]!
 }
 
 type Mutation {
     ## BookInfo
-    addBookInfo(name: String!, thumbnail: Upload, genres: [String!]!): ResultWithInfoId!
+    addBookInfo(name: String!, thumbnail: Upload, genres: [String!]): ResultWithInfoId!
     editBookInfo(id: ID!, name: String, thumbnail: String, genres: [String!]): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 

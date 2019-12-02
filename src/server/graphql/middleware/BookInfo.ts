@@ -168,7 +168,9 @@ class BookInfo extends GQLMiddleware {
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
-        await GQLUtil.linkGenres(infoId, genres);
+        if (genres && genres.length >= 1) {
+          await GQLUtil.linkGenres(infoId, genres);
+        }
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
 
         if (thumbnailStream) {
@@ -220,8 +222,8 @@ class BookInfo extends GQLMiddleware {
         }).reduce((o, e) => {
           if (e[1] !== undefined) {
             if (Array.isArray(e[1])) {
-              if (info[e[0]].length === e[1].length
-                && e[1].filter((a) => !info[e[0]].includes(a)).length === 0) {
+              if (e[1].filter((a) => !info[e[0]].includes(a)).length !== 0
+                  || info[e[0]].filter((a) => !e[1].includes(a)).length !== 0) {
                 // eslint-disable-next-line no-param-reassign,prefer-destructuring
                 o[e[0]] = e[1];
               }

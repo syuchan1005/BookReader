@@ -204,6 +204,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
 
   const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation(DebugDeleteFolderMutation, {
     onCompleted() {
+      // noinspection JSIgnoredPromiseFromCall
       refetch();
     },
   });
@@ -351,7 +352,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 Show
               </ListSubheader>
               <ListItem style={{ outline: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                {Object.entries({ normal: 'Normal', history: 'History', invisible: 'Invisible' }).map(([k, v]) => (
+                {Object.entries({ history: 'History', invisible: 'Invisible' }).map(([k, v]) => (
                   <FormControlLabel
                     key={k}
                     control={(

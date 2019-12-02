@@ -330,7 +330,7 @@ const GQLUtil = {
         return undefined;
     }
   },
-  async linkGenres(infoId: string, genres: string[]) {
+  async linkGenres(infoId: string, genreList: string[]) {
     const dbGenres = (await InfoGenreModel.findAll({
       where: { infoId },
       include: [{
@@ -339,6 +339,7 @@ const GQLUtil = {
       }],
     })).map((g) => g.genre);
 
+    const genres = genreList.filter((v) => v);
     const rmGenres = dbGenres.filter((g) => !genres.includes(g.name));
     const addGenres = genres.filter((g) => !dbGenres.find((v) => v.name === g));
 
@@ -349,12 +350,19 @@ const GQLUtil = {
       },
     });
 
-    const addedGenres = await GenreModel.bulkCreate(addGenres.map((name) => ({
+    await GenreModel.bulkCreate(addGenres.map((name) => ({
       name,
     })), {
       ignoreDuplicates: true,
-      returning: true,
     });
+
+    const addedGenres = await GenreModel.findAll({
+      attributes: ['id'],
+      where: {
+        name: addGenres,
+      },
+    });
+
     await InfoGenreModel.bulkCreate(addedGenres.map((a) => ({
       infoId,
       genreId: a.id,

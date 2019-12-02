@@ -146,7 +146,11 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     {
       variables: {
         id: infoId,
-        ...editContent,
+        name: editContent.name,
+        genres: [
+          editContent.finished ? 'Finished' : undefined,
+          editContent.invisible ? 'Invisible' : undefined,
+        ].filter((v) => !!v),
       },
       onCompleted(d) {
         if (!d) return;
