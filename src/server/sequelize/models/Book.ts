@@ -1,7 +1,7 @@
 import { DataTypes, Association, Model } from 'sequelize';
-import bookInfo from './bookInfo';
+import BookInfo from './BookInfo';
 
-export default class book extends Model {
+export default class Book extends Model {
   public id!: string;
 
   public thumbnail: string | null;
@@ -16,15 +16,15 @@ export default class book extends Model {
 
   public readonly updatedAt!: Date;
 
-  public readonly info?: bookInfo;
+  public readonly info?: BookInfo;
 
   public static associations: {
-    info: Association<book, bookInfo>;
+    info: Association<Book, BookInfo>;
   };
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
-    book.init({
+    Book.init({
       id: {
         allowNull: false,
         primaryKey: true,
@@ -55,6 +55,6 @@ export default class book extends Model {
   }
 
   public static associate() {
-    book.belongsTo(bookInfo, { foreignKey: 'infoId', as: 'info' });
+    Book.belongsTo(BookInfo, { foreignKey: 'infoId', as: 'info' });
   }
 }

@@ -2,10 +2,10 @@ import { Sequelize, Model } from 'sequelize';
 import * as baseConfig from '../config';
 
 /* models */
-import bookInfo from './bookInfo';
-import book from './book';
-import genre from './genre';
-import infoGenre from './infoGenre';
+import BookInfo from './BookInfo';
+import Book from './Book';
+import Genre from './Genre';
+import InfoGenre from './InfoGenre';
 
 const env = process.env.NODE_ENV || 'development';
 const config = baseConfig[env];
@@ -26,7 +26,7 @@ const models = {
   infoGenre: undefined,
 };
 
-const modelList = [book, bookInfo, genre, infoGenre];
+const modelList = [Book, BookInfo, Genre, InfoGenre];
 modelList.forEach((module) => {
   // @ts-ignore
   const modelName = module.initModel(sequelize, config);
@@ -47,16 +47,16 @@ export interface Database {
   sequelize: Sequelize;
   book: Model;
   bookInfo: Model;
-  BookModel: typeof book;
-  BookInfoModel: typeof bookInfo;
+  BookModel: typeof Book;
+  BookInfoModel: typeof BookInfo;
 }
 
 const db: Database = {
   sequelize,
   book: models.book,
   bookInfo: models.bookInfo,
-  BookModel: book,
-  BookInfoModel: bookInfo,
+  BookModel: Book,
+  BookInfoModel: BookInfo,
 };
 
 export default db;

@@ -6,8 +6,8 @@ import { promises as fs } from 'fs';
 import du from 'du';
 import rimraf from 'rimraf';
 
-import BookModel from '@server/sequelize/models/book';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
+import BookModel from '@server/sequelize/models/Book';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { DebugFolderSizes, Result } from '@common/GraphqlTypes';
 import GraphQL from '../index';

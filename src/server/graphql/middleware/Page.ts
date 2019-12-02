@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
 
 import { Result } from '@common/GraphqlTypes';
-import BookModel from '@server/sequelize/models/book';
+import BookModel from '@server/sequelize/models/Book';
 import { asyncForEach } from '@server/Util';
 import Errors from '@server/Errors';
 

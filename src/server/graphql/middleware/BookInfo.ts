@@ -17,14 +17,15 @@ import {
 } from '@common/GraphqlTypes';
 
 import Database from '@server/sequelize/models';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
+import BookModel from '@server/sequelize/models/Book';
+import GenreModel from '@server/sequelize/models/Genre';
 import ModelUtil from '@server/ModelUtil';
-import BookModel from '@server/sequelize/models/book';
-import GenreModel from '@server/sequelize/models/genre';
 import Errors from '@server/Errors';
 import GQLUtil from '@server/graphql/GQLUtil.ts';
 import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
+import InfoGenreModel from '../../sequelize/models/InfoGenre';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -35,58 +36,70 @@ class BookInfo extends GQLMiddleware {
         offset,
         search,
         order,
+        genres = [],
         history,
-        invisible,
-        normal,
       }): Promise<BookInfoList> => {
-        let where: { [key: string]: any } = {};
+        const where: { [key: string]: any } = {};
         if (search) {
           where.name = {
             [Op.like]: `%${search}%`,
           };
         }
-        if (!normal && !history && !invisible) return { length: 0, infos: [] };
-        if (normal) {
-          if (!history && !invisible) {
-            where = { ...where, history, invisible };
-          } else if (!history) {
-            where.history = false;
-          } else if (!invisible) {
-            where.invisible = false;
-          }
+        if (history) where.history = true;
+        const noGenre = !genres || genres.length === 0;
+        let genreIds;
+        if (noGenre) {
+          genreIds = [(await GenreModel.findOne({
+            attributes: ['id'],
+            where: { name: 'Invisible' },
+          })).id];
         } else {
-          // eslint-disable-next-line
-          if (history && invisible) {
-            where = { ...where, [Op.or]: { history, invisible } };
-          } else if (history) {
-            where.history = true;
-          } else if (invisible) {
-            where.invisible = true;
-          }
+          genreIds = (await GenreModel.findAll({
+            attributes: ['id'],
+            where: {
+              name: {
+                [Op.in]: genres,
+              },
+            },
+          })).map(({ id }) => id);
         }
-        const [infos, len] = await Database.sequelize.transaction(async (transaction) => {
-          const bookInfos = await BookInfoModel.findAll({
-            transaction,
-            limit,
-            offset,
-            where,
-            // @ts-ignore
-            order: [GQLUtil.bookInfoOrderToOrderBy(order)],
-            include: [{
-              model: GenreModel,
-              as: 'genres',
-            }],
-          });
-          const length = await BookInfoModel.count({
-            transaction,
-            where,
-          });
-          return [bookInfos, length];
+        const inGenreInfoIds = (await InfoGenreModel.findAll({
+          attributes: ['infoId'],
+          where: (genreIds.length > 1 ? {
+            [Op.in]: {
+              genreId: genreIds,
+            },
+          } : {
+            genreId: genreIds[0],
+          }),
+        })).map(({ infoId }) => infoId);
+        const bookInfos = await BookInfoModel.findAll({
+          limit,
+          offset,
+          where: {
+            id: {
+              [noGenre ? Op.notIn : Op.in]: inGenreInfoIds,
+            },
+            ...where,
+          },
+          // @ts-ignore
+          order: [GQLUtil.bookInfoOrderToOrderBy(order)],
+          include: [{
+            model: GenreModel,
+            as: 'genres',
+          }],
         });
-
+        const length = await BookInfoModel.count({
+          where: {
+            id: {
+              [noGenre ? Op.notIn : Op.in]: inGenreInfoIds,
+            },
+            ...where,
+          },
+        });
         return {
-          length: len,
-          infos: infos.map((info) => ModelUtil.bookInfo(info)),
+          length,
+          infos: bookInfos.map((info) => ModelUtil.bookInfo(info)),
         };
       },
       bookInfo: async (parent, { id: infoId }, context, info): Promise<BookInfoType> => {
@@ -135,8 +148,7 @@ class BookInfo extends GQLMiddleware {
       addBookInfo: async (parent, {
         name,
         thumbnail,
-        finished,
-        invisible,
+        genres,
       }): Promise<ResultWithInfoId> => {
         const infoId = uuidv4();
         let thumbnailStream;
@@ -155,9 +167,8 @@ class BookInfo extends GQLMiddleware {
           id: infoId,
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
-          finished,
-          invisible,
         });
+        await GQLUtil.linkGenres(infoId, genres);
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
 
         if (thumbnailStream) {
@@ -174,18 +185,21 @@ class BookInfo extends GQLMiddleware {
         id: infoId,
         name,
         thumbnail,
-        finished,
-        invisible,
+        genres,
       }): Promise<Result> => {
-        if (![name, thumbnail, finished, invisible].some((v) => v !== undefined)) {
+        if (![name, thumbnail, genres].some((v) => v !== undefined)) {
           return {
             success: false,
             code: 'QL0005',
             message: Errors.QL0005,
           };
         }
-        const info = await BookInfoModel.findOne({
+        let info = await BookInfoModel.findOne({
           where: { id: infoId },
+          include: [{
+            model: GenreModel,
+            as: 'genres',
+          }],
         });
         if (!info) {
           return {
@@ -194,15 +208,27 @@ class BookInfo extends GQLMiddleware {
             message: Errors.QL0001,
           };
         }
-        const val = Object.entries({
+        info = {
+          // @ts-ignore
+          ...info.dataValues,
+          genres: info.genres.map((g) => g.name),
+        };
+        const val: { [key: string]: any } = Object.entries({
           name,
           thumbnail,
-          finished,
-          invisible,
+          genres,
         }).reduce((o, e) => {
-          if (e[1] !== undefined && info[e[0]] !== e[1]) {
-            // eslint-disable-next-line no-param-reassign,prefer-destructuring
-            o[e[0]] = e[1];
+          if (e[1] !== undefined) {
+            if (Array.isArray(e[1])) {
+              if (info[e[0]].length === e[1].length
+                && e[1].filter((a) => !info[e[0]].includes(a)).length === 0) {
+                // eslint-disable-next-line no-param-reassign,prefer-destructuring
+                o[e[0]] = e[1];
+              }
+            } else if (info[e[0]] !== e[1]) {
+              // eslint-disable-next-line no-param-reassign,prefer-destructuring
+              o[e[0]] = e[1];
+            }
           }
           return o;
         }, {});
@@ -212,6 +238,10 @@ class BookInfo extends GQLMiddleware {
             code: 'QL0005',
             message: Errors.QL0005,
           };
+        }
+        if (val.genres) {
+          await GQLUtil.linkGenres(infoId, val.genres);
+          delete val.genres;
         }
         await BookInfoModel.update(val, {
           where: { id: infoId },
@@ -233,16 +263,28 @@ class BookInfo extends GQLMiddleware {
             });
           });
         });
-        await BookModel.destroy({
-          where: {
-            infoId,
-          },
+
+        await Database.sequelize.transaction(async (transaction) => {
+          await BookModel.destroy({
+            where: {
+              infoId,
+            },
+            transaction,
+          });
+          await BookInfoModel.destroy({
+            where: {
+              id: infoId,
+            },
+            transaction,
+          });
+          await InfoGenreModel.destroy({
+            where: {
+              infoId,
+            },
+            transaction,
+          });
         });
-        await BookInfoModel.destroy({
-          where: {
-            id: infoId,
-          },
-        });
+
         return {
           success: true,
           books: books.map((b) => ModelUtil.book(b, false)),

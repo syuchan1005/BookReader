@@ -1,7 +1,7 @@
 import { Association, DataTypes, Model } from 'sequelize';
-import bookInfo from './bookInfo';
+import BookInfo from './BookInfo';
 
-export default class genre extends Model {
+export default class Genre extends Model {
   public id!: string;
 
   public name!: string;
@@ -10,15 +10,15 @@ export default class genre extends Model {
 
   public readonly updatedAt!: Date;
 
-  public infos?: bookInfo[];
+  public infos?: BookInfo[];
 
   public static associations: {
-    infos: Association<genre, bookInfo>;
+    infos: Association<Genre, BookInfo>;
   };
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
-    genre.init({
+    Genre.init({
       id: {
         allowNull: false,
         primaryKey: true,
@@ -39,7 +39,7 @@ export default class genre extends Model {
   }
 
   public static associate() {
-    genre.belongsToMany(bookInfo, {
+    Genre.belongsToMany(BookInfo, {
       through: 'infoGenres',
       foreignKey: 'genreId',
       as: 'infos',
@@ -48,7 +48,7 @@ export default class genre extends Model {
   }
 
   public static async seed() {
-    await genre.upsert({ name: 'Invisible' });
-    await genre.upsert({ name: 'Finished' });
+    await Genre.upsert({ name: 'Invisible' });
+    await Genre.upsert({ name: 'Finished' });
   }
 }

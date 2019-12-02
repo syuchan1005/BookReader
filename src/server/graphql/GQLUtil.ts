@@ -15,7 +15,6 @@ import { Result } from '@common/GraphqlTypes';
 import { archiveTypes } from '@common/Common';
 
 import { SubscriptionKeys } from '@server/graphql';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
 import Errors from '@server/Errors';
 import {
   asyncForEach,
@@ -25,7 +24,10 @@ import {
   renameFile,
 } from '@server/Util';
 import Database from '@server/sequelize/models';
-import BookModel from '@server/sequelize/models/book';
+import BookModel from '@server/sequelize/models/Book';
+import InfoGenreModel from '@server/sequelize/models/InfoGenre';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
+import GenreModel from '../sequelize/models/Genre';
 
 const GQLUtil = {
   Mutation: {
@@ -327,6 +329,36 @@ const GQLUtil = {
       default:
         return undefined;
     }
+  },
+  async linkGenres(infoId: string, genres: string[]) {
+    const dbGenres = (await InfoGenreModel.findAll({
+      where: { infoId },
+      include: [{
+        model: GenreModel,
+        as: 'genre',
+      }],
+    })).map((g) => g.genre);
+
+    const rmGenres = dbGenres.filter((g) => !genres.includes(g.name));
+    const addGenres = genres.filter((g) => !dbGenres.find((v) => v.name === g));
+
+    await InfoGenreModel.destroy({
+      where: {
+        infoId,
+        genreId: rmGenres.map((g) => g.id),
+      },
+    });
+
+    const addedGenres = await GenreModel.bulkCreate(addGenres.map((name) => ({
+      name,
+    })), {
+      ignoreDuplicates: true,
+      returning: true,
+    });
+    await InfoGenreModel.bulkCreate(addedGenres.map((a) => ({
+      infoId,
+      genreId: a.id,
+    })));
   },
 };
 

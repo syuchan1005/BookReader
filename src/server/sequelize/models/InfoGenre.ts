@@ -1,8 +1,8 @@
 import { DataTypes, Association, Model } from 'sequelize';
-import genre from './genre';
-import bookInfo from './bookInfo';
+import GenreModel from './Genre';
+import BookInfoModel from './BookInfo';
 
-export default class infoGenre extends Model {
+export default class InfoGenre extends Model {
   public id!: number;
 
   public infoId!: string;
@@ -13,18 +13,18 @@ export default class infoGenre extends Model {
 
   public readonly updatedAt!: Date;
 
-  public readonly genre?: genre;
+  public readonly genre?: GenreModel;
 
-  public readonly info?: bookInfo;
+  public readonly info?: BookInfoModel;
 
   public static associations: {
-    genre: Association<infoGenre, genre>;
-    info: Association<infoGenre, bookInfo>;
+    genre: Association<InfoGenre, GenreModel>;
+    info: Association<InfoGenre, BookInfoModel>;
   };
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
-    infoGenre.init({
+    InfoGenre.init({
       id: {
         allowNull: false,
         primaryKey: true,
@@ -50,7 +50,7 @@ export default class infoGenre extends Model {
   }
 
   public static associate() {
-    infoGenre.belongsTo(genre, { foreignKey: 'genreId', as: 'genre' });
-    infoGenre.belongsTo(bookInfo, { foreignKey: 'infoId', as: 'info' });
+    InfoGenre.belongsTo(GenreModel, { foreignKey: 'genreId', as: 'genre' });
+    InfoGenre.belongsTo(BookInfoModel, { foreignKey: 'infoId', as: 'info' });
   }
 }
