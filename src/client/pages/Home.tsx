@@ -115,7 +115,10 @@ const Home: React.FC = (props: HomeProps) => {
       search: debounceSearch || '',
       order: store.sortOrder,
       history: store.history || !!debounceSearch,
-      genres: [store.invisible ? 'Invisible' : undefined].filter((v) => !!v),
+      genres: [
+        store.invisible ? 'Invisible' : undefined,
+        store.invisible && store.normal ? 'NO_GENRE' : undefined,
+      ].filter((v) => !!v),
     },
   });
 

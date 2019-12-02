@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
-import { Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
@@ -36,7 +36,7 @@ class BookInfo extends GQLMiddleware {
         offset,
         search,
         order,
-        genres = [],
+        genres: pureGenres = [],
         history,
       }): Promise<BookInfoList> => {
         const where: { [key: string]: any } = {};
@@ -45,7 +45,8 @@ class BookInfo extends GQLMiddleware {
             [Op.like]: `%${search}%`,
           };
         }
-        if (history) where.history = true;
+        if (!history) where.history = history;
+        const genres = pureGenres.filter((g) => g !== 'NO_GENRE');
         const noGenre = !genres || genres.length === 0;
         let genreIds;
         if (noGenre) {
@@ -73,6 +74,20 @@ class BookInfo extends GQLMiddleware {
             genreId: genreIds[0],
           }),
         })).map(({ infoId }) => infoId);
+        if ((pureGenres || []).includes('NO_GENRE')) {
+          const hasGenreIds = await InfoGenreModel.findAll({
+            attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
+          });
+          const ids = await BookInfoModel.findAll({
+            attributes: ['id'],
+            where: {
+              id: {
+                [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
+              },
+            },
+          });
+          inGenreInfoIds.push(...(ids.map(({ id }) => id)));
+        }
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
