@@ -117,7 +117,8 @@ const Home: React.FC = (props: HomeProps) => {
       history: store.history || !!debounceSearch,
       genres: [
         store.invisible ? 'Invisible' : undefined,
-        store.invisible && store.normal ? 'NO_GENRE' : undefined,
+        store.normal ? 'NO_GENRE' : undefined,
+        store.normal ? 'Finished' : undefined,
       ].filter((v) => !!v),
     },
   });

@@ -36,9 +36,10 @@ class BookInfo extends GQLMiddleware {
         offset,
         search,
         order,
-        genres: pureGenres = [],
+        genres = [],
         history,
       }): Promise<BookInfoList> => {
+        if (!genres || genres.length === 0) return { length: 0, infos: [] };
         const where: { [key: string]: any } = {};
         if (search) {
           where.name = {
@@ -46,35 +47,29 @@ class BookInfo extends GQLMiddleware {
           };
         }
         if (!history) where.history = history;
-        const genres = pureGenres.filter((g) => g !== 'NO_GENRE');
-        const noGenre = !genres || genres.length === 0;
-        let genreIds;
-        if (noGenre) {
-          genreIds = [(await GenreModel.findOne({
-            attributes: ['id'],
-            where: { name: 'Invisible' },
-          })).id];
-        } else {
-          genreIds = (await GenreModel.findAll({
+        const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
+        const inGenreInfoIds = [];
+        if (genresWithOutNoGenre.length > 0) {
+          const genreIds = (await GenreModel.findAll({
             attributes: ['id'],
             where: {
               name: {
-                [Op.in]: genres,
+                [Op.in]: genresWithOutNoGenre,
               },
             },
           })).map(({ id }) => id);
+          inGenreInfoIds.push(...(await InfoGenreModel.findAll({
+            attributes: ['infoId'],
+            where: (genreIds.length > 1 ? {
+              genreId: {
+                [Op.in]: genreIds,
+              },
+            } : {
+              genreId: genreIds[0],
+            }),
+          })).map(({ infoId }) => infoId));
         }
-        const inGenreInfoIds = (await InfoGenreModel.findAll({
-          attributes: ['infoId'],
-          where: (genreIds.length > 1 ? {
-            [Op.in]: {
-              genreId: genreIds,
-            },
-          } : {
-            genreId: genreIds[0],
-          }),
-        })).map(({ infoId }) => infoId);
-        if ((pureGenres || []).includes('NO_GENRE')) {
+        if (genres.includes('NO_GENRE')) {
           const hasGenreIds = await InfoGenreModel.findAll({
             attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
           });
@@ -93,7 +88,7 @@ class BookInfo extends GQLMiddleware {
           offset,
           where: {
             id: {
-              [noGenre ? Op.notIn : Op.in]: inGenreInfoIds,
+              [Op.in]: inGenreInfoIds,
             },
             ...where,
           },
@@ -107,7 +102,7 @@ class BookInfo extends GQLMiddleware {
         const length = await BookInfoModel.count({
           where: {
             id: {
-              [noGenre ? Op.notIn : Op.in]: inGenreInfoIds,
+              [Op.in]: inGenreInfoIds,
             },
             ...where,
           },
