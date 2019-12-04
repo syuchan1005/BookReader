@@ -75,10 +75,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: theme.spacing(1),
     borderRadius: theme.spacing(1),
   },
-  finishedLabel: {
+  completedLabel: {
     position: 'absolute',
-    bottom: theme.spacing(1),
-    left: theme.spacing(-3.5),
+    bottom: theme.spacing(2),
+    left: theme.spacing(-4),
     background: 'rgba(0, 0, 0, 0.7)',
     color: 'white',
     fontSize: '1rem',
@@ -114,7 +114,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     onEdit,
   } = props;
 
-  const finished = React.useMemo(() => genres.includes('Finished'), [genres]);
+  const finished = React.useMemo(() => genres.includes('Completed'), [genres]);
   const invisible = React.useMemo(() => genres.includes('Invisible'), [genres]);
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
@@ -148,7 +148,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         id: infoId,
         name: editContent.name,
         genres: [
-          editContent.finished ? 'Finished' : undefined,
+          editContent.finished ? 'Completed' : undefined,
           editContent.invisible ? 'Invisible' : undefined,
         ].filter((v) => !!v),
       },
@@ -221,7 +221,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           <div className={classes.historyLabel}>History</div>
         ) : null}
         {(finished) ? (
-          <div className={classes.finishedLabel}>finished</div>
+          <div className={classes.completedLabel}>Completed</div>
         ) : null}
         {(invisible) ? (
           <Icon className={classes.invisibleLabel}>visibility_off</Icon>

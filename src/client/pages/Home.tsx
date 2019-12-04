@@ -118,7 +118,7 @@ const Home: React.FC = (props: HomeProps) => {
       genres: [
         store.invisible ? 'Invisible' : undefined,
         store.normal ? 'NO_GENRE' : undefined,
-        store.normal ? 'Finished' : undefined,
+        store.normal ? 'Completed' : undefined,
       ].filter((v) => !!v),
     },
   });
