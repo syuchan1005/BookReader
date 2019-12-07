@@ -1,11 +1,11 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
-import { promises as fs } from 'fs';
+import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
 
 import { Result } from '@common/GraphqlTypes';
 import BookModel from '@server/sequelize/models/Book';
-import { asyncForEach } from '@server/Util';
+import { asyncForEach, removeBookCache } from '@server/Util';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
@@ -152,6 +152,44 @@ class Page extends GQLMiddleware {
             id: bookId,
           },
         });
+
+        return {
+          success: true,
+        };
+      },
+      editPage: async (parent, { id: bookId, page, image }): Promise<Result> => {
+        const book = await BookModel.findOne({ where: { id: bookId } });
+        if (!book) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
+        if (page < 0 || page >= book.pages) {
+          return {
+            success: false,
+            code: 'QL0007',
+            message: Errors.QL0007,
+          };
+        }
+
+        const { createReadStream, mimetype } = await image;
+        if (!mimetype.startsWith('image/jpeg')) {
+          return {
+            success: false,
+            code: 'QL0000',
+            message: Errors.QL0000,
+          };
+        }
+
+        await new Promise((resolve) => {
+          const wStream = createWriteStream(`storage/book/${bookId}/${page.toString(10).padStart(book.pages.toString(10).length, '0')}.jpg`, { flags: 'w' });
+          const rStream = createReadStream();
+          rStream.pipe(wStream);
+          wStream.on('close', resolve);
+        });
+        await removeBookCache(bookId, page, book.pages);
 
         return {
           success: true,

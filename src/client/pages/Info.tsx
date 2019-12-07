@@ -174,6 +174,7 @@ const Info: React.FC = (props: InfoProps) => {
                     onDeleted={() => onDeletedBook(book)}
                     onEdit={() => refetch()}
                     thumbnailSize={downXs ? 150 : 200}
+                    thumbnailNoSave={false}
                   />
                 ),
               )

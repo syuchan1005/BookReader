@@ -84,6 +84,7 @@
       "debug": "^4.1.1",
       "du": "^1.0.0",
       "execa": "^3.4.0",
+      "filerobot-image-editor": "^3.4.2",
       "gm": "^1.23.1",
       "graphql": "^14.5.8",
       "graphql-subscriptions": "^1.1.0",

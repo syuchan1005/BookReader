@@ -28,11 +28,13 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
+import loadable from '@loadable/component';
 import { hot } from 'react-hot-loader/root';
 
 import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
 import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
 import * as SplitMutation from '@client/graphqls/Pages_Page_split.gql';
+import * as EditPageMutation from '@client/graphqls/Pages_Page_edit.gql';
 
 import { Book as BookType, Result } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
@@ -45,6 +47,8 @@ import db from '../Database';
 import Img from '../components/Img';
 import DeleteDialog from '../components/dialogs/DeleteDialog';
 import useNetworkType from '../hooks/useNetworkType';
+
+const FilerobotImageEditor = loadable(() => import(/* webpackChunkName: 'ImageEditor' */ 'filerobot-image-editor'));
 
 interface BookProps {
   children?: React.ReactElement;
@@ -195,6 +199,7 @@ const Book: React.FC = (props: BookProps) => {
   const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
+  const [editPage, setEditPage] = React.useState(undefined);
 
   React.useEffect(() => {
     updatePage(0);
@@ -227,7 +232,7 @@ const Book: React.FC = (props: BookProps) => {
   }, [store.showAppBar]);
 
   const {
-    loading,
+    loading: queryLoading,
     error,
     data,
   } = useQuery<{ book: BookType }>(BookQuery, {
@@ -274,6 +279,19 @@ const Book: React.FC = (props: BookProps) => {
       window.location.reload();
     },
   });
+
+  const [editPageMutation, {
+    loading: editLoading,
+  }] = useMutation<{ edit: Result }>(EditPageMutation, {
+    variables: {
+      id: params.id,
+    },
+    onCompleted() {
+      window.location.reload();
+    },
+  });
+
+  const loading = React.useMemo(() => queryLoading || editLoading, [queryLoading, editLoading]);
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
@@ -367,10 +385,17 @@ const Book: React.FC = (props: BookProps) => {
     }
   }, [isPageSet, page]);
 
+  const editSrc = React.useMemo(() => {
+    if (editPage === undefined) return undefined;
+    const pad = data.book.pages.toString(10).length;
+    return `/book/${params.id}/${editPage.toString(10).padStart(pad, '0')}.jpg`;
+  }, [editPage, params.id, data]);
+
   useKey('ArrowRight', () => [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
   useKey('ArrowLeft', () => [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
 
   const clickPage = React.useCallback((event) => {
+    if (editSrc) return;
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     switch (store.readOrder) {
       case 0:
@@ -386,7 +411,7 @@ const Book: React.FC = (props: BookProps) => {
       default:
         setShowAppBar(undefined);
     }
-  }, [store.readOrder, increment, decrement]);
+  }, [store.readOrder, increment, decrement, editSrc]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -421,6 +446,12 @@ const Book: React.FC = (props: BookProps) => {
     setShowOriginalImage(networkType === 'ethernet');
   }, [networkType]);
 
+  const imageEditorConfig = React.useMemo(() => ({
+    tools: ['adjust', 'rotate', 'crop', 'resize'],
+    translations: { en: { 'toolbar.download': 'Upload' } },
+    colorScheme: store.theme,
+  }), [store.theme]);
+
   if (loading || error) {
     return (
       <div className={classes.loading}>
@@ -435,6 +466,27 @@ const Book: React.FC = (props: BookProps) => {
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
+      {(editSrc) && (
+        <FilerobotImageEditor
+          show={editSrc}
+          src={editSrc}
+          config={imageEditorConfig}
+          onClose={() => setEditPage(undefined)}
+          onBeforeComplete={() => false}
+          onComplete={({ canvas }) => {
+            canvas.toBlob((image) => {
+              if (image) {
+                editPageMutation({
+                  variables: {
+                    image,
+                    page: editPage,
+                  },
+                });
+              }
+            }, 'image/jpeg', 0.9);
+          }}
+        />
+      )}
       {/* eslint-disable-next-line */}
       <div
         className={classes.overlay}
@@ -496,6 +548,11 @@ const Book: React.FC = (props: BookProps) => {
                   onClick={() => setShowOriginalImage(!showOriginalImage)}
                 >
                   {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                </MenuItem>
+                <MenuItem
+                  onClick={() => { setEditPage(page); setSettingsMenuAnchor(null); }}
+                >
+                  Edit this page
                 </MenuItem>
               </Menu>
               <DeleteDialog

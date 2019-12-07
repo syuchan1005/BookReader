@@ -66,3 +66,11 @@ export const renameFile = async (srcPath: string, destPath: string, fallback = t
     });
   }
 };
+
+export const removeBookCache = async (bookId, page, pages) => {
+  const pageStr = page.toString(10).padStart(pages.toString(10).length, '0');
+  const dirPath = `storage/cache/book/${bookId}`;
+  const files = (await fs.readdir(dirPath))
+    .filter((f) => f.startsWith(pageStr) && ['.', '_'].includes(f[pageStr.length]));
+  await Promise.all(files.map((f) => fs.unlink(`${dirPath}/${f}`)));
+};
