@@ -99,6 +99,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     height: '100%',
     objectFit: 'contain',
     paddingTop: commonTheme.safeArea.top,
+    '-webkit-touch-callout': 'none',
+    'user-select': 'none',
   },
   overlay: {
     zIndex: 1,
