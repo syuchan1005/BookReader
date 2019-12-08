@@ -34,7 +34,7 @@ import { DebugFolderSizes } from '@common/GraphqlTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
 import { SortOrder } from '@client/store/reducers';
-import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { useLazyQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
 
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
@@ -197,6 +197,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
 
   const { enqueueSnackbar } = useSnackbar();
+  const apolloClient = useApolloClient();
 
   const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<{
     sizes: DebugFolderSizes,
@@ -210,6 +211,8 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   });
 
   React.useEffect(() => {
+    // @ts-ignore
+    apolloClient.snackbar = enqueueSnackbar;
     if (props.wb) {
       dispatch({ wb: props.wb });
       props.wb.addEventListener('installed', (event) => {
