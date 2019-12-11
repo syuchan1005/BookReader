@@ -304,13 +304,13 @@ const Book: React.FC = (props: BookProps) => {
     setPage(Math.min(page + 1, data.book.pages - 1));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, store.showAppBar]);
+  }, [page, data, nextBook, store.showAppBar, setPage]);
 
   const decrement = React.useCallback(() => {
     setPage(Math.max(page - 1, 0));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, store.showAppBar]);
+  }, [page, data, prevBook, store.showAppBar, setPage]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -547,14 +547,14 @@ const Book: React.FC = (props: BookProps) => {
                   Remove this page
                 </MenuItem>
                 <MenuItem
-                  onClick={() => setShowOriginalImage(!showOriginalImage)}
-                >
-                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
-                </MenuItem>
-                <MenuItem
                   onClick={() => { setEditPage(page); setSettingsMenuAnchor(null); }}
                 >
                   Edit this page
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setShowOriginalImage(!showOriginalImage)}
+                >
+                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
                 </MenuItem>
               </Menu>
               <DeleteDialog
