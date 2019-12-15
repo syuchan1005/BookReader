@@ -44,7 +44,11 @@ type Mutation {
     ## Page
     deletePages(id: ID! pages: IntRange!): Result!
     splitPages(id: ID! pages: IntRange! type: SplitType = VERTICAL): Result!
-    editPage(id: ID! page: Int!, image: Upload!): Result!
+    editPage(id: ID! page: Int! image: Upload!): Result!
+    # if beforePage 0   -> 0, put, 1
+    # if beforePage -1  -> put, 0, 1
+    # if beforePage 100 -> 100, put, 101
+    putPage(id: ID! beforePage: Int! image: Upload!): Result!
 
     ## Debug
     debug_deleteUnusedFolders: Result!

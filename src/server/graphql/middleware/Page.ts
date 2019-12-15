@@ -5,7 +5,7 @@ import { orderBy } from 'natural-orderby';
 
 import { Result } from '@common/GraphqlTypes';
 import BookModel from '@server/sequelize/models/Book';
-import { asyncForEach, removeBookCache } from '@server/Util';
+import { asyncForEach, removeBookCache, renameFile } from '@server/Util';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
@@ -190,6 +190,87 @@ class Page extends GQLMiddleware {
           wStream.on('close', resolve);
         });
         await removeBookCache(bookId, page, book.pages);
+
+        return {
+          success: true,
+        };
+      },
+      putPage: async (parent, { id: bookId, beforePage, image }): Promise<Result> => {
+        const book = await BookModel.findOne({ where: { id: bookId } });
+        if (!book) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
+
+        if (beforePage < -1 || beforePage >= book.pages) {
+          return {
+            success: false,
+            code: 'QL0007',
+            message: Errors.QL0007,
+          };
+        }
+        const bookPath = `storage/book/${bookId}`;
+        const pad = book.pages.toString(10).length;
+
+        const { createReadStream, mimetype } = await image;
+        if (!mimetype.startsWith('image/jpeg')) {
+          return {
+            success: false,
+            code: 'QL0000',
+            message: Errors.QL0000,
+          };
+        }
+
+        if (beforePage === -1) {
+          await renameFile(
+            `${bookPath}/${'0'.repeat(pad)}.jpg`,
+            `${bookPath}/${'0'.repeat(pad)}-1.jpg`,
+          );
+          await new Promise((resolve) => {
+            const wStream = createWriteStream(`${bookPath}/${beforePage.toString(10).padStart(pad, '0')}-0.jpg`, { flags: 'w' });
+            const rStream = createReadStream();
+            rStream.pipe(wStream);
+            wStream.on('close', resolve);
+          });
+        } else if (beforePage === book.pages) {
+          await new Promise((resolve) => {
+            const wStream = createWriteStream(`${bookPath}/${beforePage.toString(10).padStart(pad, '0')}.jpg`, { flags: 'w' });
+            const rStream = createReadStream();
+            rStream.pipe(wStream);
+            wStream.on('close', resolve);
+          });
+        } else {
+          await renameFile(
+            `${beforePage}/${beforePage.toString(10).padStart(pad, '0')}.jpg`,
+            `${beforePage}/${beforePage.toString(10).padStart(pad, '0')}-0.jpg`,
+          );
+
+          await new Promise((resolve) => {
+            const wStream = createWriteStream(`${bookPath}/${beforePage.toString(10).padStart(pad, '0')}-1.jpg`, { flags: 'w' });
+            const rStream = createReadStream();
+            rStream.pipe(wStream);
+            wStream.on('close', resolve);
+          });
+        }
+
+        if (beforePage !== book.pages) {
+          const files = orderBy((await fs.readdir(bookPath)), [
+            (v) => Number(v.match(/\d+/g)[0]),
+            (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
+          ], ['asc', 'desc']);
+          await GQLUtil.numberingFiles(bookPath, (book.pages + 1).toString(10).length, files);
+        }
+
+        await BookModel.update({
+          pages: book.pages + 1,
+        }, {
+          where: {
+            id: bookId,
+          },
+        });
 
         return {
           success: true,

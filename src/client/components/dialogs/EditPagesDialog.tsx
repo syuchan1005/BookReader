@@ -43,7 +43,7 @@ const parsePagesStr = (pages, maxPage): string | IntRange => {
       }
       return Number(m[1]) - 1;
     });
-  if (!pageList.every((s) => s)) return 'Format error';
+  if (!pageList.every((s) => s !== undefined)) return 'Format error';
   if (!pageList.every((s) => {
     if (Array.isArray(s)) {
       return s[0] >= 0 && s[0] < maxPage && s[1] >= 0 && s[1] < maxPage;
