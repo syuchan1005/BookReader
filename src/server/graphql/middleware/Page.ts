@@ -230,7 +230,7 @@ class Page extends GQLMiddleware {
             `${bookPath}/${'0'.repeat(pad)}-1.jpg`,
           );
           await new Promise((resolve) => {
-            const wStream = createWriteStream(`${bookPath}/${beforePage.toString(10).padStart(pad, '0')}-0.jpg`, { flags: 'w' });
+            const wStream = createWriteStream(`${bookPath}/${'0'.repeat(pad)}-0.jpg`, { flags: 'w' });
             const rStream = createReadStream();
             rStream.pipe(wStream);
             wStream.on('close', resolve);
@@ -244,8 +244,8 @@ class Page extends GQLMiddleware {
           });
         } else {
           await renameFile(
-            `${beforePage}/${beforePage.toString(10).padStart(pad, '0')}.jpg`,
-            `${beforePage}/${beforePage.toString(10).padStart(pad, '0')}-0.jpg`,
+            `${bookPath}/${beforePage.toString(10).padStart(pad, '0')}.jpg`,
+            `${bookPath}/${beforePage.toString(10).padStart(pad, '0')}-0.jpg`,
           );
 
           await new Promise((resolve) => {
@@ -260,8 +260,8 @@ class Page extends GQLMiddleware {
           const files = orderBy((await fs.readdir(bookPath)), [
             (v) => Number(v.match(/\d+/g)[0]),
             (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
-          ], ['asc', 'desc']);
-          await GQLUtil.numberingFiles(bookPath, (book.pages + 1).toString(10).length, files);
+          ], ['asc', 'asc']);
+          await GQLUtil.numberingFiles(bookPath, (book.pages + 1).toString(10).length, files, true);
         }
 
         await BookModel.update({

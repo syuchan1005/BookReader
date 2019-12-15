@@ -14,6 +14,7 @@ import loadable from '@loadable/component';
 import * as EditPageMutation from '@client/graphqls/EditPagesDialog_edit.gql';
 import * as SplitMutation from '@client/graphqls/EditPagesDialog_split.gql';
 import * as DeleteMutation from '@client/graphqls/EditPagesDialog_delete.gql';
+import * as PutPageMutation from '@client/graphqls/EditPagesDialog_put.gql';
 import { useMutation } from '@apollo/react-hooks';
 import { Result } from '@common/GraphqlTypes';
 import DeleteDialog from './DeleteDialog';
@@ -79,10 +80,16 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
 
   const [editType, setEditType] = React.useState('delete');
   const [editPages, setEditPages] = React.useState('');
-  const [cropPage, setCropPage] = React.useState(1);
+  const [editPage, setEditPage] = React.useState(1);
   const [openCropDialog, setOpenCropDialog] = React.useState(false);
   const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
+  const [openPutDialog, setOpenPutDialog] = React.useState(false);
+
+  const openEditor = React.useMemo(
+    () => openCropDialog || openPutDialog,
+    [openCropDialog, openPutDialog],
+  );
 
   const [editPageMutation, {
     loading: editLoading,
@@ -117,20 +124,31 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
     },
   });
 
+  const [putPageMutation, {
+    loading: putLoading,
+  }] = useMutation<{ edit: Result }>(PutPageMutation, {
+    variables: {
+      id: bookId,
+    },
+    onCompleted() {
+      window.location.reload();
+    },
+  });
+
   React.useEffect(() => {
-    setCropPage(openPage + 1);
+    setEditPage(openPage + 1);
     setEditPages(`${openPage + 1}`);
   }, [openPage]);
 
   const onClose = React.useCallback(() => {
-    if (editLoading) return;
+    if (editLoading || putLoading) return;
     propsOnClose();
   }, [propsOnClose, editLoading]);
 
-  const cropImgSrc = React.useMemo(() => {
+  const editImgSrc = React.useMemo(() => {
     const pad = maxPage.toString(10).length;
-    return `/book/${bookId}/${(cropPage - 1).toString(10).padStart(pad, '0')}.jpg`;
-  }, [maxPage, cropPage, bookId]);
+    return `/book/${bookId}/${(editPage - 1).toString(10).padStart(pad, '0')}.jpg`;
+  }, [maxPage, editPage, bookId]);
 
   const imageEditorConfig = React.useMemo(() => ({
     tools: ['adjust', 'rotate', 'crop', 'resize'],
@@ -142,35 +160,45 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
     if (editType === 'crop') setOpenCropDialog(true);
     else if (editType === 'delete') setOpenDeleteDialog(true);
     else if (editType === 'split') setOpenSplitDialog(true);
+    else if (editType === 'put') setOpenPutDialog(true);
   }, [editType]);
 
   const inputValidate = React.useMemo(() => {
     if (editType === 'crop') {
-      return (cropPage > 0 && cropPage <= maxPage) ? false : 'Range error';
+      return (editPage > 0 && editPage <= maxPage) ? false : 'Range error';
     }
     const p = parsePagesStr(editPages, maxPage);
     if (typeof p === 'string') return p;
     return false;
-  }, [editType, cropPage, editPages, maxPage]);
+  }, [editType, editPage, editPages, maxPage]);
 
   return (
     <Dialog open={open} onClose={onClose}>
-      {(openCropDialog) && (
+      {(openEditor) && (
         <FilerobotImageEditor
-          show={openCropDialog}
-          src={cropImgSrc}
+          show={openEditor}
+          src={editImgSrc}
           config={imageEditorConfig}
-          onClose={() => setOpenCropDialog(false)}
+          onClose={() => { setOpenCropDialog(false); setOpenPutDialog(false); }}
           onBeforeComplete={() => false}
           onComplete={({ canvas }) => {
             canvas.toBlob((image) => {
               if (image) {
-                editPageMutation({
-                  variables: {
-                    image,
-                    page: (cropPage - 1),
-                  },
-                });
+                if (openCropDialog) {
+                  editPageMutation({
+                    variables: {
+                      image,
+                      page: (editPage - 1),
+                    },
+                  });
+                } else {
+                  putPageMutation({
+                    variables: {
+                      image,
+                      beforePage: (editPage - 2),
+                    },
+                  });
+                }
               }
             }, 'image/jpeg', 0.9);
           }}
@@ -245,23 +273,25 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
           <FormControlLabel label="CropAndResize" value="crop" control={<Radio />} />
           <FormControlLabel label="Split" value="split" control={<Radio />} />
           <FormControlLabel label="Delete" value="delete" control={<Radio />} />
+          <FormControlLabel label="Edit and Put Before Page" value="put" control={<Radio />} />
         </RadioGroup>
 
-        {(editType === 'crop') ? (
+        {(editType === 'crop' || editType === 'put') ? (
           <TextField
             error={!!inputValidate}
             helperText={inputValidate}
             type="number"
             label={`page(max: ${maxPage})`}
             color="secondary"
-            value={cropPage}
-            onChange={(e) => setCropPage(Number(e.target.value))}
+            value={editPage}
+            onChange={(e) => setEditPage(Number(e.target.value))}
           />
         ) : (
           <TextField
             error={!!inputValidate}
             helperText={inputValidate}
             label={`pages(max: ${maxPage})`}
+            placeholder="ex. 1, 2, 3-5"
             color="secondary"
             value={editPages}
             onChange={(e) => setEditPages(e.target.value)}

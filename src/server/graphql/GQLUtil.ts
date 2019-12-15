@@ -302,7 +302,7 @@ const GQLUtil = {
       bookFolders,
     };
   },
-  async numberingFiles(folderPath: string, pad: number, fileList?: string[]) {
+  async numberingFiles(folderPath: string, pad: number, fileList?: string[], reverse = false) {
     const files = fileList || orderBy(await fs.readdir(folderPath));
     return asyncMap(files, (f, i) => {
       const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
@@ -310,7 +310,7 @@ const GQLUtil = {
         return renameFile(`${folderPath}/${f}`, `${folderPath}/${dist}`);
       }
       return Promise.resolve();
-    });
+    }, reverse);
   },
   bookInfoOrderToOrderBy(order): string[] | undefined {
     switch (order) {
