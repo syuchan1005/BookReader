@@ -2,6 +2,7 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
+import * as rimraf from 'rimraf';
 
 import { Result } from '@common/GraphqlTypes';
 import BookModel from '@server/sequelize/models/Book';
@@ -45,6 +46,9 @@ class Page extends GQLMiddleware {
         pad = (book.pages - numbers.length).toString(10).length;
 
         await GQLUtil.numberingFiles(bookPath, pad);
+        await new Promise((resolve) => {
+          rimraf(`storage/cache/book/${book.id}`, () => resolve());
+        });
 
         await BookModel.update({
           pages: book.pages - numbers.length,
@@ -144,6 +148,9 @@ class Page extends GQLMiddleware {
           (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
         ], ['asc', 'desc']);
         await GQLUtil.numberingFiles(bookPath, pageCount.toString(10).length, files);
+        await new Promise((resolve) => {
+          rimraf(`storage/cache/book/${book.id}`, () => resolve());
+        });
 
         await BookModel.update({
           pages: pageCount,
@@ -262,6 +269,9 @@ class Page extends GQLMiddleware {
             (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
           ], ['asc', 'asc']);
           await GQLUtil.numberingFiles(bookPath, (book.pages + 1).toString(10).length, files, true);
+          await new Promise((resolve) => {
+            rimraf(`storage/cache/book/${book.id}`, () => resolve());
+          });
         }
 
         await BookModel.update({
