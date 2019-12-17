@@ -2,7 +2,7 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
-import * as rimraf from 'rimraf';
+import rimraf from 'rimraf';
 
 import { Result } from '@common/GraphqlTypes';
 import BookModel from '@server/sequelize/models/Book';
