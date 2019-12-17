@@ -39,6 +39,7 @@ import { useLazyQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
 import ColorTile from '@client/components/ColorTile';
+import { useApollo } from '@client/apollo/ApolloProvider';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -98,7 +99,6 @@ const wrapSize = (size) => {
 
 interface AppProps {
   wb: any;
-  persistor: any;
 }
 
 // @ts-ignore
@@ -173,6 +173,7 @@ const history = createBrowserHistory();
 
 const App: React.FC<AppProps> = (props: AppProps) => {
   const { state: store, dispatch } = useGlobalStore();
+  const { persistor } = useApollo();
   const classes = useStyles(props);
 
   const theme = useMatchMedia(
@@ -185,7 +186,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     if (store.theme !== theme) {
       dispatch({ theme });
     }
-  }, [theme]);
+  }, [theme, store.theme]);
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
@@ -248,10 +249,11 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     } else {
       history.goBack();
     }
-  }, [history, store, dispatch]);
+  }, [history, store.backRoute, dispatch]);
 
+  /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
-    (i !== 1 ? props.persistor.purge() : Promise.resolve())
+    (i !== 1 ? persistor.purge() : Promise.resolve())
       .then(() => {
         if (store.wb && i === 1) {
           navigator.serviceWorker.addEventListener('message', () => {
@@ -267,7 +269,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
           window.location.reload();
         }
       });
-  }, [store]);
+  }, [store.wb]);
 
   const provideTheme = React.useMemo(
     () => createMuiTheme({

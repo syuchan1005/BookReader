@@ -30,6 +30,8 @@ interface EditPagesDialogProps {
   maxPage: number;
   bookId: string;
   theme: 'light' | 'dark';
+  wb?: any;
+  persistor?: any;
 }
 
 const parsePagesStr = (pages, maxPage): string | IntRange => {
@@ -76,6 +78,8 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
     maxPage,
     bookId,
     theme,
+    wb,
+    persistor,
   } = props;
 
   const [editType, setEditType] = React.useState('delete');
@@ -91,6 +95,25 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
     [openCropDialog, openPutDialog],
   );
 
+  const purgeCache = React.useCallback(() => {
+    (persistor ? persistor.purge() : Promise.resolve())
+      .then(() => {
+        if (wb) {
+          navigator.serviceWorker.addEventListener('message', () => {
+            window.location.reload();
+          });
+          wb.messageSW({
+            type: 'PURGE_CACHE',
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 10 * 1000);
+        } else {
+          window.location.reload();
+        }
+      });
+  }, [wb, persistor]);
+
   const [editPageMutation, {
     loading: editLoading,
   }] = useMutation<{ edit: Result }>(EditPageMutation, {
@@ -98,7 +121,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       id: bookId,
     },
     onCompleted() {
-      window.location.reload();
+      purgeCache();
     },
   });
 
@@ -109,7 +132,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       id: bookId,
     },
     onCompleted() {
-      window.location.reload();
+      purgeCache();
     },
   });
 
@@ -120,7 +143,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       id: bookId,
     },
     onCompleted() {
-      window.location.reload();
+      purgeCache();
     },
   });
 
@@ -131,7 +154,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       id: bookId,
     },
     onCompleted() {
-      window.location.reload();
+      purgeCache();
     },
   });
 

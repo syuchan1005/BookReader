@@ -38,6 +38,7 @@ import db from '../Database';
 import Img from '../components/Img';
 import useNetworkType from '../hooks/useNetworkType';
 import EditPagesDialog from '../components/dialogs/EditPagesDialog';
+import { useApollo } from '../apollo/ApolloProvider';
 
 interface BookProps {
   children?: React.ReactElement;
@@ -164,6 +165,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Book: React.FC = (props: BookProps) => {
   const { state: store, dispatch } = useGlobalStore();
+  const { persistor } = useApollo();
   const classes = useStyles(props);
   const history = useHistory();
   const params = useParams<{ id: string }>();
@@ -402,6 +404,8 @@ const Book: React.FC = (props: BookProps) => {
         maxPage={data ? data.book.pages : 0}
         bookId={params.id}
         theme={store.theme}
+        wb={store.wb}
+        persistor={persistor}
       />
 
       {/* eslint-disable-next-line */}
