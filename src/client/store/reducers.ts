@@ -21,6 +21,7 @@ export interface IState {
   secondary: string;
   webp: boolean;
   readOrder: number;
+  showOriginalImage: boolean;
 }
 
 export const initialState: IState = {
@@ -40,7 +41,8 @@ export const initialState: IState = {
   primary: 'green',
   secondary: 'blue',
   webp: false,
-  readOrder: 0, // LtoR, RtoL
+  readOrder: 1, // LtoR, RtoL
+  showOriginalImage: false,
 };
 
 const rootReducer = (prevState, action) => {

@@ -177,7 +177,6 @@ const Book: React.FC = (props: BookProps) => {
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [isPageSet, setPageSet] = React.useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
-  const [showOriginalImage, setShowOriginalImage] = React.useState(false);
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
@@ -367,10 +366,10 @@ const Book: React.FC = (props: BookProps) => {
     const sizes = [width, height];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
     const pad = data.book.pages.toString(10).length;
-    const suffix = showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
+    const suffix = store.showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
     return [...Array(data.book.pages).keys()]
       .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}${suffix}.jpg`);
-  }, [data, showOriginalImage, width, height]);
+  }, [data, store.showOriginalImage, width, height]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -380,7 +379,7 @@ const Book: React.FC = (props: BookProps) => {
   const networkType = useNetworkType();
 
   React.useEffect(() => {
-    setShowOriginalImage(networkType === 'ethernet');
+    dispatch({ showOriginalImage: networkType === 'ethernet' });
   }, [networkType]);
 
   if (loading || error) {
@@ -459,9 +458,9 @@ const Book: React.FC = (props: BookProps) => {
                   Edit pages
                 </MenuItem>
                 <MenuItem
-                  onClick={() => setShowOriginalImage(!showOriginalImage)}
+                  onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
                 >
-                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                  {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
                 </MenuItem>
               </Menu>
               <Button
