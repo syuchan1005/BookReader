@@ -32,5 +32,6 @@ $ docker run \
 ## develop use
 ```shell script
 $ npm install
+$ npm run db:migrate
 $ npm run serve
 ```

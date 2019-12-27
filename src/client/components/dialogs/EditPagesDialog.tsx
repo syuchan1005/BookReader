@@ -1,22 +1,37 @@
 import * as React from 'react';
 import {
+  Button,
+  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
-  Button,
-  TextField,
-  RadioGroup,
+  DialogContentText,
+  DialogTitle,
+  FormControlLabel,
+  FormLabel,
+  makeStyles,
   Radio,
-  FormControlLabel, FormLabel, DialogTitle, DialogContentText, makeStyles, createStyles,
+  RadioGroup,
+  TextField,
 } from '@material-ui/core';
 import loadable from '@loadable/component';
 
-import * as EditPageMutation from '@client/graphqls/EditPagesDialog_edit.gql';
-import * as SplitMutation from '@client/graphqls/EditPagesDialog_split.gql';
-import * as DeleteMutation from '@client/graphqls/EditPagesDialog_delete.gql';
-import * as PutPageMutation from '@client/graphqls/EditPagesDialog_put.gql';
+import {
+  DeletePagesMutation as DeletePagesMutationType,
+  DeletePagesMutationVariables,
+  EditPageMutation as EditPageMutationType,
+  EditPageMutationVariables,
+  PutPageMutation as PutPageMutationType,
+  PutPageMutationVariables,
+  SplitPagesMutation as SplitPagesMutationType,
+  SplitPagesMutationVariables,
+  SplitType,
+} from '@common/GQLTypes';
+import EditPageMutation from '@client/graphqls/EditPagesDialog_edit.gql';
+import SplitMutation from '@client/graphqls/EditPagesDialog_split.gql';
+import DeleteMutation from '@client/graphqls/EditPagesDialog_delete.gql';
+import PutPageMutation from '@client/graphqls/EditPagesDialog_put.gql';
 import { useMutation } from '@apollo/react-hooks';
-import { Result } from '@common/GraphqlTypes';
 import DeleteDialog from './DeleteDialog';
 
 const FilerobotImageEditor = loadable(() => import(/* webpackChunkName: 'ImageEditor' */ 'filerobot-image-editor'));
@@ -116,7 +131,8 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
 
   const [editPageMutation, {
     loading: editLoading,
-  }] = useMutation<{ edit: Result }>(EditPageMutation, {
+  }] = useMutation<EditPageMutationType, EditPageMutationVariables>(EditPageMutation, {
+    // @ts-ignore
     variables: {
       id: bookId,
     },
@@ -127,7 +143,8 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
 
   const [splitPage, {
     loading: splitLoading,
-  }] = useMutation<{ split: Result }>(SplitMutation, {
+  }] = useMutation<SplitPagesMutationType, SplitPagesMutationVariables>(SplitMutation, {
+    // @ts-ignore
     variables: {
       id: bookId,
     },
@@ -138,7 +155,8 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
 
   const [deletePage, {
     loading: deleteLoading,
-  }] = useMutation<{ del: Result }>(DeleteMutation, {
+  }] = useMutation<DeletePagesMutationType, DeletePagesMutationVariables>(DeleteMutation, {
+    // @ts-ignore
     variables: {
       id: bookId,
     },
@@ -149,7 +167,8 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
 
   const [putPageMutation, {
     loading: putLoading,
-  }] = useMutation<{ edit: Result }>(PutPageMutation, {
+  }] = useMutation<PutPageMutationType, PutPageMutationVariables>(PutPageMutation, {
+    // @ts-ignore
     variables: {
       id: bookId,
     },
@@ -208,6 +227,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             canvas.toBlob((image) => {
               if (image) {
                 if (openCropDialog) {
+                  // noinspection JSIgnoredPromiseFromCall
                   editPageMutation({
                     variables: {
                       image,
@@ -215,6 +235,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
                     },
                   });
                 } else {
+                  // noinspection JSIgnoredPromiseFromCall
                   putPageMutation({
                     variables: {
                       image,
@@ -242,7 +263,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             <Button
               disabled={splitLoading}
               classes={{ label: classes.splitButton }}
-              onClick={() => splitPage({ variables: { pages: parsePagesStr(editPages, maxPage), type: 'VERTICAL' } })}
+              onClick={() => splitPage({ variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Vertical } })}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                 <polygon
@@ -257,7 +278,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             <Button
               disabled={splitLoading}
               classes={{ label: classes.splitButton }}
-              onClick={() => splitPage({ variables: { pages: parsePagesStr(editPages, maxPage), type: 'HORIZONTAL' } })}
+              onClick={() => splitPage({ variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Horizontal } })}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                 <polygon

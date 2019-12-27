@@ -11,18 +11,12 @@ import { orderBy, orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
-import { Result } from '@common/GraphqlTypes';
+import { BookInfoOrder, MutationAddBookArgs, Result } from '@common/GQLTypes';
 import { archiveTypes } from '@common/Common';
 
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
-import {
-  asyncForEach,
-  asyncMap,
-  mkdirpIfNotExists,
-  readdirRecursively,
-  renameFile,
-} from '@server/Util';
+import { asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile, } from '@server/Util';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
@@ -35,8 +29,8 @@ const GQLUtil = {
       id: infoId,
       number,
       file,
-      thumbnail,
-    }, context, info, customData): Promise<Result> => {
+      // thumbnail,
+    }: MutationAddBookArgs, context, info, customData): Promise<Result> => {
       const bookId = uuidv4();
       if (!await BookInfoModel.hasId(infoId)) {
         return {
@@ -45,7 +39,8 @@ const GQLUtil = {
           message: Errors.QL0001,
         };
       }
-      let argThumbnail;
+      let argThumbnail = undefined;
+      /*
       if (thumbnail) {
         const { stream, mimetype } = await thumbnail;
         if (!mimetype.startsWith('image/jpeg')) {
@@ -58,6 +53,7 @@ const GQLUtil = {
         await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
         argThumbnail = `/book/${bookId}/thumbnail.jpg`;
       }
+      */
 
       const type = await GQLUtil.checkArchiveType(file);
       if (type.success === false) {
@@ -100,7 +96,7 @@ const GQLUtil = {
         id: infoId,
         number,
         file,
-        thumbnail: null,
+        // thumbnail: null,
       }, context, info, customData || {
         pubsub: {
           key: SubscriptionKeys.ADD_BOOKS,
@@ -312,19 +308,19 @@ const GQLUtil = {
       return Promise.resolve();
     }, reverse);
   },
-  bookInfoOrderToOrderBy(order): string[] | undefined {
+  bookInfoOrderToOrderBy(order: BookInfoOrder): string[] | undefined {
     switch (order) {
-      case 'Update_Newest':
+      case BookInfoOrder.UpdateNewest:
         return ['updatedAt', 'desc'];
-      case 'Update_Oldest':
+      case BookInfoOrder.UpdateOldest:
         return ['updatedAt', 'asc'];
-      case 'Add_Newest':
+      case BookInfoOrder.AddNewest:
         return ['createdAt', 'asc'];
-      case 'Add_Oldest':
+      case BookInfoOrder.AddOldest:
         return ['createdAt', 'desc'];
-      case 'Name_Asc':
+      case BookInfoOrder.NameAsc:
         return ['name', 'asc'];
-      case 'Name_Desc':
+      case BookInfoOrder.NameDesc:
         return ['name', 'desc'];
       default:
         return undefined;

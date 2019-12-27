@@ -16,19 +16,25 @@ import {
 import { useMutation } from '@apollo/react-hooks';
 import loadable from '@loadable/component';
 
-import * as DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
-import * as EditBookMutation from '@client/graphqls/Book_editBook.gql';
+import {
+  Book,
+  DeleteBookMutation as DeleteBookMutationType,
+  DeleteBookMutationVariables,
+  EditBookMutation as EditBookMutationType,
+  EditBookMutationVariables
+} from '@common/GQLTypes';
+import DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
+import EditBookMutation from '@client/graphqls/Book_editBook.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import { Book as QLBook, Result } from '@common/GraphqlTypes';
 import Img from './Img';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
 
 const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadDialog' */ './dialogs/DownloadDialog'));
 
-interface BookProps extends QLBook {
+interface BookProps extends Pick<Book, 'id' | 'thumbnail' | 'number' | 'pages'> {
   thumbnailSize?: number;
   thumbnailNoSave?: boolean;
   name: string;
@@ -106,7 +112,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(DeleteBookMutation, {
+  const [deleteBook, { loading: delLoading }] = useMutation<DeleteBookMutationType, DeleteBookMutationVariables>(DeleteBookMutation, {
     variables: {
       id: bookId,
     },
@@ -117,7 +123,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(EditBookMutation, {
+  const [editBook, { loading: editLoading }] = useMutation<EditBookMutationType, EditBookMutationVariables>(EditBookMutation, {
     variables: {
       id: bookId,
       ...editContent,

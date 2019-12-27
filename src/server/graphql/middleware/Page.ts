@@ -4,7 +4,7 @@ import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
 import rimraf from 'rimraf';
 
-import { Result } from '@common/GraphqlTypes';
+import { MutationResolvers, SplitType } from '@common/GQLTypes';
 import BookModel from '@server/sequelize/models/Book';
 import { asyncForEach, removeBookCache, renameFile } from '@server/Util';
 import Errors from '@server/Errors';
@@ -14,9 +14,10 @@ import { flatRange } from '../scalar/IntRange';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
-  Mutation() {
+  Mutation(): MutationResolvers {
+    // noinspection JSUnusedGlobalSymbols
     return {
-      deletePages: async (parent, { id: bookId, pages }): Promise<Result> => {
+      deletePages: async (parent, { id: bookId, pages }) => {
         const numbers = flatRange(pages);
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
@@ -62,7 +63,7 @@ class Page extends GQLMiddleware {
           success: true,
         };
       },
-      splitPages: async (parent, { id: bookId, pages, type }): Promise<Result> => {
+      splitPages: async (parent, { id: bookId, pages, type }) => {
         const numbers = flatRange(pages);
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
@@ -83,7 +84,7 @@ class Page extends GQLMiddleware {
           };
         }
 
-        const cropOption = type === 'VERTICAL' ? '2x1@' : '1x2@';
+        const cropOption = type === SplitType.Vertical ? '2x1@' : '1x2@';
         const bookPath = `storage/book/${bookId}`;
         let files = await fs.readdir(bookPath);
         let pageCount = 0;
@@ -118,7 +119,7 @@ class Page extends GQLMiddleware {
                 });
             });
 
-            const crops = type === 'VERTICAL' ? [
+            const crops = type === SplitType.Vertical ? [
               [size.width / 2, size.height, 0, 0],
               [size.width / 2, size.height, size.width / 2, 0],
             ] : [
@@ -164,7 +165,7 @@ class Page extends GQLMiddleware {
           success: true,
         };
       },
-      editPage: async (parent, { id: bookId, page, image }): Promise<Result> => {
+      editPage: async (parent, { id: bookId, page, image }) => {
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
           return {
@@ -202,7 +203,7 @@ class Page extends GQLMiddleware {
           success: true,
         };
       },
-      putPage: async (parent, { id: bookId, beforePage, image }): Promise<Result> => {
+      putPage: async (parent, { id: bookId, beforePage, image }) => {
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
           return {
@@ -290,4 +291,5 @@ class Page extends GQLMiddleware {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export default Page;

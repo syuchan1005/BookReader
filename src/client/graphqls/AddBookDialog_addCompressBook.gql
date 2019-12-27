@@ -1,4 +1,4 @@
-mutation add($id: ID!, $file: Upload!) {
+mutation addCompressBook($id: ID!, $file: Upload!) {
     add: addCompressBook(id: $id file: $file) {
         success
         code

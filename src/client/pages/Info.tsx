@@ -13,9 +13,11 @@ import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { hot } from 'react-hot-loader/root';
 
-import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
-
-import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
+import {
+  BookInfoQuery as BookInfoQueryType,
+  BookInfoQueryVariables,
+} from '@common/GQLTypes';
+import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
 
 import { commonTheme } from '@client/App';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -91,7 +93,7 @@ const Info: React.FC = (props: InfoProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
+  } = useQuery<BookInfoQueryType, BookInfoQueryVariables>(BookInfoQuery, {
     variables: {
       id: params.id,
     },
@@ -136,7 +138,7 @@ const Info: React.FC = (props: InfoProps) => {
 
   const bookList = React.useMemo(() => (data ? data.bookInfo.books : []), [data]);
 
-  const onDeletedBook = React.useCallback(({ id: bookId, pages }: BookType) => {
+  const onDeletedBook = React.useCallback(({ id: bookId, pages }) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch();
     // noinspection JSIgnoredPromiseFromCall

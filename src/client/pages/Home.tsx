@@ -12,12 +12,15 @@ import { useQuery } from '@apollo/react-hooks';
 import { Waypoint } from 'react-waypoint';
 import { hot } from 'react-hot-loader/root';
 
-import * as BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
+import {
+  BookInfosQuery as BookInfosQueryType,
+  BookInfosQueryVariables,
+} from '@common/GQLTypes';
+import BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
-import { BookInfoList as BookInfoListType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import useLoadMore from '@client/hooks/useLoadMore';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -108,7 +111,7 @@ const Home: React.FC = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useQuery<{ bookInfos: BookInfoListType }>(BookInfosQuery, {
+  } = useQuery<BookInfosQueryType, Partial<BookInfosQueryVariables>>(BookInfosQuery, {
     variables: {
       offset: 0,
       limit: 10,

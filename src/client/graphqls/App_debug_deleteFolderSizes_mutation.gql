@@ -1,4 +1,4 @@
-mutation {
+mutation deleteUnusedFolders {
     debug_deleteUnusedFolders {
         success
     }

@@ -1,6 +1,5 @@
 import { logger } from './middlewares';
-
-export type SortOrder = 'Update_Newest' | 'Update_Oldest' | 'Add_Newest' | 'Add_Oldest';
+import { BookInfoOrder } from '@common/GQLTypes.ts';
 
 export interface IState {
   [key: string]: any;
@@ -12,7 +11,7 @@ export interface IState {
   backRoute: string;
   wb: any;
   searchText: string;
-  sortOrder: SortOrder;
+  sortOrder: BookInfoOrder;
   history: boolean;
   normal: boolean;
   invisible: boolean;
@@ -33,7 +32,7 @@ export const initialState: IState = {
   backRoute: undefined,
   wb: undefined,
   searchText: '',
-  sortOrder: 'Update_Newest',
+  sortOrder: BookInfoOrder.UpdateNewest,
   history: false,
   normal: true,
   invisible: false,

@@ -17,10 +17,14 @@ import {
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
 
-import * as AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
-import * as AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
-
-import { Result } from '@common/GraphqlTypes';
+import {
+  AddBookInfoMutation as AddBookInfoMutationType,
+  AddBookInfoMutationVariables,
+  AddBookInfoHistoriesMutation as AddBookInfoHistoriesMutationType,
+  AddBookInfoHistoriesMutationVariables,
+} from '@common/GQLTypes';
+import AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
+import AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
 
 interface AddBookInfoDialogProps {
   open: boolean;
@@ -82,7 +86,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setAddHistories([]);
   };
 
-  const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
+  const [addBookInfo, { loading: addLoading }] = useMutation<AddBookInfoMutationType, AddBookInfoMutationVariables>(AddBookInfoMutation, {
     variables: {
       name,
     },
@@ -93,7 +97,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
   });
 
-  const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(
+  const [addBookInfoHistories, { loading: histLoading }] = useMutation<AddBookInfoHistoriesMutationType, AddBookInfoHistoriesMutationVariables>(
     AddBookInfoHistoriesMutation,
     {
       onCompleted(d) {

@@ -30,10 +30,15 @@ import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
 import { hot } from 'react-hot-loader/root';
 
-import { DebugFolderSizes } from '@common/GraphqlTypes';
+import {
+  BookInfoOrder,
+  DeleteUnusedFoldersMutation,
+  DeleteUnusedFoldersMutationVariables,
+  FolderSizesQuery,
+  FolderSizesQueryVariables
+} from '@common/GQLTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
-import { SortOrder } from '@client/store/reducers';
 import { useLazyQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
 
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
@@ -200,11 +205,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
 
-  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<{
-    sizes: DebugFolderSizes,
-  }>(DebugFolderSizesQuery);
+  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<FolderSizesQuery, FolderSizesQueryVariables>(DebugFolderSizesQuery);
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation(DebugDeleteFolderMutation, {
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<DeleteUnusedFoldersMutation, DeleteUnusedFoldersMutationVariables>(DebugDeleteFolderMutation, {
     onCompleted() {
       // noinspection JSIgnoredPromiseFromCall
       refetch();
@@ -459,7 +462,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               open={!!sortAnchorEl}
               onClose={() => setSortAnchorEl(null)}
             >
-              {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest', 'Name_Asc', 'Name_Desc'].map((order: SortOrder) => (
+              {Object.keys(BookInfoOrder).map((order: BookInfoOrder) => (
                 <MenuItem
                   key={order}
                   onClick={() => {

@@ -25,9 +25,12 @@ import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
 import { hot } from 'react-hot-loader/root';
 
-import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
+import {
+  BookQuery as BookQueryType,
+  BookQueryVariables,
+} from '@common/GQLTypes';
+import BookQuery from '@client/graphqls/Pages_Book_book.gql';
 
-import { Book as BookType } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -215,7 +218,7 @@ const Book: React.FC = (props: BookProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ book: BookType }>(BookQuery, {
+  } = useQuery<BookQueryType, BookQueryVariables>(BookQuery, {
     variables: {
       id: params.id,
     },

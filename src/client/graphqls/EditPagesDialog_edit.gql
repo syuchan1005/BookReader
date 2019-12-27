@@ -1,4 +1,4 @@
-mutation ($id: ID! $page: Int! $image: Upload!){
+mutation editPage($id: ID! $page: Int! $image: Upload!){
     edit: editPage(id: $id page: $page image: $image) {
         success
         code

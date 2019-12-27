@@ -1,4 +1,4 @@
-query ($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean $genres: [String!]!){
+query bookInfos($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean $genres: [String!]!){
     bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history genres: $genres) {
         length
         infos {

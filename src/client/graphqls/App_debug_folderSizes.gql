@@ -1,4 +1,4 @@
-{
+query folderSizes {
     sizes: debug_folderSize {
         tmp
         cache

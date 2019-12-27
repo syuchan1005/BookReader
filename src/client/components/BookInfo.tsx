@@ -14,16 +14,22 @@ import {
 } from '@material-ui/core';
 import { orange as color } from '@material-ui/core/colors';
 import { useMutation } from '@apollo/react-hooks';
-import * as DeleteBookInfoMutation from '@client/graphqls/BookInfo_deleteBookInfo.gql';
-import * as EditBookInfoMutation from '@client/graphqls/BookInfo_editBookInfo.gql';
+import {
+  BookInfo as QLBookInfo,
+  DeleteBookInfoMutation as DeleteBookInfoMutationType,
+  DeleteBookInfoMutationVariables,
+  EditBookInfoMutation as EditBookInfoMutationType,
+  EditBookInfoMutationVariables,
+} from '@common/GQLTypes';
+import DeleteBookInfoMutation from '@client/graphqls/BookInfo_deleteBookInfo.gql';
+import EditBookInfoMutation from '@client/graphqls/BookInfo_editBookInfo.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import { BookInfo as QLBookInfo, BookInfoResult, Result } from '@common/GraphqlTypes';
 import Img from './Img';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 
-interface BookInfoProps extends QLBookInfo {
+interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
   style?: React.CSSProperties;
   thumbnailSize?: number;
 
@@ -127,7 +133,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
-  const [deleteBookInfo, { loading: delLoading }] = useMutation<{ del: BookInfoResult }>(
+  const [deleteBookInfo, { loading: delLoading }] = useMutation<DeleteBookInfoMutationType, DeleteBookInfoMutationVariables>(
     DeleteBookInfoMutation,
     {
       variables: {
@@ -141,7 +147,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     },
   );
 
-  const [editBookInfo, { loading: editLoading }] = useMutation<{ edit: Result }>(
+  const [editBookInfo, { loading: editLoading }] = useMutation<EditBookInfoMutationType, EditBookInfoMutationVariables>(
     EditBookInfoMutation,
     {
       variables: {

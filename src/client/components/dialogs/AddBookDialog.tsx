@@ -20,14 +20,24 @@ import {
 import { useMutation, useQuery, useSubscription } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
-import * as AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
-import * as AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
-import * as AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';
-import * as PluginsQuery from '@client/graphqls/AddBookDialog_plugins.gql';
+import {
+  AddCompressBookMutation as AddCompressBookMutationType,
+  AddCompressBookMutationVariables,
+  AddBooksMutation as AddBooksMutationType,
+  AddBooksMutationVariables,
+  AddBooksProgressSubscription,
+  AddBooksProgressSubscriptionVariables,
+  PluginsQuery as PluginsQueryType,
+  PluginsQueryVariables,
+  Result,
+} from '@common/GQLTypes';
+import AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
+import AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
+import AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';
+import PluginsQuery from '@client/graphqls/AddBookDialog_plugins.gql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
-import { Plugin, Result, ResultWithBookResults } from '@common/GraphqlTypes';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -105,7 +115,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
 
   const {
     data,
-  } = useQuery<{ plugins: Plugin[] }>(PluginsQuery);
+  } = useQuery<PluginsQueryType, PluginsQueryVariables>(PluginsQuery);
 
   const selectedPlugin = React.useMemo(() => {
     if (!data || addType === 'file' || addType === 'file_compressed') return undefined;
@@ -132,7 +142,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     setEditContent({});
   }, [onClose, onAdded]);
 
-  const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Result }>(
+  const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
     gql(`
       mutation ${pluginMutationArgs[1] || ''}{
         plugin: ${pluginMutationArgs[0]}${pluginMutationArgs[2] || ''}{
@@ -148,7 +158,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     },
   );
 
-  const [addBook, { loading: addBookLoading }] = useMutation<{ adds: Result[] }>(AddBooksMutation, {
+  const [addBook, { loading: addBookLoading }] = useMutation<AddBooksMutationType, AddBooksMutationVariables>(AddBooksMutation, {
     variables: {
       id: infoId,
       books: addBooks,
@@ -177,7 +187,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
 
   const [addCompressBook, {
     loading: addCompressBookLoading,
-  }] = useMutation<{ add: ResultWithBookResults }>(
+  }] = useMutation<AddCompressBookMutationType, AddCompressBookMutationVariables>(
     AddCompressBookMutation,
     {
       variables: {
@@ -212,7 +222,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     [addBookLoading, addCompressBookLoading, addPluginLoading],
   );
 
-  const { data: subscriptionData } = useSubscription(AddBooksSubscription, {
+  const { data: subscriptionData } = useSubscription<AddBooksProgressSubscription, AddBooksProgressSubscriptionVariables>(AddBooksSubscription, {
     skip: !subscriptionId,
     variables: {
       id: subscriptionId,

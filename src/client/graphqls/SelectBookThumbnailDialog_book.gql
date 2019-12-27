@@ -1,4 +1,4 @@
-query ($id: ID!){
+query bookPages($id: ID!){
     book(id: $id) {
         id
         pages

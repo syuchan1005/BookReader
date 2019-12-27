@@ -9,12 +9,10 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
-  BookInfo as BookInfoType,
-  BookInfoList,
-  BookInfoResult,
-  Result,
-  ResultWithInfoId,
-} from '@common/GraphqlTypes';
+  MutationResolvers,
+  QueryResolvers,
+  SubscriptionResolvers,
+} from '@common/GQLTypes';
 
 import Database from '@server/sequelize/models';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
@@ -29,7 +27,7 @@ import InfoGenreModel from '../../sequelize/models/InfoGenre';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
-  Query() {
+  Query(): QueryResolvers {
     return {
       bookInfos: async (parent, {
         limit,
@@ -38,7 +36,7 @@ class BookInfo extends GQLMiddleware {
         order,
         genres = [],
         history,
-      }): Promise<BookInfoList> => {
+      }) => {
         if (!genres || genres.length === 0) return { length: 0, infos: [] };
         const where: { [key: string]: any } = {};
         if (search) {
@@ -112,7 +110,7 @@ class BookInfo extends GQLMiddleware {
           infos: bookInfos.map((info) => ModelUtil.bookInfo(info)),
         };
       },
-      bookInfo: async (parent, { id: infoId }, context, info): Promise<BookInfoType> => {
+      bookInfo: async (parent, { id: infoId }, context, info) => {
         let booksField;
         info.operation.selectionSet.selections.some((section) => {
           if (section.kind !== 'Field') return false;
@@ -152,14 +150,14 @@ class BookInfo extends GQLMiddleware {
     };
   }
 
-  Mutation() {
+  Mutation(): MutationResolvers {
     // noinspection JSUnusedGlobalSymbols
     return {
       addBookInfo: async (parent, {
         name,
         thumbnail,
         genres,
-      }): Promise<ResultWithInfoId> => {
+      }) => {
         const infoId = uuidv4();
         let thumbnailStream;
         if (thumbnail) {
@@ -198,7 +196,7 @@ class BookInfo extends GQLMiddleware {
         name,
         thumbnail,
         genres,
-      }): Promise<Result> => {
+      }) => {
         if (![name, thumbnail, genres].some((v) => v !== undefined)) {
           return {
             success: false,
@@ -262,7 +260,7 @@ class BookInfo extends GQLMiddleware {
           success: true,
         };
       },
-      deleteBookInfo: async (parent, { id: infoId }): Promise<BookInfoResult> => {
+      deleteBookInfo: async (parent, { id: infoId }) => {
         const books = await BookModel.findAll({
           where: {
             infoId,
@@ -319,7 +317,7 @@ class BookInfo extends GQLMiddleware {
     };
   }
 
-  Subscription() {
+  Subscription(): SubscriptionResolvers {
     return {
       addBookInfo: {
         subscribe: withFilter(

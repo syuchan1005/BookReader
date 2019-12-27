@@ -1,4 +1,4 @@
-mutation delete($id: ID!) {
+mutation deleteBookInfo($id: ID!) {
     del: deleteBookInfo(id: $id) {
         success
         code

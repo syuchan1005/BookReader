@@ -10,10 +10,16 @@ import {
   Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import * as BookInfoQuery from '@client/graphqls/SelectBookInfoThumbnailDialog_bookInfo.gql';
-import * as EditBookInfoMutation from '@client/graphqls/SelectBookInfoThumbnailDialog_editBookInfo.gql';
 
-import { BookInfo as BookInfoType, Result } from '@common/GraphqlTypes';
+import {
+  BookInfoQuery as BookInfoQueryType,
+  BookInfoQueryVariables,
+  EditBookInfoThumbnailMutation as EditBookInfoThumbnailMutationType,
+  EditBookInfoThumbnailMutationVariables,
+} from '@common/GQLTypes';
+import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
+import EditBookInfoMutation from '@client/graphqls/SelectBookInfoThumbnailDialog_editBookInfo.gql';
+
 import Book from '@client/components/Book';
 import { Waypoint } from 'react-waypoint';
 
@@ -52,14 +58,14 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     loading: infoLoading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
+  } = useQuery<BookInfoQueryType, BookInfoQueryVariables>(BookInfoQuery, {
     skip: !open,
     variables: {
       id: infoId,
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useMutation<{ edit: Result }>(
+  const [changeThumbnail, { loading: changeLoading }] = useMutation<EditBookInfoThumbnailMutationType, Partial<EditBookInfoThumbnailMutationVariables>>(
     EditBookInfoMutation,
     {
       variables: {
@@ -99,12 +105,13 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
             {data.bookInfo.books.slice(0, count).map((book) => (
+              // @ts-ignore
               <Book
                 key={book.id}
                 simple
                 name={data.bookInfo.name}
                 {...book}
-                onClick={() => changeThumbnail({ variables: { th: book.thumbnail } })}
+                onClick={() => { changeThumbnail({ variables: { th: book.thumbnail } }) } }
                 thumbnailNoSave
                 thumbnailSize={125}
               />

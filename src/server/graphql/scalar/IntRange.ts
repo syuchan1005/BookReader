@@ -1,7 +1,8 @@
 import { GraphQLScalarType, IntValueNode } from 'graphql';
 import { Kind } from 'graphql/language/kinds';
+import { Scalars } from '../../../common/GQLTypes';
 
-export const flatRange = (range: (number | number[])[]) => {
+export const flatRange = (range: Scalars['IntRange']): number[] => {
   if (!range) return [];
   let arr = [];
   range.forEach((a) => {
