@@ -17,11 +17,11 @@ import { useMutation } from '@apollo/react-hooks';
 import loadable from '@loadable/component';
 
 import {
-  Book,
+  Book as BookType,
   DeleteBookMutation as DeleteBookMutationType,
   DeleteBookMutationVariables,
   EditBookMutation as EditBookMutationType,
-  EditBookMutationVariables
+  EditBookMutationVariables,
 } from '@common/GQLTypes';
 import DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
 import EditBookMutation from '@client/graphqls/Book_editBook.gql';
@@ -34,7 +34,7 @@ import useDebounceValue from '../hooks/useDebounceValue';
 
 const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadDialog' */ './dialogs/DownloadDialog'));
 
-interface BookProps extends Pick<Book, 'id' | 'thumbnail' | 'number' | 'pages'> {
+interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
   thumbnailSize?: number;
   thumbnailNoSave?: boolean;
   name: string;
@@ -112,7 +112,10 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<DeleteBookMutationType, DeleteBookMutationVariables>(DeleteBookMutation, {
+  const [deleteBook, { loading: delLoading }] = useMutation<
+    DeleteBookMutationType,
+    DeleteBookMutationVariables
+  >(DeleteBookMutation, {
     variables: {
       id: bookId,
     },
@@ -123,7 +126,10 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const [editBook, { loading: editLoading }] = useMutation<EditBookMutationType, EditBookMutationVariables>(EditBookMutation, {
+  const [editBook, { loading: editLoading }] = useMutation<
+    EditBookMutationType,
+    EditBookMutationVariables
+  >(EditBookMutation, {
     variables: {
       id: bookId,
       ...editContent,

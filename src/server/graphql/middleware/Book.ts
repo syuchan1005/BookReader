@@ -7,7 +7,9 @@ import rimraf from 'rimraf';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
-import { BookOrder, MutationResolvers, QueryResolvers, SubscriptionResolvers, } from '@common/GQLTypes';
+import {
+  BookOrder, MutationResolvers, QueryResolvers, SubscriptionResolvers,
+} from '@common/GQLTypes';
 
 import BookModel from '@server/sequelize/models/Book';
 import BookInfoModel from '@server/sequelize/models/BookInfo';

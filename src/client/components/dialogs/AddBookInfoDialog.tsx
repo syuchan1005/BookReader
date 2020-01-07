@@ -86,7 +86,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setAddHistories([]);
   };
 
-  const [addBookInfo, { loading: addLoading }] = useMutation<AddBookInfoMutationType, AddBookInfoMutationVariables>(AddBookInfoMutation, {
+  const [addBookInfo, { loading: addLoading }] = useMutation<
+    AddBookInfoMutationType,
+    AddBookInfoMutationVariables,
+  >(AddBookInfoMutation, {
     variables: {
       name,
     },
@@ -97,7 +100,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
   });
 
-  const [addBookInfoHistories, { loading: histLoading }] = useMutation<AddBookInfoHistoriesMutationType, AddBookInfoHistoriesMutationVariables>(
+  const [addBookInfoHistories, { loading: histLoading }] = useMutation<
+    AddBookInfoHistoriesMutationType,
+    AddBookInfoHistoriesMutationVariables,
+  >(
     AddBookInfoHistoriesMutation,
     {
       onCompleted(d) {

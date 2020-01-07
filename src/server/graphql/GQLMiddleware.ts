@@ -1,12 +1,12 @@
 import { SubClass } from 'gm';
 import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
 import { Database } from '@server/sequelize/models';
-import { SubscriptionKeys } from './index';
 import {
   QueryResolvers,
   MutationResolvers,
   SubscriptionResolvers,
-} from "@common/GQLTypes";
+} from '@common/GQLTypes';
+import { SubscriptionKeys } from './index';
 
 export default class GQLMiddleware {
   readonly gm: SubClass;

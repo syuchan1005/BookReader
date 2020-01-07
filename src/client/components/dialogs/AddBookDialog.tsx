@@ -158,7 +158,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     },
   );
 
-  const [addBook, { loading: addBookLoading }] = useMutation<AddBooksMutationType, AddBooksMutationVariables>(AddBooksMutation, {
+  const [addBook, { loading: addBookLoading }] = useMutation<
+    AddBooksMutationType,
+    AddBooksMutationVariables,
+  >(AddBooksMutation, {
     variables: {
       id: infoId,
       books: addBooks,
@@ -222,7 +225,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     [addBookLoading, addCompressBookLoading, addPluginLoading],
   );
 
-  const { data: subscriptionData } = useSubscription<AddBooksProgressSubscription, AddBooksProgressSubscriptionVariables>(AddBooksSubscription, {
+  const { data: subscriptionData } = useSubscription<
+    AddBooksProgressSubscription,
+    AddBooksProgressSubscriptionVariables
+  >(AddBooksSubscription, {
     skip: !subscriptionId,
     variables: {
       id: subscriptionId,

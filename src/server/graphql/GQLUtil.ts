@@ -16,7 +16,9 @@ import { archiveTypes } from '@common/Common';
 
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
-import { asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile, } from '@server/Util';
+import {
+  asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile,
+} from '@server/Util';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
@@ -39,8 +41,8 @@ const GQLUtil = {
           message: Errors.QL0001,
         };
       }
-      let argThumbnail = undefined;
       /*
+      const argThumbnail;
       if (thumbnail) {
         const { stream, mimetype } = await thumbnail;
         if (!mimetype.startsWith('image/jpeg')) {
@@ -82,7 +84,8 @@ const GQLUtil = {
         infoId,
         bookId,
         number,
-        argThumbnail,
+        undefined,
+        // argThumbnail,
         (resolve) => {
           rimraf(tempPath, () => resolve());
         },

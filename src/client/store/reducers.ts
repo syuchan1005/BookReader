@@ -1,5 +1,5 @@
-import { logger } from './middlewares';
 import { BookInfoOrder } from '@common/GQLTypes.ts';
+import { logger } from './middlewares';
 
 export interface IState {
   [key: string]: any;

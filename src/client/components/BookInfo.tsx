@@ -133,7 +133,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
 
-  const [deleteBookInfo, { loading: delLoading }] = useMutation<DeleteBookInfoMutationType, DeleteBookInfoMutationVariables>(
+  const [deleteBookInfo, { loading: delLoading }] = useMutation<
+    DeleteBookInfoMutationType,
+    DeleteBookInfoMutationVariables,
+  >(
     DeleteBookInfoMutation,
     {
       variables: {
@@ -147,7 +150,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     },
   );
 
-  const [editBookInfo, { loading: editLoading }] = useMutation<EditBookInfoMutationType, EditBookInfoMutationVariables>(
+  const [editBookInfo, { loading: editLoading }] = useMutation<
+    EditBookInfoMutationType,
+    EditBookInfoMutationVariables,
+  >(
     EditBookInfoMutation,
     {
       variables: {
