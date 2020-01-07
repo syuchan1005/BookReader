@@ -35,7 +35,7 @@ import {
   DeleteUnusedFoldersMutation,
   DeleteUnusedFoldersMutationVariables,
   FolderSizesQuery,
-  FolderSizesQueryVariables
+  FolderSizesQueryVariables,
 } from '@common/GQLTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
@@ -205,9 +205,15 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
 
-  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<FolderSizesQuery, FolderSizesQueryVariables>(DebugFolderSizesQuery);
+  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<
+    FolderSizesQuery,
+    FolderSizesQueryVariables,
+  >(DebugFolderSizesQuery);
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<DeleteUnusedFoldersMutation, DeleteUnusedFoldersMutationVariables>(DebugDeleteFolderMutation, {
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<
+    DeleteUnusedFoldersMutation,
+    DeleteUnusedFoldersMutationVariables
+  >(DebugDeleteFolderMutation, {
     onCompleted() {
       // noinspection JSIgnoredPromiseFromCall
       refetch();
@@ -260,16 +266,16 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       .then(() => {
         if (store.wb && i === 1) {
           navigator.serviceWorker.addEventListener('message', () => {
-            window.location.reload();
+            window.location.reload(true);
           });
           store.wb.messageSW({
             type: 'PURGE_CACHE',
           });
           setTimeout(() => {
-            window.location.reload();
+            window.location.reload(true);
           }, 10 * 1000);
         } else {
-          window.location.reload();
+          window.location.reload(true);
         }
       });
   }, [store.wb]);

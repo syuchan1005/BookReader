@@ -115,16 +115,16 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       .then(() => {
         if (wb) {
           navigator.serviceWorker.addEventListener('message', () => {
-            window.location.reload();
+            window.location.reload(true);
           });
           wb.messageSW({
             type: 'PURGE_CACHE',
           });
           setTimeout(() => {
-            window.location.reload();
+            window.location.reload(true);
           }, 10 * 1000);
         } else {
-          window.location.reload();
+          window.location.reload(true);
         }
       });
   }, [wb, persistor]);
@@ -263,7 +263,9 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             <Button
               disabled={splitLoading}
               classes={{ label: classes.splitButton }}
-              onClick={() => splitPage({ variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Vertical } })}
+              onClick={() => splitPage({
+                variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Vertical },
+              })}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                 <polygon
@@ -278,7 +280,9 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             <Button
               disabled={splitLoading}
               classes={{ label: classes.splitButton }}
-              onClick={() => splitPage({ variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Horizontal } })}
+              onClick={() => splitPage({
+                variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Horizontal },
+              })}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                 <polygon
