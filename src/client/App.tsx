@@ -207,7 +207,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
 
   const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<
     FolderSizesQuery,
-    FolderSizesQueryVariables,
+    FolderSizesQueryVariables
   >(DebugFolderSizesQuery);
 
   const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<
