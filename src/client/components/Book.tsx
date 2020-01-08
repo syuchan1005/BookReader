@@ -32,7 +32,7 @@ import Img from './Img';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
 
-const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadDialog' */ './dialogs/DownloadDialog'));
+const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadBookDialog' */ './dialogs/DownloadBookDialog'));
 
 interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
   thumbnailSize?: number;

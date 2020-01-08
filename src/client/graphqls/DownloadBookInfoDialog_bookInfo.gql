@@ -1,0 +1,12 @@
+query downloadBookInfos($id: ID!) {
+    bookInfo(id: $id) {
+        id
+        name
+        count
+        books {
+            id
+            number
+            pages
+        }
+    }
+}

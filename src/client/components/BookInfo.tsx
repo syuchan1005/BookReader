@@ -14,6 +14,8 @@ import {
 } from '@material-ui/core';
 import { orange as color } from '@material-ui/core/colors';
 import { useMutation } from '@apollo/react-hooks';
+import loadable from '@loadable/component';
+
 import {
   BookInfo as QLBookInfo,
   DeleteBookInfoMutation as DeleteBookInfoMutationType,
@@ -28,6 +30,9 @@ import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
 import Img from './Img';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
+import useDebounceValue from '../hooks/useDebounceValue';
+
+const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadBookInfoDialog' */ './dialogs/DownloadBookInfoDialog'));
 
 interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
   style?: React.CSSProperties;
@@ -132,10 +137,12 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     invisible,
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
+  const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
+  const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
   const [deleteBookInfo, { loading: delLoading }] = useMutation<
     DeleteBookInfoMutationType,
-    DeleteBookInfoMutationVariables,
+    DeleteBookInfoMutationVariables
   >(
     DeleteBookInfoMutation,
     {
@@ -152,7 +159,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
 
   const [editBookInfo, { loading: editLoading }] = useMutation<
     EditBookInfoMutationType,
-    EditBookInfoMutationVariables,
+    EditBookInfoMutationVariables
   >(
     EditBookInfoMutation,
     {
@@ -172,20 +179,25 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     },
   );
 
-  const clickEditBookInfo = () => {
+  const clickEditBookInfo = React.useCallback(() => {
     setMenuAnchor(null);
     setEditDialog(true);
-  };
+  }, []);
 
-  const clickDeleteBookInfo = () => {
+  const clickDeleteBookInfo = React.useCallback(() => {
     setMenuAnchor(null);
     setAskDelete(true);
-  };
+  }, []);
 
-  const clickSelectThumbnailBookInfo = () => {
+  const clickSelectThumbnailBookInfo = React.useCallback(() => {
     setMenuAnchor(null);
     setSelectDialog(infoId);
-  };
+  }, [infoId]);
+
+  const clickDownloadBook = React.useCallback(() => {
+    setMenuAnchor(null);
+    setOpenDownloadDialog(true);
+  }, []);
 
   const onChangeEvent = (k, e) => {
     if (k === 'name') {
@@ -217,6 +229,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
           <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
           <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
+          {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
         </Menu>
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
@@ -267,6 +280,16 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         onClose={() => setSelectDialog(undefined)}
         onEdit={onEdit}
       />
+
+      {(openDownloadDialog || debounceOpenDownloadDialog) && (
+        <DownloadDialog
+          open={openDownloadDialog}
+          onClose={() => setOpenDownloadDialog(false)}
+          id={infoId}
+          name={name}
+          count={count}
+        />
+      )}
     </Card>
   );
 };

@@ -7,10 +7,10 @@ import {
   DialogTitle,
   LinearProgress,
 } from '@material-ui/core';
-import * as JSZip from 'jszip';
+import JSZip from 'jszip';
 import * as saveAs from 'jszip/vendor/FileSaver';
 
-interface DownloadDialogProps {
+interface DownloadBookDialogProps {
   open: boolean;
   onClose?: () => any;
   number?: string;
@@ -18,7 +18,7 @@ interface DownloadDialogProps {
   pages?: number;
 }
 
-const DownloadDialog: React.FC<DownloadDialogProps> = (props: DownloadDialogProps) => {
+const DownloadBookDialog: React.FC<DownloadBookDialogProps> = (props: DownloadBookDialogProps) => {
   const {
     open,
     onClose,
@@ -82,4 +82,4 @@ const DownloadDialog: React.FC<DownloadDialogProps> = (props: DownloadDialogProp
   );
 };
 
-export default DownloadDialog;
+export default DownloadBookDialog;

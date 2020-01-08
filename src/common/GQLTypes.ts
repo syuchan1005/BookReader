@@ -1,7 +1,4 @@
 
-import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-
-
 export type Maybe<T> = T | null;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -381,6 +378,13 @@ export type EditBookMutationVariables = {
 
 export type EditBookMutation = ({ __typename?: 'Mutation' } & { edit: ({ __typename?: 'Result' } & Pick<Result, 'success' | 'code'>) });
 
+export type DownloadBookInfosQueryVariables = {
+  id: Scalars['ID']
+};
+
+
+export type DownloadBookInfosQuery = ({ __typename?: 'Query' } & { bookInfo: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id' | 'name' | 'count'> & { books: Array<({ __typename?: 'Book' } & Pick<Book, 'id' | 'number' | 'pages'>)> })> });
+
 export type DeletePagesMutationVariables = {
   id: Scalars['ID'],
   pages: Scalars['IntRange']
@@ -465,7 +469,11 @@ export type BookInfoQueryVariables = {
 
 export type BookInfoQuery = ({ __typename?: 'Query' } & { bookInfo: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id' | 'name'> & { books: Array<({ __typename?: 'Book' } & Pick<Book, 'id' | 'number' | 'pages' | 'thumbnail'> & { info: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id'>)> })> })> });
 
+
+import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+
 
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
