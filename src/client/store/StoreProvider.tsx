@@ -2,12 +2,14 @@
 
 import * as React from 'react';
 
-import rootReducer, { initialState, IState } from '@client/store/reducers';
+import rootReducer, { createInitialState, IState } from '@client/store/reducers';
 
 interface IStore {
   state: IState;
   dispatch: (update: Partial<IState>) => void;
 }
+
+const initialState = createInitialState();
 
 const GlobalStore = React.createContext<IStore>({ state: initialState, dispatch: () => {} });
 

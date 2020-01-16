@@ -1,5 +1,5 @@
 import { BookInfoOrder } from '@common/GQLTypes.ts';
-import { logger } from './middlewares';
+import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './middlewares';
 
 export interface IState {
   [key: string]: any;
@@ -25,6 +25,7 @@ export interface IState {
 }
 
 export const initialState: IState = {
+  // no load
   showAppBar: true,
   needContentMargin: true,
   barTitle: 'Book Reader',
@@ -32,6 +33,10 @@ export const initialState: IState = {
   showBackRouteArrow: false,
   backRoute: undefined,
   wb: undefined,
+  webp: false,
+  showOriginalImage: false,
+
+  // load
   searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
   history: false,
@@ -40,11 +45,24 @@ export const initialState: IState = {
   theme: 'light',
   primary: 'green',
   secondary: 'blue',
-  webp: false,
   readOrder: 1, // LtoR, RtoL
-  showOriginalImage: false,
   showBookInfoName: false,
 };
+
+const properties = [
+  'searchText',
+  'sortOrder',
+  'history',
+  'normal',
+  'invisible',
+  'theme',
+  'primary',
+  'secondary',
+  'readOrder',
+  'showBookInfoName',
+];
+
+export const createInitialState = () => loadStateFromLocalStorage(initialState, properties);
 
 const rootReducer = (prevState, action) => {
   if (Object.keys(action).every((k) => prevState[k] === action[k])) return prevState;
@@ -55,6 +73,7 @@ const rootReducer = (prevState, action) => {
   };
 
   logger(action, prevState, state);
+  saveStateToLocalStorage(state, properties);
 
   return state;
 };
