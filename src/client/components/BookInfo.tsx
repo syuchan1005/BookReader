@@ -37,6 +37,7 @@ const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadBookI
 interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
   style?: React.CSSProperties;
   thumbnailSize?: number;
+  showName?: boolean;
 
   onClick?: Function;
   onDeleted?: Function;
@@ -106,6 +107,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     right: theme.spacing(1.5),
     bottom: `calc(2rem + ${theme.spacing(1)}px)`,
     color: 'white',
+    textShadow: '1px 1px 1px black',
+  },
+  cardContent: {
+    position: 'absolute',
+    bottom: '0',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: theme.spacing(1),
+    borderTopRightRadius: theme.spacing(0.5),
   },
 }));
 
@@ -120,6 +134,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     count,
     history,
     genres,
+    showName,
     onClick,
     onDeleted,
     onEdit,
@@ -239,13 +254,19 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
           className={classes.thumbnail}
           noSave={false}
         />
-        <CardContent className={classes.countLabel}>
-          <div>{count}</div>
-        </CardContent>
+        {showName ? (
+          <CardContent className={classes.cardContent}>
+            <div>{`${name} (${count}${finished ? ', Completed' : ''})`}</div>
+          </CardContent>
+        ) : (
+          <CardContent className={classes.countLabel}>
+            <div>{count}</div>
+          </CardContent>
+        )}
         {(history) ? (
           <div className={classes.historyLabel}>History</div>
         ) : null}
-        {(finished) ? (
+        {(finished && !showName) ? (
           <div className={classes.completedLabel}>Completed</div>
         ) : null}
         {(invisible) ? (

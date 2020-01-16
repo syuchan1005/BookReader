@@ -21,6 +21,7 @@ export interface IState {
   webp: boolean;
   readOrder: number;
   showOriginalImage: boolean;
+  showBookInfoName: boolean;
 }
 
 export const initialState: IState = {
@@ -42,6 +43,7 @@ export const initialState: IState = {
   webp: false,
   readOrder: 1, // LtoR, RtoL
   showOriginalImage: false,
+  showBookInfoName: false,
 };
 
 const rootReducer = (prevState, action) => {

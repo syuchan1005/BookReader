@@ -188,6 +188,7 @@ const Home: React.FC = (props: HomeProps) => {
                 onDeleted={(books) => onDeletedBookInfo(info, books)}
                 onEdit={refetchAll}
                 thumbnailSize={downXs ? 150 : 200}
+                showName={store.showBookInfoName}
               />
             ))}
             {(isLoadingMore) && (

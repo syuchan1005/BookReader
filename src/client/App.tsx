@@ -394,6 +394,9 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <span>Secondary:</span>
                 <ColorTile marginLeft color={store.secondary} />
               </MenuItem>
+              <MenuItem onClick={() => dispatch({ showBookInfoName: !store.showBookInfoName })}>
+                <span>{`${store.showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
+              </MenuItem>
               <MenuItem onClick={() => setDebugAnchorEl(!debugAnchorEl)}>
                 Debug
                 <Icon>{`keyboard_arrow_${debugAnchorEl ? 'up' : 'down'}`}</Icon>
