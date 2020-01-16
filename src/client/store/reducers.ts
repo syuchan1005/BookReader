@@ -1,6 +1,5 @@
+import { BookInfoOrder } from '@common/GQLTypes.ts';
 import { logger } from './middlewares';
-
-export type SortOrder = 'Update_Newest' | 'Update_Oldest' | 'Add_Newest' | 'Add_Oldest';
 
 export interface IState {
   [key: string]: any;
@@ -12,15 +11,17 @@ export interface IState {
   backRoute: string;
   wb: any;
   searchText: string;
-  sortOrder: SortOrder;
-  normal: boolean;
+  sortOrder: BookInfoOrder;
   history: boolean;
+  normal: boolean;
   invisible: boolean;
   theme: 'light' | 'dark';
   primary: string;
   secondary: string;
   webp: boolean;
   readOrder: number;
+  showOriginalImage: boolean;
+  showBookInfoName: boolean;
 }
 
 export const initialState: IState = {
@@ -32,15 +33,17 @@ export const initialState: IState = {
   backRoute: undefined,
   wb: undefined,
   searchText: '',
-  sortOrder: 'Update_Newest',
-  normal: true,
+  sortOrder: BookInfoOrder.UpdateNewest,
   history: false,
+  normal: true,
   invisible: false,
   theme: 'light',
   primary: 'green',
   secondary: 'blue',
   webp: false,
-  readOrder: 0, // LtoR, RtoL
+  readOrder: 1, // LtoR, RtoL
+  showOriginalImage: false,
+  showBookInfoName: false,
 };
 
 const rootReducer = (prevState, action) => {

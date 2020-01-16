@@ -70,7 +70,7 @@ const customFetch = (uri1: any, options: any) => {
   return fetch(uri1, options);
 };
 
-export default async ()
+const getClient = async ()
   : Promise<[ApolloClient<NormalizedCacheObject>, CachePersistor<NormalizedCacheObject>]> => {
   const cache = new InMemoryCache({
     freezeResults: false,
@@ -79,13 +79,18 @@ export default async ()
   const apolloClient = new ApolloClient({
     link: ApolloLink.from([
       onError(({ graphQLErrors, networkError }) => {
-        /* eslint-disable no-console */
+        const log = (message) => {
+          // @ts-ignore
+          if (apolloClient.snackbar) apolloClient.snackbar(message, { variant: 'error' });
+          // eslint-disable-next-line
+          console.log(message);
+        };
         if (graphQLErrors) {
-          graphQLErrors.forEach(({ message, locations, path }) => console.log(
+          graphQLErrors.forEach(({ message, locations, path }) => log(
             `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
           ));
         }
-        if (networkError) console.log(`[Network error]: ${networkError}`);
+        if (networkError) log(`[Network error]: ${networkError}`);
       }),
       ApolloLink.split(
         ({ query }) => {
@@ -120,3 +125,5 @@ export default async ()
 
   return [apolloClient, cachePersistor];
 };
+
+export default getClient;

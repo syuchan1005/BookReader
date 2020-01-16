@@ -1,3 +1,6 @@
+// import 'swiper/css/swiper.min.css';
+import 'react-id-swiper/lib/styles/css/swiper.css';
+
 import * as React from 'react';
 import {
   createStyles,
@@ -12,25 +15,22 @@ import {
   MenuItem,
   Icon,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
 } from '@material-ui/core';
+import { CSSProperties } from '@material-ui/styles/withStyles/withStyles';
 import { Swiper } from 'swiper/js/swiper.esm';
 import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
-import { useMutation, useQuery } from '@apollo/react-hooks';
+import { useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
 import { hot } from 'react-hot-loader/root';
 
-import * as BookQuery from '@client/graphqls/Pages_Book_book.gql';
-import * as DeleteMutation from '@client/graphqls/Pages_Page_delete.gql';
-import * as SplitMutation from '@client/graphqls/Pages_Page_split.gql';
+import {
+  BookQuery as BookQueryType,
+  BookQueryVariables,
+} from '@common/GQLTypes';
+import BookQuery from '@client/graphqls/Pages_Book_book.gql';
 
-import { Book as BookType, Result } from '@common/GraphqlTypes';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -39,12 +39,26 @@ import { commonTheme } from '@client/App';
 import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import Img from '../components/Img';
-import DeleteDialog from '../components/dialogs/DeleteDialog';
 import useNetworkType from '../hooks/useNetworkType';
+import EditPagesDialog from '../components/dialogs/EditPagesDialog';
+import { useApollo } from '../apollo/ApolloProvider';
 
 interface BookProps {
   children?: React.ReactElement;
 }
+
+const pageContainer: CSSProperties = {
+  width: '100%',
+  height: '100%',
+  margin: '0 auto',
+  position: 'relative',
+  overflow: 'hidden',
+  listStyle: 'none',
+  padding: 0,
+  '& > .swiper-wrapper': {
+    zIndex: 'inherit',
+  },
+};
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   '@global': {
@@ -64,37 +78,22 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  pageContainer,
   pageContainerRTL: {
+    ...pageContainer,
     direction: 'rtl',
-    width: '100%',
-    height: '100%',
-    margin: '0 auto',
-    position: 'relative',
-    overflow: 'hidden',
-    listStyle: 'none',
-    padding: 0,
-    '& > .swiper-wrapper': {
-      zIndex: 'inherit',
-    },
   },
   pageContainerLTR: {
+    ...pageContainer,
     direction: 'ltr',
-    width: '100%',
-    height: '100%',
-    margin: '0 auto',
-    position: 'relative',
-    overflow: 'hidden',
-    listStyle: 'none',
-    padding: 0,
-    '& > .swiper-wrapper': {
-      zIndex: 'inherit',
-    },
   },
   pageImage: {
     width: '100%',
     height: '100%',
     objectFit: 'contain',
     paddingTop: commonTheme.safeArea.top,
+    '-webkit-touch-callout': 'none',
+    'user-select': 'none',
   },
   overlay: {
     zIndex: 1,
@@ -154,16 +153,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     whiteSpace: 'pre-line',
     textAlign: 'center',
   },
-  splitButtonWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  splitButton: {
-    display: 'grid',
-    gridTemplateColumns: '150px',
-    gridTemplateRows: '100px auto',
-  },
   pageProgress: {
     display: 'inline-flex',
     position: 'absolute',
@@ -179,6 +168,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Book: React.FC = (props: BookProps) => {
   const { state: store, dispatch } = useGlobalStore();
+  const { persistor } = useApollo();
   const classes = useStyles(props);
   const history = useHistory();
   const params = useParams<{ id: string }>();
@@ -190,11 +180,9 @@ const Book: React.FC = (props: BookProps) => {
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [isPageSet, setPageSet] = React.useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
-  const [deleteNumbers, setDeleteNumbers] = React.useState([]);
-  const [showOriginalImage, setShowOriginalImage] = React.useState(false);
-  const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog] = React.useState(false);
 
   React.useEffect(() => {
     updatePage(0);
@@ -230,7 +218,7 @@ const Book: React.FC = (props: BookProps) => {
     loading,
     error,
     data,
-  } = useQuery<{ book: BookType }>(BookQuery, {
+  } = useQuery<BookQueryType, BookQueryVariables>(BookQuery, {
     variables: {
       id: params.id,
     },
@@ -250,32 +238,6 @@ const Book: React.FC = (props: BookProps) => {
     },
   });
 
-  const [deletePage, {
-    loading: deleteLoading,
-  }] = useMutation<{ del: Result }>(DeleteMutation, {
-    variables: {
-      id: params.id,
-      numbers: deleteNumbers,
-    },
-    onCompleted() {
-      setDeleteNumbers([]);
-      window.location.reload();
-    },
-  });
-
-  const [splitPage, {
-    loading: splitLoading,
-  }] = useMutation<{ split: Result }>(SplitMutation, {
-    variables: {
-      id: params.id,
-      start: page,
-    },
-    onCompleted() {
-      setOpenSplitDialog(false);
-      window.location.reload();
-    },
-  });
-
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
     params.id,
@@ -285,13 +247,13 @@ const Book: React.FC = (props: BookProps) => {
     setPage(Math.min(page + 1, data.book.pages - 1));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, store.showAppBar]);
+  }, [page, data, nextBook, store.showAppBar, setPage]);
 
   const decrement = React.useCallback(() => {
     setPage(Math.max(page - 1, 0));
     if (store.showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, store.showAppBar]);
+  }, [page, data, prevBook, store.showAppBar, setPage]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -368,10 +330,11 @@ const Book: React.FC = (props: BookProps) => {
     }
   }, [isPageSet, page]);
 
-  useKey('ArrowRight', () => [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
-  useKey('ArrowLeft', () => [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder]);
+  useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
+  useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
 
   const clickPage = React.useCallback((event) => {
+    if (openEditDialog) return;
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     switch (store.readOrder) {
       case 0:
@@ -387,7 +350,7 @@ const Book: React.FC = (props: BookProps) => {
       default:
         setShowAppBar(undefined);
     }
-  }, [store.readOrder, increment, decrement]);
+  }, [store.readOrder, increment, decrement, openEditDialog]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -406,10 +369,10 @@ const Book: React.FC = (props: BookProps) => {
     const sizes = [width, height];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
     const pad = data.book.pages.toString(10).length;
-    const suffix = showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
+    const suffix = store.showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
     return [...Array(data.book.pages).keys()]
       .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}${suffix}.jpg`);
-  }, [data, showOriginalImage, width, height]);
+  }, [data, store.showOriginalImage, width, height]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -419,7 +382,7 @@ const Book: React.FC = (props: BookProps) => {
   const networkType = useNetworkType();
 
   React.useEffect(() => {
-    setShowOriginalImage(networkType === 'ethernet');
+    dispatch({ showOriginalImage: networkType === 'ethernet' });
   }, [networkType]);
 
   if (loading || error) {
@@ -436,6 +399,17 @@ const Book: React.FC = (props: BookProps) => {
   return (
     // eslint-disable-next-line
     <div className={classes.book} onClick={clickPage}>
+      <EditPagesDialog
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        openPage={page}
+        maxPage={data ? data.book.pages : 0}
+        bookId={params.id}
+        theme={store.theme}
+        wb={store.wb}
+        persistor={persistor}
+      />
+
       {/* eslint-disable-next-line */}
       <div
         className={classes.overlay}
@@ -483,76 +457,15 @@ const Book: React.FC = (props: BookProps) => {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem
-                  onClick={() => setOpenSplitDialog(true)}
-                >
-                  Split after page
+                <MenuItem onClick={() => { setSettingsMenuAnchor(null); setOpenEditDialog(true); }}>
+                  Edit pages
                 </MenuItem>
                 <MenuItem
-                  onClick={() => setDeleteNumbers([debouncePage])}
+                  onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
                 >
-                  Remove this page
-                </MenuItem>
-                <MenuItem
-                  onClick={() => setShowOriginalImage(!showOriginalImage)}
-                >
-                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                  {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
                 </MenuItem>
               </Menu>
-              <DeleteDialog
-                open={deleteNumbers && deleteNumbers.length > 0}
-                loading={deleteLoading}
-                onClickDelete={() => deletePage()}
-                onClose={() => setDeleteNumbers([])}
-                page={(debouncePage + 1).toString(10)}
-              />
-              <Dialog
-                open={openSplitDialog}
-                onClose={() => !splitLoading && setOpenSplitDialog(false)}
-              >
-                <DialogTitle>Split page</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    Do you want to split page?
-                  </DialogContentText>
-
-                  <div className={classes.splitButtonWrapper}>
-                    <Button
-                      classes={{ label: classes.splitButton }}
-                      onClick={() => splitPage({ variables: { type: 'VERTICAL' } })}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
-                        <polygon
-                          points="10,10 140,10 140,80 10,80"
-                          style={{ fill: 'rgba(0, 0, 0, 0)', stroke: '#000', strokeWidth: 3 }}
-                        />
-                        <line x1="75" y1="0" x2="75" y2="100" strokeWidth="5" stroke="red" />
-                      </svg>
-                      Vertical
-                    </Button>
-
-                    <Button
-                      classes={{ label: classes.splitButton }}
-                      onClick={() => splitPage({ variables: { type: 'HORIZONTAL' } })}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
-                        <polygon
-                          points="10,10 140,10 140,80 10,80"
-                          style={{ fill: 'rgba(0, 0, 0, 0)', stroke: '#000', strokeWidth: 3 }}
-                        />
-                        <line x1="0" y1="45" x2="150" y2="45" strokeWidth="5" stroke="blue" />
-                      </svg>
-                      Horizontal
-                    </Button>
-                  </div>
-                </DialogContent>
-
-                <DialogActions>
-                  <Button onClick={() => setOpenSplitDialog(false)} disabled={splitLoading}>
-                    close
-                  </Button>
-                </DialogActions>
-              </Dialog>
               <Button
                 variant="outlined"
                 style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}

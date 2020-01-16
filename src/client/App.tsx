@@ -30,15 +30,21 @@ import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
 import { hot } from 'react-hot-loader/root';
 
-import { DebugFolderSizes } from '@common/GraphqlTypes';
+import {
+  BookInfoOrder,
+  DeleteUnusedFoldersMutation,
+  DeleteUnusedFoldersMutationVariables,
+  FolderSizesQuery,
+  FolderSizesQueryVariables,
+} from '@common/GQLTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
-import { SortOrder } from '@client/store/reducers';
-import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { useLazyQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
 
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
 import ColorTile from '@client/components/ColorTile';
+import { useApollo } from '@client/apollo/ApolloProvider';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -98,7 +104,6 @@ const wrapSize = (size) => {
 
 interface AppProps {
   wb: any;
-  persistor: any;
 }
 
 // @ts-ignore
@@ -173,6 +178,7 @@ const history = createBrowserHistory();
 
 const App: React.FC<AppProps> = (props: AppProps) => {
   const { state: store, dispatch } = useGlobalStore();
+  const { persistor } = useApollo();
   const classes = useStyles(props);
 
   const theme = useMatchMedia(
@@ -185,7 +191,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     if (store.theme !== theme) {
       dispatch({ theme });
     }
-  }, [theme]);
+  }, [theme, store.theme]);
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
@@ -197,18 +203,26 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
 
   const { enqueueSnackbar } = useSnackbar();
+  const apolloClient = useApolloClient();
 
-  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<{
-    sizes: DebugFolderSizes,
-  }>(DebugFolderSizesQuery);
+  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<
+    FolderSizesQuery,
+    FolderSizesQueryVariables
+  >(DebugFolderSizesQuery);
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation(DebugDeleteFolderMutation, {
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<
+    DeleteUnusedFoldersMutation,
+    DeleteUnusedFoldersMutationVariables
+  >(DebugDeleteFolderMutation, {
     onCompleted() {
+      // noinspection JSIgnoredPromiseFromCall
       refetch();
     },
   });
 
   React.useEffect(() => {
+    // @ts-ignore
+    apolloClient.snackbar = enqueueSnackbar;
     if (props.wb) {
       dispatch({ wb: props.wb });
       props.wb.addEventListener('installed', (event) => {
@@ -244,26 +258,27 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     } else {
       history.goBack();
     }
-  }, [history, store, dispatch]);
+  }, [history, store.backRoute, dispatch]);
 
+  /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
-    (i !== 1 ? props.persistor.purge() : Promise.resolve())
+    (i !== 1 ? persistor.purge() : Promise.resolve())
       .then(() => {
         if (store.wb && i === 1) {
           navigator.serviceWorker.addEventListener('message', () => {
-            window.location.reload();
+            window.location.reload(true);
           });
           store.wb.messageSW({
             type: 'PURGE_CACHE',
           });
           setTimeout(() => {
-            window.location.reload();
+            window.location.reload(true);
           }, 10 * 1000);
         } else {
-          window.location.reload();
+          window.location.reload(true);
         }
       });
-  }, [store]);
+  }, [store.wb]);
 
   const provideTheme = React.useMemo(
     () => createMuiTheme({
@@ -379,9 +394,72 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <span>Secondary:</span>
                 <ColorTile marginLeft color={store.secondary} />
               </MenuItem>
-              <MenuItem onClick={(e) => setDebugAnchorEl(e.currentTarget)}>
-                Debug
+              <MenuItem onClick={() => dispatch({ showBookInfoName: !store.showBookInfoName })}>
+                <span>{`${store.showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
               </MenuItem>
+              <MenuItem onClick={() => setDebugAnchorEl(!debugAnchorEl)}>
+                Debug
+                <Icon>{`keyboard_arrow_${debugAnchorEl ? 'up' : 'down'}`}</Icon>
+              </MenuItem>
+              <Collapse in={debugAnchorEl}>
+                <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
+                  Cache Control
+                  <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
+                </MenuItem>
+                <Collapse in={openCacheControl}>
+                  {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
+                    <MenuItem
+                      key={order}
+                      onClick={() => purgeCache(i)}
+                      style={{ paddingLeft: provideTheme.spacing(3) }}
+                    >
+                      {order}
+                    </MenuItem>
+                  ))}
+                </Collapse>
+                <MenuItem
+                  onClick={() => {
+                    if (!openFolderSize) getFolderSizes();
+                    setOpenFolderSize(!openFolderSize);
+                  }}
+                >
+                  Folder sizes
+                  <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
+                </MenuItem>
+                <Collapse in={openFolderSize}>
+                  {(deleteLoading || loading || !data) ? (
+                    <MenuItem style={{ display: 'flex', justifyContent: 'center' }}>
+                      <CircularProgress color="secondary" />
+                    </MenuItem>
+                  ) : (
+                    <>
+                      {Object.entries(data.sizes)
+                        .filter(([k]) => !k.startsWith('_'))
+                        .map(([k, v]) => (
+                          <ListItem
+                            key={k}
+                            style={{
+                              paddingLeft: provideTheme.spacing(3),
+                              paddingTop: 0,
+                              paddingBottom: 0,
+                            }}
+                          >
+                            <ListItemText primary={k} secondary={k.endsWith('Count') ? v : wrapSize(v)} />
+                          </ListItem>
+                        ))}
+                      <ListItem>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => deleteUnusedFolder()}
+                        >
+                            Delete Unused and Cache
+                        </Button>
+                      </ListItem>
+                    </>
+                  )}
+                </Collapse>
+              </Collapse>
             </Menu>
             <Menu
               getContentAnchorEl={null}
@@ -393,7 +471,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
               open={!!sortAnchorEl}
               onClose={() => setSortAnchorEl(null)}
             >
-              {['Update_Newest', 'Update_Oldest', 'Add_Newest', 'Add_Oldest', 'Name_Asc', 'Name_Desc'].map((order: SortOrder) => (
+              {Object.keys(BookInfoOrder).map((order: BookInfoOrder) => (
                 <MenuItem
                   key={order}
                   onClick={() => {
@@ -428,74 +506,6 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                   <ColorTile color={c} />
                 </MenuItem>
               ) : null))}
-            </Menu>
-            <Menu
-              getContentAnchorEl={null}
-              anchorOrigin={{
-                horizontal: 'center',
-                vertical: 'bottom',
-              }}
-              anchorEl={debugAnchorEl}
-              open={!!debugAnchorEl}
-              onClose={() => setDebugAnchorEl(null)}
-            >
-              <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
-                Cache Control
-                <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
-              </MenuItem>
-              <Collapse in={openCacheControl}>
-                {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
-                  <MenuItem
-                    key={order}
-                    onClick={() => purgeCache(i)}
-                    style={{ paddingLeft: provideTheme.spacing(3) }}
-                  >
-                    {order}
-                  </MenuItem>
-                ))}
-              </Collapse>
-              <MenuItem
-                onClick={() => {
-                  if (!openFolderSize) getFolderSizes();
-                  setOpenFolderSize(!openFolderSize);
-                }}
-              >
-                Folder sizes
-                <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
-              </MenuItem>
-              <Collapse in={openFolderSize}>
-                {(deleteLoading || loading || !data) ? (
-                  <MenuItem style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CircularProgress color="secondary" />
-                  </MenuItem>
-                ) : (
-                  <>
-                    {Object.entries(data.sizes)
-                      .filter(([k]) => !k.startsWith('_'))
-                      .map(([k, v]) => (
-                        <ListItem
-                          key={k}
-                          style={{
-                            paddingLeft: provideTheme.spacing(3),
-                            paddingTop: 0,
-                            paddingBottom: 0,
-                          }}
-                        >
-                          <ListItemText primary={k} secondary={wrapSize(v)} />
-                        </ListItem>
-                      ))}
-                    <ListItem>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => deleteUnusedFolder()}
-                      >
-                        Delete Unused and Cache
-                      </Button>
-                    </ListItem>
-                  </>
-                )}
-              </Collapse>
             </Menu>
           </Toolbar>
         </AppBar>

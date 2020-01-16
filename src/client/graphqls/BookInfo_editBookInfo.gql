@@ -1,5 +1,5 @@
-mutation edit($id: ID! $name: String $thumbnail: String $finished: Boolean $invisible: Boolean) {
-    edit: editBookInfo(id: $id name: $name thumbnail: $thumbnail finished: $finished invisible: $invisible) {
+mutation editBookInfo($id: ID! $name: String $thumbnail: String $genres: [String!]!) {
+    edit: editBookInfo(id: $id name: $name thumbnail: $thumbnail genres: $genres) {
         success
         code
     }

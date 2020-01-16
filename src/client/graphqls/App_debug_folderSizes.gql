@@ -1,8 +1,10 @@
-{
+query folderSizes {
     sizes: debug_folderSize {
         tmp
         cache
         book
         unusedBook
+        bookInfoCount
+        bookCount
     }
 }

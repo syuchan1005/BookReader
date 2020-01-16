@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { useApolloClient } from '@apollo/react-hooks';
 
-import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
+import {
+  BookInfoQuery as BookInfoQueryType,
+  BookInfoQueryVariables,
+} from '@common/GQLTypes';
+import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
 
 const usePrevNextBook = (infoId, bookId) => {
   const client = useApolloClient();
@@ -13,7 +17,7 @@ const usePrevNextBook = (infoId, bookId) => {
       setBookInfo(undefined);
     } else {
       try {
-        const readQuery = client.cache.readQuery({
+        const readQuery = client.cache.readQuery<BookInfoQueryType, BookInfoQueryVariables>({
           query: BookInfoQuery,
           variables: {
             id: infoId,

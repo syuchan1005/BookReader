@@ -1,5 +1,6 @@
 scalar Upload
 scalar BigInt
+scalar IntRange
 
 type Query {
     ## BookInfo
@@ -7,27 +8,28 @@ type Query {
         limit: Int = 10
         offset: Int = 0
         search: String
-        order: BookInfoOrder = Update_Newest
-        normal: Boolean = true
+        genres: [String!]
         history: Boolean = false
-        invisible: Boolean = false
+        order: BookInfoOrder = Update_Newest
     ): BookInfoList!
     bookInfo(id: ID!): BookInfo
 
     ## Book
-    books(id: ID offset: Int = 0 limit: Int = 10 order: BookOrder = ASC): [Book!]!
+    books(id: ID, offset: Int = 0, limit: Int = 10, order: BookOrder = ASC): [Book!]!
     book(id: ID!): Book
 
     ## Debug
     debug_folderSize: Debug_FolderSizes!
 
     plugins: [Plugin!]!
+
+    genres: [String!]!
 }
 
 type Mutation {
     ## BookInfo
-    addBookInfo(name: String!, thumbnail: Upload, finished: Boolean = false): ResultWithInfoId!
-    editBookInfo(id: ID!, name: String, thumbnail: String, finished: Boolean invisible: Boolean): Result!
+    addBookInfo(name: String!, thumbnail: Upload, genres: [String!]): ResultWithInfoId!
+    editBookInfo(id: ID!, name: String, thumbnail: String, genres: [String!]): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 
     addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
@@ -39,12 +41,14 @@ type Mutation {
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
 
-    ## BookBatch
-    addCompressBookBatch(id: ID!, file: Upload!): ID!
-
     ## Page
-    deletePages(id: ID! numbers: [Int!]!): Result!
-    splitPages(id: ID! start: Int! type: SplitType = VERTICAL): Result!
+    deletePages(id: ID! pages: IntRange!): Result!
+    splitPages(id: ID! pages: IntRange! type: SplitType = VERTICAL): Result!
+    editPage(id: ID! page: Int! image: Upload!): Result!
+    # if beforePage 0   -> 0, put, 1
+    # if beforePage -1  -> put, 0, 1
+    # if beforePage 100 -> 100, put, 101
+    putPage(id: ID! beforePage: Int! image: Upload!): Result!
 
     ## Debug
     debug_deleteUnusedFolders: Result!
@@ -53,7 +57,6 @@ type Mutation {
 type Subscription {
     addBookInfo(name: String!): String!
     addBooks(id: ID!): String!
-    addCompressBookBatch(id: ID!): BatchSubscription!
 }
 
 enum BookInfoOrder {
@@ -81,8 +84,7 @@ type BookInfo {
     thumbnail: String
     count: Int!
     history: Boolean!
-    finished: Boolean!
-    invisible: Boolean!
+    genres: [String!]!
 
     books(order: BookOrder = ASC): [Book!]!
 }
@@ -131,12 +133,6 @@ type BookInfoResult {
     books: [Book!]!
 }
 
-type BatchSubscription {
-    finished: Boolean!
-    message: String
-    error: String
-}
-
 type Plugin {
     info: PluginInfo!
     queries: PluginQueries!
@@ -174,4 +170,6 @@ type Debug_FolderSizes {
     cache: BigInt!
     book: BigInt!
     unusedBook: BigInt!
+    bookInfoCount: Int!
+    bookCount: Int!
 }

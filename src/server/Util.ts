@@ -8,12 +8,22 @@ export const asyncForEach = async (arr, callback) => {
   }
 };
 
-export const asyncMap = async <T, E>
-(arr: Array<E>, transform: (e: E, index: number, arr: Array<E>) => Promise<T>): Promise<T[]> => {
+export const asyncMap = async <T, E>(
+  arr: Array<E>,
+  transform: (e: E, index: number, arr: Array<E>) => Promise<T>,
+  reversed = false,
+): Promise<T[]> => {
   const result = [];
-  for (let i = 0; i < arr.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    result[i] = await transform(arr[i], i, arr);
+  if (reversed) {
+    for (let i = arr.length - 1; i >= 0; i -= 1) {
+      // eslint-disable-next-line no-await-in-loop
+      result[i] = await transform(arr[i], i, arr);
+    }
+  } else {
+    for (let i = 0; i < arr.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      result[i] = await transform(arr[i], i, arr);
+    }
   }
   return result;
 };
@@ -65,4 +75,12 @@ export const renameFile = async (srcPath: string, destPath: string, fallback = t
         .pipe(destStream);
     });
   }
+};
+
+export const removeBookCache = async (bookId, page, pages) => {
+  const pageStr = page.toString(10).padStart(pages.toString(10).length, '0');
+  const dirPath = `storage/cache/book/${bookId}`;
+  const files = (await fs.readdir(dirPath))
+    .filter((f) => f.startsWith(pageStr) && ['.', '_'].includes(f[pageStr.length]));
+  await Promise.all(files.map((f) => fs.unlink(`${dirPath}/${f}`)));
 };

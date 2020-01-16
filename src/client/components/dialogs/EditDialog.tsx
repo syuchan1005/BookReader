@@ -64,7 +64,7 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
           <>
             <FormControlLabel
               className={classes.checkbox}
-              label="Finished"
+              label="Completed"
               control={(
                 <Checkbox
                   checked={finished}

@@ -6,17 +6,19 @@ import { promises as fs } from 'fs';
 import du from 'du';
 import rimraf from 'rimraf';
 
-import BookModel from '@server/sequelize/models/book';
+import BookModel from '@server/sequelize/models/Book';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
-import { DebugFolderSizes, Result } from '@common/GraphqlTypes';
+import { MutationResolvers, QueryResolvers } from '@common/GQLTypes';
 import GraphQL from '../index';
 
 class Debug extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
-  Query() {
+  Query(): QueryResolvers {
+    // noinspection JSUnusedGlobalSymbols
     return {
-      debug_folderSize: async (): Promise<DebugFolderSizes> => {
-        let tmp = 0;
+      debug_folderSize: async () => {
+        let tmp;
         try {
           tmp = await du(`${os.tmpdir()}/bookReader/`);
         } catch (e) { tmp = -1; }
@@ -39,20 +41,25 @@ class Debug extends GQLMiddleware {
           book += size;
         });
 
+        const bookInfoCount = await BookInfoModel.count();
+
         return {
           tmp,
           cache,
           book,
           unusedBook,
+          bookInfoCount,
+          bookCount: dbBookIds.length,
         };
       },
     };
   }
 
   // eslint-disable-next-line class-methods-use-this
-  Mutation() {
+  Mutation(): MutationResolvers {
+    // noinspection JSUnusedGlobalSymbols
     return {
-      debug_deleteUnusedFolders: async (): Promise<Result> => {
+      debug_deleteUnusedFolders: async () => {
         const rmdir = (p) => new Promise((resolve) => rimraf(p, resolve));
         await rmdir('storage/cache');
         await GraphQL.createFolders();
@@ -76,4 +83,5 @@ class Debug extends GQLMiddleware {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export default Debug;

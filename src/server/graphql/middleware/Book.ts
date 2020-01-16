@@ -7,10 +7,12 @@ import rimraf from 'rimraf';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
-import { Book as BookType, Result, ResultWithBookResults } from '@common/GraphqlTypes';
+import {
+  BookOrder, MutationResolvers, QueryResolvers, SubscriptionResolvers,
+} from '@common/GQLTypes';
 
-import BookModel from '@server/sequelize/models/book';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
+import BookModel from '@server/sequelize/models/Book';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
 import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
 import Database from '@server/sequelize/models';
@@ -20,14 +22,15 @@ import { asyncMap } from '@server/Util';
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
-  Query() {
+  Query(): QueryResolvers {
+    // noinspection JSUnusedGlobalSymbols
     return {
       books: async (parent, {
         id: infoId,
         limit,
         offset,
         order,
-      }): Promise<BookType[]> => {
+      }) => {
         const where: any = {};
         if (infoId) where.infoId = infoId;
         const books = await BookModel.findAll({
@@ -43,9 +46,9 @@ class Book extends GQLMiddleware {
           books,
           [(v) => v.infoId, (v) => v.number],
         ).map((book) => ModelUtil.book(book));
-        return (order === 'DESC') ? bookModels.reverse() : bookModels;
+        return (order === BookOrder.Desc) ? bookModels.reverse() : bookModels;
       },
-      book: async (parent, { id: bookId }): Promise<BookType> => {
+      book: async (parent, { id: bookId }) => {
         const book = await BookModel.findOne({
           where: { id: bookId },
           include: [
@@ -61,25 +64,25 @@ class Book extends GQLMiddleware {
     };
   }
 
-  Mutation() {
+  Mutation(): MutationResolvers {
     // noinspection JSUnusedGlobalSymbols
     return {
       addBook: async (
         parent, args, context, info,
-      ): Promise<Result> => GQLUtil.Mutation.addBook(
+      ) => GQLUtil.Mutation.addBook(
         this.gm, this.pubsub,
         parent, args, context, info, undefined,
       ),
       addBooks: async (
         parent, args, context, info,
-      ): Promise<Result[]> => GQLUtil.Mutation.addBooks(
+      ) => GQLUtil.Mutation.addBooks(
         this.gm, this.pubsub,
         parent, args, context, info, undefined,
       ),
       addCompressBook: async (parent, {
         id: infoId,
         file: compressBooks,
-      }): Promise<ResultWithBookResults> => {
+      }) => {
         const tempPath = `${os.tmpdir()}/bookReader/${infoId}`;
         const type = await GQLUtil.checkArchiveType(compressBooks);
         if (type.success === false) {
@@ -142,7 +145,7 @@ class Book extends GQLMiddleware {
           bookResults: results,
         };
       },
-      editBook: async (parent, { id: bookId, number, thumbnail }): Promise<Result> => {
+      editBook: async (parent, { id: bookId, number, thumbnail }) => {
         if (number === undefined && thumbnail === undefined) {
           return {
             success: false,
@@ -181,7 +184,7 @@ class Book extends GQLMiddleware {
           success: true,
         };
       },
-      deleteBook: async (parent, { id: bookId }): Promise<Result> => {
+      deleteBook: async (parent, { id: bookId }) => {
         const book = await BookModel.findOne({
           where: {
             id: bookId,
@@ -215,7 +218,8 @@ class Book extends GQLMiddleware {
     };
   }
 
-  Subscription() {
+  Subscription(): SubscriptionResolvers {
+    // noinspection JSUnusedGlobalSymbols
     return {
       addBooks: {
         subscribe: withFilter(

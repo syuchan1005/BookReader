@@ -1,0 +1,6 @@
+mutation deletePages($id: ID! $pages: IntRange!){
+    del: deletePages(id: $id pages: $pages) {
+        success
+        code
+    }
+}

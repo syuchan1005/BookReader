@@ -1,4 +1,4 @@
-import { createReadStream as createReadStreamFS, promises as fs } from 'fs';
+import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
 import { Readable } from 'stream';
@@ -11,21 +11,19 @@ import { orderBy, orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
-import { Result } from '@common/GraphqlTypes';
+import { BookInfoOrder, MutationAddBookArgs, Result } from '@common/GQLTypes';
 import { archiveTypes } from '@common/Common';
 
 import { SubscriptionKeys } from '@server/graphql';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
 import Errors from '@server/Errors';
 import {
-  asyncForEach,
-  asyncMap,
-  mkdirpIfNotExists,
-  readdirRecursively,
-  renameFile,
+  asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile,
 } from '@server/Util';
 import Database from '@server/sequelize/models';
-import BookModel from '@server/sequelize/models/book';
+import BookModel from '@server/sequelize/models/Book';
+import InfoGenreModel from '@server/sequelize/models/InfoGenre';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
+import GenreModel from '../sequelize/models/Genre';
 
 const GQLUtil = {
   Mutation: {
@@ -33,8 +31,8 @@ const GQLUtil = {
       id: infoId,
       number,
       file,
-      thumbnail,
-    }, context, info, customData): Promise<Result> => {
+      // thumbnail,
+    }: MutationAddBookArgs, context, info, customData): Promise<Result> => {
       const bookId = uuidv4();
       if (!await BookInfoModel.hasId(infoId)) {
         return {
@@ -43,7 +41,8 @@ const GQLUtil = {
           message: Errors.QL0001,
         };
       }
-      let argThumbnail;
+      /*
+      const argThumbnail;
       if (thumbnail) {
         const { stream, mimetype } = await thumbnail;
         if (!mimetype.startsWith('image/jpeg')) {
@@ -56,6 +55,7 @@ const GQLUtil = {
         await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
         argThumbnail = `/book/${bookId}/thumbnail.jpg`;
       }
+      */
 
       const type = await GQLUtil.checkArchiveType(file);
       if (type.success === false) {
@@ -84,7 +84,8 @@ const GQLUtil = {
         infoId,
         bookId,
         number,
-        argThumbnail,
+        undefined,
+        // argThumbnail,
         (resolve) => {
           rimraf(tempPath, () => resolve());
         },
@@ -98,7 +99,7 @@ const GQLUtil = {
         id: infoId,
         number,
         file,
-        thumbnail: null,
+        // thumbnail: null,
       }, context, info, customData || {
         pubsub: {
           key: SubscriptionKeys.ADD_BOOKS,
@@ -254,14 +255,40 @@ const GQLUtil = {
   },
   async searchBookFolders(tempPath: string) {
     let booksFolderPath = '/';
-    let bookFolders = [];
+    const bookFolders = [];
     for (let i = 0; i < 10; i += 1) {
       const tempBooksFolder = path.join(tempPath, booksFolderPath);
       // eslint-disable-next-line no-await-in-loop
       const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
       const dirs = dirents.filter((d) => d.isDirectory());
       if (dirs.length > 1) {
-        bookFolders = dirs.map((d) => d.name);
+        // eslint-disable-next-line no-await-in-loop
+        await asyncForEach(dirs, async (d) => {
+          const hasMulti = d.name.match(/(\d+)-(\d+)/);
+          if (hasMulti) {
+            const min = parseInt(hasMulti[1], 10);
+            const max = parseInt(hasMulti[2], 10);
+            if (min < max) {
+              const nestNumbers = [...Array(max - min + 1).keys()].map((index) => index + min);
+              const nestFolders = await fs.readdir(
+                path.join(tempBooksFolder, d.name), { withFileTypes: true },
+              ).then((nestDirs) => nestDirs.filter((a) => a.isDirectory()));
+              const folderNumbers = nestFolders.map((f) => {
+                const inNums = f.name.match(/\d+/g);
+                if (inNums) {
+                  return parseInt(inNums[inNums.length - 1], 10);
+                }
+                return min - 1;
+              });
+              if (nestNumbers.filter((n) => !folderNumbers.includes(n)).length === 0
+              && folderNumbers.filter((n) => !nestNumbers.includes(n)).length === 0) {
+                bookFolders.push(...nestFolders.map((f) => path.join(d.name, f.name)));
+                return;
+              }
+            }
+          }
+          bookFolders.push(d.name);
+        });
         break;
       } else if (dirs.length === 1) {
         booksFolderPath = path.join(booksFolderPath, dirs[0].name);
@@ -274,102 +301,7 @@ const GQLUtil = {
       bookFolders,
     };
   },
-  async batchCompressFile(
-    gm: SubClass,
-    pubsub: PubSubEngine,
-    infoId: string,
-    batchId: string,
-    tempPath: string,
-    file: { path: string, archiveType: string },
-  ) {
-    const extractBookNotify = () => pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
-      id: batchId,
-      addCompressBookBatch: {
-        message: 'Extract Book...',
-        finished: false,
-      },
-    });
-
-    await extractBookNotify();
-    const timeId = setTimeout(extractBookNotify, 1500);
-    const notifyId = setInterval(extractBookNotify, 30 * 1000);
-
-    await GQLUtil.extractCompressFile(
-      tempPath,
-      file.archiveType,
-      () => createReadStreamFS(file.path),
-    ).catch((e) => {
-      clearTimeout(timeId);
-      clearInterval(notifyId);
-      throw e;
-    });
-
-    clearTimeout(timeId);
-    clearInterval(notifyId);
-
-    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
-      id: batchId,
-      addCompressBookBatch: {
-        message: 'Search Book...',
-        finished: false,
-      },
-    });
-
-    const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
-    if (bookFolders.length === 0) {
-      throw new Error('not found book folder');
-    }
-
-    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
-      id: batchId,
-      addCompressBookBatch: {
-        message: 'Move Book...',
-        finished: false,
-      },
-    });
-
-    await asyncMap(bookFolders, async (p, i) => {
-      const folderPath = path.join(tempPath, booksFolderPath, p);
-      let nums = p.match(/\d+/g);
-      if (nums) {
-        nums = Number(nums[nums.length - 1]).toString(10);
-      } else {
-        nums = `${i + 1}`;
-      }
-
-      await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
-        id: batchId,
-        addCompressBookBatch: {
-          message: `Move Book (${nums}) ...`,
-          finished: false,
-        },
-      });
-
-      return GQLUtil.addBookFromLocalPath(
-        gm,
-        folderPath,
-        infoId,
-        uuidv4(),
-        nums,
-        undefined,
-        (resolve) => {
-          rimraf(folderPath, () => resolve());
-        },
-      ).catch((e) => {
-        throw e;
-      });
-    });
-    await new Promise((resolve) => rimraf(tempPath, resolve));
-
-    await pubsub.publish(SubscriptionKeys.ADD_BOOKS_BATCH, {
-      id: batchId,
-      addCompressBookBatch: {
-        finished: true,
-        message: 'Finish',
-      },
-    });
-  },
-  async numberingFiles(folderPath: string, pad: number, fileList?: string[]) {
+  async numberingFiles(folderPath: string, pad: number, fileList?: string[], reverse = false) {
     const files = fileList || orderBy(await fs.readdir(folderPath));
     return asyncMap(files, (f, i) => {
       const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
@@ -377,25 +309,63 @@ const GQLUtil = {
         return renameFile(`${folderPath}/${f}`, `${folderPath}/${dist}`);
       }
       return Promise.resolve();
-    });
+    }, reverse);
   },
-  bookInfoOrderToOrderBy(order): string[] | undefined {
+  bookInfoOrderToOrderBy(order: BookInfoOrder): string[] | undefined {
     switch (order) {
-      case 'Update_Newest':
+      case BookInfoOrder.UpdateNewest:
         return ['updatedAt', 'desc'];
-      case 'Update_Oldest':
+      case BookInfoOrder.UpdateOldest:
         return ['updatedAt', 'asc'];
-      case 'Add_Newest':
+      case BookInfoOrder.AddNewest:
         return ['createdAt', 'asc'];
-      case 'Add_Oldest':
+      case BookInfoOrder.AddOldest:
         return ['createdAt', 'desc'];
-      case 'Name_Asc':
+      case BookInfoOrder.NameAsc:
         return ['name', 'asc'];
-      case 'Name_Desc':
+      case BookInfoOrder.NameDesc:
         return ['name', 'desc'];
       default:
         return undefined;
     }
+  },
+  async linkGenres(infoId: string, genreList: string[]) {
+    const dbGenres = (await InfoGenreModel.findAll({
+      where: { infoId },
+      include: [{
+        model: GenreModel,
+        as: 'genre',
+      }],
+    })).map((g) => g.genre);
+
+    const genres = genreList.filter((v) => v);
+    const rmGenres = dbGenres.filter((g) => !genres.includes(g.name));
+    const addGenres = genres.filter((g) => !dbGenres.find((v) => v.name === g));
+
+    await InfoGenreModel.destroy({
+      where: {
+        infoId,
+        genreId: rmGenres.map((g) => g.id),
+      },
+    });
+
+    await GenreModel.bulkCreate(addGenres.map((name) => ({
+      name,
+    })), {
+      ignoreDuplicates: true,
+    });
+
+    const addedGenres = await GenreModel.findAll({
+      attributes: ['id'],
+      where: {
+        name: addGenres,
+      },
+    });
+
+    await InfoGenreModel.bulkCreate(addedGenres.map((a) => ({
+      infoId,
+      genreId: a.id,
+    })));
   },
 };
 

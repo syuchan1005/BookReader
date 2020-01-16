@@ -6,7 +6,7 @@ module.exports = {
       defaultValue: false,
       type: Sequelize.BOOLEAN,
       after: 'finished',
-    });
+    }).catch(() => { /* ignored */ });
   },
   down: (queryInterface) => {
     return queryInterface.removeColumn('bookInfos', 'invisible');

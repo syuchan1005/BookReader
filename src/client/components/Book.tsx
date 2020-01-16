@@ -14,16 +14,27 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
-import * as DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
-import * as EditBookMutation from '@client/graphqls/Book_editBook.gql';
+import loadable from '@loadable/component';
+
+import {
+  Book as BookType,
+  DeleteBookMutation as DeleteBookMutationType,
+  DeleteBookMutationVariables,
+  EditBookMutation as EditBookMutationType,
+  EditBookMutationVariables,
+} from '@common/GQLTypes';
+import DeleteBookMutation from '@client/graphqls/Book_deleteBook.gql';
+import EditBookMutation from '@client/graphqls/Book_editBook.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import { Book as QLBook, Result } from '@common/GraphqlTypes';
 import Img from './Img';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
+import useDebounceValue from '../hooks/useDebounceValue';
 
-interface BookProps extends QLBook {
+const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadBookDialog' */ './dialogs/DownloadBookDialog'));
+
+interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
   thumbnailSize?: number;
   thumbnailNoSave?: boolean;
   name: string;
@@ -98,8 +109,13 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     number,
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
+  const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
+  const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<{ del: Result }>(DeleteBookMutation, {
+  const [deleteBook, { loading: delLoading }] = useMutation<
+    DeleteBookMutationType,
+    DeleteBookMutationVariables
+  >(DeleteBookMutation, {
     variables: {
       id: bookId,
     },
@@ -110,7 +126,10 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const [editBook, { loading: editLoading }] = useMutation<{ edit: Result }>(EditBookMutation, {
+  const [editBook, { loading: editLoading }] = useMutation<
+    EditBookMutationType,
+    EditBookMutationVariables
+  >(EditBookMutation, {
     variables: {
       id: bookId,
       ...editContent,
@@ -122,20 +141,25 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     },
   });
 
-  const clickEditBook = () => {
+  const clickEditBook = React.useCallback(() => {
     setMenuAnchor(null);
     setEditDialog(true);
-  };
+  }, []);
 
-  const clickDeleteBook = () => {
+  const clickDeleteBook = React.useCallback(() => {
     setMenuAnchor(null);
     setAskDelete(true);
-  };
+  }, []);
 
-  const clickSelectThumbnailBook = () => {
+  const clickSelectThumbnailBook = React.useCallback(() => {
     setMenuAnchor(null);
     setSelectDialog(bookId);
-  };
+  }, [bookId]);
+
+  const clickDownloadBook = React.useCallback(() => {
+    setMenuAnchor(null);
+    setOpenDownloadDialog(true);
+  }, []);
 
   return (
     <Card className={classes.card}>
@@ -160,6 +184,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
             <MenuItem onClick={clickSelectThumbnailBook}>Select Thumbnail</MenuItem>
             <MenuItem onClick={clickEditBook}>Edit</MenuItem>
             <MenuItem onClick={clickDeleteBook}>Delete</MenuItem>
+            <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
           </Menu>
         </CardActions>
       )}
@@ -202,6 +227,16 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         onClose={() => setSelectDialog(undefined)}
         onEdit={onEdit}
       />
+
+      {(openDownloadDialog || debounceOpenDownloadDialog) && (
+        <DownloadDialog
+          open={openDownloadDialog}
+          onClose={() => setOpenDownloadDialog(false)}
+          number={number}
+          pages={pages}
+          bookId={bookId}
+        />
+      )}
     </Card>
   );
 };

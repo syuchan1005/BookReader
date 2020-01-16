@@ -3,6 +3,7 @@ const { resolve } = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -38,6 +39,7 @@ module.exports = {
             loader: 'ts-loader',
             options: {
               configFile: 'tsconfig.server.json',
+              transpileOnly: true,
             },
           },
         ],
@@ -51,6 +53,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new HardSourceWebpackPlugin(),
     new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
   ],

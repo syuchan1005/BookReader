@@ -1,4 +1,7 @@
-query ($id: ID!){
+# Pages_Info
+# Hooks_usePrevNextBook
+# SelectBookInfoThumbnailDialog
+query bookInfo($id: ID!){
     bookInfo(id: $id) {
         id
         name

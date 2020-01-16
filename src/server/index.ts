@@ -1,11 +1,11 @@
 import { promises as fs, createReadStream } from 'fs';
 import path from 'path';
-import { exec } from 'child_process';
 
 import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 import gm from 'gm';
+import execa from 'execa';
 
 import GraphQL from './graphql';
 import Database from './sequelize/models';
@@ -112,7 +112,8 @@ app.use(async (ctx, next) => {
     const stats = await fs.stat(origImgPath);
 
     if (stats.isFile()) {
-      let command = `cwebp ${origImgPath} -quiet`;
+      const command = 'cwebp';
+      const args = [origImgPath, '-quiet'];
       if (match[3]) {
         const w = Number(match[4]) || 0;
         const h = Number(match[5]) || 0;
@@ -120,22 +121,9 @@ app.use(async (ctx, next) => {
         const imageSize = await getSize(origImgPath);
         if (!(w >= imageSize.width || h >= imageSize.height)
           && (w > 0 || h > 0)) {
-          command += ` -resize ${w} ${h}`;
+          args.push('-resize', w.toString(10), h.toString(10));
         }
       }
-      const webpBuffer = await new Promise((resolve, reject) => {
-        exec(`${command} -o -`, {
-          encoding: 'buffer',
-          maxBuffer: 1024 * 512,
-        }, (err, stdout) => {
-          if (err) reject(err);
-          else if (stdout.length > 0) {
-            resolve(stdout);
-          } else {
-            reject(new Error('error'));
-          }
-        });
-      });
 
       if (!ctx.response.get('Last-Modified')) {
         ctx.set('Last-Modified', stats.mtime.toUTCString());
@@ -146,11 +134,18 @@ app.use(async (ctx, next) => {
           await fs.stat(`storage/cache${url}`);
         } catch (ignored) {
           await mkdirpIfNotExists(path.join(`storage/cache${url}`, '..'));
-          await fs.writeFile(`storage/cache${url}`, webpBuffer);
+          await execa(command, [...args, '-o', `storage/cache${url}`]);
+          // await fs.writeFile(`storage/cache${url}`, webpBuffer);
         }
+        ctx.body = createReadStream(`storage/cache${url}`);
+      } else {
+        const cwebpExec = await execa(command, [...args, '-o', '-'], { encoding: null })
+          .catch((e) => {
+            throw e;
+          });
+        ctx.body = cwebpExec.stdout;
       }
 
-      ctx.body = webpBuffer;
       ctx.type = 'image/webp';
       return;
     }

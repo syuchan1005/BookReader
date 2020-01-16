@@ -1,20 +1,24 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
-import { promises as fs } from 'fs';
+import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
+import rimraf from 'rimraf';
 
-import { Result } from '@common/GraphqlTypes';
-import BookModel from '@server/sequelize/models/book';
-import { asyncForEach } from '@server/Util';
+import { MutationResolvers, SplitType } from '@common/GQLTypes';
+import BookModel from '@server/sequelize/models/Book';
+import { asyncForEach, removeBookCache, renameFile } from '@server/Util';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
+import { flatRange } from '../scalar/IntRange';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
-  Mutation() {
+  Mutation(): MutationResolvers {
+    // noinspection JSUnusedGlobalSymbols
     return {
-      deletePages: async (parent, { id: bookId, numbers }): Promise<Result> => {
+      deletePages: async (parent, { id: bookId, pages }) => {
+        const numbers = flatRange(pages);
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
           return {
@@ -43,6 +47,9 @@ class Page extends GQLMiddleware {
         pad = (book.pages - numbers.length).toString(10).length;
 
         await GQLUtil.numberingFiles(bookPath, pad);
+        await new Promise((resolve) => {
+          rimraf(`storage/cache/book/${book.id}`, () => resolve());
+        });
 
         await BookModel.update({
           pages: book.pages - numbers.length,
@@ -56,7 +63,8 @@ class Page extends GQLMiddleware {
           success: true,
         };
       },
-      splitPages: async (parent, { id: bookId, start, type }): Promise<Result> => {
+      splitPages: async (parent, { id: bookId, pages, type }) => {
+        const numbers = flatRange(pages);
         const book = await BookModel.findOne({ where: { id: bookId } });
         if (!book) {
           return {
@@ -66,7 +74,9 @@ class Page extends GQLMiddleware {
           };
         }
 
-        if (start >= book.pages || start < 0) {
+        const minNum = Math.min(...numbers);
+        const maxNum = Math.max(...numbers);
+        if (book.pages < maxNum || minNum < 0) {
           return {
             success: false,
             code: 'QL0007',
@@ -74,13 +84,13 @@ class Page extends GQLMiddleware {
           };
         }
 
-        const cropOption = type === 'VERTICAL' ? '2x1@' : '1x2@';
+        const cropOption = type === SplitType.Vertical ? '2x1@' : '1x2@';
         const bookPath = `storage/book/${bookId}`;
         let files = await fs.readdir(bookPath);
-        let pages = 0;
+        let pageCount = 0;
         await asyncForEach(orderBy(files), async (f, i) => {
-          if (i < start) {
-            pages += 1;
+          if (!numbers.includes(i)) {
+            pageCount += 1;
             return;
           }
 
@@ -94,7 +104,7 @@ class Page extends GQLMiddleware {
                   else {
                     fs.unlink(`${bookPath}/${f}`)
                       .then(() => {
-                        pages += 2;
+                        pageCount += 2;
                         resolve();
                       });
                   }
@@ -109,7 +119,7 @@ class Page extends GQLMiddleware {
                 });
             });
 
-            const crops = type === 'VERTICAL' ? [
+            const crops = type === SplitType.Vertical ? [
               [size.width / 2, size.height, 0, 0],
               [size.width / 2, size.height, size.width / 2, 0],
             ] : [
@@ -124,7 +134,7 @@ class Page extends GQLMiddleware {
                 .write(`${bookPath}/${f.replace('.jpg', `-${fileIndex}.jpg`)}`, (err) => {
                   if (err) reject(err);
                   else {
-                    pages += 1;
+                    pageCount += 1;
                     resolve();
                   }
                 });
@@ -138,10 +148,135 @@ class Page extends GQLMiddleware {
           (v) => Number(v.match(/\d+/g)[0]),
           (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
         ], ['asc', 'desc']);
-        await GQLUtil.numberingFiles(bookPath, pages.toString(10).length, files);
+        await GQLUtil.numberingFiles(bookPath, pageCount.toString(10).length, files);
+        await new Promise((resolve) => {
+          rimraf(`storage/cache/book/${book.id}`, () => resolve());
+        });
 
         await BookModel.update({
-          pages,
+          pages: pageCount,
+        }, {
+          where: {
+            id: bookId,
+          },
+        });
+
+        return {
+          success: true,
+        };
+      },
+      editPage: async (parent, { id: bookId, page, image }) => {
+        const book = await BookModel.findOne({ where: { id: bookId } });
+        if (!book) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
+        if (page < 0 || page >= book.pages) {
+          return {
+            success: false,
+            code: 'QL0007',
+            message: Errors.QL0007,
+          };
+        }
+
+        const { createReadStream, mimetype } = await image;
+        if (!mimetype.startsWith('image/jpeg')) {
+          return {
+            success: false,
+            code: 'QL0000',
+            message: Errors.QL0000,
+          };
+        }
+
+        await new Promise((resolve) => {
+          const wStream = createWriteStream(`storage/book/${bookId}/${page.toString(10).padStart(book.pages.toString(10).length, '0')}.jpg`, { flags: 'w' });
+          const rStream = createReadStream();
+          rStream.pipe(wStream);
+          wStream.on('close', resolve);
+        });
+        await removeBookCache(bookId, page, book.pages);
+
+        return {
+          success: true,
+        };
+      },
+      putPage: async (parent, { id: bookId, beforePage, image }) => {
+        const book = await BookModel.findOne({ where: { id: bookId } });
+        if (!book) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
+
+        if (beforePage < -1 || beforePage >= book.pages) {
+          return {
+            success: false,
+            code: 'QL0007',
+            message: Errors.QL0007,
+          };
+        }
+        const bookPath = `storage/book/${bookId}`;
+        const pad = book.pages.toString(10).length;
+
+        const { createReadStream, mimetype } = await image;
+        if (!mimetype.startsWith('image/jpeg')) {
+          return {
+            success: false,
+            code: 'QL0000',
+            message: Errors.QL0000,
+          };
+        }
+
+        if (beforePage === -1) {
+          await renameFile(
+            `${bookPath}/${'0'.repeat(pad)}.jpg`,
+            `${bookPath}/${'0'.repeat(pad)}-1.jpg`,
+          );
+          await new Promise((resolve) => {
+            const wStream = createWriteStream(`${bookPath}/${'0'.repeat(pad)}-0.jpg`, { flags: 'w' });
+            const rStream = createReadStream();
+            rStream.pipe(wStream);
+            wStream.on('close', resolve);
+          });
+        } else if (beforePage === book.pages) {
+          await new Promise((resolve) => {
+            const wStream = createWriteStream(`${bookPath}/${beforePage.toString(10).padStart(pad, '0')}.jpg`, { flags: 'w' });
+            const rStream = createReadStream();
+            rStream.pipe(wStream);
+            wStream.on('close', resolve);
+          });
+        } else {
+          await renameFile(
+            `${bookPath}/${beforePage.toString(10).padStart(pad, '0')}.jpg`,
+            `${bookPath}/${beforePage.toString(10).padStart(pad, '0')}-0.jpg`,
+          );
+
+          await new Promise((resolve) => {
+            const wStream = createWriteStream(`${bookPath}/${beforePage.toString(10).padStart(pad, '0')}-1.jpg`, { flags: 'w' });
+            const rStream = createReadStream();
+            rStream.pipe(wStream);
+            wStream.on('close', resolve);
+          });
+        }
+
+        if (beforePage !== book.pages) {
+          const files = orderBy((await fs.readdir(bookPath)), [
+            (v) => Number(v.match(/\d+/g)[0]),
+            (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
+          ], ['asc', 'asc']);
+          await GQLUtil.numberingFiles(bookPath, (book.pages + 1).toString(10).length, files, true);
+          await new Promise((resolve) => {
+            rimraf(`storage/cache/book/${book.id}`, () => resolve());
+          });
+        }
+
+        await BookModel.update({
+          pages: book.pages + 1,
         }, {
           where: {
             id: bookId,
@@ -156,4 +291,5 @@ class Page extends GQLMiddleware {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export default Page;

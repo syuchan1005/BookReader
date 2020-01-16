@@ -1,4 +1,4 @@
-mutation edit($id: ID! $number: String $thumbnail: String) {
+mutation editBook($id: ID! $number: String $thumbnail: String) {
     edit: editBook(id: $id number: $number thumbnail: $thumbnail) {
         success
         code

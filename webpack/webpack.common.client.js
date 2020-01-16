@@ -6,6 +6,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
   context: resolve('src/client'),
@@ -84,6 +85,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new HardSourceWebpackPlugin(),
     new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
     // inject <script> in html file.

@@ -1,12 +1,12 @@
 import * as React from 'react';
 import {
-  Button, Checkbox,
+  Button,
   CircularProgress,
   createStyles,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, FormControlLabel,
+  DialogTitle,
   Icon,
   IconButton,
   List,
@@ -17,10 +17,14 @@ import {
 } from '@material-ui/core';
 import { useMutation } from '@apollo/react-hooks';
 
-import * as AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
-import * as AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
-
-import { Result } from '@common/GraphqlTypes';
+import {
+  AddBookInfoMutation as AddBookInfoMutationType,
+  AddBookInfoMutationVariables,
+  AddBookInfoHistoriesMutation as AddBookInfoHistoriesMutationType,
+  AddBookInfoHistoriesMutationVariables,
+} from '@common/GQLTypes';
+import AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
+import AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
 
 interface AddBookInfoDialogProps {
   open: boolean;
@@ -65,7 +69,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const classes = useStyles(props);
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');
-  const [finished, setFinished] = React.useState(false);
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
@@ -83,10 +86,12 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setAddHistories([]);
   };
 
-  const [addBookInfo, { loading: addLoading }] = useMutation<{ add: Result }>(AddBookInfoMutation, {
+  const [addBookInfo, { loading: addLoading }] = useMutation<
+    AddBookInfoMutationType,
+    AddBookInfoMutationVariables,
+  >(AddBookInfoMutation, {
     variables: {
       name,
-      finished,
     },
     onCompleted(d) {
       if (!d) return;
@@ -95,7 +100,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     },
   });
 
-  const [addBookInfoHistories, { loading: histLoading }] = useMutation<{ add: Result }>(
+  const [addBookInfoHistories, { loading: histLoading }] = useMutation<
+    AddBookInfoHistoriesMutationType,
+    AddBookInfoHistoriesMutationVariables,
+  >(
     AddBookInfoHistoriesMutation,
     {
       onCompleted(d) {
@@ -194,15 +202,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
         }
         return (
           <DialogContent className={classes.addContent}>
-            <FormControlLabel
-              control={(
-                <Checkbox
-                  checked={finished}
-                  onChange={(e) => setFinished(e.target.checked)}
-                />
-              )}
-              label="Finished"
-            />
             <TextField
               color="secondary"
               autoFocus

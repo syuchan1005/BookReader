@@ -1,16 +1,15 @@
-import 'swiper/css/swiper.min.css';
-
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { ApolloProvider } from '@apollo/react-hooks';
 import { SnackbarProvider } from 'notistack';
 
+import MyApolloProvider from '@client/apollo/ApolloProvider';
+import getClient from '@client/apollo/index';
 import StoreProvider from '@client/store/StoreProvider';
 import regSW from './registerServiceWorker';
 import App from './App';
 
-import getClient from './apollo';
 import db from './Database';
 
 const wb = regSW();
@@ -24,7 +23,9 @@ const wb = regSW();
       <StoreProvider>
         <SnackbarProvider maxSnack={3}>
           <ApolloProvider client={client}>
-            <App wb={wb} persistor={persistor} />
+            <MyApolloProvider client={client} persistor={persistor}>
+              <App wb={wb} />
+            </MyApolloProvider>
           </ApolloProvider>
         </SnackbarProvider>
       </StoreProvider>

@@ -4,87 +4,113 @@ import { promises as fs } from 'fs';
 
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
-import { Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
-  BookInfo as BookInfoType,
-  BookInfoList,
-  BookInfoResult,
-  Result,
-  ResultWithInfoId,
-} from '@common/GraphqlTypes';
+  MutationResolvers,
+  QueryResolvers,
+  SubscriptionResolvers,
+} from '@common/GQLTypes';
 
 import Database from '@server/sequelize/models';
-import BookInfoModel from '@server/sequelize/models/bookInfo';
+import BookInfoModel from '@server/sequelize/models/BookInfo';
+import BookModel from '@server/sequelize/models/Book';
+import GenreModel from '@server/sequelize/models/Genre';
 import ModelUtil from '@server/ModelUtil';
-import BookModel from '@server/sequelize/models/book';
 import Errors from '@server/Errors';
 import GQLUtil from '@server/graphql/GQLUtil.ts';
 import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
+import InfoGenreModel from '../../sequelize/models/InfoGenre';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
-  Query() {
+  Query(): QueryResolvers {
     return {
       bookInfos: async (parent, {
         limit,
         offset,
         search,
         order,
+        genres = [],
         history,
-        invisible,
-        normal,
-      }): Promise<BookInfoList> => {
-        let where: { [key: string]: any } = {};
+      }) => {
+        if (!genres || genres.length === 0) return { length: 0, infos: [] };
+        const where: { [key: string]: any } = {};
         if (search) {
           where.name = {
             [Op.like]: `%${search}%`,
           };
         }
-        if (!normal && !history && !invisible) return { length: 0, infos: [] };
-        if (normal) {
-          if (!history && !invisible) {
-            where = { ...where, history, invisible };
-          } else if (!history) {
-            where.history = false;
-          } else if (!invisible) {
-            where.invisible = false;
-          }
-        } else {
-          // eslint-disable-next-line
-          if (history && invisible) {
-            where = { ...where, [Op.or]: { history, invisible } };
-          } else if (history) {
-            where.history = true;
-          } else if (invisible) {
-            where.invisible = true;
-          }
+        if (!history) where.history = history;
+        const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
+        const inGenreInfoIds = [];
+        if (genresWithOutNoGenre.length > 0) {
+          const genreIds = (await GenreModel.findAll({
+            attributes: ['id'],
+            where: {
+              name: {
+                [Op.in]: genresWithOutNoGenre,
+              },
+            },
+          })).map(({ id }) => id);
+          inGenreInfoIds.push(...(await InfoGenreModel.findAll({
+            attributes: ['infoId'],
+            where: (genreIds.length > 1 ? {
+              genreId: {
+                [Op.in]: genreIds,
+              },
+            } : {
+              genreId: genreIds[0],
+            }),
+          })).map(({ infoId }) => infoId));
         }
-        const [infos, len] = await Database.sequelize.transaction(async (transaction) => {
-          const bookInfos = await BookInfoModel.findAll({
-            transaction,
-            limit,
-            offset,
-            where,
-            // @ts-ignore
-            order: [GQLUtil.bookInfoOrderToOrderBy(order)],
+        if (genres.includes('NO_GENRE')) {
+          const hasGenreIds = await InfoGenreModel.findAll({
+            attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
           });
-          const length = await BookInfoModel.count({
-            transaction,
-            where,
+          const ids = await BookInfoModel.findAll({
+            attributes: ['id'],
+            where: {
+              id: {
+                [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
+              },
+            },
           });
-          return [bookInfos, length];
+          inGenreInfoIds.push(...(ids.map(({ id }) => id)));
+        }
+        const bookInfos = await BookInfoModel.findAll({
+          limit,
+          offset,
+          where: {
+            id: {
+              [Op.in]: inGenreInfoIds,
+            },
+            ...where,
+          },
+          // @ts-ignore
+          order: [GQLUtil.bookInfoOrderToOrderBy(order)],
+          include: [{
+            model: GenreModel,
+            as: 'genres',
+          }],
         });
-
+        const length = await BookInfoModel.count({
+          where: {
+            id: {
+              [Op.in]: inGenreInfoIds,
+            },
+            ...where,
+          },
+        });
         return {
-          length: len,
-          infos: infos.map((info) => ModelUtil.bookInfo(info)),
+          length,
+          infos: bookInfos.map((info) => ModelUtil.bookInfo(info)),
         };
       },
-      bookInfo: async (parent, { id: infoId }, context, info): Promise<BookInfoType> => {
+      bookInfo: async (parent, { id: infoId }, context, info) => {
         let booksField;
         info.operation.selectionSet.selections.some((section) => {
           if (section.kind !== 'Field') return false;
@@ -124,14 +150,14 @@ class BookInfo extends GQLMiddleware {
     };
   }
 
-  Mutation() {
+  Mutation(): MutationResolvers {
     // noinspection JSUnusedGlobalSymbols
     return {
       addBookInfo: async (parent, {
         name,
         thumbnail,
-        finished,
-      }): Promise<ResultWithInfoId> => {
+        genres,
+      }) => {
         const infoId = uuidv4();
         let thumbnailStream;
         if (thumbnail) {
@@ -149,8 +175,10 @@ class BookInfo extends GQLMiddleware {
           id: infoId,
           name,
           thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
-          finished,
         });
+        if (genres && genres.length >= 1) {
+          await GQLUtil.linkGenres(infoId, genres);
+        }
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
 
         if (thumbnailStream) {
@@ -167,18 +195,21 @@ class BookInfo extends GQLMiddleware {
         id: infoId,
         name,
         thumbnail,
-        finished,
-        invisible,
-      }): Promise<Result> => {
-        if (![name, thumbnail, finished, invisible].some((v) => v !== undefined)) {
+        genres,
+      }) => {
+        if (![name, thumbnail, genres].some((v) => v !== undefined)) {
           return {
             success: false,
             code: 'QL0005',
             message: Errors.QL0005,
           };
         }
-        const info = await BookInfoModel.findOne({
+        let info = await BookInfoModel.findOne({
           where: { id: infoId },
+          include: [{
+            model: GenreModel,
+            as: 'genres',
+          }],
         });
         if (!info) {
           return {
@@ -187,15 +218,27 @@ class BookInfo extends GQLMiddleware {
             message: Errors.QL0001,
           };
         }
-        const val = Object.entries({
+        info = {
+          // @ts-ignore
+          ...info.dataValues,
+          genres: info.genres.map((g) => g.name),
+        };
+        const val: { [key: string]: any } = Object.entries({
           name,
           thumbnail,
-          finished,
-          invisible,
+          genres,
         }).reduce((o, e) => {
-          if (e[1] !== undefined && info[e[0]] !== e[1]) {
-            // eslint-disable-next-line no-param-reassign,prefer-destructuring
-            o[e[0]] = e[1];
+          if (e[1] !== undefined) {
+            if (Array.isArray(e[1])) {
+              if (e[1].filter((a) => !info[e[0]].includes(a)).length !== 0
+                  || info[e[0]].filter((a) => !e[1].includes(a)).length !== 0) {
+                // eslint-disable-next-line no-param-reassign,prefer-destructuring
+                o[e[0]] = e[1];
+              }
+            } else if (info[e[0]] !== e[1]) {
+              // eslint-disable-next-line no-param-reassign,prefer-destructuring
+              o[e[0]] = e[1];
+            }
           }
           return o;
         }, {});
@@ -206,6 +249,10 @@ class BookInfo extends GQLMiddleware {
             message: Errors.QL0005,
           };
         }
+        if (val.genres) {
+          await GQLUtil.linkGenres(infoId, val.genres);
+          delete val.genres;
+        }
         await BookInfoModel.update(val, {
           where: { id: infoId },
         });
@@ -213,7 +260,7 @@ class BookInfo extends GQLMiddleware {
           success: true,
         };
       },
-      deleteBookInfo: async (parent, { id: infoId }): Promise<BookInfoResult> => {
+      deleteBookInfo: async (parent, { id: infoId }) => {
         const books = await BookModel.findAll({
           where: {
             infoId,
@@ -226,16 +273,28 @@ class BookInfo extends GQLMiddleware {
             });
           });
         });
-        await BookModel.destroy({
-          where: {
-            infoId,
-          },
+
+        await Database.sequelize.transaction(async (transaction) => {
+          await BookModel.destroy({
+            where: {
+              infoId,
+            },
+            transaction,
+          });
+          await BookInfoModel.destroy({
+            where: {
+              id: infoId,
+            },
+            transaction,
+          });
+          await InfoGenreModel.destroy({
+            where: {
+              infoId,
+            },
+            transaction,
+          });
         });
-        await BookInfoModel.destroy({
-          where: {
-            id: infoId,
-          },
-        });
+
         return {
           success: true,
           books: books.map((b) => ModelUtil.book(b, false)),
@@ -258,7 +317,7 @@ class BookInfo extends GQLMiddleware {
     };
   }
 
-  Subscription() {
+  Subscription(): SubscriptionResolvers {
     return {
       addBookInfo: {
         subscribe: withFilter(

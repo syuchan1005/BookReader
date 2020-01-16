@@ -1,0 +1,6 @@
+mutation putPage($id: ID! $beforePage: Int! $image: Upload!){
+    put: putPage(id: $id beforePage: $beforePage image: $image) {
+        success
+        code
+    }
+}

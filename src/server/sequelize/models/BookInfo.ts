@@ -1,7 +1,8 @@
 import { DataTypes, Association, Model } from 'sequelize';
-import book from './book';
+import Book from './Book';
+import Genre from './Genre';
 
-export default class bookInfo extends Model {
+export default class BookInfo extends Model {
   public id!: string;
 
   public name!: string;
@@ -12,22 +13,21 @@ export default class bookInfo extends Model {
 
   public history!: boolean;
 
-  public finished!: boolean;
-
-  public invisible!: boolean;
-
   public readonly createdAt!: Date;
 
   public readonly updatedAt!: Date;
 
-  public books?: book[];
+  public books?: Book[];
+
+  public genres?: Genre[];
 
   public static associations: {
-    books: Association<bookInfo, book>;
+    books: Association<BookInfo, Book>;
+    genres: Association<BookInfo, Genre>;
   };
 
   public static async hasId(infoId: string): Promise<boolean> {
-    const a = await bookInfo.findAll({
+    const a = await BookInfo.findAll({
       attributes: ['id'],
       where: {
         id: infoId,
@@ -39,7 +39,7 @@ export default class bookInfo extends Model {
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
-    bookInfo.init({
+    BookInfo.init({
       id: {
         allowNull: false,
         primaryKey: true,
@@ -63,16 +63,6 @@ export default class bookInfo extends Model {
         defaultValue: false,
         type: DataTypes.BOOLEAN,
       },
-      finished: {
-        allowNull: false,
-        defaultValue: false,
-        type: DataTypes.BOOLEAN,
-      },
-      invisible: {
-        allowNull: false,
-        defaultValue: false,
-        type: DataTypes.BOOLEAN,
-      },
     }, {
       sequelize,
       tableName: 'bookInfos',
@@ -81,6 +71,12 @@ export default class bookInfo extends Model {
   }
 
   public static associate() {
-    bookInfo.hasMany(book, { foreignKey: 'infoId', as: 'books' });
+    BookInfo.hasMany(Book, { foreignKey: 'infoId', as: 'books' });
+    BookInfo.belongsToMany(Genre, {
+      through: 'infoGenres',
+      foreignKey: 'infoId',
+      as: 'genres',
+      timestamps: false,
+    });
   }
 }

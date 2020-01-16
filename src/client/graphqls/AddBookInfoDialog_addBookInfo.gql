@@ -1,4 +1,4 @@
-mutation add($name: String!) {
+mutation addBookInfo($name: String!) {
     add: addBookInfo(name: $name) {
         success
         code

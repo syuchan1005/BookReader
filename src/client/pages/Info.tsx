@@ -6,15 +6,18 @@ import {
   Fab,
   Icon,
   Theme,
-  useTheme, Button, useMediaQuery,
+  useTheme,
+  useMediaQuery,
 } from '@material-ui/core';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { hot } from 'react-hot-loader/root';
 
-import { Book as BookType, BookInfo as BookInfoType } from '@common/GraphqlTypes';
-
-import * as BookInfoQuery from '@client/graphqls/Pages_Info_bookInfo.gql';
+import {
+  BookInfoQuery as BookInfoQueryType,
+  BookInfoQueryVariables,
+} from '@common/GQLTypes';
+import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
 
 import { commonTheme } from '@client/App';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -23,7 +26,6 @@ import db from '@client/Database';
 
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import Book from '@client/components/Book';
-import AddCompressBookBatchDialog from '@client/components/dialogs/AddCompressBookBatchDialog';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -86,13 +88,12 @@ const Info: React.FC = (props: InfoProps) => {
   const params = useParams<{ id: string }>();
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
-  const [batchOpen, setBatchOpen] = React.useState(false);
   const {
     refetch,
     loading,
     error,
     data,
-  } = useQuery<{ bookInfo: BookInfoType }>(BookInfoQuery, {
+  } = useQuery<BookInfoQueryType, BookInfoQueryVariables>(BookInfoQuery, {
     variables: {
       id: params.id,
     },
@@ -137,7 +138,7 @@ const Info: React.FC = (props: InfoProps) => {
 
   const bookList = React.useMemo(() => (data ? data.bookInfo.books : []), [data]);
 
-  const onDeletedBook = React.useCallback(({ id: bookId, pages }: BookType) => {
+  const onDeletedBook = React.useCallback(({ id: bookId, pages }) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch();
     // noinspection JSIgnoredPromiseFromCall
@@ -152,19 +153,6 @@ const Info: React.FC = (props: InfoProps) => {
   }, [refetch, store]);
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
-
-  const BatchButton = ({ loading: l }: { loading?: boolean }) => (
-    <>
-      <Button
-        disabled={l}
-        variant="outlined"
-        onClick={() => { setOpen(false); setBatchOpen(true); }}
-      >
-        batch
-      </Button>
-      <div style={{ width: '100%' }} />
-    </>
-  );
 
   return (
     <div className={classes.info}>
@@ -188,6 +176,7 @@ const Info: React.FC = (props: InfoProps) => {
                     onDeleted={() => onDeletedBook(book)}
                     onEdit={() => refetch()}
                     thumbnailSize={downXs ? 150 : 200}
+                    thumbnailNoSave={false}
                   />
                 ),
               )
@@ -216,15 +205,6 @@ const Info: React.FC = (props: InfoProps) => {
         infoId={params.id}
         onAdded={refetch}
         onClose={() => setOpen(false)}
-      >
-        <BatchButton />
-      </AddBookDialog>
-
-      <AddCompressBookBatchDialog
-        open={batchOpen}
-        infoId={params.id}
-        onAdded={() => refetch()}
-        onClose={() => setBatchOpen(false)}
       />
     </div>
   );

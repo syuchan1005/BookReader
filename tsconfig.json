@@ -4,6 +4,8 @@
       "es5",
       "es6",
       "es2019",
+      "esnext",
+      "webworker",
       "dom"
     ],
     "target": "es5",
@@ -21,7 +23,8 @@
     "typeRoots": ["node_modules/@types", "src/@types"],
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "skipLibCheck": true
   },
   "files": ["src/@types/graphql.d.ts"],
   "include": ["src/common/*", "src/client/*"],
