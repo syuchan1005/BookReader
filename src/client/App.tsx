@@ -2,8 +2,10 @@ import * as React from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
 import * as colors from '@material-ui/core/colors';
 import {
-  AppBar, Button,
-  Checkbox, CircularProgress,
+  AppBar,
+  Button,
+  Checkbox,
+  CircularProgress,
   Collapse,
   createMuiTheme,
   createStyles,
@@ -39,7 +41,7 @@ import {
 } from '@common/GQLTypes';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
-import { useLazyQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
+import { useApolloClient, useLazyQuery, useMutation } from '@apollo/react-hooks';
 
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
@@ -475,11 +477,11 @@ const App: React.FC<AppProps> = (props: AppProps) => {
                 <MenuItem
                   key={order}
                   onClick={() => {
-                    dispatch({ sortOrder: order });
+                    dispatch({ sortOrder: BookInfoOrder[order] });
                     setSortAnchorEl(null);
                   }}
                 >
-                  {order}
+                  {BookInfoOrder[order]}
                 </MenuItem>
               ))}
             </Menu>
