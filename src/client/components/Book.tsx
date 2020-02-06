@@ -215,7 +215,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         open={editDialog}
         loading={editLoading}
         fieldValue={editContent.number}
-        onChange={(k, e) => setEditContent({ ...editContent, number: e.target.value })}
+        onChange={(k, e) => setEditContent({ ...editContent, [k]: e })}
         onClose={() => setEditDialog(false)}
         onClickRestore={() => setEditContent({ ...editContent, number })}
         onClickEdit={() => editBook()}

@@ -140,16 +140,12 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
     onEdit,
   } = props;
 
-  const finished = React.useMemo(() => genres.includes('Completed'), [genres]);
-  const invisible = React.useMemo(() => genres.includes('Invisible'), [genres]);
-
   const [menuAnchor, setMenuAnchor] = React.useState(null);
   const [askDelete, setAskDelete] = React.useState(false);
   const [editDialog, setEditDialog] = React.useState(false);
   const [editContent, setEditContent] = React.useState({
     name,
-    finished,
-    invisible,
+    genres,
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
@@ -181,10 +177,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       variables: {
         id: infoId,
         name: editContent.name,
-        genres: [
-          editContent.finished ? 'Completed' : undefined,
-          editContent.invisible ? 'Invisible' : undefined,
-        ].filter((v) => !!v),
+        genres: editContent.genres,
       },
       onCompleted(d) {
         if (!d) return;
@@ -215,11 +208,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   }, []);
 
   const onChangeEvent = (k, e) => {
-    if (k === 'name') {
-      setEditContent({ ...editContent, name: e.target.value });
-    } else {
-      setEditContent({ ...editContent, [k]: e.target.checked });
-    }
+    setEditContent({ ...editContent, [k]: e });
   };
 
   return (
@@ -256,7 +245,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         />
         {showName ? (
           <CardContent className={classes.cardContent}>
-            <div>{`${name} (${count}${finished ? ', Completed' : ''})`}</div>
+            <div>{`${name} (${count}${genres.includes('Completed') ? ', Completed' : ''})`}</div>
           </CardContent>
         ) : (
           <CardContent className={classes.countLabel}>
@@ -266,10 +255,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         {(history) ? (
           <div className={classes.historyLabel}>History</div>
         ) : null}
-        {(finished && !showName) ? (
+        {(genres.includes('Completed') && !showName) ? (
           <div className={classes.completedLabel}>Completed</div>
         ) : null}
-        {(invisible) ? (
+        {(genres.includes('Invisible')) ? (
           <Icon className={classes.invisibleLabel}>visibility_off</Icon>
         ) : null}
       </CardActionArea>
@@ -287,9 +276,8 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         open={editDialog}
         loading={editLoading}
         fieldValue={editContent.name}
+        genres={editContent.genres}
         onChange={onChangeEvent}
-        finished={editContent.finished}
-        invisible={editContent.invisible}
         onClose={() => setEditDialog(false)}
         onClickRestore={() => setEditContent({ ...editContent, name })}
         onClickEdit={() => editBookInfo()}

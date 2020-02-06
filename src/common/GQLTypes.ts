@@ -322,7 +322,8 @@ export type PluginsQueryVariables = {};
 export type PluginsQuery = ({ __typename?: 'Query' } & { plugins: Array<({ __typename?: 'Plugin' } & { info: ({ __typename?: 'PluginInfo' } & Pick<PluginInfo, 'name'>), queries: ({ __typename?: 'PluginQueries' } & { add: ({ __typename?: 'CommonPluginQuery' } & Pick<CommonPluginQuery, 'name' | 'args' | 'subscription'>) }) })> });
 
 export type AddBookInfoMutationVariables = {
-  name: Scalars['String']
+  name: Scalars['String'],
+  genres: Array<Scalars['String']>
 };
 
 
@@ -468,6 +469,11 @@ export type BookInfoQueryVariables = {
 
 
 export type BookInfoQuery = ({ __typename?: 'Query' } & { bookInfo: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id' | 'name'> & { books: Array<({ __typename?: 'Book' } & Pick<Book, 'id' | 'number' | 'pages' | 'thumbnail'> & { info: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id'>)> })> })> });
+
+export type GenresQueryVariables = {};
+
+
+export type GenresQuery = ({ __typename?: 'Query' } & Pick<Query, 'genres'>);
 
 
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';

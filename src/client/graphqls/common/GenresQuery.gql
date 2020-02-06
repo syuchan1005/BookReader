@@ -1,0 +1,4 @@
+# AddBookInfoDialog.tsx
+query genres {
+    genres
+}

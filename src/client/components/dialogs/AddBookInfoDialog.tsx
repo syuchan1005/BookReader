@@ -18,13 +18,15 @@ import {
 import { useMutation } from '@apollo/react-hooks';
 
 import {
-  AddBookInfoMutation as AddBookInfoMutationType,
-  AddBookInfoMutationVariables,
   AddBookInfoHistoriesMutation as AddBookInfoHistoriesMutationType,
   AddBookInfoHistoriesMutationVariables,
+  AddBookInfoMutation as AddBookInfoMutationType,
+  AddBookInfoMutationVariables,
 } from '@common/GQLTypes';
 import AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
 import AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
+import GenresSelect from '../GenresSelect';
+
 
 interface AddBookInfoDialogProps {
   open: boolean;
@@ -72,6 +74,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
+  const [selectGenres, setSelectGenres] = React.useState<string[]>([]);
 
   const changeAddHistories = (index, field, value) => {
     const a = [...addHistories];
@@ -84,14 +87,16 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
     setName('');
     setShowAddHistory(false);
     setAddHistories([]);
+    setSelectGenres([]);
   };
 
   const [addBookInfo, { loading: addLoading }] = useMutation<
     AddBookInfoMutationType,
-    AddBookInfoMutationVariables,
+    AddBookInfoMutationVariables
   >(AddBookInfoMutation, {
     variables: {
       name,
+      genres: selectGenres,
     },
     onCompleted(d) {
       if (!d) return;
@@ -102,7 +107,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
 
   const [addBookInfoHistories, { loading: histLoading }] = useMutation<
     AddBookInfoHistoriesMutationType,
-    AddBookInfoHistoriesMutationVariables,
+    AddBookInfoHistoriesMutationVariables
   >(
     AddBookInfoHistoriesMutation,
     {
@@ -202,6 +207,10 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
         }
         return (
           <DialogContent className={classes.addContent}>
+            <GenresSelect
+              value={selectGenres}
+              onChange={setSelectGenres}
+            />
             <TextField
               color="secondary"
               autoFocus
