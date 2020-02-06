@@ -266,16 +266,15 @@ class BookInfo extends GQLMiddleware {
             infoId,
           },
         });
-        await asyncForEach(books, async (book) => {
-          await new Promise((resolve) => {
-            rimraf(`storage/book/${book.id}`, () => {
-              rimraf(`storage/cache/book/${book.id}`, () => resolve());
-            });
-          });
-        });
 
         await Database.sequelize.transaction(async (transaction) => {
           await BookModel.destroy({
+            where: {
+              infoId,
+            },
+            transaction,
+          });
+          await InfoGenreModel.destroy({
             where: {
               infoId,
             },
@@ -287,11 +286,13 @@ class BookInfo extends GQLMiddleware {
             },
             transaction,
           });
-          await InfoGenreModel.destroy({
-            where: {
-              infoId,
-            },
-            transaction,
+        });
+
+        await asyncForEach(books, async (book) => {
+          await new Promise((resolve) => {
+            rimraf(`storage/book/${book.id}`, () => {
+              rimraf(`storage/cache/book/${book.id}`, () => resolve());
+            });
           });
         });
 
