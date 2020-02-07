@@ -25,9 +25,10 @@ import useDebounceValue from '@client/hooks/useDebounceValue';
 import useLoadMore from '@client/hooks/useLoadMore';
 import { useGlobalStore } from '@client/store/StoreProvider';
 
-import BookInfo from '../components/BookInfo';
+import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
+import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
+import BookInfo from '@client/components/BookInfo';
 import db from '../Database';
-import Header from '../components/Header';
 
 
 interface HomeProps {
@@ -37,6 +38,7 @@ interface HomeProps {
 const useStyles = makeStyles((theme: Theme) => createStyles({
   home: {
     height: '100%',
+    ...commonTheme.appbar(theme, 'paddingTop'),
   },
   homeGrid: {
     padding: theme.spacing(1),
@@ -89,22 +91,15 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Home: React.FC = (props: HomeProps) => {
-  const { state: store, dispatch } = useGlobalStore();
+  const { state: store } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
 
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
   const debounceSearch = useDebounceValue(store.searchText, 800);
-
-  React.useEffect(() => {
-    dispatch({
-      barTitle: '',
-      barSubTitle: '',
-      showBackRouteArrow: false,
-    });
-  }, []);
 
   const {
     refetch,
@@ -173,69 +168,68 @@ const Home: React.FC = (props: HomeProps) => {
 
   return (
     <>
-      {store.showAppBar && <Header />}
-      <main className={store.needContentMargin ? 'appbar--margin' : ''}>
-        <div className={classes.home}>
-          {(loading || error) ? (
-            <div className={classes.loading}>
-              {loading && 'Loading'}
-              {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+      <SearchAndMenuHeader onClickMenuIcon={(e) => setMenuAnchorEl(e)} />
+      <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={() => setMenuAnchorEl(null)} />
+      <main className={classes.home}>
+        {(loading || error) ? (
+          <div className={classes.loading}>
+            {loading && 'Loading'}
+            {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+          </div>
+        ) : (
+          <>
+            <div className={classes.homeGrid}>
+              {infos.map((info) => (
+                <BookInfo
+                  key={info.id}
+                  {...info}
+                  onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
+                  onDeleted={(books) => onDeletedBookInfo(info, books)}
+                  onEdit={refetchAll}
+                  thumbnailSize={downXs ? 150 : 200}
+                  showName={store.showBookInfoName}
+                />
+              ))}
+              {(isLoadingMore) && (
+                <div className={classes.loadMoreProgress}>
+                  <CircularProgress color="secondary" />
+                </div>
+              )}
+              {(!isLoadingMore && infos.length < data.bookInfos.length) && (
+                <Waypoint onEnter={clickLoadMore} />
+              )}
             </div>
-          ) : (
-            <>
-              <div className={classes.homeGrid}>
-                {infos.map((info) => (
-                  <BookInfo
-                    key={info.id}
-                    {...info}
-                    onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
-                    onDeleted={(books) => onDeletedBookInfo(info, books)}
-                    onEdit={refetchAll}
-                    thumbnailSize={downXs ? 150 : 200}
-                    showName={store.showBookInfoName}
-                  />
-                ))}
-                {(isLoadingMore) && (
-                  <div className={classes.loadMoreProgress}>
-                    <CircularProgress color="secondary" />
-                  </div>
-                )}
-                {(!isLoadingMore && infos.length < data.bookInfos.length) && (
-                  <Waypoint onEnter={clickLoadMore} />
-                )}
-              </div>
-              <Fab
-                className={classes.addButton}
-                onClick={() => setOpen(true)}
-                aria-label="add"
-              >
-                <Icon>add</Icon>
-              </Fab>
-            </>
-          )}
+            <Fab
+              className={classes.addButton}
+              onClick={() => setOpen(true)}
+              aria-label="add"
+            >
+              <Icon>add</Icon>
+            </Fab>
+          </>
+        )}
 
-          <Fab
-            color="secondary"
-            className={classes.fab}
-            onClick={refetchAll}
-            aria-label="refetch"
-          >
-            <Icon>refresh</Icon>
-          </Fab>
+        <Fab
+          color="secondary"
+          className={classes.fab}
+          onClick={refetchAll}
+          aria-label="refetch"
+        >
+          <Icon>refresh</Icon>
+        </Fab>
 
-          <AddBookInfoDialog
-            open={open}
-            onAdded={refetchAll}
-            onClose={() => setOpen(false)}
-          />
+        <AddBookInfoDialog
+          open={open}
+          onAdded={refetchAll}
+          onClose={() => setOpen(false)}
+        />
 
-          <AddBookDialog
-            open={!!openAddBook}
-            infoId={openAddBook}
-            onClose={() => setOpenAddBook(undefined)}
-            onAdded={refetchAll}
-          />
-        </div>
+        <AddBookDialog
+          open={!!openAddBook}
+          infoId={openAddBook}
+          onClose={() => setOpenAddBook(undefined)}
+          onAdded={refetchAll}
+        />
       </main>
     </>
   );

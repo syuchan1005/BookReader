@@ -28,11 +28,11 @@ import { useApollo } from '@client/apollo/ApolloProvider';
 import ColorTile from './ColorTile';
 
 interface HeaderMenuProps {
-  menuAnchorEl: Element;
-  setMenuAnchorEl: (element: Element) => any;
+  anchorEl: Element;
+  onClose?: () => void;
 }
 
-const wrapSize = (size) => {
+const wrapSize = (size: number) => {
   if (!size || size === -1) return '0 [B]';
   const sizes = ['', 'K', 'M', 'G', 'T'];
   let index = sizes.findIndex((v, i) => size / 10 ** (i * 3) < 1) - 1;
@@ -40,10 +40,10 @@ const wrapSize = (size) => {
   return `${(size / 10 ** (index * 3)).toString(10).match(/\d+(\.\d{1,2})?/)[0]} [${sizes[index]}B]`;
 };
 
-const HeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
+const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
   const {
-    menuAnchorEl,
-    setMenuAnchorEl,
+    anchorEl,
+    onClose,
   } = props;
 
   const { state: store, dispatch } = useGlobalStore();
@@ -75,20 +75,18 @@ const HeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
 
   /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
+    // noinspection JSDeprecatedSymbols
+    const reload = () => window.location.reload(true);
     (i !== 1 ? persistor.purge() : Promise.resolve())
       .then(() => {
         if (store.wb && i === 1) {
-          navigator.serviceWorker.addEventListener('message', () => {
-            window.location.reload(true);
-          });
+          navigator.serviceWorker.addEventListener('message', reload);
           store.wb.messageSW({
             type: 'PURGE_CACHE',
           });
-          setTimeout(() => {
-            window.location.reload(true);
-          }, 10 * 1000);
+          setTimeout(reload, 10 * 1000);
         } else {
-          window.location.reload(true);
+          reload();
         }
       });
   }, [store.wb]);
@@ -101,9 +99,9 @@ const HeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
           horizontal: 'center',
           vertical: 'bottom',
         }}
-        anchorEl={menuAnchorEl}
-        open={!!menuAnchorEl}
-        onClose={() => setMenuAnchorEl(null)}
+        anchorEl={anchorEl}
+        open={!!anchorEl}
+        onClose={() => (onClose && onClose())}
       >
         <ListSubheader style={{ lineHeight: 'normal' }}>
           Show
@@ -178,7 +176,7 @@ const HeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
               <>
                 {Object.entries(data.sizes)
                   .filter(([k]) => !k.startsWith('_'))
-                  .map(([k, v]) => (
+                  .map(([k, v]: [string, number]) => (
                     <ListItem
                       key={k}
                       style={{
@@ -254,4 +252,4 @@ const HeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
   );
 };
 
-export default HeaderMenu;
+export default HomeHeaderMenu;

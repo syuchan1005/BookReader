@@ -3,12 +3,6 @@ import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './mi
 
 export interface IState {
   [key: string]: any;
-  showAppBar: boolean;
-  needContentMargin: boolean;
-  barTitle: string;
-  barSubTitle: string;
-  showBackRouteArrow: boolean;
-  backRoute: string;
   wb: any;
   searchText: string;
   sortOrder: BookInfoOrder;
@@ -26,12 +20,6 @@ export interface IState {
 
 export const initialState: IState = {
   // no load
-  showAppBar: true,
-  needContentMargin: true,
-  barTitle: 'Book Reader',
-  barSubTitle: '',
-  showBackRouteArrow: false,
-  backRoute: undefined,
   wb: undefined,
   webp: false,
 

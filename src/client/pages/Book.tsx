@@ -42,7 +42,7 @@ import Img from '../components/Img';
 import useNetworkType from '../hooks/useNetworkType';
 import EditPagesDialog from '../components/dialogs/EditPagesDialog';
 import { useApollo } from '../apollo/ApolloProvider';
-import Header from '../components/Header';
+import TitleAndBackHeader from '../components/TitleAndBackHeader';
 
 interface BookProps {
   children?: React.ReactElement;
@@ -184,6 +184,7 @@ const Book: React.FC = (props: BookProps) => {
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [showAppBar, setShowAppBar] = React.useState(false);
 
   React.useEffect(() => {
     updatePage(0);
@@ -209,12 +210,6 @@ const Book: React.FC = (props: BookProps) => {
     setSwiper(s);
   }, [isPageSet, page]);
 
-  const setShowAppBar = React.useCallback((val) => {
-    let v = val;
-    if (v === undefined) v = !store.showAppBar;
-    dispatch({ showAppBar: v });
-  }, [store.showAppBar]);
-
   const {
     loading,
     error,
@@ -225,11 +220,6 @@ const Book: React.FC = (props: BookProps) => {
     },
     onCompleted(d) {
       if (!d) return;
-      dispatch({
-        backRoute: `/info/${d.book.info.id}`,
-        barTitle: d.book.info.name,
-        barSubTitle: `No.${d.book.number}`,
-      });
       if (isPageSet && page >= d.book.pages) {
         setPage(d.book.pages - 1, 0);
       }
@@ -246,15 +236,15 @@ const Book: React.FC = (props: BookProps) => {
 
   const increment = React.useCallback(() => {
     setPage(Math.min(page + 1, data.book.pages - 1));
-    if (store.showAppBar) setShowAppBar(false);
+    if (showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, store.showAppBar, setPage]);
+  }, [page, data, nextBook, showAppBar, setPage]);
 
   const decrement = React.useCallback(() => {
     setPage(Math.max(page - 1, 0));
-    if (store.showAppBar) setShowAppBar(false);
+    if (showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, store.showAppBar, setPage]);
+  }, [page, data, prevBook, showAppBar, setPage]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -285,26 +275,6 @@ const Book: React.FC = (props: BookProps) => {
         return undefined;
     }
   }, [effect, effectPercentage]);
-
-  React.useEffect(() => {
-    setShowAppBar(false);
-    const update = {
-      needContentMargin: false,
-      barTitle: 'Book',
-      barSubTitle: '',
-      showBackRouteArrow: true,
-    };
-    if (data) {
-      delete update.barTitle;
-      delete update.barSubTitle;
-    }
-    dispatch(update);
-
-    return () => {
-      setShowAppBar(true);
-      dispatch({ needContentMargin: true });
-    };
-  }, []);
 
   React.useEffect(() => {
     if (!swiper) return;
@@ -341,15 +311,15 @@ const Book: React.FC = (props: BookProps) => {
       case 0:
         if (percentX <= 0.2) decrement();
         else if (percentX >= 0.8) increment();
-        else setShowAppBar(undefined);
+        else setShowAppBar(!showAppBar);
         break;
       case 1:
         if (percentX <= 0.2) increment();
         else if (percentX >= 0.8) decrement();
-        else setShowAppBar(undefined);
+        else setShowAppBar(!showAppBar);
         break;
       default:
-        setShowAppBar(undefined);
+        setShowAppBar(!showAppBar);
     }
   }, [store.readOrder, increment, decrement, openEditDialog]);
 
@@ -389,8 +359,8 @@ const Book: React.FC = (props: BookProps) => {
   if (loading || error) {
     return (
       <>
-        {store.showAppBar && <Header />}
-        <main className={store.needContentMargin ? 'appbar--margin' : ''}>
+        <TitleAndBackHeader title="Book" />
+        <main>
           <div className={classes.loading}>
             <div>
               {loading && 'Loading'}
@@ -404,8 +374,14 @@ const Book: React.FC = (props: BookProps) => {
 
   return (
     <>
-      {store.showAppBar && <Header />}
-      <main className={store.needContentMargin ? 'appbar--margin' : ''}>
+      {showAppBar && (
+        <TitleAndBackHeader
+          backRoute={data && `/info/${data.book.info.id}`}
+          title={data && data.book.info.name}
+          subTitle={data && `No.${data.book.number}`}
+        />
+      )}
+      <main>
         {/* eslint-disable-next-line */}
         <div className={classes.book} onClick={clickPage}>
           <EditPagesDialog
@@ -422,15 +398,15 @@ const Book: React.FC = (props: BookProps) => {
           {/* eslint-disable-next-line */}
           <div
             className={classes.overlay}
-            style={{ pointerEvents: store.showAppBar ? undefined : 'none' }}
+            style={{ pointerEvents: showAppBar ? undefined : 'none' }}
             onClick={(e) => {
-              if (store.showAppBar) {
+              if (showAppBar) {
                 e.stopPropagation();
                 setShowAppBar(false);
               }
             }}
           >
-            {store.showAppBar && (
+            {showAppBar && (
               <>
                 {/* eslint-disable-next-line */}
                 <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
