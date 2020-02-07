@@ -34,7 +34,6 @@ export const initialState: IState = {
   backRoute: undefined,
   wb: undefined,
   webp: false,
-  showOriginalImage: false,
 
   // load
   searchText: '',
@@ -47,6 +46,7 @@ export const initialState: IState = {
   secondary: 'blue',
   readOrder: 1, // LtoR, RtoL
   showBookInfoName: false,
+  showOriginalImage: false,
 };
 
 const properties = [
@@ -60,6 +60,7 @@ const properties = [
   'secondary',
   'readOrder',
   'showBookInfoName',
+  'showOriginalImage',
 ];
 
 export const createInitialState = () => loadStateFromLocalStorage(initialState, properties);
