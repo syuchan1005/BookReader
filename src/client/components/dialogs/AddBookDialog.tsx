@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-  Button,
+  Button, ButtonGroup,
   CircularProgress,
   createStyles,
   Dialog,
@@ -110,6 +110,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const [addBookAbort, setAddBookAbort] = React
     .useState<() => void | undefined>(undefined);
   const [addType, setAddType] = React.useState('file');
+  const [nameType, setNameType] = React.useState<'number' | 'filename'>('number');
   const [editContent, setEditContent] = React.useState({});
   React.useEffect(() => setEditContent({}), [addType]);
 
@@ -160,7 +161,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
 
   const [addBook, { loading: addBookLoading }] = useMutation<
     AddBooksMutationType,
-    AddBooksMutationVariables,
+    AddBooksMutationVariables
   >(AddBooksMutation, {
     variables: {
       id: infoId,
@@ -246,6 +247,12 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     setAddBooks([
       ...addBooks,
       ...files.map((f, i) => {
+        if (addType === 'file' && nameType === 'filename') {
+          return {
+            file: f,
+            number: f.name.match(/^(.*)\.[^.]+$/),
+          };
+        }
         let nums = f.name.match(/\d+/g);
         if (nums) {
           nums = Number(nums[nums.length - 1]).toString(10);
@@ -258,7 +265,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         };
       }),
     ]);
-  }, [addBooks]);
+  }, [addBooks, addType, nameType]);
 
   const changeAddBook = React.useCallback((i, obj) => {
     const books = [
@@ -379,6 +386,22 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
                     </div>
                   ))}
                 </div>
+                {addType === 'file' && (
+                  <ButtonGroup style={{ marginLeft: 'auto' }} size="small" color="secondary">
+                    <Button
+                      variant={nameType === 'number' ? 'contained' : 'outlined'}
+                      onClick={() => setNameType('number')}
+                    >
+                      Number
+                    </Button>
+                    <Button
+                      variant={nameType === 'filename' ? 'contained' : 'outlined'}
+                      onClick={() => setNameType('filename')}
+                    >
+                      FileName
+                    </Button>
+                  </ButtonGroup>
+                )}
                 {((addType === 'file_compressed' && addBooks.length === 0) || addType !== 'file_compressed') && (
                   <DropZone onChange={dropFiles} />
                 )}

@@ -8,7 +8,6 @@ import {
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { hot } from 'react-hot-loader/root';
-import { useGlobalStore } from '@client/store/StoreProvider';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   error: {
@@ -36,18 +35,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Error: React.FC = (props) => {
   const classes = useStyles(props);
-  const { dispatch } = useGlobalStore();
   const history = useHistory();
 
-  React.useEffect(() => {
-    dispatch({
-      barTitle: 'Error',
-      barSubTitle: '',
-    });
-  }, []);
-
   return (
-    <div className={classes.error}>
+    <main className={classes.error}>
       <svg
         className={classes.oops}
         xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +66,7 @@ const Error: React.FC = (props) => {
         <Icon className={classes.backIcon}>send</Icon>
         Go to homepage
       </Fab>
-    </div>
+    </main>
   );
 };
 

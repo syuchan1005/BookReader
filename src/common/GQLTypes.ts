@@ -101,6 +101,8 @@ export type Mutation = {
   addCompressBook: ResultWithBookResults,
   editBook: Result,
   deleteBook: Result,
+  deleteBooks: Result,
+  moveBooks: Result,
   /** # Page */
   deletePages: Result,
   splitPages: Result,
@@ -168,6 +170,18 @@ export type MutationEditBookArgs = {
 
 export type MutationDeleteBookArgs = {
   id: Scalars['ID']
+};
+
+
+export type MutationDeleteBooksArgs = {
+  infoId: Scalars['ID'],
+  ids: Array<Scalars['ID']>
+};
+
+
+export type MutationMoveBooksArgs = {
+  infoId: Scalars['ID'],
+  ids: Array<Scalars['ID']>
 };
 
 
@@ -322,7 +336,8 @@ export type PluginsQueryVariables = {};
 export type PluginsQuery = ({ __typename?: 'Query' } & { plugins: Array<({ __typename?: 'Plugin' } & { info: ({ __typename?: 'PluginInfo' } & Pick<PluginInfo, 'name'>), queries: ({ __typename?: 'PluginQueries' } & { add: ({ __typename?: 'CommonPluginQuery' } & Pick<CommonPluginQuery, 'name' | 'args' | 'subscription'>) }) })> });
 
 export type AddBookInfoMutationVariables = {
-  name: Scalars['String']
+  name: Scalars['String'],
+  genres: Array<Scalars['String']>
 };
 
 
@@ -439,6 +454,22 @@ export type BookInfosQueryVariables = {
 
 export type BookInfosQuery = ({ __typename?: 'Query' } & { bookInfos: ({ __typename?: 'BookInfoList' } & Pick<BookInfoList, 'length'> & { infos: Array<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id' | 'name' | 'count' | 'thumbnail' | 'history' | 'genres'>)> }) });
 
+export type DeleteBooksMutationVariables = {
+  infoId: Scalars['ID'],
+  ids: Array<Scalars['ID']>
+};
+
+
+export type DeleteBooksMutation = ({ __typename?: 'Mutation' } & { deleteBooks: ({ __typename?: 'Result' } & Pick<Result, 'success' | 'code'>) });
+
+export type MoveBooksMutationVariables = {
+  infoId: Scalars['ID'],
+  ids: Array<Scalars['ID']>
+};
+
+
+export type MoveBooksMutation = ({ __typename?: 'Mutation' } & { moveBooks: ({ __typename?: 'Result' } & Pick<Result, 'success' | 'code'>) });
+
 export type EditBookInfoThumbnailMutationVariables = {
   id: Scalars['ID'],
   th?: Maybe<Scalars['String']>
@@ -468,6 +499,11 @@ export type BookInfoQueryVariables = {
 
 
 export type BookInfoQuery = ({ __typename?: 'Query' } & { bookInfo: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id' | 'name'> & { books: Array<({ __typename?: 'Book' } & Pick<Book, 'id' | 'number' | 'pages' | 'thumbnail'> & { info: Maybe<({ __typename?: 'BookInfo' } & Pick<BookInfo, 'id'>)> })> })> });
+
+export type GenresQueryVariables = {};
+
+
+export type GenresQuery = ({ __typename?: 'Query' } & Pick<Query, 'genres'>);
 
 
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
@@ -626,6 +662,8 @@ export type MutationResolvers<ContextType = any, ParentType = ResolversTypes['Mu
   addCompressBook?: Resolver<ResolversTypes['ResultWithBookResults'], ParentType, ContextType, MutationAddCompressBookArgs>,
   editBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationEditBookArgs>,
   deleteBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationDeleteBookArgs>,
+  deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationDeleteBooksArgs>,
+  moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationMoveBooksArgs>,
   deletePages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationDeletePagesArgs>,
   splitPages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationSplitPagesArgs>,
   editPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, MutationEditPageArgs>,

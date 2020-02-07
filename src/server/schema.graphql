@@ -40,6 +40,8 @@ type Mutation {
     addCompressBook(id: ID!, file: Upload!): ResultWithBookResults!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
+    deleteBooks(infoId: ID!, ids: [ID!]!): Result!
+    moveBooks(infoId: ID!, ids: [ID!]!): Result!
 
     ## Page
     deletePages(id: ID! pages: IntRange!): Result!

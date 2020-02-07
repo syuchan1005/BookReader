@@ -18,7 +18,8 @@ import Errors from '@server/Errors';
 import Database from '@server/sequelize/models';
 import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
-import { asyncMap } from '@server/Util';
+import { asyncForEach, asyncMap } from '@server/Util';
+import { Op } from 'sequelize';
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -197,19 +198,58 @@ class Book extends GQLMiddleware {
             message: Errors.QL0004,
           };
         }
-        await book.destroy();
-        await BookInfoModel.update({
-          // @ts-ignore
-          count: Database.sequelize.literal('count - 1'),
-        }, {
-          where: {
-            id: book.infoId,
-          },
+        await Database.sequelize.transaction(async (transaction) => {
+          await book.destroy({ transaction });
+          await BookInfoModel.update({
+            // @ts-ignore
+            count: Database.sequelize.literal('count - 1'),
+          }, {
+            where: {
+              id: book.infoId,
+            },
+            transaction,
+          });
         });
         await new Promise((resolve) => {
           rimraf(`storage/book/${bookId}`, () => {
             rimraf(`storage/cache/book/${bookId}`, () => resolve());
           });
+        });
+        return {
+          success: true,
+        };
+      },
+      deleteBooks: async (parent, { infoId, ids: bookIds }) => {
+        await Database.sequelize.transaction(async (transaction) => {
+          const count = await BookModel.destroy({
+            where: {
+              id: { [Op.in]: bookIds },
+              infoId,
+            },
+            transaction,
+          });
+          await BookInfoModel.update({
+            // @ts-ignore
+            count: Database.sequelize.literal(`count - ${count}`),
+          }, {
+            where: { id: infoId },
+            transaction,
+          });
+        });
+        await asyncForEach(bookIds, (bookId) => new Promise((resolve) => {
+          rimraf(`storage/book/${bookId}`, () => {
+            rimraf(`storage/cache/book/${bookId}`, () => resolve());
+          });
+        }));
+        return {
+          success: true,
+        };
+      },
+      moveBooks: async (parent, { infoId, ids: bookIds }) => {
+        await BookModel.update({ infoId }, {
+          where: {
+            id: { [Op.in]: bookIds },
+          },
         });
         return {
           success: true,

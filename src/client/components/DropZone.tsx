@@ -15,7 +15,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   dropZone: {
     marginTop: theme.spacing(1),
     width: '100%',
-    maxWidth: '50vw',
     border: `dashed ${theme.spacing(0.25)}px ${grey[600]}`,
     padding: theme.spacing(1),
     '&.dragging': {

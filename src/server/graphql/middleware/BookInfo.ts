@@ -37,59 +37,59 @@ class BookInfo extends GQLMiddleware {
         genres = [],
         history,
       }) => {
-        if (!genres || genres.length === 0) return { length: 0, infos: [] };
+        if (!history && (!genres || genres.length === 0)) return { length: 0, infos: [] };
         const where: { [key: string]: any } = {};
         if (search) {
           where.name = {
             [Op.like]: `%${search}%`,
           };
         }
-        if (!history) where.history = history;
-        const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
-        const inGenreInfoIds = [];
-        if (genresWithOutNoGenre.length > 0) {
-          const genreIds = (await GenreModel.findAll({
-            attributes: ['id'],
-            where: {
-              name: {
-                [Op.in]: genresWithOutNoGenre,
+        where.history = history;
+        if (!history) {
+          const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
+          const inGenreInfoIds = [];
+          if (genresWithOutNoGenre.length > 0) {
+            const genreIds = (await GenreModel.findAll({
+              attributes: ['id'],
+              where: {
+                name: {
+                  [Op.in]: genresWithOutNoGenre,
+                },
               },
-            },
-          })).map(({ id }) => id);
-          inGenreInfoIds.push(...(await InfoGenreModel.findAll({
-            attributes: ['infoId'],
-            where: (genreIds.length > 1 ? {
-              genreId: {
-                [Op.in]: genreIds,
+            })).map(({ id }) => id);
+            inGenreInfoIds.push(...(await InfoGenreModel.findAll({
+              attributes: ['infoId'],
+              where: (genreIds.length > 1 ? {
+                genreId: {
+                  [Op.in]: genreIds,
+                },
+              } : {
+                genreId: genreIds[0],
+              }),
+            })).map(({ infoId }) => infoId));
+          }
+          if (genres.includes('NO_GENRE')) {
+            const hasGenreIds = await InfoGenreModel.findAll({
+              attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
+            });
+            const ids = await BookInfoModel.findAll({
+              attributes: ['id'],
+              where: {
+                id: {
+                  [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
+                },
               },
-            } : {
-              genreId: genreIds[0],
-            }),
-          })).map(({ infoId }) => infoId));
-        }
-        if (genres.includes('NO_GENRE')) {
-          const hasGenreIds = await InfoGenreModel.findAll({
-            attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
-          });
-          const ids = await BookInfoModel.findAll({
-            attributes: ['id'],
-            where: {
-              id: {
-                [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
-              },
-            },
-          });
-          inGenreInfoIds.push(...(ids.map(({ id }) => id)));
-        }
+            });
+            inGenreInfoIds.push(...(ids.map(({ id }) => id)));
+          }
+          where.id = {
+            [Op.in]: inGenreInfoIds,
+          };
+        } else if (genres.includes('NO_GENRE')) delete where.history;
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
-          where: {
-            id: {
-              [Op.in]: inGenreInfoIds,
-            },
-            ...where,
-          },
+          where,
           // @ts-ignore
           order: [GQLUtil.bookInfoOrderToOrderBy(order)],
           include: [{
@@ -98,12 +98,7 @@ class BookInfo extends GQLMiddleware {
           }],
         });
         const length = await BookInfoModel.count({
-          where: {
-            id: {
-              [Op.in]: inGenreInfoIds,
-            },
-            ...where,
-          },
+          where,
         });
         return {
           length,
@@ -266,16 +261,15 @@ class BookInfo extends GQLMiddleware {
             infoId,
           },
         });
-        await asyncForEach(books, async (book) => {
-          await new Promise((resolve) => {
-            rimraf(`storage/book/${book.id}`, () => {
-              rimraf(`storage/cache/book/${book.id}`, () => resolve());
-            });
-          });
-        });
 
         await Database.sequelize.transaction(async (transaction) => {
           await BookModel.destroy({
+            where: {
+              infoId,
+            },
+            transaction,
+          });
+          await InfoGenreModel.destroy({
             where: {
               infoId,
             },
@@ -287,11 +281,13 @@ class BookInfo extends GQLMiddleware {
             },
             transaction,
           });
-          await InfoGenreModel.destroy({
-            where: {
-              infoId,
-            },
-            transaction,
+        });
+
+        await asyncForEach(books, async (book) => {
+          await new Promise((resolve) => {
+            rimraf(`storage/book/${book.id}`, () => {
+              rimraf(`storage/cache/book/${book.id}`, () => resolve());
+            });
           });
         });
 

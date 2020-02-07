@@ -1,14 +1,8 @@
 import { BookInfoOrder } from '@common/GQLTypes.ts';
-import { logger } from './middlewares';
+import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './middlewares';
 
 export interface IState {
   [key: string]: any;
-  showAppBar: boolean;
-  needContentMargin: boolean;
-  barTitle: string;
-  barSubTitle: string;
-  showBackRouteArrow: boolean;
-  backRoute: string;
   wb: any;
   searchText: string;
   sortOrder: BookInfoOrder;
@@ -25,13 +19,11 @@ export interface IState {
 }
 
 export const initialState: IState = {
-  showAppBar: true,
-  needContentMargin: true,
-  barTitle: 'Book Reader',
-  barSubTitle: '',
-  showBackRouteArrow: false,
-  backRoute: undefined,
+  // no load
   wb: undefined,
+  webp: false,
+
+  // load
   searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
   history: false,
@@ -40,11 +32,26 @@ export const initialState: IState = {
   theme: 'light',
   primary: 'green',
   secondary: 'blue',
-  webp: false,
   readOrder: 1, // LtoR, RtoL
-  showOriginalImage: false,
   showBookInfoName: false,
+  showOriginalImage: false,
 };
+
+const properties = [
+  'searchText',
+  'sortOrder',
+  'history',
+  'normal',
+  'invisible',
+  'theme',
+  'primary',
+  'secondary',
+  'readOrder',
+  'showBookInfoName',
+  'showOriginalImage',
+];
+
+export const createInitialState = () => loadStateFromLocalStorage(initialState, properties);
 
 const rootReducer = (prevState, action) => {
   if (Object.keys(action).every((k) => prevState[k] === action[k])) return prevState;
@@ -55,6 +62,7 @@ const rootReducer = (prevState, action) => {
   };
 
   logger(action, prevState, state);
+  saveStateToLocalStorage(state, properties);
 
   return state;
 };

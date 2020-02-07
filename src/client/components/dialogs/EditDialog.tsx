@@ -1,19 +1,18 @@
 import * as React from 'react';
 import {
   Button,
-  Checkbox,
   createStyles,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Icon,
   IconButton,
   InputAdornment,
   makeStyles,
   TextField, Theme,
 } from '@material-ui/core';
+import GenresSelect from '../GenresSelect';
 
 interface EditDialogProps {
   open: boolean;
@@ -22,9 +21,8 @@ interface EditDialogProps {
   info?: boolean;
 
   fieldValue: any;
-  finished?: boolean;
-  invisible?: boolean;
-  onChange?: (key: string, event: React.ChangeEvent<HTMLInputElement>) => void;
+  genres?: string[];
+  onChange?: (key: string, value: string | string[]) => void;
 
   onClickRestore?: () => void;
   onClickEdit?: () => void;
@@ -48,8 +46,7 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
     info,
     fieldValue,
     onChange,
-    finished,
-    invisible,
+    genres,
     onClickRestore,
     onClickEdit,
     onClose,
@@ -61,28 +58,10 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
       <DialogContent className={classes.content}>
         {(info) && (
-          <>
-            <FormControlLabel
-              className={classes.checkbox}
-              label="Completed"
-              control={(
-                <Checkbox
-                  checked={finished}
-                  onChange={(e) => (onChange && onChange('finished', e))}
-                />
-              )}
-            />
-            <FormControlLabel
-              className={classes.checkbox}
-              label="Invisible"
-              control={(
-                <Checkbox
-                  checked={invisible}
-                  onChange={(e) => (onChange && onChange('invisible', e))}
-                />
-              )}
-            />
-          </>
+          <GenresSelect
+            value={genres ?? []}
+            onChange={(g) => (onChange && onChange('genres', g))}
+          />
         )}
         <TextField
           color="secondary"
@@ -90,7 +69,7 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
           label={info ? 'Book info name' : 'Book number'}
           value={fieldValue}
           // @ts-ignore
-          onChange={(event) => (onChange && onChange(info ? 'name' : 'number', event))}
+          onChange={(event) => (onChange && onChange(info ? 'name' : 'number', event.target.value))}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">

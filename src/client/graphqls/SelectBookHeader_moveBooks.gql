@@ -1,0 +1,6 @@
+mutation moveBooks($infoId: ID! $ids: [ID!]!) {
+    moveBooks(infoId: $infoId ids: $ids) {
+        success
+        code
+    }
+}

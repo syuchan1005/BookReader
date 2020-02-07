@@ -1,5 +1,5 @@
-mutation addBookInfo($name: String!) {
-    add: addBookInfo(name: $name) {
+mutation addBookInfo($name: String! $genres: [String!]!) {
+    add: addBookInfo(name: $name genres: $genres) {
         success
         code
     }

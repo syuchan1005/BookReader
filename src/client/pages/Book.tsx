@@ -42,6 +42,7 @@ import Img from '../components/Img';
 import useNetworkType from '../hooks/useNetworkType';
 import EditPagesDialog from '../components/dialogs/EditPagesDialog';
 import { useApollo } from '../apollo/ApolloProvider';
+import TitleAndBackHeader from '../components/TitleAndBackHeader';
 
 interface BookProps {
   children?: React.ReactElement;
@@ -183,6 +184,7 @@ const Book: React.FC = (props: BookProps) => {
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [showAppBar, setShowAppBar] = React.useState(false);
 
   React.useEffect(() => {
     updatePage(0);
@@ -208,12 +210,6 @@ const Book: React.FC = (props: BookProps) => {
     setSwiper(s);
   }, [isPageSet, page]);
 
-  const setShowAppBar = React.useCallback((val) => {
-    let v = val;
-    if (v === undefined) v = !store.showAppBar;
-    dispatch({ showAppBar: v });
-  }, [store.showAppBar]);
-
   const {
     loading,
     error,
@@ -224,11 +220,6 @@ const Book: React.FC = (props: BookProps) => {
     },
     onCompleted(d) {
       if (!d) return;
-      dispatch({
-        backRoute: `/info/${d.book.info.id}`,
-        barTitle: d.book.info.name,
-        barSubTitle: `No.${d.book.number}`,
-      });
       if (isPageSet && page >= d.book.pages) {
         setPage(d.book.pages - 1, 0);
       }
@@ -245,15 +236,15 @@ const Book: React.FC = (props: BookProps) => {
 
   const increment = React.useCallback(() => {
     setPage(Math.min(page + 1, data.book.pages - 1));
-    if (store.showAppBar) setShowAppBar(false);
+    if (showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, store.showAppBar, setPage]);
+  }, [page, data, nextBook, showAppBar, setPage]);
 
   const decrement = React.useCallback(() => {
     setPage(Math.max(page - 1, 0));
-    if (store.showAppBar) setShowAppBar(false);
+    if (showAppBar) setShowAppBar(false);
     // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, store.showAppBar, setPage]);
+  }, [page, data, prevBook, showAppBar, setPage]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -284,26 +275,6 @@ const Book: React.FC = (props: BookProps) => {
         return undefined;
     }
   }, [effect, effectPercentage]);
-
-  React.useEffect(() => {
-    setShowAppBar(false);
-    const update = {
-      needContentMargin: false,
-      barTitle: 'Book',
-      barSubTitle: '',
-      showBackRouteArrow: true,
-    };
-    if (data) {
-      delete update.barTitle;
-      delete update.barSubTitle;
-    }
-    dispatch(update);
-
-    return () => {
-      setShowAppBar(true);
-      dispatch({ needContentMargin: true });
-    };
-  }, []);
 
   React.useEffect(() => {
     if (!swiper) return;
@@ -340,15 +311,15 @@ const Book: React.FC = (props: BookProps) => {
       case 0:
         if (percentX <= 0.2) decrement();
         else if (percentX >= 0.8) increment();
-        else setShowAppBar(undefined);
+        else setShowAppBar(!showAppBar);
         break;
       case 1:
         if (percentX <= 0.2) increment();
         else if (percentX >= 0.8) decrement();
-        else setShowAppBar(undefined);
+        else setShowAppBar(!showAppBar);
         break;
       default:
-        setShowAppBar(undefined);
+        setShowAppBar(!showAppBar);
     }
   }, [store.readOrder, increment, decrement, openEditDialog]);
 
@@ -387,164 +358,194 @@ const Book: React.FC = (props: BookProps) => {
 
   if (loading || error) {
     return (
-      <div className={classes.loading}>
-        <div>
-          {loading && 'Loading'}
-          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
-        </div>
-      </div>
+      <>
+        <TitleAndBackHeader title="Book" />
+        <main>
+          <div className={classes.loading}>
+            <div>
+              {loading && 'Loading'}
+              {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+            </div>
+          </div>
+        </main>
+      </>
     );
   }
 
   return (
-    // eslint-disable-next-line
-    <div className={classes.book} onClick={clickPage}>
-      <EditPagesDialog
-        open={openEditDialog}
-        onClose={() => setOpenEditDialog(false)}
-        openPage={page}
-        maxPage={data ? data.book.pages : 0}
-        bookId={params.id}
-        theme={store.theme}
-        wb={store.wb}
-        persistor={persistor}
-      />
+    <>
+      {showAppBar && (
+        <TitleAndBackHeader
+          backRoute={data && `/info/${data.book.info.id}`}
+          title={data && data.book.info.name}
+          subTitle={data && `No.${data.book.number}`}
+        />
+      )}
+      <main>
+        {/* eslint-disable-next-line */}
+        <div className={classes.book} onClick={clickPage}>
+          <EditPagesDialog
+            open={openEditDialog}
+            onClose={() => setOpenEditDialog(false)}
+            openPage={page}
+            maxPage={data ? data.book.pages : 0}
+            bookId={params.id}
+            theme={store.theme}
+            wb={store.wb}
+            persistor={persistor}
+          />
 
-      {/* eslint-disable-next-line */}
-      <div
-        className={classes.overlay}
-        style={{ pointerEvents: store.showAppBar ? undefined : 'none' }}
-        onClick={(e) => { if (store.showAppBar) { e.stopPropagation(); setShowAppBar(false); } }}
-      >
-        {store.showAppBar && (
-          <>
-            {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
-              <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
-            </div>
-            {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} center`}>
-              {(prevBook && page === 0) && (
-                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
-                  to Prev book
-                </Button>
-              )}
-              {(nextBook && data && page === data.book.pages - 1) && (
-                <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
-                  to Next book
-                </Button>
-              )}
-            </div>
-            {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <IconButton
-                  size="small"
-                  style={{ color: 'white' }}
-                  aria-label="settings"
-                  onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
-                >
-                  <Icon>settings</Icon>
-                </IconButton>
-              </div>
-              <Menu
-                anchorEl={settingsMenuAnchor}
-                open={Boolean(settingsMenuAnchor)}
-                onClose={() => setSettingsMenuAnchor(null)}
-                getContentAnchorEl={null}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-              >
-                <MenuItem onClick={() => { setSettingsMenuAnchor(null); setOpenEditDialog(true); }}>
-                  Edit pages
-                </MenuItem>
-                <MenuItem
-                  onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
-                >
-                  {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
-                </MenuItem>
-              </Menu>
-              <Button
-                variant="outlined"
-                style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                onClick={() => {
-                  dispatch({ readOrder: (store.readOrder + 1) % 2 });
-                  setReBuildSwiper(true);
-                }}
-              >
-                {['L > R', 'L < R'][store.readOrder]}
-              </Button>
-              <Button
-                aria-controls="effect menu"
-                aria-haspopup
-                onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
-                style={{ color: 'white' }}
-              >
-                {effect || 'normal'}
-              </Button>
-              <Menu
-                anchorEl={effectMenuAnchor}
-                open={Boolean(effectMenuAnchor)}
-                onClose={() => setEffectMenuAnchor(null)}
-              >
-                <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
-                <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
-                <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
-              </Menu>
-              <div className={classes.bottomSlider}>
-                <MuiThemeProvider theme={sliderTheme}>
-                  <Slider
-                    color="secondary"
-                    valueLabelDisplay="auto"
-                    max={data.book.pages}
-                    min={1}
-                    value={page + 1}
-                    onChange={(e, v: number) => setPage(v - 1, 0)}
-                  />
-                </MuiThemeProvider>
-              </div>
-              {(effect) && (
-                <div className={classes.bottomSlider}>
-                  <MuiThemeProvider theme={effectTheme}>
-                    <Slider
-                      valueLabelDisplay="auto"
-                      max={100}
-                      min={0}
-                      value={effectPercentage}
-                      onChange={(e, v: number) => setEffectPercentage(v)}
-                    />
-                  </MuiThemeProvider>
+          {/* eslint-disable-next-line */}
+          <div
+            className={classes.overlay}
+            style={{ pointerEvents: showAppBar ? undefined : 'none' }}
+            onClick={(e) => {
+              if (showAppBar) {
+                e.stopPropagation();
+                setShowAppBar(false);
+              }
+            }}
+          >
+            {showAppBar && (
+              <>
+                {/* eslint-disable-next-line */}
+                <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
+                  <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
                 </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      <SwiperCustom
-        Swiper={Swiper}
-        rebuildOnUpdate={rebuildSwiper}
-        getSwiper={updateSwiper}
-        containerClass={store.readOrder === 0 ? classes.pageContainerLTR : classes.pageContainerRTL}
-      >
-        {pages.map((t, i) => ((Math.abs(i - debouncePage) <= 1) ? (
-          <div className={classes.page} key={t}>
-            <Img
-              imgStyle={effectBackGround}
-              src={t}
-              alt={(i + 1).toString(10)}
-              className={classes.pageImage}
-            />
+                {/* eslint-disable-next-line */}
+                <div className={`${classes.overlayContent} center`}>
+                  {(prevBook && page === 0) && (
+                    <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
+                      to Prev book
+                    </Button>
+                  )}
+                  {(nextBook && data && page === data.book.pages - 1) && (
+                    <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                      to Next book
+                    </Button>
+                  )}
+                </div>
+                {/* eslint-disable-next-line */}
+                <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <IconButton
+                      size="small"
+                      style={{ color: 'white' }}
+                      aria-label="settings"
+                      onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
+                    >
+                      <Icon>settings</Icon>
+                    </IconButton>
+                  </div>
+                  <Menu
+                    anchorEl={settingsMenuAnchor}
+                    open={Boolean(settingsMenuAnchor)}
+                    onClose={() => setSettingsMenuAnchor(null)}
+                    getContentAnchorEl={null}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        setSettingsMenuAnchor(null);
+                        setOpenEditDialog(true);
+                      }}
+                    >
+                      Edit pages
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
+                    >
+                      {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                    </MenuItem>
+                  </Menu>
+                  <Button
+                    variant="outlined"
+                    style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
+                    onClick={() => {
+                      dispatch({ readOrder: (store.readOrder + 1) % 2 });
+                      setReBuildSwiper(true);
+                    }}
+                  >
+                    {['L > R', 'L < R'][store.readOrder]}
+                  </Button>
+                  <Button
+                    aria-controls="effect menu"
+                    aria-haspopup
+                    onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
+                    style={{ color: 'white' }}
+                  >
+                    {effect || 'normal'}
+                  </Button>
+                  <Menu
+                    anchorEl={effectMenuAnchor}
+                    open={Boolean(effectMenuAnchor)}
+                    onClose={() => setEffectMenuAnchor(null)}
+                  >
+                    <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
+                    <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
+                    <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
+                  </Menu>
+                  <div className={classes.bottomSlider}>
+                    <MuiThemeProvider theme={sliderTheme}>
+                      <Slider
+                        color="secondary"
+                        valueLabelDisplay="auto"
+                        max={data.book.pages}
+                        min={1}
+                        value={page + 1}
+                        onChange={(e, v: number) => setPage(v - 1, 0)}
+                      />
+                    </MuiThemeProvider>
+                  </div>
+                  {(effect) && (
+                    <div className={classes.bottomSlider}>
+                      <MuiThemeProvider theme={effectTheme}>
+                        <Slider
+                          valueLabelDisplay="auto"
+                          max={100}
+                          min={0}
+                          value={effectPercentage}
+                          onChange={(e, v: number) => setEffectPercentage(v)}
+                        />
+                      </MuiThemeProvider>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-        ) : (<div key={t} />)))}
-      </SwiperCustom>
 
-      <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
-        <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
-      </div>
-    </div>
+          <SwiperCustom
+            Swiper={Swiper}
+            rebuildOnUpdate={rebuildSwiper}
+            getSwiper={updateSwiper}
+            containerClass={
+              store.readOrder === 0
+                ? classes.pageContainerLTR
+                : classes.pageContainerRTL
+            }
+          >
+            {pages.map((t, i) => ((Math.abs(i - debouncePage) <= 1) ? (
+              <div className={classes.page} key={t}>
+                <Img
+                  imgStyle={effectBackGround}
+                  src={t}
+                  alt={(i + 1).toString(10)}
+                  className={classes.pageImage}
+                />
+              </div>
+            ) : (<div key={t} />)))}
+          </SwiperCustom>
+
+          <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
+            <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
+          </div>
+        </div>
+      </main>
+    </>
   );
 };
 

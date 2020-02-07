@@ -67,7 +67,7 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
 
   const [changeThumbnail, { loading: changeLoading }] = useMutation<
     EditBookInfoThumbnailMutationType,
-    Partial<EditBookInfoThumbnailMutationVariables>,
+    Partial<EditBookInfoThumbnailMutationVariables>
   >(
     EditBookInfoMutation,
     {
