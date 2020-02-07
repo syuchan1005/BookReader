@@ -250,7 +250,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         if (addType === 'file' && nameType === 'filename') {
           return {
             file: f,
-            number: f.name.match(/^(.*)\.[^.]+$/),
+            number: f.name.match(/^(.*)\.[^.]+$/)[1],
           };
         }
         let nums = f.name.match(/\d+/g);
