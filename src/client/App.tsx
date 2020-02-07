@@ -15,7 +15,6 @@ import { useApolloClient } from '@apollo/react-hooks';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
-import Header from '@client/components/Header';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -135,15 +134,12 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     <MuiThemeProvider theme={provideTheme}>
       <CssBaseline />
       <Router history={history}>
-        {store.showAppBar && <Header />}
-        <main className={store.needContentMargin ? 'appbar--margin' : ''}>
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/info/:id" component={Info} />
-            <Route exact path="/book/:id" component={Book} />
-            <Route component={Error} />
-          </Switch>
-        </main>
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/info/:id" component={Info} />
+          <Route exact path="/book/:id" component={Book} />
+          <Route component={Error} />
+        </Switch>
       </Router>
     </MuiThemeProvider>
   );

@@ -26,6 +26,7 @@ import db from '@client/Database';
 
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import Book from '@client/components/Book';
+import Header from '../components/Header';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -155,58 +156,63 @@ const Info: React.FC = (props: InfoProps) => {
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
   return (
-    <div className={classes.info}>
-      {(loading || error) ? (
-        <div className={classes.loading}>
-          {loading && 'Loading'}
-          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
-        </div>
-      ) : (
-        <>
-          <div className={classes.infoGrid}>
-            {// @ts-ignore
-              (bookList && bookList.length > 0) && bookList.map(
-                (book) => (
-                  <Book
-                    {...book}
-                    name={data.bookInfo.name}
-                    reading={readId === book.id}
-                    key={book.id}
-                    onClick={() => clickBook(book)}
-                    onDeleted={() => onDeletedBook(book)}
-                    onEdit={() => refetch()}
-                    thumbnailSize={downXs ? 150 : 200}
-                    thumbnailNoSave={false}
-                  />
-                ),
-              )
-            }
-          </div>
+    <>
+      {store.showAppBar && <Header />}
+      <main className={store.needContentMargin ? 'appbar--margin' : ''}>
+        <div className={classes.info}>
+          {(loading || error) ? (
+            <div className={classes.loading}>
+              {loading && 'Loading'}
+              {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+            </div>
+          ) : (
+            <>
+              <div className={classes.infoGrid}>
+                {// @ts-ignore
+                  (bookList && bookList.length > 0) && bookList.map(
+                    (book) => (
+                      <Book
+                        {...book}
+                        name={data.bookInfo.name}
+                        reading={readId === book.id}
+                        key={book.id}
+                        onClick={() => clickBook(book)}
+                        onDeleted={() => onDeletedBook(book)}
+                        onEdit={() => refetch()}
+                        thumbnailSize={downXs ? 150 : 200}
+                        thumbnailNoSave={false}
+                      />
+                    ),
+                  )
+                }
+              </div>
+              <Fab
+                className={classes.addButton}
+                onClick={() => setOpen(true)}
+                aria-label="add"
+              >
+                <Icon>add</Icon>
+              </Fab>
+            </>
+          )}
           <Fab
-            className={classes.addButton}
-            onClick={() => setOpen(true)}
-            aria-label="add"
+            color="secondary"
+            className={classes.fab}
+            onClick={() => refetch()}
+            aria-label="refetch"
           >
-            <Icon>add</Icon>
+            <Icon style={{ color: 'white' }}>refresh</Icon>
           </Fab>
-        </>
-      )}
-      <Fab
-        color="secondary"
-        className={classes.fab}
-        onClick={() => refetch()}
-        aria-label="refetch"
-      >
-        <Icon style={{ color: 'white' }}>refresh</Icon>
-      </Fab>
 
-      <AddBookDialog
-        open={open}
-        infoId={params.id}
-        onAdded={refetch}
-        onClose={() => setOpen(false)}
-      />
-    </div>
+          <AddBookDialog
+            open={open}
+            infoId={params.id}
+            onAdded={refetch}
+            onClose={() => setOpen(false)}
+          />
+        </div>
+      </main>
+    </>
   );
 };
 

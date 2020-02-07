@@ -21,16 +21,16 @@ import HeaderMenu from '@client/components/HeaderMenu';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   backIcon: {
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.common.white,
     marginRight: theme.spacing(1),
   },
   title: {
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.common.white,
     marginRight: theme.spacing(1),
   },
   subTitle: {
     flexGrow: 1,
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.common.white,
     fontSize: '1.25rem',
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     fontWeight: 500,

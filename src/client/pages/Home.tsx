@@ -27,6 +27,7 @@ import { useGlobalStore } from '@client/store/StoreProvider';
 
 import BookInfo from '../components/BookInfo';
 import db from '../Database';
+import Header from '../components/Header';
 
 
 interface HomeProps {
@@ -171,67 +172,72 @@ const Home: React.FC = (props: HomeProps) => {
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
   return (
-    <div className={classes.home}>
-      {(loading || error) ? (
-        <div className={classes.loading}>
-          {loading && 'Loading'}
-          {error && `${error.toString().replace(/:\s*/g, '\n')}`}
-        </div>
-      ) : (
-        <>
-          <div className={classes.homeGrid}>
-            {infos.map((info) => (
-              <BookInfo
-                key={info.id}
-                {...info}
-                onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
-                onDeleted={(books) => onDeletedBookInfo(info, books)}
-                onEdit={refetchAll}
-                thumbnailSize={downXs ? 150 : 200}
-                showName={store.showBookInfoName}
-              />
-            ))}
-            {(isLoadingMore) && (
-              <div className={classes.loadMoreProgress}>
-                <CircularProgress color="secondary" />
+    <>
+      {store.showAppBar && <Header />}
+      <main className={store.needContentMargin ? 'appbar--margin' : ''}>
+        <div className={classes.home}>
+          {(loading || error) ? (
+            <div className={classes.loading}>
+              {loading && 'Loading'}
+              {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+            </div>
+          ) : (
+            <>
+              <div className={classes.homeGrid}>
+                {infos.map((info) => (
+                  <BookInfo
+                    key={info.id}
+                    {...info}
+                    onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
+                    onDeleted={(books) => onDeletedBookInfo(info, books)}
+                    onEdit={refetchAll}
+                    thumbnailSize={downXs ? 150 : 200}
+                    showName={store.showBookInfoName}
+                  />
+                ))}
+                {(isLoadingMore) && (
+                  <div className={classes.loadMoreProgress}>
+                    <CircularProgress color="secondary" />
+                  </div>
+                )}
+                {(!isLoadingMore && infos.length < data.bookInfos.length) && (
+                  <Waypoint onEnter={clickLoadMore} />
+                )}
               </div>
-            )}
-            {(!isLoadingMore && infos.length < data.bookInfos.length) && (
-              <Waypoint onEnter={clickLoadMore} />
-            )}
-          </div>
+              <Fab
+                className={classes.addButton}
+                onClick={() => setOpen(true)}
+                aria-label="add"
+              >
+                <Icon>add</Icon>
+              </Fab>
+            </>
+          )}
+
           <Fab
-            className={classes.addButton}
-            onClick={() => setOpen(true)}
-            aria-label="add"
+            color="secondary"
+            className={classes.fab}
+            onClick={refetchAll}
+            aria-label="refetch"
           >
-            <Icon>add</Icon>
+            <Icon>refresh</Icon>
           </Fab>
-        </>
-      )}
 
-      <Fab
-        color="secondary"
-        className={classes.fab}
-        onClick={refetchAll}
-        aria-label="refetch"
-      >
-        <Icon>refresh</Icon>
-      </Fab>
+          <AddBookInfoDialog
+            open={open}
+            onAdded={refetchAll}
+            onClose={() => setOpen(false)}
+          />
 
-      <AddBookInfoDialog
-        open={open}
-        onAdded={refetchAll}
-        onClose={() => setOpen(false)}
-      />
-
-      <AddBookDialog
-        open={!!openAddBook}
-        infoId={openAddBook}
-        onClose={() => setOpenAddBook(undefined)}
-        onAdded={refetchAll}
-      />
-    </div>
+          <AddBookDialog
+            open={!!openAddBook}
+            infoId={openAddBook}
+            onClose={() => setOpenAddBook(undefined)}
+            onAdded={refetchAll}
+          />
+        </div>
+      </main>
+    </>
   );
 };
 

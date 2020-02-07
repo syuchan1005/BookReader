@@ -9,6 +9,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { hot } from 'react-hot-loader/root';
 import { useGlobalStore } from '@client/store/StoreProvider';
+import Header from '../components/Header';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   error: {
@@ -47,35 +48,40 @@ const Error: React.FC = (props) => {
   }, []);
 
   return (
-    <div className={classes.error}>
-      <svg
-        className={classes.oops}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 38 17"
-      >
-        <defs>
-          <linearGradient id="g">
-            <stop stopColor="#FF0018" offset="0%" />
-            <stop stopColor="#FFA52C" offset="18%" />
-            <stop stopColor="#FFFF41" offset="36%" />
-            <stop stopColor="#008018" offset="54%" />
-            <stop stopColor="#0000F9" offset="72%" />
-            <stop stopColor="#86007D" offset="100%" />
-          </linearGradient>
-        </defs>
-        <text y="12" fill="url(#g)">Oops!</text>
-      </svg>
-      <Typography>404 - Not Found</Typography>
-      <Fab
-        className={classes.backButton}
-        color="secondary"
-        variant="extended"
-        onClick={() => history.push('/')}
-      >
-        <Icon className={classes.backIcon}>send</Icon>
-        Go to homepage
-      </Fab>
-    </div>
+    <>
+      <Header />
+      <main className="appbar--margin">
+        <div className={classes.error}>
+          <svg
+            className={classes.oops}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 38 17"
+          >
+            <defs>
+              <linearGradient id="g">
+                <stop stopColor="#FF0018" offset="0%" />
+                <stop stopColor="#FFA52C" offset="18%" />
+                <stop stopColor="#FFFF41" offset="36%" />
+                <stop stopColor="#008018" offset="54%" />
+                <stop stopColor="#0000F9" offset="72%" />
+                <stop stopColor="#86007D" offset="100%" />
+              </linearGradient>
+            </defs>
+            <text y="12" fill="url(#g)">Oops!</text>
+          </svg>
+          <Typography>404 - Not Found</Typography>
+          <Fab
+            className={classes.backButton}
+            color="secondary"
+            variant="extended"
+            onClick={() => history.push('/')}
+          >
+            <Icon className={classes.backIcon}>send</Icon>
+            Go to homepage
+          </Fab>
+        </div>
+      </main>
+    </>
   );
 };
 
