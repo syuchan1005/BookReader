@@ -1,0 +1,6 @@
+mutation deleteBooks($infoId: ID! $ids: [ID!]!) {
+    deleteBooks(infoId: $infoId ids: $ids) {
+        success
+        code
+    }
+}

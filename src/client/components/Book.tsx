@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { ReactNode } from 'react';
 
 import {
   Card,
@@ -44,6 +44,8 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
   onEdit?: () => {};
 
   simple?: boolean;
+
+  children?: ReactNode;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -100,6 +102,7 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
     onDeleted,
     onEdit,
     simple,
+    children,
   } = props;
 
   const [menuAnchor, setMenuAnchor] = React.useState(null);
@@ -163,7 +166,14 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
 
   return (
     <Card className={classes.card}>
-      {(simple) ? null : (
+      {/* eslint-disable-next-line no-nested-ternary */}
+      {(simple) ? (
+        (children) ? (
+          <CardActions className={classes.headerMenu}>
+            {children}
+          </CardActions>
+        ) : undefined
+      ) : (
         <CardActions className={classes.headerMenu}>
           <IconButton
             onClick={(event) => setMenuAnchor(event.currentTarget)}

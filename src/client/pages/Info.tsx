@@ -7,8 +7,10 @@ import {
   Icon,
   Theme,
   useTheme,
-  useMediaQuery,
+  useMediaQuery, IconButton,
+  Checkbox,
 } from '@material-ui/core';
+import { common } from '@material-ui/core/colors';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { hot } from 'react-hot-loader/root';
@@ -27,6 +29,7 @@ import db from '@client/Database';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import Book from '@client/components/Book';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import SelectBookHeader from '../components/SelectBookHeader';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -88,8 +91,12 @@ const Info: React.FC = (props: InfoProps) => {
   const theme = useTheme();
   const history = useHistory();
   const params = useParams<{ id: string }>();
+
   const [readId, setReadId] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const [mode, setMode] = React.useState(0); // 0:normal, 1:select
+  const [selectIds, setSelectIds] = React.useState([]);
+
   const {
     refetch,
     loading,
@@ -123,7 +130,10 @@ const Info: React.FC = (props: InfoProps) => {
     history.push(`/book/${book.id}`);
   }, [params, history]);
 
-  const bookList = React.useMemo(() => (data ? data.bookInfo.books : []), [data]);
+  const bookList: typeof data.bookInfo.books = React.useMemo(
+    () => (data ? data.bookInfo.books : []),
+    [data],
+  );
 
   const onDeletedBook = React.useCallback(({ id: bookId, pages }) => {
     // noinspection JSIgnoredPromiseFromCall
@@ -141,12 +151,39 @@ const Info: React.FC = (props: InfoProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
+  const toggleSelect = React.useCallback((id) => {
+    if (selectIds.includes(id)) setSelectIds(selectIds.filter((i) => i !== id));
+    else setSelectIds([...selectIds, id]);
+  }, [selectIds]);
+
   return (
     <>
-      <TitleAndBackHeader
-        backRoute="/"
-        title={data && data.bookInfo.name}
-      />
+      {(mode === 0) ? (
+        <TitleAndBackHeader
+          backRoute="/"
+          title={data && data.bookInfo.name}
+        >
+          <IconButton
+            style={{ color: common.white }}
+            onClick={() => setMode(1)}
+          >
+            <Icon>check_box</Icon>
+          </IconButton>
+        </TitleAndBackHeader>
+      ) : (
+        <SelectBookHeader
+          infoId={params.id}
+          selectIds={selectIds}
+          onClose={() => {
+            setMode(0);
+            setSelectIds([]);
+          }}
+          onDeleteBooks={() => {
+            setMode(0);
+            refetch();
+          }}
+        />
+      )}
       <main className={classes.info}>
         {(loading || error) ? (
           <div className={classes.loading}>
@@ -160,16 +197,26 @@ const Info: React.FC = (props: InfoProps) => {
                 (bookList && bookList.length > 0) && bookList.map(
                   (book) => (
                     <Book
+                      simple={mode === 1}
                       {...book}
                       name={data.bookInfo.name}
                       reading={readId === book.id}
                       key={book.id}
-                      onClick={() => clickBook(book)}
+                      onClick={() => {
+                        if (mode === 0) clickBook(book);
+                        else toggleSelect(book.id);
+                      }}
                       onDeleted={() => onDeletedBook(book)}
                       onEdit={() => refetch()}
                       thumbnailSize={downXs ? 150 : 200}
                       thumbnailNoSave={false}
-                    />
+                    >
+                      <Checkbox
+                        style={{ color: 'white' }}
+                        checked={selectIds.includes(book.id)}
+                        onChange={() => toggleSelect(book.id)}
+                      />
+                    </Book>
                   ),
                 )
               }

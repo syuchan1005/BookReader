@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useHistory } from 'react-router-dom';
 import {
   AppBar,
@@ -15,6 +15,7 @@ interface TitleAndBackHeaderProps {
   backRoute?: string;
   title?: string;
   subTitle?: string;
+  children?: ReactNode;
 }
 
 const useStyles = makeStyles((theme) => createStyles({
@@ -47,6 +48,7 @@ const TitleAndBackHeader: React.FC<TitleAndBackHeaderProps> = (props: TitleAndBa
     backRoute,
     title,
     subTitle,
+    children,
   } = props;
 
   const clickBack = React.useCallback(() => {
@@ -70,6 +72,7 @@ const TitleAndBackHeader: React.FC<TitleAndBackHeaderProps> = (props: TitleAndBa
         <div className={classes.subTitle}>
           {subTitle}
         </div>
+        {children}
       </Toolbar>
     </AppBar>
   );
