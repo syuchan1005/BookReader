@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as colors from '@material-ui/core/colors';
 import { useTheme } from '@material-ui/core';
+import useTestId from '../hooks/useTestId';
 
 interface ColorTileProps {
   color: string;
@@ -10,10 +11,13 @@ interface ColorTileProps {
 
 const ColorTile: React.FC<ColorTileProps> = ({ color, num = 500, marginLeft }: ColorTileProps) => {
   const theme = useTheme();
+  const tileTestId = useTestId('tile');
+  const textTestId = useTestId('text');
 
   return (
     <>
       <span
+        {...tileTestId}
         style={{
           width: '1rem',
           height: '1rem',
@@ -22,7 +26,7 @@ const ColorTile: React.FC<ColorTileProps> = ({ color, num = 500, marginLeft }: C
           marginLeft: marginLeft ? theme.spacing(1) : undefined,
         }}
       />
-      <span>{color}</span>
+      <span {...textTestId}>{color}</span>
     </>
   );
 };
