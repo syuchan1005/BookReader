@@ -7,7 +7,7 @@ import unzipper from 'unzipper';
 import uuidv4 from 'uuid/v4';
 import rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
-import { orderBy, orderBy as naturalOrderBy } from 'natural-orderby';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
@@ -128,18 +128,8 @@ const GQLUtil = {
         message: Errors.QL0003,
       };
     }
-    files = naturalOrderBy(
-      files,
-      [(v: string) => v.substring(0, v.length - path.extname(v).length)],
-      [(a, b) => {
-        const iA = a.includes('cover');
-        const iB = b.includes('cover');
-        if (iA && iB) return 0;
-        if (iA) return -1;
-        if (iB) return 1;
-        return 0;
-      }],
-    );
+    files = naturalOrderBy(files.map((s) => s.replace(/cover/g, '$$$$$cover')))
+      .map((s) => s.replace(/\$\$\$\$\$cover/g, 'cover'));
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
     await asyncForEach(files, async (f, i) => {
@@ -302,7 +292,7 @@ const GQLUtil = {
     };
   },
   async numberingFiles(folderPath: string, pad: number, fileList?: string[], reverse = false) {
-    const files = fileList || orderBy(await fs.readdir(folderPath));
+    const files = fileList || naturalOrderBy(await fs.readdir(folderPath));
     return asyncMap(files, (f, i) => {
       const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
       if (dist !== f) {
