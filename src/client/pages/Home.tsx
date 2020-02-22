@@ -113,7 +113,7 @@ const Home: React.FC = (props: HomeProps) => {
       limit: 10,
       search: debounceSearch || '',
       order: store.sortOrder,
-      history: store.history || !!debounceSearch,
+      history: store.history,
       genres: [
         store.invisible ? 'Invisible' : undefined,
         store.normal ? 'NO_GENRE' : undefined,

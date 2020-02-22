@@ -43,49 +43,50 @@ class BookInfo extends GQLMiddleware {
           where.name = {
             [Op.like]: `%${search}%`,
           };
+        } else {
+          where.history = history;
+          if (!history) {
+            const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
+            const inGenreInfoIds = [];
+            if (genresWithOutNoGenre.length > 0) {
+              const genreIds = (await GenreModel.findAll({
+                attributes: ['id'],
+                where: {
+                  name: {
+                    [Op.in]: genresWithOutNoGenre,
+                  },
+                },
+              })).map(({ id }) => id);
+              inGenreInfoIds.push(...(await InfoGenreModel.findAll({
+                attributes: ['infoId'],
+                where: (genreIds.length > 1 ? {
+                  genreId: {
+                    [Op.in]: genreIds,
+                  },
+                } : {
+                  genreId: genreIds[0],
+                }),
+              })).map(({ infoId }) => infoId));
+            }
+            if (genres.includes('NO_GENRE')) {
+              const hasGenreIds = await InfoGenreModel.findAll({
+                attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
+              });
+              const ids = await BookInfoModel.findAll({
+                attributes: ['id'],
+                where: {
+                  id: {
+                    [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
+                  },
+                },
+              });
+              inGenreInfoIds.push(...(ids.map(({ id }) => id)));
+            }
+            where.id = {
+              [Op.in]: inGenreInfoIds,
+            };
+          } else if (genres.includes('NO_GENRE')) delete where.history;
         }
-        where.history = history;
-        if (!history) {
-          const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
-          const inGenreInfoIds = [];
-          if (genresWithOutNoGenre.length > 0) {
-            const genreIds = (await GenreModel.findAll({
-              attributes: ['id'],
-              where: {
-                name: {
-                  [Op.in]: genresWithOutNoGenre,
-                },
-              },
-            })).map(({ id }) => id);
-            inGenreInfoIds.push(...(await InfoGenreModel.findAll({
-              attributes: ['infoId'],
-              where: (genreIds.length > 1 ? {
-                genreId: {
-                  [Op.in]: genreIds,
-                },
-              } : {
-                genreId: genreIds[0],
-              }),
-            })).map(({ infoId }) => infoId));
-          }
-          if (genres.includes('NO_GENRE')) {
-            const hasGenreIds = await InfoGenreModel.findAll({
-              attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
-            });
-            const ids = await BookInfoModel.findAll({
-              attributes: ['id'],
-              where: {
-                id: {
-                  [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
-                },
-              },
-            });
-            inGenreInfoIds.push(...(ids.map(({ id }) => id)));
-          }
-          where.id = {
-            [Op.in]: inGenreInfoIds,
-          };
-        } else if (genres.includes('NO_GENRE')) delete where.history;
         const bookInfos = await BookInfoModel.findAll({
           limit,
           offset,
