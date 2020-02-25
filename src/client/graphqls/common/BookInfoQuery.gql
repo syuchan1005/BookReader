@@ -1,11 +1,11 @@
 # Pages_Info
 # Hooks_usePrevNextBook
 # SelectBookInfoThumbnailDialog
-query bookInfo($id: ID!){
+query bookInfo($id: ID! $order: BookOrder){
     bookInfo(id: $id) {
         id
         name
-        books {
+        books(order: $order) {
             id
             number
             pages

@@ -9,6 +9,7 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
+  BookOrder,
   MutationResolvers,
   QueryResolvers,
   SubscriptionResolvers,
@@ -106,39 +107,11 @@ class BookInfo extends GQLMiddleware {
           infos: bookInfos.map((info) => ModelUtil.bookInfo(info)),
         };
       },
-      bookInfo: async (parent, { id: infoId }, context, info) => {
-        let booksField;
-        info.operation.selectionSet.selections.some((section) => {
-          if (section.kind !== 'Field') return false;
-          return section.selectionSet.selections.some(
-            (sec) => {
-              const ret = sec.kind === 'Field' && sec.name.value === 'books';
-              if (ret) booksField = sec;
-              return ret;
-            },
-          );
-        });
-        let bookOrder;
-        if (booksField && booksField.arguments.length > 0) {
-          const o = booksField.arguments.find((arg) => arg.name.value === 'order');
-          bookOrder = o.value.value;
-        }
-
+      bookInfo: async (parent, { id: infoId }) => {
         const bookInfo = await BookInfoModel.findOne({
           where: { id: infoId },
-          include: booksField ? [
-            {
-              model: BookModel,
-              as: 'books',
-            },
-          ] : [],
         });
         if (bookInfo) {
-          bookInfo.books = naturalOrderBy(
-            bookInfo.books || [],
-            [(v) => v.number],
-          );
-          if (bookOrder === 'DESC') bookInfo.books.reverse();
           return ModelUtil.bookInfo(bookInfo);
         }
         return null;
@@ -321,6 +294,31 @@ class BookInfo extends GQLMiddleware {
           () => this.pubsub.asyncIterator([SubscriptionKeys.ADD_BOOK_INFO]),
           (payload, variables) => payload.name === variables.name,
         ),
+      },
+    };
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  Resolver() {
+    return {
+      BookInfo: {
+        books: async ({ id }, { order }: { order: BookOrder }) => {
+          const sortNumber = order.startsWith('Number_');
+          let books = await BookModel.findAll({
+            where: { infoId: id },
+            order: sortNumber ? undefined : [
+              ['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc'],
+            ],
+          });
+          if (sortNumber) {
+            books = naturalOrderBy(
+              books || [],
+              [(v) => v.number],
+            );
+            if (order === BookOrder.NumberDesc) books.reverse();
+          }
+          return books.map((book) => ModelUtil.book(book, false, id));
+        },
       },
     };
   }

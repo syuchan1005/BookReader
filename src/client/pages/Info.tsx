@@ -8,7 +8,7 @@ import {
   Theme,
   useTheme,
   useMediaQuery, IconButton,
-  Checkbox,
+  Checkbox, Menu, MenuItem,
 } from '@material-ui/core';
 import { common } from '@material-ui/core/colors';
 import { useParams, useHistory } from 'react-router-dom';
@@ -18,6 +18,7 @@ import { hot } from 'react-hot-loader/root';
 import {
   BookInfoQuery as BookInfoQueryType,
   BookInfoQueryVariables,
+  BookOrder,
 } from '@common/GQLTypes';
 import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
 
@@ -86,7 +87,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Info: React.FC = (props: InfoProps) => {
-  const { state: store } = useGlobalStore();
+  const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
@@ -105,6 +106,7 @@ const Info: React.FC = (props: InfoProps) => {
   } = useQuery<BookInfoQueryType, BookInfoQueryVariables>(BookInfoQuery, {
     variables: {
       id: params.id,
+      order: store.sortBookOrder,
     },
   });
 
@@ -156,6 +158,8 @@ const Info: React.FC = (props: InfoProps) => {
     else setSelectIds([...selectIds, id]);
   }, [selectIds]);
 
+  const [sortEl, setSortEl] = React.useState(undefined);
+
   return (
     <>
       {(mode === 0) ? (
@@ -169,6 +173,34 @@ const Info: React.FC = (props: InfoProps) => {
           >
             <Icon>check_box</Icon>
           </IconButton>
+          <IconButton
+            style={{ color: common.white }}
+            onClick={(event) => setSortEl(event.currentTarget)}
+          >
+            <Icon>sort</Icon>
+          </IconButton>
+          <Menu
+            getContentAnchorEl={null}
+            anchorOrigin={{
+              horizontal: 'center',
+              vertical: 'bottom',
+            }}
+            anchorEl={sortEl}
+            open={!!sortEl}
+            onClose={() => setSortEl(undefined)}
+          >
+            {Object.keys(BookOrder).map((order: BookOrder) => (
+              <MenuItem
+                key={order}
+                onClick={() => {
+                  dispatch({ sortBookOrder: BookOrder[order] });
+                  setSortEl(undefined);
+                }}
+              >
+                {BookOrder[order]}
+              </MenuItem>
+            ))}
+          </Menu>
         </TitleAndBackHeader>
       ) : (
         <SelectBookHeader

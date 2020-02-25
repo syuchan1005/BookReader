@@ -84,6 +84,7 @@ export default class GraphQL {
           },
           Mutation: middlewareOps('Mutation'),
           Subscription: middlewareOps('Subscription'),
+          ...middlewareOps('Resolver'),
         },
       }),
       tracing: process.env.NODE_ENV !== 'production',

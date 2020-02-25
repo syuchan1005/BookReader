@@ -43,5 +43,13 @@ export default class GQLMiddleware {
     return {};
   }
 
+  Resolver(
+    db: Database,
+    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    subscriptionKeys: typeof SubscriptionKeys,
+  ): { [key: string]: object } {
+    return {};
+  }
+
   /* eslint-enable class-methods-use-this,@typescript-eslint/no-unused-vars */
 }

@@ -64,8 +64,10 @@ export type BookInfoResult = {
 };
 
 export enum BookOrder {
-  Asc = 'ASC',
-  Desc = 'DESC'
+  UpdateNewest = 'Update_Newest',
+  UpdateOldest = 'Update_Oldest',
+  NumberAsc = 'Number_Asc',
+  NumberDesc = 'Number_Desc'
 }
 
 export type CommonPluginQuery = {
@@ -353,7 +355,7 @@ export type AddBookInfoHistoriesMutation = ({ __typename?: 'Mutation' } & { add:
 export type DeleteUnusedFoldersMutationVariables = {};
 
 
-export type DeleteUnusedFoldersMutation = ({ __typename?: 'Mutation' } & { debug_deleteUnusedFolders: ({ __typename?: 'Result' } & Pick<Result, 'success'>) });
+export type DeleteUnusedFoldersMutation = ({ __typename?: 'Mutation' } & { debug_deleteUnusedFolders: ({ __typename?: 'Result' } & Pick<Result, 'success' | 'code'>) });
 
 export type FolderSizesQueryVariables = {};
 
@@ -494,7 +496,8 @@ export type EditBookThumbnailMutationVariables = {
 export type EditBookThumbnailMutation = ({ __typename?: 'Mutation' } & { edit: ({ __typename?: 'Result' } & Pick<Result, 'success' | 'code'>) });
 
 export type BookInfoQueryVariables = {
-  id: Scalars['ID']
+  id: Scalars['ID'],
+  order?: Maybe<BookOrder>
 };
 
 

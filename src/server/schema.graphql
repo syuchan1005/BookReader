@@ -15,7 +15,7 @@ type Query {
     bookInfo(id: ID!): BookInfo
 
     ## Book
-    books(id: ID, offset: Int = 0, limit: Int = 10, order: BookOrder = ASC): [Book!]!
+    books(id: ID, offset: Int = 0, limit: Int = 10, order: BookOrder = Number_Asc): [Book!]!
     book(id: ID!): Book
 
     ## Debug
@@ -71,8 +71,10 @@ enum BookInfoOrder {
 }
 
 enum BookOrder {
-    ASC
-    DESC
+    Update_Newest
+    Update_Oldest
+    Number_Asc
+    Number_Desc
 }
 
 enum SplitType {
@@ -88,7 +90,7 @@ type BookInfo {
     history: Boolean!
     genres: [String!]!
 
-    books(order: BookOrder = ASC): [Book!]!
+    books(order: BookOrder = Number_Asc): [Book!]!
 }
 
 type Book {
