@@ -4,6 +4,7 @@ import { useApolloClient } from '@apollo/react-hooks';
 import {
   BookInfoQuery as BookInfoQueryType,
   BookInfoQueryVariables,
+  BookOrder,
 } from '@common/GQLTypes';
 import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
 
@@ -21,6 +22,7 @@ const usePrevNextBook = (infoId, bookId) => {
           query: BookInfoQuery,
           variables: {
             id: infoId,
+            order: BookOrder.NumberAsc,
           },
         });
         // @ts-ignore
