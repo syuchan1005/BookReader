@@ -148,6 +148,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       mutation ${pluginMutationArgs[1] || ''}{
         plugin: ${pluginMutationArgs[0]}${pluginMutationArgs[2] || ''}{
             success
+            code
         }
       }
     `),
