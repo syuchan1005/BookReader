@@ -14,15 +14,7 @@ import { mkdirpIfNotExists } from './Util';
 const im = gm.subClass({ imageMagick: true });
 
 (async () => {
-  const useIM = await new Promise((resolve) => {
-    im(10, 10)
-      .stream((err, stdout, stderr) => {
-        if (err) resolve(false);
-        stderr.once('data', () => resolve(false));
-        stdout.once('error', () => resolve(false));
-        stdout.once('end', () => resolve(true));
-      });
-  });
+  const useIM = false;
 
   const app = new Koa();
   const graphql = new GraphQL((useIM ? im : gm), useIM);
