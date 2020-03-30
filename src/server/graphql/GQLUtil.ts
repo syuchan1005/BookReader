@@ -139,13 +139,21 @@ const GQLUtil = {
       if (/\.jpe?g$/i.test(f)) {
         await renameFile(f, dist);
       } else {
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
           gm(f)
             .quality(85)
-            .write(dist, resolve);
+            .write(dist, (err) => {
+              if (err) reject(err);
+              else resolve();
+            });
         });
       }
-    });
+    }).catch((reason) => new Promise((resolve, reject) => {
+      if (deleteTempFolder) {
+        deleteTempFolder(resolve, () => {});
+      }
+      reject(reason);
+    }));
     if (deleteTempFolder) await new Promise(deleteTempFolder);
 
     const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
