@@ -2,7 +2,7 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import { promises as fs } from 'fs';
 
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import rimraf from 'rimraf';
 import { col, fn, Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
@@ -24,7 +24,7 @@ import Errors from '@server/Errors';
 import GQLUtil from '@server/graphql/GQLUtil.ts';
 import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
-import InfoGenreModel from '../../sequelize/models/InfoGenre';
+import InfoGenreModel from '@server/sequelize/models/InfoGenre';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this

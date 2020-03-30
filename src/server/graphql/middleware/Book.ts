@@ -1,8 +1,7 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import os from 'os';
 import path from 'path';
-
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import rimraf from 'rimraf';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
