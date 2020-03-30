@@ -11,13 +11,10 @@ import GraphQL from './graphql';
 import Database from './sequelize/models';
 import { mkdirpIfNotExists } from './Util';
 
-const im = gm.subClass({ imageMagick: true });
 
 (async () => {
-  const useIM = false;
-
   const app = new Koa();
-  const graphql = new GraphQL((useIM ? im : gm), useIM);
+  const graphql = new GraphQL(gm, /* useIM */ false);
 
   app.use(Serve('storage/'));
 
@@ -27,7 +24,7 @@ const im = gm.subClass({ imageMagick: true });
     width: number,
     height: number,
   }> => new Promise((resolve, reject) => {
-    (useIM ? im : gm)(p)
+    gm(p)
       .size((err, value) => {
         if (err) reject(err);
         else resolve(value);
@@ -54,7 +51,7 @@ const im = gm.subClass({ imageMagick: true });
 
         try {
           const b = await new Promise((resolve, reject) => {
-            (useIM ? im : gm)(path.resolve(origImgPath))
+            gm(path.resolve(origImgPath))
               .resize(sizes.width, sizes.height)
               .quality(70)
               .interlace('Line')

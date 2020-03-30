@@ -2,12 +2,11 @@
 /* eslint-disable no-underscore-dangle,no-restricted-globals, default-case */
 workbox.core.setCacheNameDetails({ prefix: 'bookReader' });
 workbox.core.skipWaiting(); workbox.core.clientsClaim();
-self.__precacheManifest = [].concat(self.__precacheManifest || []);
-workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
+workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
 
 // https://github.com/GoogleChrome/workbox/issues/1599
 workbox.routing.registerRoute(/^https:\/\/fonts\.googleapis\.com/, new workbox.strategies.StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
-workbox.routing.registerRoute(/^https:\/\/fonts\.gstatic\.com/, new workbox.strategies.CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new workbox.cacheableResponse.Plugin({ statuses: [0, 200] }), new workbox.expiration.Plugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
+workbox.routing.registerRoute(/^https:\/\/fonts\.gstatic\.com/, new workbox.strategies.CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new workbox.CacheableResponsePlugin({ statuses: [0, 200] }), new workbox.ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
 
 const BookImageCacheName = 'bookReader-images';
 workbox.routing.registerRoute(
@@ -15,7 +14,7 @@ workbox.routing.registerRoute(
   new workbox.strategies.CacheFirst({
     cacheName: BookImageCacheName,
     plugins: [
-      new workbox.cacheableResponse.Plugin({
+      new workbox.CacheableResponsePlugin({
         statuses: [200],
       }),
     ],
@@ -27,10 +26,10 @@ workbox.routing.registerRoute(
   new workbox.strategies.CacheFirst({
     cacheName: `${BookImageCacheName}-expires`,
     plugins: [
-      new workbox.cacheableResponse.Plugin({
+      new workbox.CacheableResponsePlugin({
         statuses: [200],
       }),
-      new workbox.expiration.Plugin({
+      new workbox.ExpirationPlugin({
         maxEntries: 20,
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
       }),
