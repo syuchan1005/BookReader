@@ -11,8 +11,6 @@ import { SubscriptionKeys } from './index';
 export default class GQLMiddleware {
   readonly gm: SubClass;
 
-  readonly useIM: boolean;
-
   readonly server: ApolloServer;
 
   readonly pubsub: PubSubEngine;
@@ -21,7 +19,7 @@ export default class GQLMiddleware {
 
   Query(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
   ): QueryResolvers {
     return {};
@@ -29,7 +27,7 @@ export default class GQLMiddleware {
 
   Mutation(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
   ): MutationResolvers {
     return {};
@@ -37,7 +35,7 @@ export default class GQLMiddleware {
 
   Subscription(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
   ): SubscriptionResolvers {
     return {};
@@ -45,7 +43,7 @@ export default class GQLMiddleware {
 
   Resolver(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
   ): { [key: string]: object } {
     return {};

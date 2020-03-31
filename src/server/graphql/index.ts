@@ -29,8 +29,6 @@ export const SubscriptionKeys = {
 export default class GraphQL {
   private readonly gm: SubClass;
 
-  private readonly useIM: boolean;
-
   private readonly middlewares: { [key: string]: GQLMiddleware };
 
   public readonly server: ApolloServer;
@@ -41,9 +39,8 @@ export default class GraphQL {
 
   private readonly plugins: InternalGQLPlugin[];
 
-  constructor(gmModule, useIM) {
+  constructor(gmModule) {
     this.gm = gmModule;
-    this.useIM = useIM;
     this.pubsub = new PubSub();
     this.plugins = loadPlugins();
 
