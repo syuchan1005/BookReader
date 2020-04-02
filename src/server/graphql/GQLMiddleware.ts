@@ -1,6 +1,8 @@
 import { SubClass } from 'gm';
 import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
 import { Database } from '@server/sequelize/models';
+import * as Util from '@server/Util';
+import GQLUtil from '@server/graphql/GQLUtil';
 import {
   QueryResolvers,
   MutationResolvers,
@@ -21,6 +23,7 @@ export default class GQLMiddleware {
     db: Database,
     middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): QueryResolvers {
     return {};
   }
@@ -29,6 +32,7 @@ export default class GQLMiddleware {
     db: Database,
     middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): MutationResolvers {
     return {};
   }
@@ -37,6 +41,7 @@ export default class GQLMiddleware {
     db: Database,
     middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): SubscriptionResolvers {
     return {};
   }
@@ -45,6 +50,7 @@ export default class GQLMiddleware {
     db: Database,
     middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): { [key: string]: object } {
     return {};
   }

@@ -14,12 +14,11 @@ import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 import typeDefs from '@server/schema.graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import Database from '@server/sequelize/models';
-import {
-  mkdirpIfNotExists,
-} from '../Util';
+import * as Util from '../Util';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
 import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
+import GQLUtil from './GQLUtil';
 
 export const SubscriptionKeys = {
   ADD_BOOK_INFO: 'ADD_BOOK_INFO',
@@ -61,10 +60,11 @@ export default class GraphQL {
         return obj;
       }, {})),
     };
+    const util = { ...GQLUtil, ...Util };
     const middlewareOps = (key) => Object.keys(this.middlewares)
       .map((k) => {
         const fun = this.middlewares[k][key];
-        return fun ? fun.bind(this)(Database, this, SubscriptionKeys) : {};
+        return fun ? fun.bind(this)(Database, this, SubscriptionKeys, util) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
     // eslint-disable-next-line no-underscore-dangle
@@ -90,9 +90,9 @@ export default class GraphQL {
   }
 
   static async createFolders() {
-    await mkdirpIfNotExists('storage/bookInfo');
-    await mkdirpIfNotExists('storage/book');
-    await mkdirpIfNotExists('storage/cache/book');
+    await Util.mkdirpIfNotExists('storage/bookInfo');
+    await Util.mkdirpIfNotExists('storage/book');
+    await Util.mkdirpIfNotExists('storage/cache/book');
   }
 
   async middleware(app) {
