@@ -15,7 +15,10 @@
       "start": "node dist/server",
       "lint": "eslint src/**/*.*",
       "db:migrate": "ts-node node_modules/.bin/sequelize db:migrate",
-      "gql-gen": "graphql-codegen --config codegen.yml"
+      "gql-gen": "graphql-codegen --config codegen.yml",
+      "prebuild:plugin": "rimraf dist/plugin",
+      "build:plugin": "tsc -P ./tsconfig.plugin.json",
+      "postbuild:plugin": "cpx ./plugin/*.json ./dist/plugin/"
    },
    "devDependencies": {
       "@babel/core": "^7.9.0",
@@ -44,6 +47,7 @@
       "@typescript-eslint/typescript-estree": "^2.25.0",
       "babel-loader": "^8.1.0",
       "copy-webpack-plugin": "^5.1.1",
+      "cpx": "^1.5.0",
       "css-loader": "^3.4.2",
       "eslint": "^6.8.0",
       "eslint-config-airbnb": "^18.1.0",
