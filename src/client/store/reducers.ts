@@ -7,9 +7,7 @@ export interface IState {
   searchText: string;
   sortOrder: BookInfoOrder;
   sortBookOrder: BookOrder;
-  history: boolean;
-  normal: boolean;
-  invisible: boolean;
+  genres: string[];
   theme: 'light' | 'dark';
   primary: string;
   secondary: string;
@@ -28,9 +26,7 @@ export const initialState: IState = {
   searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
   sortBookOrder: BookOrder.NumberAsc,
-  history: false,
-  normal: true,
-  invisible: false,
+  genres: ['NO_GENRE', 'Completed'],
   theme: 'light',
   primary: 'green',
   secondary: 'blue',
@@ -43,9 +39,6 @@ const properties = [
   'searchText',
   'sortOrder',
   'sortBookOrder',
-  'history',
-  'normal',
-  'invisible',
   'theme',
   'primary',
   'secondary',

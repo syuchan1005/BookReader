@@ -21,7 +21,7 @@ import BookModel from '@server/sequelize/models/Book';
 import GenreModel from '@server/sequelize/models/Genre';
 import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
-import GQLUtil from '@server/graphql/GQLUtil.ts';
+import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
@@ -58,16 +58,18 @@ class BookInfo extends GQLMiddleware {
                   },
                 },
               })).map(({ id }) => id);
-              inGenreInfoIds.push(...(await InfoGenreModel.findAll({
-                attributes: ['infoId'],
-                where: (genreIds.length > 1 ? {
-                  genreId: {
-                    [Op.in]: genreIds,
-                  },
-                } : {
-                  genreId: genreIds[0],
-                }),
-              })).map(({ infoId }) => infoId));
+              if (genreIds.length > 0) {
+                inGenreInfoIds.push(...(await InfoGenreModel.findAll({
+                  attributes: ['infoId'],
+                  where: (genreIds.length > 1 ? {
+                    genreId: {
+                      [Op.in]: genreIds,
+                    },
+                  } : {
+                    genreId: genreIds[0],
+                  }),
+                })).map(({ infoId }) => infoId));
+              }
             }
             if (genres.includes('NO_GENRE')) {
               const hasGenreIds = await InfoGenreModel.findAll({
@@ -83,6 +85,7 @@ class BookInfo extends GQLMiddleware {
               });
               inGenreInfoIds.push(...(ids.map(({ id }) => id)));
             }
+            if (inGenreInfoIds.length === 0) return { length: 0, infos: [] };
             where.id = {
               [Op.in]: inGenreInfoIds,
             };

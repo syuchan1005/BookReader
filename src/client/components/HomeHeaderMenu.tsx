@@ -1,27 +1,36 @@
 import React from 'react';
 import {
-  Button,
-  Checkbox,
+  Button, Chip,
   CircularProgress,
   Collapse,
-  FormControlLabel,
+  createStyles,
+  FormControl,
   Icon,
-  ListItem, ListItemText,
-  ListSubheader,
+  Input,
+  InputLabel,
+  ListItem,
+  ListItemText,
   Menu,
-  MenuItem, useTheme,
+  MenuItem,
+  Select,
+  useTheme,
+  makeStyles,
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors';
-import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/react-hooks';
 
 import {
   BookInfoOrder,
-  DeleteUnusedFoldersMutation, DeleteUnusedFoldersMutationVariables,
+  DeleteUnusedFoldersMutation,
+  DeleteUnusedFoldersMutationVariables,
   FolderSizesQuery,
   FolderSizesQueryVariables,
+  GenresQuery as GenresQueryData,
+  GenresQueryVariables,
 } from '@common/GQLTypes';
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
+import GenresQuery from '@client/graphqls/common/GenresQuery.gql';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import { useApollo } from '@client/apollo/ApolloProvider';
@@ -40,11 +49,28 @@ const wrapSize = (size: number) => {
   return `${(size / 10 ** (index * 3)).toString(10).match(/\d+(\.\d{1,2})?/)[0]} [${sizes[index]}B]`;
 };
 
+const useStyles = makeStyles(() => createStyles({
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 2,
+  },
+  disableHover: {
+    cursor: 'auto',
+    '&:hover': {
+      background: 'inherit',
+    },
+  },
+}));
+
 const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
   const {
     anchorEl,
     onClose,
   } = props;
+  const classes = useStyles(props);
 
   const { state: store, dispatch } = useGlobalStore();
   const { persistor } = useApollo();
@@ -91,6 +117,13 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
       });
   }, [store.wb]);
 
+  const {
+    data: genreData,
+  } = useQuery<
+    GenresQueryData,
+    GenresQueryVariables
+  >(GenresQuery);
+
   return (
     <>
       <Menu
@@ -103,23 +136,34 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
         open={!!anchorEl}
         onClose={() => (onClose && onClose())}
       >
-        <ListSubheader style={{ lineHeight: 'normal' }}>
-          Show
-        </ListSubheader>
-        <ListItem style={{ outline: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-          {Object.entries({ normal: 'Normal', history: 'History', invisible: 'Invisible' }).map(([k, v]) => (
-            <FormControlLabel
-              key={k}
-              control={(
-                <Checkbox
-                  checked={store[k]}
-                  onChange={(e) => dispatch({ [k]: e.target.checked })}
-                />
+        <MenuItem disableRipple disableTouchRipple className={classes.disableHover}>
+          <FormControl fullWidth style={{ maxWidth: 170 }}>
+            <InputLabel>Genres</InputLabel>
+            <Select
+              multiple
+              input={<Input />}
+              value={store.genres}
+              onChange={(e) => dispatch({ genres: e.target.value as string[] })}
+              renderValue={(selected) => (
+                <div className={classes.chips}>
+                  {(selected as string[]).map((value) => (
+                    <Chip
+                      key={value}
+                      label={value}
+                      className={classes.chip}
+                    />
+                  ))}
+                </div>
               )}
-              label={v}
-            />
-          ))}
-        </ListItem>
+            >
+              {['NO_GENRE', 'History', ...(genreData ? genreData.genres : [])].map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </MenuItem>
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
           {`Sort: ${store.sortOrder}`}
         </MenuItem>

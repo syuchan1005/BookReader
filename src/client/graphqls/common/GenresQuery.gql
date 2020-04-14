@@ -1,4 +1,5 @@
-# AddBookInfoDialog.tsx
+# GenresSelect.tsx
+# HomeHeaderMenu.tsx
 query genres {
     genres
 }
