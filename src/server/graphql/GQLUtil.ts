@@ -4,10 +4,10 @@ import path from 'path';
 import { Readable } from 'stream';
 
 import unzipper from 'unzipper';
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
-import { orderBy, orderBy as naturalOrderBy } from 'natural-orderby';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
@@ -23,7 +23,7 @@ import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
-import GenreModel from '../sequelize/models/Genre';
+import GenreModel from '@server/sequelize/models/Genre';
 
 const GQLUtil = {
   Mutation: {
@@ -129,17 +129,8 @@ const GQLUtil = {
       };
     }
     files = naturalOrderBy(
-      files,
-      [(v: string) => v.substring(0, v.length - path.extname(v).length)],
-      [(a, b) => {
-        const iA = a.includes('cover');
-        const iB = b.includes('cover');
-        if (iA && iB) return 0;
-        if (iA) return -1;
-        if (iB) return 1;
-        return 0;
-      }],
-    );
+      files.map((s) => s.replace(/cover/g, '!!!!!cover')),
+    ).map((s) => s.replace(/!!!!!cover/g, 'cover'));
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
     await asyncForEach(files, async (f, i) => {
@@ -148,13 +139,21 @@ const GQLUtil = {
       if (/\.jpe?g$/i.test(f)) {
         await renameFile(f, dist);
       } else {
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
           gm(f)
             .quality(85)
-            .write(dist, resolve);
+            .write(dist, (err) => {
+              if (err) reject(err);
+              else resolve();
+            });
         });
       }
-    });
+    }).catch((reason) => new Promise((resolve, reject) => {
+      if (deleteTempFolder) {
+        deleteTempFolder(resolve, () => {});
+      }
+      reject(reason);
+    }));
     if (deleteTempFolder) await new Promise(deleteTempFolder);
 
     const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
@@ -302,7 +301,7 @@ const GQLUtil = {
     };
   },
   async numberingFiles(folderPath: string, pad: number, fileList?: string[], reverse = false) {
-    const files = fileList || orderBy(await fs.readdir(folderPath));
+    const files = fileList || naturalOrderBy(await fs.readdir(folderPath));
     return asyncMap(files, (f, i) => {
       const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
       if (dist !== f) {

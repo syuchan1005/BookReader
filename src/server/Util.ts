@@ -28,7 +28,7 @@ export const asyncMap = async <T, E>(
   return result;
 };
 
-export const readdirRecursively = async (dir, files = []) => {
+export const readdirRecursively = async (dir, files: string[] = []): Promise<string[]> => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
   dirents.forEach((dirent) => {

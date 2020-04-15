@@ -1,6 +1,8 @@
 import { SubClass } from 'gm';
 import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
 import { Database } from '@server/sequelize/models';
+import * as Util from '@server/Util';
+import GQLUtil from '@server/graphql/GQLUtil';
 import {
   QueryResolvers,
   MutationResolvers,
@@ -11,8 +13,6 @@ import { SubscriptionKeys } from './index';
 export default class GQLMiddleware {
   readonly gm: SubClass;
 
-  readonly useIM: boolean;
-
   readonly server: ApolloServer;
 
   readonly pubsub: PubSubEngine;
@@ -21,25 +21,37 @@ export default class GQLMiddleware {
 
   Query(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): QueryResolvers {
     return {};
   }
 
   Mutation(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): MutationResolvers {
     return {};
   }
 
   Subscription(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'useIM' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
   ): SubscriptionResolvers {
+    return {};
+  }
+
+  Resolver(
+    db: Database,
+    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
+    subscriptionKeys: typeof SubscriptionKeys,
+    util: typeof Util | typeof GQLUtil,
+  ): { [key: string]: object } {
     return {};
   }
 

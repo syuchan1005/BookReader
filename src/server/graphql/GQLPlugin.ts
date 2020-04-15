@@ -3,6 +3,7 @@ import { ITypeDefinitions } from 'graphql-tools';
 import path from 'path';
 import GQLMiddleware from './GQLMiddleware';
 
+export { default as GQLMiddleware } from './GQLMiddleware';
 export interface GQLPlugin {
   typeDefs: ITypeDefinitions;
   middleware: GQLMiddleware;

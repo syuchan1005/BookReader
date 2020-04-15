@@ -19,6 +19,7 @@ import useMatchMedia from '@client/hooks/useMatchMedia';
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
 const Book = loadable(() => import(/* webpackChunkName: 'Book' */ './pages/Book'));
+const Setting = loadable(() => import(/* webpackChunkName: 'Setting' */ './pages/Setting'));
 const Error = loadable(() => import(/* webpackChunkName: 'Error' */ './pages/Error'));
 
 export const commonTheme = {
@@ -138,6 +139,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
           <Route exact path="/" component={Home} />
           <Route exact path="/info/:id" component={Info} />
           <Route exact path="/book/:id" component={Book} />
+          <Route exact path="/setting" component={Setting} />
           <Route component={Error} />
         </Switch>
       </Router>

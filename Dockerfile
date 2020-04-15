@@ -1,4 +1,4 @@
-FROM node:12.13.0-alpine as build
+FROM node:12.16.1-alpine3.11 as build
 
 COPY . /build
 
@@ -14,7 +14,7 @@ RUN npm ci && npm run build \
     && mv package.json /bookReader/ \
     && mv package-lock.json /bookReader/
 
-FROM node:12.13.0-alpine
+FROM node:12.16.1-alpine3.11
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
@@ -23,7 +23,7 @@ EXPOSE 80
 
 ENV DEBUG=""
 
-RUN apk add --no-cache supervisor nginx imagemagick libwebp-tools \
+RUN apk add --no-cache supervisor nginx graphicsmagick libwebp-tools \
     && mkdir /bookReader
 
 COPY --from=build ["/bookReader/package.json", "/bookReader/package-lock.json", "/bookReader/"]

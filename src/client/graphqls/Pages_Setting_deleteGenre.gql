@@ -1,0 +1,7 @@
+mutation DeleteGenre($name: String!) {
+    deleteGenre(genre: $name) {
+        code
+        success
+        message
+    }
+}

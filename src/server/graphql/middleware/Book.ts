@@ -1,8 +1,7 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import os from 'os';
 import path from 'path';
-
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import rimraf from 'rimraf';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
@@ -32,22 +31,26 @@ class Book extends GQLMiddleware {
         offset,
         order,
       }) => {
+        const sortNumber = order.startsWith('Number_');
         const where: any = {};
         if (infoId) where.infoId = infoId;
-        const books = await BookModel.findAll({
+        let books = await BookModel.findAll({
           where,
           include: [{ model: BookInfoModel, as: 'info' }],
           limit,
           offset,
-          order: [
-            ['infoId', 'desc'],
+          order: sortNumber ? undefined : [
+            ['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc'],
           ],
         });
-        const bookModels = naturalOrderBy(
-          books,
-          [(v) => v.infoId, (v) => v.number],
-        ).map((book) => ModelUtil.book(book));
-        return (order === BookOrder.Desc) ? bookModels.reverse() : bookModels;
+        if (sortNumber) {
+          books = naturalOrderBy(
+            books,
+            [(v) => v.infoId, (v) => v.number],
+          );
+          if (order === BookOrder.NumberDesc) books.reverse();
+        }
+        return books.map((b) => ModelUtil.book(b));
       },
       book: async (parent, { id: bookId }) => {
         const book = await BookModel.findOne({

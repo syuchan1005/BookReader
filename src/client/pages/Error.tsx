@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { hot } from 'react-hot-loader/root';
+import useTestId from '../hooks/useTestId';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   error: {
@@ -36,10 +37,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const Error: React.FC = (props) => {
   const classes = useStyles(props);
   const history = useHistory();
+  const svgTestId = useTestId('svg');
+  const textTestId = useTestId('text');
+  const buttonTestId = useTestId('button');
 
   return (
     <main className={classes.error}>
       <svg
+        {...svgTestId}
         className={classes.oops}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 38 17"
@@ -56,8 +61,9 @@ const Error: React.FC = (props) => {
         </defs>
         <text y="12" fill="url(#g)">Oops!</text>
       </svg>
-      <Typography>404 - Not Found</Typography>
+      <Typography {...textTestId}>404 - Not Found</Typography>
       <Fab
+        {...buttonTestId}
         className={classes.backButton}
         color="secondary"
         variant="extended"

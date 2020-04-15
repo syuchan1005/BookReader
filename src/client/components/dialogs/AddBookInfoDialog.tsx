@@ -208,6 +208,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoD
         return (
           <DialogContent className={classes.addContent}>
             <GenresSelect
+              showAdd
               value={selectGenres}
               onChange={setSelectGenres}
             />

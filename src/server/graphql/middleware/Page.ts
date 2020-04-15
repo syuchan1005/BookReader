@@ -94,7 +94,8 @@ class Page extends GQLMiddleware {
             return;
           }
 
-          if (this.useIM) {
+          // eslint-disable-next-line no-prototype-builtins
+          if (!this.gm.hasOwnProperty('subClass')) {
             await new Promise((resolve, reject) => {
               this.gm(`${bookPath}/${f}`)
                 .out('-crop', cropOption)

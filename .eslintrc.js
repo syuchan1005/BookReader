@@ -9,10 +9,12 @@ module.exports = {
     'react-hooks',
     'jsx-a11y',
     'graphql',
+    'jest',
   ],
   env: {
     browser: true,
     node: true,
+    'jest/globals': true,
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -29,6 +31,13 @@ module.exports = {
     'react/jsx-no-target-blank': 'error',
     'react/jsx-filename-extension': [1, { "extensions": [".tsx", ".jsx"] }],
     'react/jsx-props-no-spreading': 0,
+    "import/extensions": ["error", "ignorePackages", {
+      "ts": "never",
+      "tsx": "never",
+      "js": "never",
+      "jsx": "never",
+      "mjs": "never"
+    }]
   },
   settings: {
     'import/resolver': {

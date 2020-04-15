@@ -1,4 +1,4 @@
-import { BookInfoOrder } from '@common/GQLTypes.ts';
+import { BookInfoOrder, BookOrder } from '@common/GQLTypes.ts';
 import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './middlewares';
 
 export interface IState {
@@ -6,9 +6,8 @@ export interface IState {
   wb: any;
   searchText: string;
   sortOrder: BookInfoOrder;
-  history: boolean;
-  normal: boolean;
-  invisible: boolean;
+  sortBookOrder: BookOrder;
+  genres: string[];
   theme: 'light' | 'dark';
   primary: string;
   secondary: string;
@@ -26,9 +25,8 @@ export const initialState: IState = {
   // load
   searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
-  history: false,
-  normal: true,
-  invisible: false,
+  sortBookOrder: BookOrder.NumberAsc,
+  genres: ['NO_GENRE', 'Completed'],
   theme: 'light',
   primary: 'green',
   secondary: 'blue',
@@ -40,9 +38,7 @@ export const initialState: IState = {
 const properties = [
   'searchText',
   'sortOrder',
-  'history',
-  'normal',
-  'invisible',
+  'sortBookOrder',
   'theme',
   'primary',
   'secondary',

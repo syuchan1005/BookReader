@@ -148,6 +148,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       mutation ${pluginMutationArgs[1] || ''}{
         plugin: ${pluginMutationArgs[0]}${pluginMutationArgs[2] || ''}{
             success
+            code
         }
       }
     `),
@@ -250,7 +251,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         if (addType === 'file' && nameType === 'filename') {
           return {
             file: f,
-            number: f.name.match(/^(.*)\.[^.]+$/),
+            number: f.name.match(/^(.*)\.[^.]+$/)[1],
           };
         }
         let nums = f.name.match(/\d+/g);
