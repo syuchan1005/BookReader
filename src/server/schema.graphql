@@ -23,6 +23,7 @@ type Query {
 
     plugins: [Plugin!]!
 
+    ## Genre
     genres: [String!]!
 }
 
@@ -54,6 +55,10 @@ type Mutation {
 
     ## Debug
     debug_deleteUnusedFolders: Result!
+
+    ## Genre
+    deleteGenre(genre: String!): Result!
+    editGenre(oldName: String! newName: String!): Result!
 }
 
 type Subscription {

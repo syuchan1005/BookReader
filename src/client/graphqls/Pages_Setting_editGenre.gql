@@ -1,0 +1,7 @@
+mutation EditGenre($oldName: String!, $newName: String!) {
+    editGenre(oldName: $oldName, newName: $newName) {
+        code
+        success
+        message
+    }
+}

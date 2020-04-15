@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-  Button, Chip,
+  Button,
+  Chip,
   CircularProgress,
   Collapse,
   createStyles,
@@ -9,15 +10,17 @@ import {
   Input,
   InputLabel,
   ListItem,
+  ListItemIcon,
   ListItemText,
+  makeStyles,
   Menu,
   MenuItem,
   Select,
   useTheme,
-  makeStyles,
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/react-hooks';
+import { useHistory } from 'react-router-dom';
 
 import {
   BookInfoOrder,
@@ -72,6 +75,7 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
   } = props;
   const classes = useStyles(props);
 
+  const history = useHistory();
   const { state: store, dispatch } = useGlobalStore();
   const { persistor } = useApollo();
   const theme = useTheme();
@@ -163,6 +167,10 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
               ))}
             </Select>
           </FormControl>
+        </MenuItem>
+        <MenuItem onClick={() => history.push('/setting')}>
+          <ListItemIcon><Icon>settings</Icon></ListItemIcon>
+          Settings
         </MenuItem>
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
           {`Sort: ${store.sortOrder}`}

@@ -1,5 +1,6 @@
 import { Association, DataTypes, Model } from 'sequelize';
 import BookInfo from './BookInfo';
+import { defaultGenres } from '../../../common/Common';
 
 export default class Genre extends Model {
   public id!: string;
@@ -48,7 +49,6 @@ export default class Genre extends Model {
   }
 
   public static async seed() {
-    await Genre.upsert({ name: 'Invisible' });
-    await Genre.upsert({ name: 'Finished' });
+    await Promise.all(defaultGenres.map((name) => Genre.upsert({ name })));
   }
 }

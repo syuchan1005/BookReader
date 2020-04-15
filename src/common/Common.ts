@@ -4,3 +4,8 @@ export const archiveTypes = {
   'application/x-zip-compressed': 'zip',
   'application/x-rar-compressed': 'rar',
 };
+
+export const defaultGenres = [
+  'Invisible',
+  'Completed',
+];
