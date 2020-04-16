@@ -9,7 +9,7 @@ const Errors = {
   QL0007: 'numbers range error',
   QL0008: 'genre not found',
   QL0009: 'can not delete default genre',
-  QL0010: 'can not edit default genre',
+  // QL0010: 'can not edit default genre',
   QL0011: 'genre name must be unique',
 
   Unknown: 'Unknown',

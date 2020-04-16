@@ -153,7 +153,6 @@ const Setting: React.FC = (props) => {
                         <TableCell align="right">
                           <IconButton
                             size="small"
-                            disabled={defaultGenres.includes(genre)}
                             onClick={() => {
                               setDeleteGenre(undefined);
                               setEditGenre(genre);

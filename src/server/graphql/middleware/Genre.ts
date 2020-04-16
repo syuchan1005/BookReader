@@ -45,21 +45,31 @@ class Genre extends GQLMiddleware {
         };
       },
       editGenre: async (parent, { oldName, newName }) => {
-        if (defaultGenres.includes(oldName)) {
-          return createError('QL0010');
-        }
+        const isDefault = defaultGenres.includes(oldName);
         const genreModel = await GenreModel.findOne({
           where: { name: oldName },
         });
         if (!genreModel) return createError('QL0008');
-        const newGenreModel = await GenreModel.findOne({
+        let newGenreModel = await GenreModel.findOne({
           where: { name: newName },
         });
         if (newGenreModel) return createError('QL0011');
         try {
-          await GenreModel.update({ name: newName }, {
-            where: { id: genreModel.id },
-          });
+          if (isDefault) {
+            await Database.sequelize.transaction(async (transaction) => {
+              newGenreModel = await GenreModel.create({ name: newName }, {
+                transaction,
+              });
+              await InfoGenreModel.update({ genreId: newGenreModel.id }, {
+                where: { genreId: genreModel.id },
+                transaction,
+              });
+            });
+          } else {
+            await GenreModel.update({ name: newName }, {
+              where: { id: genreModel.id },
+            });
+          }
         } catch (e) {
           return createError('Unknown', e);
         }
