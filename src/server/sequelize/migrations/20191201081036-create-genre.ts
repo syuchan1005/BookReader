@@ -1,5 +1,11 @@
+/* eslint-disable no-console */
+import { DataTypes, ModelAttributes, QueryInterface } from 'sequelize';
+
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.sequelize.transaction(async (transaction) => {
+  up: (
+    queryInterface: QueryInterface,
+    Sequelize: typeof DataTypes,
+  ) => queryInterface.sequelize.transaction(async (transaction) => {
     const dialect = queryInterface.sequelize.getDialect();
     if (dialect !== 'sqlite') {
       throw new Error(`${dialect} do not support.`);
@@ -41,6 +47,7 @@ module.exports = {
         field: 'id',
       },
       onUpdate: 'cascade',
+      onDelete: 'no action',
       transaction,
     });
     await queryInterface.addConstraint('infoGenres', ['infoId', 'genreId'], {
@@ -52,11 +59,13 @@ module.exports = {
       { name: 'Invisible' },
       { name: 'Finished' },
     ], { transaction }).catch(() => { /* ignore */ });
+
     const genres = (await queryInterface.rawSelect('genres', {
       raw: false,
       plain: false,
       transaction,
-    }, '')).reduce((o, v) => {
+      // @ts-ignore
+    }, '')).reduce((o: object, v: { id: string, name: string }) => {
       // eslint-disable-next-line no-param-reassign
       o[v.name] = v.id;
       return o;
@@ -68,7 +77,8 @@ module.exports = {
         finished: true,
       },
       transaction,
-    }, 'id')).map(({ id }) => id);
+    // @ts-ignore
+    }, 'id')).map(({ id }: { id: string }) => id);
     const invisibleInfos = (await queryInterface.rawSelect('bookInfos', {
       raw: false,
       plain: false,
@@ -76,7 +86,8 @@ module.exports = {
         invisible: true,
       },
       transaction,
-    }, 'id')).map(({ id }) => id);
+      // @ts-ignore
+    }, 'id')).map(({ id }: { id: string }) => id);
     if (invisibleInfos.length > 0 || finishedInfos.length > 0) {
       await queryInterface.bulkInsert('infoGenres', [
         ...(invisibleInfos.map((id) => ({
@@ -89,8 +100,9 @@ module.exports = {
         }))),
       ], { transaction });
     }
-    const table = await queryInterface.describeTable('books');
+    const table = await queryInterface.describeTable('books') as ModelAttributes;
     await queryInterface.createTable('new_books', table, { transaction });
+    // noinspection SqlResolve
     await queryInterface.sequelize.query('INSERT INTO new_books SELECT * FROM books;', { transaction });
     await queryInterface.dropTable('books', { transaction });
     await queryInterface.renameTable('new_books', 'books', { transaction });
@@ -104,27 +116,34 @@ module.exports = {
         field: 'id',
       },
       onUpdate: 'cascade',
+      onDelete: 'no action',
       transaction,
     });
   }),
-  down: (queryInterface, Sequelize) => queryInterface.sequelize.transaction(async (transaction) => {
+  down: (
+    queryInterface: QueryInterface,
+    Sequelize: typeof DataTypes,
+  ) => queryInterface.sequelize.transaction(async (transaction) => {
     await queryInterface.addColumn('bookInfos', 'finished', {
       allowNull: false,
       defaultValue: false,
       type: Sequelize.BOOLEAN,
+      // @ts-ignore
       after: 'history',
     }, { transaction });
     await queryInterface.addColumn('bookInfos', 'invisible', {
       allowNull: false,
       defaultValue: false,
       type: Sequelize.BOOLEAN,
+      // @ts-ignore
       after: 'finished',
     }, { transaction });
     const genres = (await queryInterface.rawSelect('genres', {
       raw: false,
       plain: false,
       transaction,
-    }, '')).reduce((o, v) => {
+    // @ts-ignore
+    }, '')).reduce((o, v: { id: string, name: string }) => {
       // eslint-disable-next-line no-param-reassign
       o[v.name] = v.id;
       return o;
@@ -136,6 +155,7 @@ module.exports = {
       where: {
         genreId: genres.Finished,
       },
+    // @ts-ignore
     }, 'infoId')).map(({ infoId }) => infoId);
     if (finishedInfoIds.length > 0) {
       await queryInterface.bulkUpdate('bookInfos', {
@@ -151,6 +171,7 @@ module.exports = {
       where: {
         genreId: genres.Invisible,
       },
+    // @ts-ignore
     }, 'infoId')).map(({ infoId }) => infoId);
     if (invisibleInfoIds.length > 0) {
       await queryInterface.bulkUpdate('bookInfos', {

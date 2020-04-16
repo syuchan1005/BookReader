@@ -1,16 +1,24 @@
+/* eslint-disable no-console */
+import { ModelAttributes, QueryInterface } from 'sequelize';
+
 module.exports = {
-  up: (queryInterface) => queryInterface.sequelize.transaction(async (transaction) => {
+  up: (
+    queryInterface: QueryInterface,
+    // Sequelize: typeof DataTypes,
+  ) => queryInterface.sequelize.transaction(async (transaction) => {
     const dialect = queryInterface.sequelize.getDialect();
     if (dialect !== 'sqlite') {
       throw new Error(`${dialect} do not support.`);
     }
-    const infoGenresTable = await queryInterface.describeTable('infoGenres');
+    const infoGenresTable = await queryInterface.describeTable('infoGenres') as ModelAttributes;
     await queryInterface.createTable('new_infoGenres', infoGenresTable, { transaction });
+    // noinspection SqlResolve
     await queryInterface.sequelize.query('INSERT INTO new_infoGenres SELECT * FROM infoGenres;', { transaction });
     await queryInterface.dropTable('infoGenres', { transaction });
 
-    const table = await queryInterface.describeTable('bookInfos');
+    const table = await queryInterface.describeTable('bookInfos') as ModelAttributes;
     await queryInterface.createTable('new_bookInfos', table, { transaction });
+    // noinspection SqlResolve
     await queryInterface.sequelize.query('INSERT INTO new_bookInfos SELECT * FROM bookInfos;', { transaction });
     await queryInterface.dropTable('bookInfos', { transaction });
     await queryInterface.renameTable('new_bookInfos', 'bookInfos', { transaction });
@@ -31,6 +39,7 @@ module.exports = {
         field: 'id',
       },
       onUpdate: 'cascade',
+      onDelete: 'no action',
       transaction,
     });
     await queryInterface.addConstraint('infoGenres', ['genreId'], {
@@ -41,6 +50,7 @@ module.exports = {
         field: 'id',
       },
       onUpdate: 'cascade',
+      onDelete: 'no action',
       transaction,
     });
     await queryInterface.addConstraint('infoGenres', ['infoId', 'genreId'], {
@@ -49,5 +59,8 @@ module.exports = {
       transaction,
     });
   }),
-  down: (queryInterface) => queryInterface.removeConstraint('bookInfos', 'unique_name'),
+  down: (
+    queryInterface: QueryInterface,
+    // Sequelize: typeof DataTypes,
+  ) => queryInterface.removeConstraint('bookInfos', 'unique_name'),
 };

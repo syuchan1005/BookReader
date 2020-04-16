@@ -1,6 +1,11 @@
-// noinspection JSUnresolvedVariable
+/* eslint-disable no-console */
+import { DataTypes, QueryInterface } from 'sequelize';
+
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.createTable('bookInfos', {
+  up: (
+    queryInterface: QueryInterface,
+    Sequelize: typeof DataTypes,
+  ) => queryInterface.createTable('bookInfos', {
     id: {
       allowNull: false,
       primaryKey: true,
@@ -28,5 +33,8 @@ module.exports = {
       type: Sequelize.DATE,
     },
   }),
-  down: (queryInterface) => queryInterface.dropTable('bookInfos'),
+  down: (
+    queryInterface: QueryInterface,
+    // Sequelize: typeof DataTypes,
+  ) => queryInterface.dropTable('bookInfos'),
 };
