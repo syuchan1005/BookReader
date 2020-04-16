@@ -46,6 +46,8 @@ Table(bookInfos) {
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime
+  ---
+  unique_name(name)
 }
 
 Table(books) {
@@ -58,6 +60,25 @@ Table(books) {
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime
+  --
+  fk_infoId(infoId -> bookInfos(id))
+}
+
+Table(genres) {
+  primary_key(id) uuid
+  ---
+  unique(name) varchar(255)
+}
+
+Table(infoGenres) {
+  primary_key(id) uuid
+  ---
+  unique_not_null(infoId) uuid
+  unique_not_null(genreId) integer
+  ---
+  unique_infoId_genreId(infoId, genreId)
+  fk_genreId(genreId -> genres(id))
+  fk_infoId(infoId -> bookInfos(id))
 }
 
 ' relations

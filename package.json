@@ -14,7 +14,7 @@
       "build": "npm run build:client && npm run build:server -- --mode production",
       "start": "node dist/server",
       "lint": "eslint src/**/*.*",
-      "db:migrate": "ts-node node_modules/.bin/sequelize db:migrate",
+      "db:migrate": "sequelize db:migrate",
       "gql-gen": "graphql-codegen --config codegen.yml",
       "prebuild:plugin": "rimraf dist/plugin",
       "build:plugin": "tsc -P ./tsconfig.plugin.json",
