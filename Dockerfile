@@ -11,6 +11,7 @@ RUN npm ci && npm run build \
     && cp -r /bookReader/dist/client /bookReader/public/ \
     && mv src/server/ /bookReader/src/server/ \
     && mv .sequelizerc /bookReader/ \
+    && mv scripts/ /bookReader/scripts \
     && mv package.json /bookReader/ \
     && mv package-lock.json /bookReader/
 
