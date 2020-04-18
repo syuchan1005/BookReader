@@ -44,16 +44,18 @@ class BookInfo extends GQLMiddleware {
           order: [GQLUtil.bookInfoOrderToOrderBy(order)],
           where: Object.fromEntries(Object.entries({
             history,
-            id: {
-              [Op.in]: genres.length === 0
-                ? Sequelize.literal('('
-                  + 'SELECT DISTINCT infoId FROM infoGenres WHERE infoId not in (SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1)'
-                  + ')')
-                : Sequelize.literal('('
+            id: genres.length === 0
+              ? {
+                [Op.notIn]: Sequelize.literal('('
+                  + 'SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1'
+                  + ')'),
+              }
+              : {
+                [Op.in]: Sequelize.literal('('
                   // @ts-ignore
                   + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => Database.sequelize.getQueryInterface().QueryGenerator.escape(g)).join(', ')})`
                   + ')'),
-            },
+              },
             name: search ? {
               [Op.like]: `%${search}%`,
             } : undefined,
