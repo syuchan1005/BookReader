@@ -8,6 +8,7 @@ export interface IState {
   sortOrder: BookInfoOrder;
   sortBookOrder: BookOrder;
   genres: string[];
+  history: 'SHOW' | 'HIDE' | 'ALL',
   theme: 'light' | 'dark';
   primary: string;
   secondary: string;
@@ -18,15 +19,13 @@ export interface IState {
 }
 
 export const initialState: IState = {
-  // no load
   wb: undefined,
   webp: false,
-
-  // load
   searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
   sortBookOrder: BookOrder.NumberAsc,
-  genres: ['NO_GENRE', 'Completed'],
+  genres: [],
+  history: 'ALL',
   theme: 'light',
   primary: 'green',
   secondary: 'blue',
@@ -36,7 +35,6 @@ export const initialState: IState = {
 };
 
 const properties = [
-  'searchText',
   'sortOrder',
   'sortBookOrder',
   'theme',

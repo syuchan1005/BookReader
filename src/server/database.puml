@@ -83,4 +83,6 @@ Table(infoGenres) {
 
 ' relations
 bookInfos --o{ books
+bookInfos --o{ infoGenres
+infoGenres }o-- genres
 @enduml

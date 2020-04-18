@@ -145,7 +145,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const [editDialog, setEditDialog] = React.useState(false);
   const [editContent, setEditContent] = React.useState({
     name,
-    genres,
+    genres: genres.map((g) => g.name),
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
@@ -245,7 +245,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         />
         {showName ? (
           <CardContent className={classes.cardContent}>
-            <div>{`${name} (${count}${genres.includes('Completed') ? ', Completed' : ''})`}</div>
+            <div>{`${name} (${count}${genres.some((g) => g.name === 'Completed') ? ', Completed' : ''})`}</div>
           </CardContent>
         ) : (
           <CardContent className={classes.countLabel}>
@@ -255,10 +255,10 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
         {(history) ? (
           <div className={classes.historyLabel}>History</div>
         ) : null}
-        {(genres.includes('Completed') && !showName) ? (
+        {(genres.some((g) => g.name === 'Completed') && !showName) ? (
           <div className={classes.completedLabel}>Completed</div>
         ) : null}
-        {(genres.includes('Invisible')) ? (
+        {(genres.some((g) => g.invisible)) ? (
           <Icon className={classes.invisibleLabel}>visibility_off</Icon>
         ) : null}
       </CardActionArea>

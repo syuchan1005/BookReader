@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 
 import { v4 as uuidv4 } from 'uuid';
 import rimraf from 'rimraf';
-import { col, fn, Op } from 'sequelize';
+import Sequelize, { Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
@@ -31,83 +31,42 @@ class BookInfo extends GQLMiddleware {
   Query(): QueryResolvers {
     return {
       bookInfos: async (parent, {
-        limit,
         offset,
+        length,
         search,
-        order,
-        genres = [],
+        genres,
         history,
+        order,
       }) => {
-        if (!history && (!genres || genres.length === 0)) return { length: 0, infos: [] };
-        const where: { [key: string]: any } = {};
-        if (search) {
-          where.name = {
-            [Op.like]: `%${search}%`,
-          };
-        } else {
-          where.history = history;
-          if (!history) {
-            const genresWithOutNoGenre = genres.filter((g) => g !== 'NO_GENRE');
-            const inGenreInfoIds = [];
-            if (genresWithOutNoGenre.length > 0) {
-              const genreIds = (await GenreModel.findAll({
-                attributes: ['id'],
-                where: {
-                  name: {
-                    [Op.in]: genresWithOutNoGenre,
-                  },
-                },
-              })).map(({ id }) => id);
-              if (genreIds.length > 0) {
-                inGenreInfoIds.push(...(await InfoGenreModel.findAll({
-                  attributes: ['infoId'],
-                  where: (genreIds.length > 1 ? {
-                    genreId: {
-                      [Op.in]: genreIds,
-                    },
-                  } : {
-                    genreId: genreIds[0],
-                  }),
-                })).map(({ infoId }) => infoId));
-              }
-            }
-            if (genres.includes('NO_GENRE')) {
-              const hasGenreIds = await InfoGenreModel.findAll({
-                attributes: [[fn('DISTINCT', col('infoId')), 'infoId']],
-              });
-              const ids = await BookInfoModel.findAll({
-                attributes: ['id'],
-                where: {
-                  id: {
-                    [Op.notIn]: hasGenreIds.map(({ infoId }) => infoId),
-                  },
-                },
-              });
-              inGenreInfoIds.push(...(ids.map(({ id }) => id)));
-            }
-            if (inGenreInfoIds.length === 0) return { length: 0, infos: [] };
-            where.id = {
-              [Op.in]: inGenreInfoIds,
-            };
-          } else if (genres.includes('NO_GENRE')) delete where.history;
-        }
-        const bookInfos = await BookInfoModel.findAll({
-          limit,
+        const infos = await BookInfoModel.findAll({
           offset,
-          where,
-          // @ts-ignore
+          limit: length + 1,
           order: [GQLUtil.bookInfoOrderToOrderBy(order)],
+          where: Object.fromEntries(Object.entries({
+            history,
+            id: {
+              [Op.in]: genres.length === 0
+                ? Sequelize.literal('('
+                  + 'SELECT DISTINCT infoId FROM infoGenres WHERE infoId not in (SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1)'
+                  + ')')
+                : Sequelize.literal('('
+                  // @ts-ignore
+                  + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => Database.sequelize.getQueryInterface().QueryGenerator.escape(g)).join(', ')})`
+                  + ')'),
+            },
+            name: search ? {
+              [Op.like]: `%${search}%`,
+            } : undefined,
+          }).filter((e) => e[1] !== undefined)),
           include: [{
             model: GenreModel,
             as: 'genres',
           }],
         });
-        const length = await BookInfoModel.count({
-          where,
-        });
+
         return {
-          length,
-          infos: bookInfos.map((info) => ModelUtil.bookInfo(info)),
+          hasNext: infos.length === length + 1,
+          infos: infos.slice(0, length).map((info) => ModelUtil.bookInfo(info)),
         };
       },
       bookInfo: async (parent, { id: infoId }) => {

@@ -24,6 +24,7 @@ import BookModel from '@server/sequelize/models/Book';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
 import GenreModel from '@server/sequelize/models/Genre';
+import { OrderItem } from 'sequelize';
 
 const GQLUtil = {
   Mutation: {
@@ -310,7 +311,7 @@ const GQLUtil = {
       return Promise.resolve();
     }, reverse);
   },
-  bookInfoOrderToOrderBy(order: BookInfoOrder): string[] | undefined {
+  bookInfoOrderToOrderBy(order: BookInfoOrder): OrderItem {
     switch (order) {
       case BookInfoOrder.UpdateNewest:
         return ['updatedAt', 'desc'];

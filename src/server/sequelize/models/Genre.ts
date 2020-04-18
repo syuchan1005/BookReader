@@ -1,9 +1,11 @@
 import { Association, DataTypes, Model } from 'sequelize';
+import { defaultGenres } from '@common/Common';
 import BookInfo from './BookInfo';
-import { defaultGenres } from '../../../common/Common';
 
 export default class Genre extends Model {
   public id!: string;
+
+  public invisible!: boolean;
 
   public name!: string;
 
@@ -16,6 +18,8 @@ export default class Genre extends Model {
   public static associations: {
     infos: Association<Genre, BookInfo>;
   };
+
+  public readonly dataValues: typeof Genre;
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
@@ -30,6 +34,11 @@ export default class Genre extends Model {
         allowNull: false,
         unique: 'unique_name',
         type: DataTypes.STRING,
+      },
+      invisible: {
+        allowNull: false,
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
       },
     }, {
       sequelize,

@@ -21,7 +21,7 @@ import {
   Theme,
   Toolbar,
   Typography,
-  makeStyles, useTheme,
+  makeStyles, useTheme, Switch,
 } from '@material-ui/core';
 
 import {
@@ -79,10 +79,6 @@ const Setting: React.FC = (props) => {
     doEditGenre,
     { loading: editGenreLoading },
   ] = useMutation<EditGenreMutationData, EditGenreMutationVariables>(EditGenreMutation, {
-    variables: {
-      oldName: editGenre,
-      newName: editGenreContent,
-    },
     onCompleted({ editGenre: genreResult }) {
       if (genreResult.success) {
         setEditGenreContent(undefined);
@@ -116,16 +112,29 @@ const Setting: React.FC = (props) => {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Name</TableCell>
+                    <TableCell>Invisible</TableCell>
+                    <TableCell align="left">Name</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {genreData.genres
                     .map((genre) => (
-                      <TableRow key={genre}>
+                      <TableRow key={genre.id}>
                         <TableCell>
-                          {(editGenre === genre) ? (
+                          <Switch
+                            checked={genre.invisible}
+                            onChange={(event) => doEditGenre({
+                              variables: {
+                                oldName: genre.name,
+                                invisible: event.target.checked,
+                              },
+                            })}
+                            disabled={defaultGenres.includes(genre.name)}
+                          />
+                        </TableCell>
+                        <TableCell align="left">
+                          {(editGenre === genre.name) ? (
                             <>
                               <TextField
                                 autoFocus
@@ -136,7 +145,12 @@ const Setting: React.FC = (props) => {
                               <IconButton
                                 size="small"
                                 disabled={editGenre === editGenreContent || editGenreLoading}
-                                onClick={() => doEditGenre()}
+                                onClick={() => doEditGenre({
+                                  variables: {
+                                    oldName: genre.name,
+                                    newName: editGenreContent,
+                                  },
+                                })}
                               >
                                 <Icon>check</Icon>
                               </IconButton>
@@ -148,24 +162,24 @@ const Setting: React.FC = (props) => {
                                 <Icon>clear</Icon>
                               </IconButton>
                             </>
-                          ) : genre}
+                          ) : genre.name}
                         </TableCell>
                         <TableCell align="right">
                           <IconButton
                             size="small"
                             onClick={() => {
                               setDeleteGenre(undefined);
-                              setEditGenre(genre);
-                              setEditGenreContent(genre);
+                              setEditGenre(genre.name);
+                              setEditGenreContent(genre.name);
                             }}
                           >
                             <Icon>edit</Icon>
                           </IconButton>
                           <IconButton
                             size="small"
-                            disabled={defaultGenres.includes(genre)}
+                            disabled={defaultGenres.includes(genre.name)}
                             onClick={() => {
-                              setDeleteGenre(genre);
+                              setDeleteGenre(genre.name);
                               setEditGenre(undefined);
                               setEditGenreContent('');
                             }}

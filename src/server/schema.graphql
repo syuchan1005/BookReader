@@ -5,11 +5,11 @@ scalar IntRange
 type Query {
     ## BookInfo
     bookInfos(
-        limit: Int = 10
+        length: Int = 10
         offset: Int = 0
         search: String
-        genres: [String!]
-        history: Boolean = false
+        genres: [String!] = []
+        history: Boolean
         order: BookInfoOrder = Update_Newest
     ): BookInfoList!
     bookInfo(id: ID!): BookInfo
@@ -24,7 +24,7 @@ type Query {
     plugins: [Plugin!]!
 
     ## Genre
-    genres: [String!]!
+    genres: [Genre!]!
 }
 
 type Mutation {
@@ -58,7 +58,7 @@ type Mutation {
 
     ## Genre
     deleteGenre(genre: String!): Result!
-    editGenre(oldName: String! newName: String!): Result!
+    editGenre(oldName: String! newName: String invisible: Boolean): Result!
 }
 
 type Subscription {
@@ -93,7 +93,7 @@ type BookInfo {
     thumbnail: String
     count: Int!
     history: Boolean!
-    genres: [String!]!
+    genres: [Genre!]!
 
     books(order: BookOrder = Number_Asc): [Book!]!
 }
@@ -109,7 +109,7 @@ type Book {
 }
 
 type BookInfoList {
-    length: Int!
+    hasNext: Boolean!
     infos: [BookInfo!]!
 }
 
@@ -160,6 +160,12 @@ type CommonPluginQuery {
     name: String!
     args: [String!]!
     subscription: Boolean
+}
+
+type Genre {
+    id: Int!
+    name: String!
+    invisible: Boolean!
 }
 
 input InputBook {

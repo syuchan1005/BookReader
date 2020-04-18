@@ -1,6 +1,11 @@
 import GenreModel from '@server/sequelize/models/Genre';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
-import { QueryResolvers, MutationResolvers } from '@common/GQLTypes';
+import {
+  QueryResolvers,
+  MutationResolvers,
+  MutationEditGenreArgs,
+  ResolversTypes,
+} from '@common/GQLTypes';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import Database from '@server/sequelize/models';
 import { createError } from '@server/Errors';
@@ -10,7 +15,7 @@ class Genre extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Query(): QueryResolvers {
     return {
-      genres: () => GenreModel.findAll().then((genres) => genres.map((g) => g.name)),
+      genres: () => GenreModel.findAll() as unknown as ResolversTypes['Genre'][],
     };
   }
 
@@ -44,20 +49,39 @@ class Genre extends GQLMiddleware {
           success: true,
         };
       },
-      editGenre: async (parent, { oldName, newName }) => {
-        const isDefault = defaultGenres.includes(oldName);
+      editGenre: async (parent, argz) => {
+        const args: Partial<MutationEditGenreArgs> = Object.fromEntries(Object.entries(argz)
+          .filter((e) => e[1] !== undefined));
+        if (Object.keys(args).length <= 1) {
+          return createError('Unknown', 'must be args');
+        }
+        const isDefault = defaultGenres.includes(args.oldName);
+        if (isDefault && !args.newName) {
+          return createError('QL0010');
+        }
+
         const genreModel = await GenreModel.findOne({
-          where: { name: oldName },
+          where: { name: args.oldName },
         });
         if (!genreModel) return createError('QL0008');
-        let newGenreModel = await GenreModel.findOne({
-          where: { name: newName },
-        });
-        if (newGenreModel) return createError('QL0011');
+        if (!args.newName && genreModel.invisible === args.invisible) return createError('Unknown', 'must be change args');
+
+        let newGenreModel = (args.newName)
+          ? (
+            await GenreModel.findOne({
+              where: { name: args.newName },
+            }))
+          : undefined;
+        if (args.newName && newGenreModel) {
+          return createError('QL0011');
+        }
         try {
           if (isDefault) {
             await Database.sequelize.transaction(async (transaction) => {
-              newGenreModel = await GenreModel.create({ name: newName }, {
+              newGenreModel = await GenreModel.create({
+                name: args.newName,
+                invisible: args.invisible || false,
+              }, {
                 transaction,
               });
               await InfoGenreModel.update({ genreId: newGenreModel.id }, {
@@ -66,7 +90,10 @@ class Genre extends GQLMiddleware {
               });
             });
           } else {
-            await GenreModel.update({ name: newName }, {
+            await GenreModel.update({
+              name: args.newName || genreModel.name,
+              invisible: args.invisible ?? genreModel.invisible,
+            }, {
               where: { id: genreModel.id },
             });
           }

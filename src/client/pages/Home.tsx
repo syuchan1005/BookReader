@@ -113,8 +113,8 @@ const Home: React.FC = (props: HomeProps) => {
       limit: 10,
       search: debounceSearch || '',
       order: store.sortOrder,
-      history: store.genres.includes('History'),
-      genres: store.genres.filter((k) => (k !== 'History')),
+      history: { SHOW: true, HIDE: false, ALL: undefined }[store.history],
+      genres: store.genres,
     },
   });
 
@@ -191,7 +191,7 @@ const Home: React.FC = (props: HomeProps) => {
                   <CircularProgress color="secondary" />
                 </div>
               )}
-              {(!isLoadingMore && infos.length < data.bookInfos.length) && (
+              {(!isLoadingMore && data.bookInfos.hasNext) && (
                 <Waypoint onEnter={clickLoadMore} />
               )}
             </div>

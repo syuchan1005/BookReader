@@ -90,7 +90,7 @@ const GenresSelect: React.FC<GenresSelectProps> = (props: GenresSelectProps) => 
             </div>
           )}
         >
-          {[...(genreData?.genres ?? []), ...value]
+          {[...(genreData?.genres?.map((g) => g.name) ?? []), ...value]
             .filter((elem, index, self) => self.indexOf(elem) === index)
             .map((g) => (
               <MenuItem key={g} value={g}>

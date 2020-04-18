@@ -1,5 +1,5 @@
-mutation EditGenre($oldName: String!, $newName: String!) {
-    editGenre(oldName: $oldName, newName: $newName) {
+mutation EditGenre($oldName: String!, $newName: String, $invisible: Boolean) {
+    editGenre(oldName: $oldName, newName: $newName, invisible: $invisible) {
         code
         success
         message

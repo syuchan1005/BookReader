@@ -88,15 +88,13 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
   const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
   const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
 
-  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<
-    FolderSizesQuery,
-    FolderSizesQueryVariables
-    >(DebugFolderSizesQuery);
+  const [historyAnchorEl, setHistoryAnchorEl] = React.useState(null);
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<
-    DeleteUnusedFoldersMutation,
-    DeleteUnusedFoldersMutationVariables
-    >(DebugDeleteFolderMutation, {
+  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<FolderSizesQuery,
+    FolderSizesQueryVariables>(DebugFolderSizesQuery);
+
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<DeleteUnusedFoldersMutation,
+    DeleteUnusedFoldersMutationVariables>(DebugDeleteFolderMutation, {
       onCompleted() {
       // noinspection JSIgnoredPromiseFromCall
         refetch();
@@ -123,10 +121,8 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
 
   const {
     data: genreData,
-  } = useQuery<
-    GenresQueryData,
-    GenresQueryVariables
-  >(GenresQuery);
+  } = useQuery<GenresQueryData,
+    GenresQueryVariables>(GenresQuery);
 
   return (
     <>
@@ -160,7 +156,7 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
                 </div>
               )}
             >
-              {['NO_GENRE', 'History', ...(genreData ? genreData.genres : [])].map((name) => (
+              {(genreData?.genres?.map((g) => g.name) ?? []).map((name) => (
                 <MenuItem key={name} value={name}>
                   {name}
                 </MenuItem>
@@ -168,27 +164,38 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
             </Select>
           </FormControl>
         </MenuItem>
-        <MenuItem onClick={() => history.push('/setting')}>
-          <ListItemIcon><Icon>settings</Icon></ListItemIcon>
-          Settings
+        <MenuItem onClick={(e) => setHistoryAnchorEl(e.currentTarget)}>
+          History:
+          {' '}
+          {store.history}
         </MenuItem>
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
           {`Sort: ${store.sortOrder}`}
         </MenuItem>
         <MenuItem
-          onClick={(e) => { setColorType('primary'); setColorAnchorEl(e.currentTarget); }}
+          onClick={(e) => {
+            setColorType('primary');
+            setColorAnchorEl(e.currentTarget);
+          }}
         >
           <span>Primary:</span>
           <ColorTile marginLeft color={store.primary} />
         </MenuItem>
         <MenuItem
-          onClick={(e) => { setColorType('secondary'); setColorAnchorEl(e.currentTarget); }}
+          onClick={(e) => {
+            setColorType('secondary');
+            setColorAnchorEl(e.currentTarget);
+          }}
         >
           <span>Secondary:</span>
           <ColorTile marginLeft color={store.secondary} />
         </MenuItem>
         <MenuItem onClick={() => dispatch({ showBookInfoName: !store.showBookInfoName })}>
           <span>{`${store.showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
+        </MenuItem>
+        <MenuItem onClick={() => history.push('/setting')}>
+          <ListItemIcon><Icon>settings</Icon></ListItemIcon>
+          Settings
         </MenuItem>
         <MenuItem onClick={() => setDebugAnchorEl(!debugAnchorEl)}>
           Debug
@@ -299,6 +306,28 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
             <ColorTile color={c} />
           </MenuItem>
         ) : null))}
+      </Menu>
+      <Menu
+        anchorEl={historyAnchorEl}
+        anchorOrigin={{
+          horizontal: 'center',
+          vertical: 'bottom',
+        }}
+        open={!!historyAnchorEl}
+        onClose={() => {
+          setHistoryAnchorEl(null);
+        }}
+      >
+        {['SHOW', 'HIDE', 'ALL'].map((s: 'SHOW' | 'HIDE' | 'ALL') => (
+          <MenuItem
+            onClick={() => {
+              setHistoryAnchorEl(null);
+              dispatch({ history: s });
+            }}
+          >
+            {s}
+          </MenuItem>
+        ))}
       </Menu>
     </>
   );

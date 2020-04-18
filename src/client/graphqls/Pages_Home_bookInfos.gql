@@ -1,13 +1,17 @@
 query bookInfos($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean $genres: [String!]!){
-    bookInfos(limit: $limit offset: $offset search: $search order: $order history: $history genres: $genres) {
-        length
+    bookInfos(length: $limit offset: $offset search: $search order: $order history: $history genres: $genres) {
+        hasNext
         infos {
             id
             name
             count
             thumbnail
             history
-            genres
+            genres {
+                id
+                name
+                invisible
+            }
         }
     }
 }

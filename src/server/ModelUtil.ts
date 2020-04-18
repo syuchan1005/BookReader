@@ -1,4 +1,4 @@
-import { BookInfo, Book } from '@common/GQLTypes';
+import { BookInfo, Book, Genre } from '@common/GQLTypes';
 import BookInfoModel from './sequelize/models/BookInfo';
 import BookModel from './sequelize/models/Book';
 
@@ -10,7 +10,7 @@ const util = {
       thumbnail: model.thumbnail,
       count: model.count,
       history: model.history,
-      genres: model.genres ? model.genres.map((g) => g.name) : [],
+      genres: model.genres as unknown as Genre[] ?? [],
       books: convertBook && model.books
         ? model.books.map((b) => util.book(b, false, model.id))
         : [],
