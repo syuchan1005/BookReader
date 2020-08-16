@@ -240,7 +240,7 @@ const GQLUtil = {
     if (localPath) {
       archiveType = [...new Set(Object.values(archiveTypes))]
         .find((ext) => localPath.endsWith(`.${ext}`));
-      const downloadPath = path.normalize('download');
+      const downloadPath = path.normalize('downloads');
       const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
       if (path.relative(downloadPath, normalizeLocalPath).startsWith('../')) {
         return {

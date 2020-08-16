@@ -25,6 +25,7 @@ $ docker run \
   --name book_reader \
   -p 80 \
   -v {FOLDER_PATH}/storage:/bookReader/storage \
+  -v {FOLDER_PATH}/downloads:/bookReader/downloads \
   -v {FOLDER_PATH}/production.sqlite:/bookReader/production.sqlite \
   syuchan1005/book_reader
 ```
