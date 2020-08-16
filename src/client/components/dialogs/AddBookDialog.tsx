@@ -234,7 +234,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     AddBooksProgressSubscription,
     AddBooksProgressSubscriptionVariables
   >(AddBooksSubscription, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
     skip: !subscriptionId,
     variables: {
       id: subscriptionId,
@@ -288,10 +288,34 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       setSubscriptionId(infoId);
       if (addType === 'file_compressed') {
         // noinspection JSIgnoredPromiseFromCall
-        addCompressBook();
+        addCompressBook({
+          context: {
+            fetchOptions: {
+              useUpload: !!addBooks[0].file,
+              onProgress: (ev: ProgressEvent) => {
+                setAddBookProgress(ev);
+              },
+              onAbortPossible: (abortFunc) => {
+                setAddBookAbort(() => abortFunc());
+              },
+            },
+          },
+        });
       } else {
         // noinspection JSIgnoredPromiseFromCall
-        addBook();
+        addBook({
+          context: {
+            fetchOptions: {
+              useUpload: addBooks.filter((b) => b.file).length >= 1,
+              onProgress: (ev: ProgressEvent) => {
+                setAddBookProgress(ev);
+              },
+              onAbortPossible: (abortFunc) => {
+                setAddBookAbort(() => abortFunc());
+              },
+            },
+          },
+        });
       }
     } else {
       if (selectedPlugin.queries.add.subscription) {
