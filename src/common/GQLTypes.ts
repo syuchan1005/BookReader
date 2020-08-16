@@ -355,7 +355,8 @@ export type AddBooksProgressSubscription = (
 
 export type AddCompressBookMutationVariables = Exact<{
   id: Scalars['ID'];
-  file: Scalars['Upload'];
+  file?: Maybe<Scalars['Upload']>;
+  path?: Maybe<Scalars['String']>;
 }>;
 
 

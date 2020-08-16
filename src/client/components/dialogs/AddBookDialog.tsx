@@ -179,17 +179,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       setAddBookAbort(undefined);
       setSubscriptionId(undefined);
     },
-    context: {
-      fetchOptions: {
-        useUpload: true,
-        onProgress: (ev: ProgressEvent) => {
-          setAddBookProgress(ev);
-        },
-        onAbortPossible: (abortFunc) => {
-          setAddBookAbort(() => abortFunc());
-        },
-      },
-    },
   });
 
   const [addCompressBook, {
@@ -201,6 +190,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       variables: {
         id: infoId,
         file: (addBooks[0] || {}).file,
+        path: (addBooks[0] || {}).path,
       },
       onCompleted(d) {
         if (!d) return;
@@ -210,17 +200,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         setAddBookProgress(undefined);
         setAddBookAbort(undefined);
         setSubscriptionId(undefined);
-      },
-      context: {
-        fetchOptions: {
-          useUpload: true,
-          onProgress: (ev: ProgressEvent) => {
-            setAddBookProgress(ev);
-          },
-          onAbortPossible: (abortFunc) => {
-            setAddBookAbort(() => abortFunc());
-          },
-        },
       },
     },
   );
@@ -331,7 +310,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
         },
       });
     }
-  }, [editContent, selectedPlugin, infoId, addType]);
+  }, [editContent, selectedPlugin, infoId, addType, addBooks]);
 
   return (
     <Dialog open={open} onClose={closeDialog}>
