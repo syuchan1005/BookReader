@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 export type Maybe<T> = T | null;
+export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -17,7 +18,7 @@ export type Scalars = {
 
 
 export type Query = {
-   __typename?: 'Query';
+  __typename?: 'Query';
   bookInfos: BookInfoList;
   bookInfo?: Maybe<BookInfo>;
   books: Array<Book>;
@@ -56,12 +57,11 @@ export type QueryBookArgs = {
 };
 
 export type Mutation = {
-   __typename?: 'Mutation';
+  __typename?: 'Mutation';
   addBookInfo: ResultWithInfoId;
   editBookInfo: Result;
   deleteBookInfo: BookInfoResult;
   addBookInfoHistories: Result;
-  addBook: Result;
   addBooks: Array<Result>;
   addCompressBook: ResultWithBookResults;
   editBook: Result;
@@ -103,13 +103,6 @@ export type MutationAddBookInfoHistoriesArgs = {
 };
 
 
-export type MutationAddBookArgs = {
-  id: Scalars['ID'];
-  number: Scalars['String'];
-  file: Scalars['Upload'];
-};
-
-
 export type MutationAddBooksArgs = {
   id: Scalars['ID'];
   books: Array<InputBook>;
@@ -118,7 +111,8 @@ export type MutationAddBooksArgs = {
 
 export type MutationAddCompressBookArgs = {
   id: Scalars['ID'];
-  file: Scalars['Upload'];
+  file?: Maybe<Scalars['Upload']>;
+  path?: Maybe<Scalars['String']>;
 };
 
 
@@ -185,7 +179,7 @@ export type MutationEditGenreArgs = {
 };
 
 export type Subscription = {
-   __typename?: 'Subscription';
+  __typename?: 'Subscription';
   addBookInfo: Scalars['String'];
   addBooks: Scalars['String'];
 };
@@ -222,7 +216,7 @@ export enum SplitType {
 }
 
 export type BookInfo = {
-   __typename?: 'BookInfo';
+  __typename?: 'BookInfo';
   id: Scalars['ID'];
   name: Scalars['String'];
   thumbnail?: Maybe<Scalars['String']>;
@@ -238,7 +232,7 @@ export type BookInfoBooksArgs = {
 };
 
 export type Book = {
-   __typename?: 'Book';
+  __typename?: 'Book';
   id: Scalars['ID'];
   thumbnail?: Maybe<Scalars['String']>;
   number: Scalars['String'];
@@ -247,20 +241,20 @@ export type Book = {
 };
 
 export type BookInfoList = {
-   __typename?: 'BookInfoList';
+  __typename?: 'BookInfoList';
   hasNext: Scalars['Boolean'];
   infos: Array<BookInfo>;
 };
 
 export type Result = {
-   __typename?: 'Result';
+  __typename?: 'Result';
   success: Scalars['Boolean'];
   code?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
 };
 
 export type ResultWithInfoId = {
-   __typename?: 'ResultWithInfoId';
+  __typename?: 'ResultWithInfoId';
   success: Scalars['Boolean'];
   code?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
@@ -268,7 +262,7 @@ export type ResultWithInfoId = {
 };
 
 export type ResultWithBookResults = {
-   __typename?: 'ResultWithBookResults';
+  __typename?: 'ResultWithBookResults';
   success: Scalars['Boolean'];
   code?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
@@ -276,7 +270,7 @@ export type ResultWithBookResults = {
 };
 
 export type BookInfoResult = {
-   __typename?: 'BookInfoResult';
+  __typename?: 'BookInfoResult';
   success: Scalars['Boolean'];
   code?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
@@ -284,31 +278,31 @@ export type BookInfoResult = {
 };
 
 export type Plugin = {
-   __typename?: 'Plugin';
+  __typename?: 'Plugin';
   info: PluginInfo;
   queries: PluginQueries;
 };
 
 export type PluginInfo = {
-   __typename?: 'PluginInfo';
+  __typename?: 'PluginInfo';
   name: Scalars['String'];
   version: Scalars['String'];
 };
 
 export type PluginQueries = {
-   __typename?: 'PluginQueries';
+  __typename?: 'PluginQueries';
   add: CommonPluginQuery;
 };
 
 export type CommonPluginQuery = {
-   __typename?: 'CommonPluginQuery';
+  __typename?: 'CommonPluginQuery';
   name: Scalars['String'];
   args: Array<Scalars['String']>;
   subscription?: Maybe<Scalars['Boolean']>;
 };
 
 export type Genre = {
-   __typename?: 'Genre';
+  __typename?: 'Genre';
   id: Scalars['Int'];
   name: Scalars['String'];
   invisible: Scalars['Boolean'];
@@ -316,7 +310,8 @@ export type Genre = {
 
 export type InputBook = {
   number: Scalars['String'];
-  file: Scalars['Upload'];
+  file?: Maybe<Scalars['Upload']>;
+  path?: Maybe<Scalars['String']>;
 };
 
 export type BookInfoHistory = {
@@ -325,7 +320,7 @@ export type BookInfoHistory = {
 };
 
 export type Debug_FolderSizes = {
-   __typename?: 'Debug_FolderSizes';
+  __typename?: 'Debug_FolderSizes';
   tmp: Scalars['BigInt'];
   cache: Scalars['BigInt'];
   book: Scalars['BigInt'];
@@ -334,10 +329,10 @@ export type Debug_FolderSizes = {
   bookCount: Scalars['Int'];
 };
 
-export type AddBooksMutationVariables = {
+export type AddBooksMutationVariables = Exact<{
   id: Scalars['ID'];
   books: Array<InputBook>;
-};
+}>;
 
 
 export type AddBooksMutation = (
@@ -348,9 +343,9 @@ export type AddBooksMutation = (
   )> }
 );
 
-export type AddBooksProgressSubscriptionVariables = {
+export type AddBooksProgressSubscriptionVariables = Exact<{
   id: Scalars['ID'];
-};
+}>;
 
 
 export type AddBooksProgressSubscription = (
@@ -358,10 +353,10 @@ export type AddBooksProgressSubscription = (
   & Pick<Subscription, 'addBooks'>
 );
 
-export type AddCompressBookMutationVariables = {
+export type AddCompressBookMutationVariables = Exact<{
   id: Scalars['ID'];
   file: Scalars['Upload'];
-};
+}>;
 
 
 export type AddCompressBookMutation = (
@@ -372,7 +367,7 @@ export type AddCompressBookMutation = (
   ) }
 );
 
-export type PluginsQueryVariables = {};
+export type PluginsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type PluginsQuery = (
@@ -392,10 +387,10 @@ export type PluginsQuery = (
   )> }
 );
 
-export type AddBookInfoMutationVariables = {
+export type AddBookInfoMutationVariables = Exact<{
   name: Scalars['String'];
   genres: Array<Scalars['String']>;
-};
+}>;
 
 
 export type AddBookInfoMutation = (
@@ -406,9 +401,9 @@ export type AddBookInfoMutation = (
   ) }
 );
 
-export type AddBookInfoHistoriesMutationVariables = {
+export type AddBookInfoHistoriesMutationVariables = Exact<{
   histories: Array<BookInfoHistory>;
-};
+}>;
 
 
 export type AddBookInfoHistoriesMutation = (
@@ -419,7 +414,7 @@ export type AddBookInfoHistoriesMutation = (
   ) }
 );
 
-export type DeleteUnusedFoldersMutationVariables = {};
+export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type DeleteUnusedFoldersMutation = (
@@ -430,7 +425,7 @@ export type DeleteUnusedFoldersMutation = (
   ) }
 );
 
-export type FolderSizesQueryVariables = {};
+export type FolderSizesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type FolderSizesQuery = (
@@ -441,9 +436,9 @@ export type FolderSizesQuery = (
   ) }
 );
 
-export type DeleteBookInfoMutationVariables = {
+export type DeleteBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
-};
+}>;
 
 
 export type DeleteBookInfoMutation = (
@@ -458,12 +453,12 @@ export type DeleteBookInfoMutation = (
   ) }
 );
 
-export type EditBookInfoMutationVariables = {
+export type EditBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
   name?: Maybe<Scalars['String']>;
   thumbnail?: Maybe<Scalars['String']>;
   genres: Array<Scalars['String']>;
-};
+}>;
 
 
 export type EditBookInfoMutation = (
@@ -474,9 +469,9 @@ export type EditBookInfoMutation = (
   ) }
 );
 
-export type DeleteBookMutationVariables = {
+export type DeleteBookMutationVariables = Exact<{
   id: Scalars['ID'];
-};
+}>;
 
 
 export type DeleteBookMutation = (
@@ -487,11 +482,11 @@ export type DeleteBookMutation = (
   ) }
 );
 
-export type EditBookMutationVariables = {
+export type EditBookMutationVariables = Exact<{
   id: Scalars['ID'];
   number?: Maybe<Scalars['String']>;
   thumbnail?: Maybe<Scalars['String']>;
-};
+}>;
 
 
 export type EditBookMutation = (
@@ -502,9 +497,9 @@ export type EditBookMutation = (
   ) }
 );
 
-export type DownloadBookInfosQueryVariables = {
+export type DownloadBookInfosQueryVariables = Exact<{
   id: Scalars['ID'];
-};
+}>;
 
 
 export type DownloadBookInfosQuery = (
@@ -519,10 +514,10 @@ export type DownloadBookInfosQuery = (
   )> }
 );
 
-export type DeletePagesMutationVariables = {
+export type DeletePagesMutationVariables = Exact<{
   id: Scalars['ID'];
   pages: Scalars['IntRange'];
-};
+}>;
 
 
 export type DeletePagesMutation = (
@@ -533,11 +528,11 @@ export type DeletePagesMutation = (
   ) }
 );
 
-export type EditPageMutationVariables = {
+export type EditPageMutationVariables = Exact<{
   id: Scalars['ID'];
   page: Scalars['Int'];
   image: Scalars['Upload'];
-};
+}>;
 
 
 export type EditPageMutation = (
@@ -548,11 +543,11 @@ export type EditPageMutation = (
   ) }
 );
 
-export type PutPageMutationVariables = {
+export type PutPageMutationVariables = Exact<{
   id: Scalars['ID'];
   beforePage: Scalars['Int'];
   image: Scalars['Upload'];
-};
+}>;
 
 
 export type PutPageMutation = (
@@ -563,11 +558,11 @@ export type PutPageMutation = (
   ) }
 );
 
-export type SplitPagesMutationVariables = {
+export type SplitPagesMutationVariables = Exact<{
   id: Scalars['ID'];
   pages: Scalars['IntRange'];
   type?: Maybe<SplitType>;
-};
+}>;
 
 
 export type SplitPagesMutation = (
@@ -578,9 +573,9 @@ export type SplitPagesMutation = (
   ) }
 );
 
-export type BookQueryVariables = {
+export type BookQueryVariables = Exact<{
   id: Scalars['ID'];
-};
+}>;
 
 
 export type BookQuery = (
@@ -595,14 +590,14 @@ export type BookQuery = (
   )> }
 );
 
-export type BookInfosQueryVariables = {
+export type BookInfosQueryVariables = Exact<{
   limit: Scalars['Int'];
   offset: Scalars['Int'];
   search?: Maybe<Scalars['String']>;
   order?: Maybe<BookInfoOrder>;
   history?: Maybe<Scalars['Boolean']>;
   genres: Array<Scalars['String']>;
-};
+}>;
 
 
 export type BookInfosQuery = (
@@ -621,9 +616,9 @@ export type BookInfosQuery = (
   ) }
 );
 
-export type DeleteGenreMutationVariables = {
+export type DeleteGenreMutationVariables = Exact<{
   name: Scalars['String'];
-};
+}>;
 
 
 export type DeleteGenreMutation = (
@@ -634,11 +629,11 @@ export type DeleteGenreMutation = (
   ) }
 );
 
-export type EditGenreMutationVariables = {
+export type EditGenreMutationVariables = Exact<{
   oldName: Scalars['String'];
   newName?: Maybe<Scalars['String']>;
   invisible?: Maybe<Scalars['Boolean']>;
-};
+}>;
 
 
 export type EditGenreMutation = (
@@ -649,10 +644,10 @@ export type EditGenreMutation = (
   ) }
 );
 
-export type DeleteBooksMutationVariables = {
+export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
   ids: Array<Scalars['ID']>;
-};
+}>;
 
 
 export type DeleteBooksMutation = (
@@ -663,10 +658,10 @@ export type DeleteBooksMutation = (
   ) }
 );
 
-export type MoveBooksMutationVariables = {
+export type MoveBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
   ids: Array<Scalars['ID']>;
-};
+}>;
 
 
 export type MoveBooksMutation = (
@@ -677,10 +672,10 @@ export type MoveBooksMutation = (
   ) }
 );
 
-export type EditBookInfoThumbnailMutationVariables = {
+export type EditBookInfoThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
   th?: Maybe<Scalars['String']>;
-};
+}>;
 
 
 export type EditBookInfoThumbnailMutation = (
@@ -691,9 +686,9 @@ export type EditBookInfoThumbnailMutation = (
   ) }
 );
 
-export type BookPagesQueryVariables = {
+export type BookPagesQueryVariables = Exact<{
   id: Scalars['ID'];
-};
+}>;
 
 
 export type BookPagesQuery = (
@@ -704,10 +699,10 @@ export type BookPagesQuery = (
   )> }
 );
 
-export type EditBookThumbnailMutationVariables = {
+export type EditBookThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
   th?: Maybe<Scalars['String']>;
-};
+}>;
 
 
 export type EditBookThumbnailMutation = (
@@ -718,10 +713,10 @@ export type EditBookThumbnailMutation = (
   ) }
 );
 
-export type BookInfoQueryVariables = {
+export type BookInfoQueryVariables = Exact<{
   id: Scalars['ID'];
   order?: Maybe<BookOrder>;
-};
+}>;
 
 
 export type BookInfoQuery = (
@@ -740,7 +735,7 @@ export type BookInfoQuery = (
   )> }
 );
 
-export type GenresQueryVariables = {};
+export type GenresQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GenresQuery = (
@@ -756,11 +751,16 @@ export type GenresQuery = (
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
 
-export type StitchingResolver<TResult, TParent, TContext, TArgs> = {
+export type LegacyStitchingResolver<TResult, TParent, TContext, TArgs> = {
   fragment: string;
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
 };
 
+export type NewStitchingResolver<TResult, TParent, TContext, TArgs> = {
+  selectionSet: string;
+  resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
+};
+export type StitchingResolver<TResult, TParent, TContext, TArgs> = LegacyStitchingResolver<TResult, TParent, TContext, TArgs> | NewStitchingResolver<TResult, TParent, TContext, TArgs>;
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
   | ResolverFn<TResult, TParent, TContext, TArgs>
   | StitchingResolver<TResult, TParent, TContext, TArgs>;
@@ -810,7 +810,7 @@ export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
   info: GraphQLResolveInfo
 ) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
 
-export type isTypeOfResolverFn<T = {}> = (obj: T, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
+export type IsTypeOfResolverFn<T = {}> = (obj: T, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
 
 export type NextResolverFn<T> = () => Promise<T>;
 
@@ -824,239 +824,235 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  String: ResolverTypeWrapper<Scalars['String']>,
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
-  Upload: ResolverTypeWrapper<Scalars['Upload']>,
-  BigInt: ResolverTypeWrapper<Scalars['BigInt']>,
-  IntRange: ResolverTypeWrapper<Scalars['IntRange']>,
-  Query: ResolverTypeWrapper<{}>,
-  Int: ResolverTypeWrapper<Scalars['Int']>,
-  ID: ResolverTypeWrapper<Scalars['ID']>,
-  Mutation: ResolverTypeWrapper<{}>,
-  Subscription: ResolverTypeWrapper<{}>,
-  BookInfoOrder: BookInfoOrder,
-  BookOrder: BookOrder,
-  SplitType: SplitType,
-  BookInfo: ResolverTypeWrapper<BookInfo>,
-  Book: ResolverTypeWrapper<Book>,
-  BookInfoList: ResolverTypeWrapper<BookInfoList>,
-  Result: ResolverTypeWrapper<Result>,
-  ResultWithInfoId: ResolverTypeWrapper<ResultWithInfoId>,
-  ResultWithBookResults: ResolverTypeWrapper<ResultWithBookResults>,
-  BookInfoResult: ResolverTypeWrapper<BookInfoResult>,
-  Plugin: ResolverTypeWrapper<Plugin>,
-  PluginInfo: ResolverTypeWrapper<PluginInfo>,
-  PluginQueries: ResolverTypeWrapper<PluginQueries>,
-  CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>,
-  Genre: ResolverTypeWrapper<Genre>,
-  InputBook: InputBook,
-  BookInfoHistory: BookInfoHistory,
-  Debug_FolderSizes: ResolverTypeWrapper<Debug_FolderSizes>,
+  Upload: ResolverTypeWrapper<Scalars['Upload']>;
+  BigInt: ResolverTypeWrapper<Scalars['BigInt']>;
+  IntRange: ResolverTypeWrapper<Scalars['IntRange']>;
+  Query: ResolverTypeWrapper<{}>;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
+  String: ResolverTypeWrapper<Scalars['String']>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  ID: ResolverTypeWrapper<Scalars['ID']>;
+  Mutation: ResolverTypeWrapper<{}>;
+  Subscription: ResolverTypeWrapper<{}>;
+  BookInfoOrder: BookInfoOrder;
+  BookOrder: BookOrder;
+  SplitType: SplitType;
+  BookInfo: ResolverTypeWrapper<BookInfo>;
+  Book: ResolverTypeWrapper<Book>;
+  BookInfoList: ResolverTypeWrapper<BookInfoList>;
+  Result: ResolverTypeWrapper<Result>;
+  ResultWithInfoId: ResolverTypeWrapper<ResultWithInfoId>;
+  ResultWithBookResults: ResolverTypeWrapper<ResultWithBookResults>;
+  BookInfoResult: ResolverTypeWrapper<BookInfoResult>;
+  Plugin: ResolverTypeWrapper<Plugin>;
+  PluginInfo: ResolverTypeWrapper<PluginInfo>;
+  PluginQueries: ResolverTypeWrapper<PluginQueries>;
+  CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>;
+  Genre: ResolverTypeWrapper<Genre>;
+  InputBook: InputBook;
+  BookInfoHistory: BookInfoHistory;
+  Debug_FolderSizes: ResolverTypeWrapper<Debug_FolderSizes>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  String: Scalars['String'],
-  Boolean: Scalars['Boolean'],
-  Upload: Scalars['Upload'],
-  BigInt: Scalars['BigInt'],
-  IntRange: Scalars['IntRange'],
-  Query: {},
-  Int: Scalars['Int'],
-  ID: Scalars['ID'],
-  Mutation: {},
-  Subscription: {},
-  BookInfoOrder: BookInfoOrder,
-  BookOrder: BookOrder,
-  SplitType: SplitType,
-  BookInfo: BookInfo,
-  Book: Book,
-  BookInfoList: BookInfoList,
-  Result: Result,
-  ResultWithInfoId: ResultWithInfoId,
-  ResultWithBookResults: ResultWithBookResults,
-  BookInfoResult: BookInfoResult,
-  Plugin: Plugin,
-  PluginInfo: PluginInfo,
-  PluginQueries: PluginQueries,
-  CommonPluginQuery: CommonPluginQuery,
-  Genre: Genre,
-  InputBook: InputBook,
-  BookInfoHistory: BookInfoHistory,
-  Debug_FolderSizes: Debug_FolderSizes,
+  Upload: Scalars['Upload'];
+  BigInt: Scalars['BigInt'];
+  IntRange: Scalars['IntRange'];
+  Query: {};
+  Int: Scalars['Int'];
+  String: Scalars['String'];
+  Boolean: Scalars['Boolean'];
+  ID: Scalars['ID'];
+  Mutation: {};
+  Subscription: {};
+  BookInfo: BookInfo;
+  Book: Book;
+  BookInfoList: BookInfoList;
+  Result: Result;
+  ResultWithInfoId: ResultWithInfoId;
+  ResultWithBookResults: ResultWithBookResults;
+  BookInfoResult: BookInfoResult;
+  Plugin: Plugin;
+  PluginInfo: PluginInfo;
+  PluginQueries: PluginQueries;
+  CommonPluginQuery: CommonPluginQuery;
+  Genre: Genre;
+  InputBook: InputBook;
+  BookInfoHistory: BookInfoHistory;
+  Debug_FolderSizes: Debug_FolderSizes;
 };
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
-  name: 'Upload'
+  name: 'Upload';
 }
 
 export interface BigIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['BigInt'], any> {
-  name: 'BigInt'
+  name: 'BigInt';
 }
 
 export interface IntRangeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['IntRange'], any> {
-  name: 'IntRange'
+  name: 'IntRange';
 }
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  bookInfos?: Resolver<ResolversTypes['BookInfoList'], ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'length' | 'offset' | 'genres' | 'order'>>,
-  bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>,
-  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBooksArgs, 'offset' | 'limit' | 'order'>>,
-  book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>,
-  debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>,
-  plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>,
-  genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>,
+  bookInfos?: Resolver<ResolversTypes['BookInfoList'], ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'length' | 'offset' | 'genres' | 'order'>>;
+  bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
+  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBooksArgs, 'offset' | 'limit' | 'order'>>;
+  book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
+  debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>;
+  plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
+  genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  addBookInfo?: Resolver<ResolversTypes['ResultWithInfoId'], ParentType, ContextType, RequireFields<MutationAddBookInfoArgs, 'name'>>,
-  editBookInfo?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookInfoArgs, 'id'>>,
-  deleteBookInfo?: Resolver<ResolversTypes['BookInfoResult'], ParentType, ContextType, RequireFields<MutationDeleteBookInfoArgs, 'id'>>,
-  addBookInfoHistories?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationAddBookInfoHistoriesArgs, 'histories'>>,
-  addBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationAddBookArgs, 'id' | 'number' | 'file'>>,
-  addBooks?: Resolver<Array<ResolversTypes['Result']>, ParentType, ContextType, RequireFields<MutationAddBooksArgs, 'id' | 'books'>>,
-  addCompressBook?: Resolver<ResolversTypes['ResultWithBookResults'], ParentType, ContextType, RequireFields<MutationAddCompressBookArgs, 'id' | 'file'>>,
-  editBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookArgs, 'id'>>,
-  deleteBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBookArgs, 'id'>>,
-  deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBooksArgs, 'infoId' | 'ids'>>,
-  moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'infoId' | 'ids'>>,
-  deletePages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeletePagesArgs, 'id' | 'pages'>>,
-  splitPages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationSplitPagesArgs, 'id' | 'pages' | 'type'>>,
-  editPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditPageArgs, 'id' | 'page' | 'image'>>,
-  putPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationPutPageArgs, 'id' | 'beforePage' | 'image'>>,
-  debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>,
-  deleteGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteGenreArgs, 'genre'>>,
-  editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>,
+  addBookInfo?: Resolver<ResolversTypes['ResultWithInfoId'], ParentType, ContextType, RequireFields<MutationAddBookInfoArgs, 'name'>>;
+  editBookInfo?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookInfoArgs, 'id'>>;
+  deleteBookInfo?: Resolver<ResolversTypes['BookInfoResult'], ParentType, ContextType, RequireFields<MutationDeleteBookInfoArgs, 'id'>>;
+  addBookInfoHistories?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationAddBookInfoHistoriesArgs, 'histories'>>;
+  addBooks?: Resolver<Array<ResolversTypes['Result']>, ParentType, ContextType, RequireFields<MutationAddBooksArgs, 'id' | 'books'>>;
+  addCompressBook?: Resolver<ResolversTypes['ResultWithBookResults'], ParentType, ContextType, RequireFields<MutationAddCompressBookArgs, 'id'>>;
+  editBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookArgs, 'id'>>;
+  deleteBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBookArgs, 'id'>>;
+  deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBooksArgs, 'infoId' | 'ids'>>;
+  moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'infoId' | 'ids'>>;
+  deletePages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeletePagesArgs, 'id' | 'pages'>>;
+  splitPages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationSplitPagesArgs, 'id' | 'pages' | 'type'>>;
+  editPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditPageArgs, 'id' | 'page' | 'image'>>;
+  putPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationPutPageArgs, 'id' | 'beforePage' | 'image'>>;
+  debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
+  deleteGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteGenreArgs, 'genre'>>;
+  editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>;
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  addBookInfo?: SubscriptionResolver<ResolversTypes['String'], "addBookInfo", ParentType, ContextType, RequireFields<SubscriptionAddBookInfoArgs, 'name'>>,
-  addBooks?: SubscriptionResolver<ResolversTypes['String'], "addBooks", ParentType, ContextType, RequireFields<SubscriptionAddBooksArgs, 'id'>>,
+  addBookInfo?: SubscriptionResolver<ResolversTypes['String'], "addBookInfo", ParentType, ContextType, RequireFields<SubscriptionAddBookInfoArgs, 'name'>>;
+  addBooks?: SubscriptionResolver<ResolversTypes['String'], "addBooks", ParentType, ContextType, RequireFields<SubscriptionAddBooksArgs, 'id'>>;
 };
 
 export type BookInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfo'] = ResolversParentTypes['BookInfo']> = {
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
-  history?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>,
-  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<BookInfoBooksArgs, 'order'>>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  history?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
+  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<BookInfoBooksArgs, 'order'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type BookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Book'] = ResolversParentTypes['Book']> = {
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-  thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  number?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  pages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
-  info?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  number?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  info?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type BookInfoListResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoList'] = ResolversParentTypes['BookInfoList']> = {
-  hasNext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  infos?: Resolver<Array<ResolversTypes['BookInfo']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  hasNext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  infos?: Resolver<Array<ResolversTypes['BookInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type ResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['Result'] = ResolversParentTypes['Result']> = {
-  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type ResultWithInfoIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResultWithInfoId'] = ResolversParentTypes['ResultWithInfoId']> = {
-  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  infoId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  infoId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type ResultWithBookResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResultWithBookResults'] = ResolversParentTypes['ResultWithBookResults']> = {
-  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  bookResults?: Resolver<Maybe<Array<ResolversTypes['Result']>>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  bookResults?: Resolver<Maybe<Array<ResolversTypes['Result']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type BookInfoResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoResult'] = ResolversParentTypes['BookInfoResult']> = {
-  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type PluginResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plugin'] = ResolversParentTypes['Plugin']> = {
-  info?: Resolver<ResolversTypes['PluginInfo'], ParentType, ContextType>,
-  queries?: Resolver<ResolversTypes['PluginQueries'], ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  info?: Resolver<ResolversTypes['PluginInfo'], ParentType, ContextType>;
+  queries?: Resolver<ResolversTypes['PluginQueries'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type PluginInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PluginInfo'] = ResolversParentTypes['PluginInfo']> = {
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  version?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type PluginQueriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['PluginQueries'] = ResolversParentTypes['PluginQueries']> = {
-  add?: Resolver<ResolversTypes['CommonPluginQuery'], ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  add?: Resolver<ResolversTypes['CommonPluginQuery'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type CommonPluginQueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['CommonPluginQuery'] = ResolversParentTypes['CommonPluginQuery']> = {
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  args?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>,
-  subscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  args?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  subscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type GenreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Genre'] = ResolversParentTypes['Genre']> = {
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  invisible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  invisible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type Debug_FolderSizesResolvers<ContextType = any, ParentType extends ResolversParentTypes['Debug_FolderSizes'] = ResolversParentTypes['Debug_FolderSizes']> = {
-  tmp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>,
-  cache?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>,
-  book?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>,
-  unusedBook?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>,
-  bookInfoCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
-  bookCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+  tmp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  cache?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  book?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  unusedBook?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  bookInfoCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  bookCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType>;
 };
 
 export type Resolvers<ContextType = any> = {
-  Upload?: GraphQLScalarType,
-  BigInt?: GraphQLScalarType,
-  IntRange?: GraphQLScalarType,
-  Query?: QueryResolvers<ContextType>,
-  Mutation?: MutationResolvers<ContextType>,
-  Subscription?: SubscriptionResolvers<ContextType>,
-  BookInfo?: BookInfoResolvers<ContextType>,
-  Book?: BookResolvers<ContextType>,
-  BookInfoList?: BookInfoListResolvers<ContextType>,
-  Result?: ResultResolvers<ContextType>,
-  ResultWithInfoId?: ResultWithInfoIdResolvers<ContextType>,
-  ResultWithBookResults?: ResultWithBookResultsResolvers<ContextType>,
-  BookInfoResult?: BookInfoResultResolvers<ContextType>,
-  Plugin?: PluginResolvers<ContextType>,
-  PluginInfo?: PluginInfoResolvers<ContextType>,
-  PluginQueries?: PluginQueriesResolvers<ContextType>,
-  CommonPluginQuery?: CommonPluginQueryResolvers<ContextType>,
-  Genre?: GenreResolvers<ContextType>,
-  Debug_FolderSizes?: Debug_FolderSizesResolvers<ContextType>,
+  Upload?: GraphQLScalarType;
+  BigInt?: GraphQLScalarType;
+  IntRange?: GraphQLScalarType;
+  Query?: QueryResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
+  BookInfo?: BookInfoResolvers<ContextType>;
+  Book?: BookResolvers<ContextType>;
+  BookInfoList?: BookInfoListResolvers<ContextType>;
+  Result?: ResultResolvers<ContextType>;
+  ResultWithInfoId?: ResultWithInfoIdResolvers<ContextType>;
+  ResultWithBookResults?: ResultWithBookResultsResolvers<ContextType>;
+  BookInfoResult?: BookInfoResultResolvers<ContextType>;
+  Plugin?: PluginResolvers<ContextType>;
+  PluginInfo?: PluginInfoResolvers<ContextType>;
+  PluginQueries?: PluginQueriesResolvers<ContextType>;
+  CommonPluginQuery?: CommonPluginQueryResolvers<ContextType>;
+  Genre?: GenreResolvers<ContextType>;
+  Debug_FolderSizes?: Debug_FolderSizesResolvers<ContextType>;
 };
 
 
 /**
  * @deprecated
  * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
-*/
+ */
 export type IResolvers<ContextType = any> = Resolvers<ContextType>;

@@ -36,9 +36,8 @@ type Mutation {
     addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
 
     ## Book
-    addBook(id: ID!, number: String!, file: Upload!): Result!
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
-    addCompressBook(id: ID!, file: Upload!): ResultWithBookResults!
+    addCompressBook(id: ID!, file: Upload, path: String): ResultWithBookResults!
     editBook(id: ID!, number: String, thumbnail: String): Result!
     deleteBook(id: ID!): Result!
     deleteBooks(infoId: ID!, ids: [ID!]!): Result!
@@ -170,7 +169,8 @@ type Genre {
 
 input InputBook {
     number: String!
-    file: Upload!
+    file: Upload
+    path: String
 }
 
 input BookInfoHistory {

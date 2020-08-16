@@ -1,7 +1,6 @@
-import { promises as fs } from 'fs';
+import { promises as fs, createReadStream as fsCreateReadStream } from 'fs';
 import os from 'os';
 import path from 'path';
-import { Readable } from 'stream';
 
 import unzipper from 'unzipper';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +10,11 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
-import { BookInfoOrder, MutationAddBookArgs, Result } from '@common/GQLTypes';
+import {
+  BookInfoOrder, InputBook,
+  MutationAddBooksArgs,
+  Result, Scalars,
+} from '@common/GQLTypes';
 import { archiveTypes } from '@common/Common';
 
 import { SubscriptionKeys } from '@server/graphql';
@@ -28,12 +31,27 @@ import { OrderItem } from 'sequelize';
 
 const GQLUtil = {
   Mutation: {
-    addBook: async (gm: SubClass, pubsub: PubSubEngine, parent, {
+    addBooks: async (gm: SubClass, pubsub: PubSubEngine, parent, {
       id: infoId,
-      number,
-      file,
-      // thumbnail,
-    }: MutationAddBookArgs, context, info, customData): Promise<Result> => {
+      books,
+    }: MutationAddBooksArgs, context, info, customData): Promise<Result[]> => asyncMap(books,
+      (book) => GQLUtil.Mutation.addBook(
+        gm, pubsub, infoId, book, context, info,
+        customData || {
+          pubsub: {
+            key: SubscriptionKeys.ADD_BOOKS,
+            fieldName: 'addBooks',
+            id: infoId,
+          },
+        },
+      )),
+    addBook: async (
+      gm: SubClass,
+      pubsub: PubSubEngine,
+      infoId: string,
+      book: InputBook,
+      context, info, customData,
+    ): Promise<Result> => {
       const bookId = uuidv4();
       if (!await BookInfoModel.hasId(infoId)) {
         return {
@@ -42,24 +60,9 @@ const GQLUtil = {
           message: Errors.QL0001,
         };
       }
-      /*
-      const argThumbnail;
-      if (thumbnail) {
-        const { stream, mimetype } = await thumbnail;
-        if (!mimetype.startsWith('image/jpeg')) {
-          return {
-            success: false,
-            code: 'QL0000',
-            message: Errors.QL0000,
-          };
-        }
-        await fs.writeFile(`storage/book/${bookId}/thumbnail.jpg`, stream);
-        argThumbnail = `/book/${bookId}/thumbnail.jpg`;
-      }
-      */
 
-      const type = await GQLUtil.checkArchiveType(file);
-      if (type.success === false) {
+      const type = await GQLUtil.checkArchiveType(book.file, book.path);
+      if (type.success !== true) {
         return type;
       }
       const { createReadStream, archiveType } = type;
@@ -67,7 +70,7 @@ const GQLUtil = {
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
-          [customData.pubsub.fieldName]: `Extract Book (${number}) ...`,
+          [customData.pubsub.fieldName]: `Extract Book (${book.number}) ...`,
         });
       }
       // extract
@@ -76,7 +79,7 @@ const GQLUtil = {
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
-          [customData.pubsub.fieldName]: `Move Book (${number}) ...`,
+          [customData.pubsub.fieldName]: `Move Book (${book.number}) ...`,
         });
       }
       return GQLUtil.addBookFromLocalPath(
@@ -84,30 +87,12 @@ const GQLUtil = {
         tempPath,
         infoId,
         bookId,
-        number,
-        undefined,
-        // argThumbnail,
+        book.number,
         (resolve) => {
           rimraf(tempPath, () => resolve());
         },
       );
     },
-    addBooks: async (gm: SubClass, pubsub: PubSubEngine, parent, {
-      id: infoId,
-      books,
-    }, context, info, customData): Promise<Result[]> => asyncMap(books,
-      ({ number, file }) => GQLUtil.Mutation.addBook(gm, pubsub, parent, {
-        id: infoId,
-        number,
-        file,
-        // thumbnail: null,
-      }, context, info, customData || {
-        pubsub: {
-          key: SubscriptionKeys.ADD_BOOKS,
-          fieldName: 'addBooks',
-          id: infoId,
-        },
-      })),
   },
   async addBookFromLocalPath(
     gm: SubClass,
@@ -115,7 +100,6 @@ const GQLUtil = {
     infoId: string,
     bookId: string,
     number: string,
-    argThumbnail?: string,
     deleteTempFolder?: (resolve, reject) => void,
   ): Promise<Result> {
     let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
@@ -151,7 +135,8 @@ const GQLUtil = {
       }
     }).catch((reason) => new Promise((resolve, reject) => {
       if (deleteTempFolder) {
-        deleteTempFolder(resolve, () => {});
+        deleteTempFolder(resolve, () => {
+        });
       }
       reject(reason);
     }));
@@ -161,7 +146,7 @@ const GQLUtil = {
     await Database.sequelize.transaction(async (transaction) => {
       await BookModel.create({
         id: bookId,
-        thumbnail: argThumbnail || bThumbnail,
+        thumbnail: bThumbnail,
         number,
         pages: files.length,
         infoId,
@@ -188,7 +173,7 @@ const GQLUtil = {
         transaction,
       });
       await BookInfoModel.update({
-        thumbnail: argThumbnail || bThumbnail,
+        thumbnail: bThumbnail,
       }, {
         where: {
           id: infoId,
@@ -201,7 +186,11 @@ const GQLUtil = {
       success: true,
     };
   },
-  async extractCompressFile(tempPath, archiveType: string, createReadStream: () => Readable) {
+  async extractCompressFile(
+    tempPath: string,
+    archiveType: typeof archiveTypes[keyof typeof archiveTypes],
+    createReadStream: () => NodeJS.ReadableStream,
+  ) {
     if (archiveType === 'zip') {
       await new Promise((resolve) => {
         createReadStream()
@@ -233,14 +222,45 @@ const GQLUtil = {
       });
     }
   },
-  async checkArchiveType(file) {
-    const awaitFile = await file;
-    const { mimetype, filename } = awaitFile;
-    let archiveType = archiveTypes[mimetype];
-    if (!archiveType) {
-      archiveType = [...new Set(Object.values(archiveTypes))]
-        .find((ext) => filename.endsWith(`.${ext}`));
+  async checkArchiveType(file?: Scalars['Upload'], localPath?: string): Promise<({ success: false } & Result) | {
+    success: true,
+    archiveType: typeof archiveTypes[keyof typeof archiveTypes],
+    createReadStream: () => NodeJS.ReadableStream,
+  }> {
+    if (!file && !path) {
+      return {
+        success: false,
+        code: 'QL0012',
+        message: Errors.QL0012,
+      };
     }
+
+    let archiveType: typeof archiveTypes[keyof typeof archiveTypes] | undefined;
+    let createReadStream: () => NodeJS.ReadableStream;
+    if (localPath) {
+      archiveType = [...new Set(Object.values(archiveTypes))]
+        .find((ext) => localPath.endsWith(`.${ext}`));
+      const downloadPath = path.normalize('download');
+      const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
+      if (path.relative(downloadPath, normalizeLocalPath).startsWith('../')) {
+        return {
+          success: false,
+          code: 'QL0012',
+          message: Errors.QL0012,
+        };
+      }
+      createReadStream = () => fsCreateReadStream(normalizeLocalPath);
+    } else if (file) {
+      const awaitFile = await file;
+      const { mimetype, filename } = awaitFile;
+      archiveType = archiveTypes[mimetype];
+      if (!archiveType) {
+        archiveType = [...new Set(Object.values(archiveTypes))]
+          .find((ext) => filename.endsWith(`.${ext}`));
+      }
+      createReadStream = awaitFile.createReadStream;
+    }
+
     if (!archiveType) {
       return {
         success: false,
@@ -249,7 +269,8 @@ const GQLUtil = {
       };
     }
     return {
-      ...awaitFile,
+      success: true,
+      createReadStream,
       archiveType,
     };
   },
@@ -281,7 +302,7 @@ const GQLUtil = {
                 return min - 1;
               });
               if (nestNumbers.filter((n) => !folderNumbers.includes(n)).length === 0
-              && folderNumbers.filter((n) => !nestNumbers.includes(n)).length === 0) {
+                && folderNumbers.filter((n) => !nestNumbers.includes(n)).length === 0) {
                 bookFolders.push(...nestFolders.map((f) => path.join(d.name, f.name)));
                 return;
               }

@@ -1,7 +1,10 @@
 // @ts-ignore
 import { promises as fs, createReadStream, createWriteStream } from 'fs';
 
-export const asyncForEach = async (arr, callback) => {
+export const asyncForEach = async <T> (
+  arr: Array<T>,
+  callback: (item: T, index: number, arr: Array<T>,
+) => void) => {
   for (let i = 0; i < arr.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     await callback(arr[i], i, arr);

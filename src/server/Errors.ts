@@ -11,6 +11,7 @@ const Errors = {
   QL0009: 'can not delete default genre',
   QL0010: 'can not edit default genre',
   QL0011: 'genre name must be unique',
+  QL0012: 'Invalid arguments',
 
   Unknown: 'Unknown',
 };

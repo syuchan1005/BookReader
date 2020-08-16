@@ -15,6 +15,8 @@ import { mkdirpIfNotExists } from './Util';
   const app = new Koa();
   const graphql = new GraphQL(gm);
 
+  await mkdirpIfNotExists('download');
+
   app.use(Serve('storage/'));
 
   app.use(Serve('storage/cache/'));

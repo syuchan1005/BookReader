@@ -367,13 +367,22 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
                   {(addType === 'file_compressed'
                     ? [addBooks[0]].filter((a) => a)
                     : addBooks
-                  ).map(({ file, number }, i) => (
-                    <div key={`${file.name}`} className={classes.listItem}>
-                      <FileField
-                        file={file}
-                        onChange={(f) => changeAddBook(i, { file: f })}
-                        style={addType === 'file_compressed' ? { gridColumn: '1 / span 2' } : undefined}
-                      />
+                  ).map(({ number, file, path }, i) => (
+                    <div key={`${path !== undefined ? i : file.name}`} className={classes.listItem}>
+                      {path !== undefined ? (
+                        <TextField
+                          color="secondary"
+                          label="FilePath"
+                          value={path}
+                          onChange={(e) => changeAddBook(i, { path: e.target.value })}
+                        />
+                      ) : (
+                        <FileField
+                          file={file}
+                          onChange={(f) => changeAddBook(i, { file: f })}
+                          style={addType === 'file_compressed' ? { gridColumn: '1 / span 2' } : undefined}
+                        />
+                      )}
                       {(addType !== 'file_compressed') && (
                         <TextField
                           color="secondary"
@@ -408,7 +417,15 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
                   </ButtonGroup>
                 )}
                 {((addType === 'file_compressed' && addBooks.length === 0) || addType !== 'file_compressed') && (
-                  <DropZone onChange={dropFiles} />
+                  <>
+                    <DropZone onChange={dropFiles} />
+                    <Button
+                      startIcon={<Icon>add</Icon>}
+                      onClick={() => setAddBooks([...addBooks, { number: '', path: '', file: undefined }])}
+                    >
+                      Add local
+                    </Button>
+                  </>
                 )}
               </>
             ) : (

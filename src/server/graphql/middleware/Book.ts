@@ -7,7 +7,7 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
-  BookOrder, MutationResolvers, QueryResolvers, SubscriptionResolvers,
+  BookOrder, MutationResolvers, QueryResolvers, ResultWithBookResults, SubscriptionResolvers,
 } from '@common/GQLTypes';
 
 import BookModel from '@server/sequelize/models/Book';
@@ -71,12 +71,6 @@ class Book extends GQLMiddleware {
   Mutation(): MutationResolvers {
     // noinspection JSUnusedGlobalSymbols
     return {
-      addBook: async (
-        parent, args, context, info,
-      ) => GQLUtil.Mutation.addBook(
-        this.gm, this.pubsub,
-        parent, args, context, info, undefined,
-      ),
       addBooks: async (
         parent, args, context, info,
       ) => GQLUtil.Mutation.addBooks(
@@ -86,11 +80,12 @@ class Book extends GQLMiddleware {
       addCompressBook: async (parent, {
         id: infoId,
         file: compressBooks,
+        path: localPath,
       }) => {
         const tempPath = `${os.tmpdir()}/bookReader/${infoId}`;
-        const type = await GQLUtil.checkArchiveType(compressBooks);
+        const type = await GQLUtil.checkArchiveType(compressBooks, localPath);
         if (type.success === false) {
-          return type;
+          return type as unknown as ResultWithBookResults;
         }
         const { createReadStream, archiveType } = type;
 
@@ -135,7 +130,6 @@ class Book extends GQLMiddleware {
             infoId,
             uuidv4(),
             nums,
-            undefined,
             (resolve) => {
               rimraf(folderPath, () => resolve());
             },
