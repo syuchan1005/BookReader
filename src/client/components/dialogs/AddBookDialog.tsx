@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {
   Button, ButtonGroup,
   CircularProgress,
@@ -153,6 +153,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       }
     `),
     {
+      fetchPolicy: 'no-cache',
       onCompleted(d) {
         if (!d) return;
         mutateCloseDialog(d.plugin.success);
@@ -164,6 +165,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     AddBooksMutationType,
     AddBooksMutationVariables
   >(AddBooksMutation, {
+    fetchPolicy: 'no-cache',
     variables: {
       id: infoId,
       books: addBooks,
@@ -184,7 +186,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
           setAddBookProgress(ev);
         },
         onAbortPossible: (abortFunc) => {
-          setAddBookAbort(() => abortFunc);
+          setAddBookAbort(() => abortFunc());
         },
       },
     },
@@ -195,6 +197,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   }] = useMutation<AddCompressBookMutationType, AddCompressBookMutationVariables>(
     AddCompressBookMutation,
     {
+      fetchPolicy: 'no-cache',
       variables: {
         id: infoId,
         file: (addBooks[0] || {}).file,
@@ -215,7 +218,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
             setAddBookProgress(ev);
           },
           onAbortPossible: (abortFunc) => {
-            setAddBookAbort(() => abortFunc);
+            setAddBookAbort(() => abortFunc());
           },
         },
       },
@@ -231,6 +234,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     AddBooksProgressSubscription,
     AddBooksProgressSubscriptionVariables
   >(AddBooksSubscription, {
+    fetchPolicy: 'network-only',
     skip: !subscriptionId,
     variables: {
       id: subscriptionId,

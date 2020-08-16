@@ -320,6 +320,7 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
       >
         {['SHOW', 'HIDE', 'ALL'].map((s: 'SHOW' | 'HIDE' | 'ALL') => (
           <MenuItem
+            key={s}
             onClick={() => {
               setHistoryAnchorEl(null);
               dispatch({ history: s });

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import * as colors from '@material-ui/core/colors';
 import { useTheme } from '@material-ui/core';
 import useTestId from '../hooks/useTestId';

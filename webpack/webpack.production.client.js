@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const { resolve } = require('path');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -24,8 +24,6 @@ module.exports = merge(commonConfig, {
     minimizer: [
       new TerserPlugin({
         test: /\.m?js(\?.*)?$/i,
-        chunkFilter: () => true,
-        warningsFilter: () => true,
         extractComments: false,
         sourceMap: true,
         cache: true,

@@ -27,17 +27,18 @@ module.exports = {
   ignorePatterns: ['src/common/GQLTypes.ts', '**/*.puml'],
   rules: {
     'no-unused-vars': 'off',
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'react/jsx-no-target-blank': 'error',
-    'react/jsx-filename-extension': [1, { "extensions": [".tsx", ".jsx"] }],
+    'react/jsx-filename-extension': [1, { extensions: ['.tsx', '.jsx'] }],
     'react/jsx-props-no-spreading': 0,
-    "import/extensions": ["error", "ignorePackages", {
-      "ts": "never",
-      "tsx": "never",
-      "js": "never",
-      "jsx": "never",
-      "mjs": "never"
-    }]
+    'react/require-default-props': 0,
+    'import/extensions': ['error', 'ignorePackages', {
+      ts: 'never',
+      tsx: 'never',
+      js: 'never',
+      jsx: 'never',
+      mjs: 'never',
+    }],
   },
   settings: {
     'import/resolver': {

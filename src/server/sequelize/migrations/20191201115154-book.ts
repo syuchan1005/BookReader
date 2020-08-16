@@ -21,12 +21,14 @@ module.exports = {
     // noinspection SqlResolve
     await queryInterface.sequelize.query('INSERT INTO new_books SELECT * FROM books;', { transaction });
     await queryInterface.dropTable('books', { transaction });
-    await queryInterface.addConstraint('new_books', ['number', 'infoId'], {
+    await queryInterface.addConstraint('new_books', {
+      fields: ['number', 'infoId'],
       type: 'unique',
       name: 'unique_number_infoId',
       transaction,
     });
-    await queryInterface.addConstraint('new_books', ['infoId'], {
+    await queryInterface.addConstraint('new_books', {
+      fields: ['infoId'],
       type: 'foreign key',
       name: 'fk_infoId',
       references: {

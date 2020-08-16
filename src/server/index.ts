@@ -11,7 +11,6 @@ import GraphQL from './graphql/index';
 import Database from './sequelize/models';
 import { mkdirpIfNotExists } from './Util';
 
-
 (async () => {
   const app = new Koa();
   const graphql = new GraphQL(gm);
@@ -50,7 +49,7 @@ import { mkdirpIfNotExists } from './Util';
         }
 
         try {
-          const b = await new Promise((resolve, reject) => {
+          const b: Buffer = await new Promise((resolve, reject) => {
             gm(path.resolve(origImgPath))
               .resize(sizes.width, sizes.height)
               .quality(70)
@@ -144,7 +143,7 @@ import { mkdirpIfNotExists } from './Util';
     app.use(Serve('dist/client'));
   }
 
-  await Database.sequelize.sync();
+  await Database.sync();
 
   await graphql.middleware(app);
 

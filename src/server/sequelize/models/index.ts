@@ -38,13 +38,9 @@ modelList.forEach((module) => {
   if (module.associate) module.associate();
 });
 
-modelList.forEach((module) => {
-  // @ts-ignore
-  if (module.seed) module.seed();
-});
-
 export interface Database {
   sequelize: Sequelize;
+  sync: () => Promise<unknown>,
   book: Model;
   bookInfo: Model;
   BookModel: typeof Book;
@@ -53,6 +49,19 @@ export interface Database {
 
 const db: Database = {
   sequelize,
+  sync: async () => {
+    await modelList.reduce(
+      (promise, model) => promise.then(() => model.sync()),
+      Promise.resolve(),
+    );
+    await sequelize.sync();
+
+    await modelList.reduce(
+      // @ts-ignore
+      (promise, model) => promise.then(() => (model.seed ? model.seed() : Promise.resolve())),
+      Promise.resolve(),
+    );
+  },
   book: models.book,
   bookInfo: models.bookInfo,
   BookModel: Book,

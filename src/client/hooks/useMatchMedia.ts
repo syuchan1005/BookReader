@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 const useMatchMedia = (queries, values, defaultValue) => {
   const mediaQueryLists = queries.map((q) => window.matchMedia(q));

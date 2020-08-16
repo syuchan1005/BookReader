@@ -1,6 +1,6 @@
 // MEMO: https://medium.com/strands-tech-corner/react-state-management-without-redux-d39c7087039d
 
-import * as React from 'react';
+import React from 'react';
 
 import rootReducer, { createInitialState, IState } from '@client/store/reducers';
 

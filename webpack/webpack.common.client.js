@@ -96,18 +96,20 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: resolve('public/index.html'),
     }),
-    new CopyWebpackPlugin(
-      [
+    new CopyWebpackPlugin({
+      patterns: [
         {
           from: resolve('public'),
           to: resolve('dist/client'),
-          ignore: [
-            'index.html',
-            '.DS_Store',
-          ],
+          globOptions: {
+            ignore: [
+              'index.html',
+              '.DS_Store',
+            ],
+          },
         },
       ],
-    ),
+    }),
     new WorkboxWebpackPlugin.InjectManifest({
       swSrc: './service-worker.ts',
       swDest: 'service-worker.js',

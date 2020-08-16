@@ -23,7 +23,8 @@ module.exports = {
     await queryInterface.dropTable('bookInfos', { transaction });
     await queryInterface.renameTable('new_bookInfos', 'bookInfos', { transaction });
 
-    await queryInterface.addConstraint('bookInfos', ['name'], {
+    await queryInterface.addConstraint('bookInfos', {
+      fields: ['name'],
       type: 'unique',
       name: 'unique_name',
       transaction,
@@ -31,7 +32,8 @@ module.exports = {
 
     await queryInterface.renameTable('new_infoGenres', 'infoGenres', { transaction });
 
-    await queryInterface.addConstraint('infoGenres', ['infoId'], {
+    await queryInterface.addConstraint('infoGenres', {
+      fields: ['infoId'],
       type: 'foreign key',
       name: 'fk_infoId',
       references: {
@@ -42,7 +44,8 @@ module.exports = {
       onDelete: 'no action',
       transaction,
     });
-    await queryInterface.addConstraint('infoGenres', ['genreId'], {
+    await queryInterface.addConstraint('infoGenres', {
+      fields: ['genreId'],
       type: 'foreign key',
       name: 'fk_genreId',
       references: {
@@ -53,7 +56,8 @@ module.exports = {
       onDelete: 'no action',
       transaction,
     });
-    await queryInterface.addConstraint('infoGenres', ['infoId', 'genreId'], {
+    await queryInterface.addConstraint('infoGenres', {
+      fields: ['infoId', 'genreId'],
       type: 'unique',
       name: 'unique_infoId_genreId',
       transaction,

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {
   Button,
   CircularProgress,
@@ -26,7 +26,6 @@ import {
 import AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
 import AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
 import GenresSelect from '../GenresSelect';
-
 
 interface AddBookInfoDialogProps {
   open: boolean;

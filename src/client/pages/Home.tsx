@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {
   CircularProgress,
   createStyles,
@@ -29,7 +29,6 @@ import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
 import db from '../Database';
-
 
 interface HomeProps {
   children?: React.ReactElement;

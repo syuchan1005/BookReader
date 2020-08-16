@@ -39,7 +39,8 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
     }, { transaction });
-    await queryInterface.addConstraint('infoGenres', ['genreId'], {
+    await queryInterface.addConstraint('infoGenres', {
+      fields: ['genreId'],
       type: 'foreign key',
       name: 'fk_genreId',
       references: {
@@ -50,7 +51,8 @@ module.exports = {
       onDelete: 'no action',
       transaction,
     });
-    await queryInterface.addConstraint('infoGenres', ['infoId', 'genreId'], {
+    await queryInterface.addConstraint('infoGenres', {
+      fields: ['infoId', 'genreId'],
       type: 'unique',
       name: 'unique_infoId_genreId',
       transaction,
@@ -60,14 +62,15 @@ module.exports = {
       { name: 'Finished' },
     ], { transaction }).catch(() => { /* ignore */ });
 
-    const genres = (await queryInterface.rawSelect('genres', {
+    // @ts-ignore
+    const genres: { [key:string]: number } = (await queryInterface.rawSelect('genres', {
       raw: false,
       plain: false,
       transaction,
       // @ts-ignore
-    }, '')).reduce((o: object, v: { id: string, name: string }) => {
+    }, '')).reduce<{ [key:string]: number }>((o, v: { id: string, name: string }) => {
       // eslint-disable-next-line no-param-reassign
-      o[v.name] = v.id;
+      o[v.name] = Number(v.id);
       return o;
     }, {});
     const finishedInfos = (await queryInterface.rawSelect('bookInfos', {
@@ -108,7 +111,8 @@ module.exports = {
     await queryInterface.renameTable('new_books', 'books', { transaction });
     await queryInterface.removeColumn('bookInfos', 'finished', { transaction });
     await queryInterface.removeColumn('bookInfos', 'invisible', { transaction });
-    await queryInterface.addConstraint('infoGenres', ['infoId'], {
+    await queryInterface.addConstraint('infoGenres', {
+      fields: ['infoId'],
       type: 'foreign key',
       name: 'fk_infoId',
       references: {
@@ -138,14 +142,15 @@ module.exports = {
       // @ts-ignore
       after: 'finished',
     }, { transaction });
-    const genres = (await queryInterface.rawSelect('genres', {
+    // @ts-ignore
+    const genres: { [key:string]: number } = (await queryInterface.rawSelect('genres', {
       raw: false,
       plain: false,
       transaction,
-    // @ts-ignore
-    }, '')).reduce((o, v: { id: string, name: string }) => {
+      // @ts-ignore
+    }, '')).reduce<{ [key:string]: number }>((o, v: { id: string, name: string }) => {
       // eslint-disable-next-line no-param-reassign
-      o[v.name] = v.id;
+      o[v.name] = Number(v.id);
       return o;
     }, {});
     const finishedInfoIds = (await queryInterface.rawSelect('infoGenres', {

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 const useNetworkType = () => {
   const [type, setType] = React.useState<'ethernet' | 'cellular' | 'unknown'>('unknown');
