@@ -106,7 +106,7 @@ const Home: React.FC = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useQuery<BookInfosQueryType, Partial<BookInfosQueryVariables>>(BookInfosQuery, {
+  } = useQuery<BookInfosQueryType, BookInfosQueryVariables>(BookInfosQuery, {
     variables: {
       offset: 0,
       limit: 10,

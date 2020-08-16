@@ -65,15 +65,12 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useMutation<
-    EditBookInfoThumbnailMutationType,
-    Partial<EditBookInfoThumbnailMutationVariables>
-  >(
+  const [
+    changeThumbnail,
+    { loading: changeLoading },
+  ] = useMutation<EditBookInfoThumbnailMutationType, EditBookInfoThumbnailMutationVariables>(
     EditBookInfoMutation,
     {
-      variables: {
-        id: infoId,
-      },
       onCompleted(d) {
         if (!d) return;
         if (d.edit.success && onClose) onClose();
@@ -114,7 +111,14 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                 simple
                 name={data.bookInfo.name}
                 {...book}
-                onClick={() => { changeThumbnail({ variables: { th: book.thumbnail } }); }}
+                onClick={() => {
+                  changeThumbnail({
+                    variables: {
+                      th: book.thumbnail,
+                      id: infoId,
+                    },
+                  });
+                }}
                 thumbnailNoSave
                 thumbnailSize={125}
               />

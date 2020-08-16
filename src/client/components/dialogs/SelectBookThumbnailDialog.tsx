@@ -73,13 +73,10 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
 
   const [changeThumbnail, { loading: changeLoading }] = useMutation<
     EditBookThumbnailMutationType,
-    Partial<EditBookThumbnailMutationVariables>
+    EditBookThumbnailMutationVariables
   >(
     EditBookMutation,
     {
-      variables: {
-        id: bookId,
-      },
       onCompleted(d) {
         if (!d) return;
         if (d.edit.success && onClose) onClose();
@@ -120,6 +117,7 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                   <CardActionArea
                     onClick={() => changeThumbnail({
                       variables: {
+                        id: bookId,
                         th: `/book/${bookId}/${n}.jpg`,
                       },
                     })}
