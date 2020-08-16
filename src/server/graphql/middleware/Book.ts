@@ -110,6 +110,7 @@ class Book extends GQLMiddleware {
           addBooks: 'Move Book...',
         });
 
+        const addedNums = [];
         const results = await asyncMap(bookFolders, async (p, i) => {
           const folderPath = path.join(tempPath, booksFolderPath, p);
           let nums = p.match(/\d+/g);
@@ -124,6 +125,10 @@ class Book extends GQLMiddleware {
             addBooks: `Move Book (${nums}) ...`,
           });
 
+          if (addedNums.includes(nums)) {
+            nums = `[DUP]${nums}: ${p}`;
+          }
+          addedNums.push(nums);
           return GQLUtil.addBookFromLocalPath(
             this.gm,
             folderPath,
