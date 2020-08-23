@@ -1,6 +1,4 @@
-import 'swiper/swiper-bundle.min.css';
-
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   createStyles,
   makeStyles,
@@ -15,10 +13,12 @@ import {
   Icon,
   IconButton,
 } from '@material-ui/core';
-import { CSSProperties } from '@material-ui/styles/withStyles/withStyles';
-import { Swiper } from 'swiper';
-import SwiperCustom from 'react-id-swiper/lib/ReactIdSwiper.custom';
-import { SwiperRefNode } from 'react-id-swiper';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Swiper as SwiperCore } from 'swiper';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/swiper-bundle.min.css';
+
 import { useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
@@ -43,22 +43,12 @@ import useNetworkType from '../hooks/useNetworkType';
 import EditPagesDialog from '../components/dialogs/EditPagesDialog';
 import { useApollo } from '../apollo/ApolloProvider';
 import TitleAndBackHeader from '../components/TitleAndBackHeader';
+import { Remount } from '../components/Remount';
 
 interface BookProps {
+  // eslint-disable-next-line react/no-unused-prop-types
+  children?: React.ReactElement;
 }
-
-const pageContainer: CSSProperties = {
-  width: '100%',
-  height: '100%',
-  margin: '0 auto',
-  position: 'relative',
-  overflow: 'hidden',
-  listStyle: 'none',
-  padding: 0,
-  '& > .swiper-wrapper': {
-    zIndex: 'inherit',
-  },
-};
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   '@global': {
@@ -78,14 +68,17 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pageContainer,
-  pageContainerRTL: {
-    ...pageContainer,
-    direction: 'rtl',
-  },
-  pageContainerLTR: {
-    ...pageContainer,
-    direction: 'ltr',
+  pageContainer: {
+    width: '100%',
+    height: '100%',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden',
+    listStyle: 'none',
+    padding: 0,
+    '& > .swiper-wrapper': {
+      zIndex: 'inherit',
+    },
   },
   pageImage: {
     width: '100%',
@@ -96,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     'user-select': 'none',
   },
   overlay: {
-    zIndex: 1,
+    zIndex: 2,
     top: '0',
     position: 'fixed',
     width: '100%',
@@ -180,13 +173,14 @@ const Book: React.FC = (props: BookProps) => {
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [isPageSet, setPageSet] = React.useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
-  const swiperRef = useRef<SwiperRefNode | null>(null);
+  const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
   const [showAppBar, setShowAppBar] = React.useState(false);
 
   React.useEffect(() => {
     updatePage(0);
+    setSwiper(null);
     setPageSet(false);
     setReBuildSwiper(true);
   }, [params.id]);
@@ -195,18 +189,18 @@ const Book: React.FC = (props: BookProps) => {
   const { width, height } = useDebounceValue(windowSize, 800);
 
   const setPage = React.useCallback((s, time = 150) => {
-    if (swiperRef.current?.swiper && !rebuildSwiper) {
-      swiperRef.current.swiper.slideTo(s, time, false);
+    if (swiper && !rebuildSwiper) {
+      swiper.slideTo(s, time, false);
       updatePage(s);
     }
-  }, [swiperRef.current, rebuildSwiper]);
+  }, [swiper, rebuildSwiper]);
 
-  useEffect(() => {
-    const swiper = swiperRef.current?.swiper;
-    if (!swiper) return;
+  const updateSwiper = React.useCallback((s) => {
+    if (!s) return;
     setReBuildSwiper(false);
-    swiper.on('slideChange', () => updatePage(swiper.realIndex));
-  }, [swiperRef.current, updatePage]);
+    s.on('slideChange', () => updatePage(s.realIndex));
+    setSwiper(s);
+  }, [isPageSet, page]);
 
   const {
     loading,
@@ -275,7 +269,7 @@ const Book: React.FC = (props: BookProps) => {
   }, [effect, effectPercentage]);
 
   React.useEffect(() => {
-    if (!swiperRef.current?.swiper) return;
+    if (!swiper) return;
     db.bookReads.get(params.id).then((read) => {
       if (read) {
         let p = read.page;
@@ -286,7 +280,7 @@ const Book: React.FC = (props: BookProps) => {
       }
       setPageSet(true);
     });
-  }, [swiperRef.current]);
+  }, [swiper]);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -381,186 +375,169 @@ const Book: React.FC = (props: BookProps) => {
       )}
       <main>
         {/* eslint-disable-next-line */}
-                <div className={classes.book} onClick={clickPage}>
-                  <EditPagesDialog
-                    open={openEditDialog}
-                    onClose={() => setOpenEditDialog(false)}
-                    openPage={page}
-                    maxPage={data ? data.book.pages : 0}
-                    bookId={params.id}
-                    theme={store.theme}
-                    wb={store.wb}
-                    persistor={persistor}
-                  />
+        <div className={classes.book} onClick={clickPage}>
+          <EditPagesDialog
+            open={openEditDialog}
+            onClose={() => setOpenEditDialog(false)}
+            openPage={page}
+            maxPage={data ? data.book.pages : 0}
+            bookId={params.id}
+            theme={store.theme}
+            wb={store.wb}
+            persistor={persistor}
+          />
 
-                  {/* eslint-disable-next-line */}
-                    <div
-                      className={classes.overlay}
-                      style={{ pointerEvents: showAppBar ? undefined : 'none' }}
-                      onClick={(e) => {
-                        if (showAppBar) {
-                          e.stopPropagation();
-                          setShowAppBar(false);
-                        }
+          {/* eslint-disable-next-line */}
+          <div
+            className={classes.overlay}
+            style={{ pointerEvents: showAppBar ? undefined : 'none' }}
+            onClick={(e) => {
+              if (showAppBar) {
+                e.stopPropagation();
+                setShowAppBar(false);
+              }
+            }}
+          >
+            {showAppBar && (
+              <>
+                {/* eslint-disable-next-line */}
+                <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
+                  <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
+                </div>
+                {/* eslint-disable-next-line */}
+                <div className={`${classes.overlayContent} center`}>
+                  {(prevBook && page === 0) && (
+                    <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 0)}>
+                      to Prev book
+                    </Button>
+                  )}
+                  {(nextBook && data && page === data.book.pages - 1) && (
+                    <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
+                      to Next book
+                    </Button>
+                  )}
+                </div>
+                {/* eslint-disable-next-line */}
+                <div className={`${classes.overlayContent} bottom`} onClick={(e) => e.stopPropagation()}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <IconButton
+                      size="small"
+                      style={{ color: 'white' }}
+                      aria-label="settings"
+                      onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
+                    >
+                      <Icon>settings</Icon>
+                    </IconButton>
+                  </div>
+                  <Menu
+                    anchorEl={settingsMenuAnchor}
+                    open={Boolean(settingsMenuAnchor)}
+                    onClose={() => setSettingsMenuAnchor(null)}
+                    getContentAnchorEl={null}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        setSettingsMenuAnchor(null);
+                        setOpenEditDialog(true);
                       }}
                     >
-                      {showAppBar && (
-                        <>
-                          {/* eslint-disable-next-line */}
-                                <div className={`${classes.overlayContent} top`} onClick={(e) => e.stopPropagation()}>
-                                  <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
-                                </div>
-                          {/* eslint-disable-next-line */}
-                                <div className={`${classes.overlayContent} center`}>
-                                  {(prevBook && page === 0) && (
-                                    <Button
-                                      variant="contained"
-                                      color="secondary"
-                                      onClick={(e) => clickRouteButton(e, 0)}
-                                    >
-                                      to Prev book
-                                    </Button>
-                                  )}
-                                  {(nextBook && data && page === data.book.pages - 1) && (
-                                    <Button
-                                      variant="contained"
-                                      color="secondary"
-                                      onClick={(e) => clickRouteButton(e, 1)}
-                                    >
-                                      to Next book
-                                    </Button>
-                                  )}
-                                </div>
-                          {/* eslint-disable-next-line */}
-                                <div className={`${classes.overlayContent} bottom`}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                    <IconButton
-                                      size="small"
-                                      style={{ color: 'white' }}
-                                      aria-label="settings"
-                                      onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
-                                    >
-                                      <Icon>settings</Icon>
-                                    </IconButton>
-                                  </div>
-                                  <Menu
-                                    anchorEl={settingsMenuAnchor}
-                                    open={Boolean(settingsMenuAnchor)}
-                                    onClose={() => setSettingsMenuAnchor(null)}
-                                    getContentAnchorEl={null}
-                                    anchorOrigin={{
-                                      vertical: 'top',
-                                      horizontal: 'right',
-                                    }}
-                                  >
-                                    <MenuItem
-                                      onClick={() => {
-                                        setSettingsMenuAnchor(null);
-                                        setOpenEditDialog(true);
-                                      }}
-                                    >
-                                      Edit pages
-                                    </MenuItem>
-                                    <MenuItem
-                                      onClick={() => dispatch({
-                                        showOriginalImage: !store.showOriginalImage,
-                                      })}
-                                    >
-                                      {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
-                                    </MenuItem>
-                                  </Menu>
-                                  <Button
-                                    variant="outlined"
-                                    style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
-                                    onClick={() => {
-                                      dispatch({ readOrder: (store.readOrder + 1) % 2 });
-                                      setReBuildSwiper(true);
-                                    }}
-                                  >
-                                    {['L > R', 'L < R'][store.readOrder]}
-                                  </Button>
-                                  <Button
-                                    aria-controls="effect menu"
-                                    aria-haspopup
-                                    onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
-                                    style={{ color: 'white' }}
-                                  >
-                                    {effect || 'normal'}
-                                  </Button>
-                                  <Menu
-                                    anchorEl={effectMenuAnchor}
-                                    open={Boolean(effectMenuAnchor)}
-                                    onClose={() => setEffectMenuAnchor(null)}
-                                  >
-                                    <MenuItem
-                                      onClick={() => clickEffect(undefined)}
-                                    >
-                                      Normal
-                                    </MenuItem>
-                                    <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
-                                    <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
-                                  </Menu>
-                                  <div className={classes.bottomSlider}>
-                                    <MuiThemeProvider theme={sliderTheme}>
-                                      <Slider
-                                        color="secondary"
-                                        valueLabelDisplay="auto"
-                                        max={data.book.pages}
-                                        min={1}
-                                        value={page + 1}
-                                        onChange={(e, v: number) => setPage(v - 1, 0)}
-                                      />
-                                    </MuiThemeProvider>
-                                  </div>
-                                  {(effect) && (
-                                    <div className={classes.bottomSlider}>
-                                      <MuiThemeProvider theme={effectTheme}>
-                                        <Slider
-                                          valueLabelDisplay="auto"
-                                          max={100}
-                                          min={0}
-                                          value={effectPercentage}
-                                          onChange={(e, v: number) => setEffectPercentage(v)}
-                                        />
-                                      </MuiThemeProvider>
-                                    </div>
-                                  )}
-                                </div>
-                        </>
-                      )}
-                    </div>
-
-                  <SwiperCustom
-                    ref={swiperRef}
-                    Swiper={Swiper}
-                    rebuildOnUpdate={rebuildSwiper}
-                    containerClass={
-                            store.readOrder === 0
-                              ? classes.pageContainerLTR
-                              : classes.pageContainerRTL
-                        }
+                      Edit pages
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
+                    >
+                      {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                    </MenuItem>
+                  </Menu>
+                  <Button
+                    variant="outlined"
+                    style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
+                    onClick={() => {
+                      dispatch({ readOrder: (store.readOrder + 1) % 2 });
+                      setReBuildSwiper(true);
+                    }}
                   >
-                    {pages.map((t, i) => ((Math.abs(i - debouncePage) <= 1) ? (
-                      <div className={classes.page} key={t}>
-                        <Img
-                          imgStyle={effectBackGround}
-                          src={t}
-                          alt={(i + 1).toString(10)}
-                          className={classes.pageImage}
-                        />
-                      </div>
-                    ) : (<div key={t} />)))}
-                  </SwiperCustom>
-
-                  <div
-                    className={classes.pageProgress}
-                    style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}
+                    {['L > R', 'L < R'][store.readOrder]}
+                  </Button>
+                  <Button
+                    aria-controls="effect menu"
+                    aria-haspopup
+                    onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
+                    style={{ color: 'white' }}
                   >
-                    <div style={{ width: `${(swiperRef.current?.swiper ? swiperRef.current.swiper.progress : 0) * 100}%` }} />
+                    {effect || 'normal'}
+                  </Button>
+                  <Menu
+                    anchorEl={effectMenuAnchor}
+                    open={Boolean(effectMenuAnchor)}
+                    onClose={() => setEffectMenuAnchor(null)}
+                  >
+                    <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
+                    <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
+                    <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
+                  </Menu>
+                  <div className={classes.bottomSlider}>
+                    <MuiThemeProvider theme={sliderTheme}>
+                      <Slider
+                        color="secondary"
+                        valueLabelDisplay="auto"
+                        max={data.book.pages}
+                        min={1}
+                        value={page + 1}
+                        onChange={(e, v: number) => setPage(v - 1, 0)}
+                      />
+                    </MuiThemeProvider>
                   </div>
+                  {(effect) && (
+                    <div className={classes.bottomSlider}>
+                      <MuiThemeProvider theme={effectTheme}>
+                        <Slider
+                          valueLabelDisplay="auto"
+                          max={100}
+                          min={0}
+                          value={effectPercentage}
+                          onChange={(e, v: number) => setEffectPercentage(v)}
+                        />
+                      </MuiThemeProvider>
+                    </div>
+                  )}
                 </div>
+              </>
+            )}
+          </div>
+
+          <Remount remount={rebuildSwiper}>
+            <Swiper
+              onSwiper={updateSwiper}
+              dir={store.readOrder === 0 ? 'ltr' : 'rtl'}
+              className={classes.pageContainer}
+            >
+              {pages.map((t, i) => (
+                <SwiperSlide
+                  key={t}
+                  className={classes.page}
+                >
+                  {(Math.abs(i - debouncePage) <= 1) ? (
+                    <Img
+                      imgStyle={effectBackGround}
+                      src={t}
+                      alt={(i + 1).toString(10)}
+                      className={classes.pageImage}
+                    />
+                  ) : null}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </Remount>
+
+          <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
+            <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
+          </div>
+        </div>
       </main>
     </>
   );

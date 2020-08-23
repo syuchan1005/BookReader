@@ -3,7 +3,7 @@
 dist
 **/node_modules/
 storage
-download
+downloads
 *.iml
 *.sqlite
 .DS_Store
