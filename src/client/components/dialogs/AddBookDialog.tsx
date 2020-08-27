@@ -209,7 +209,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     [addBookLoading, addCompressBookLoading, addPluginLoading],
   );
 
-  const { data: subscriptionData } = useSubscription<
+  const { data: subscriptionData, loading: subscriptionLoading } = useSubscription<
     AddBooksProgressSubscription,
     AddBooksProgressSubscriptionVariables
   >(AddBooksSubscription, {
@@ -262,11 +262,16 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     setAddBooks(books);
   }, [addBooks]);
 
-  const clickAddButton = React.useCallback(() => {
+  const clickAddButton = React.useCallback(async() => {
     if (!selectedPlugin) {
       setSubscriptionId(infoId);
+      let count = 1;
+      while (!subscriptionLoading && count <= 2) {
+        // eslint-disable-next-line no-await-in-loop,no-loop-func
+        await new Promise((r) => setTimeout(r, 100 * count));
+        count += 1;
+      }
       if (addType === 'file_compressed') {
-        // noinspection JSIgnoredPromiseFromCall
         addCompressBook({
           context: {
             fetchOptions: {
@@ -281,7 +286,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
           },
         });
       } else {
-        // noinspection JSIgnoredPromiseFromCall
         addBook({
           context: {
             fetchOptions: {
