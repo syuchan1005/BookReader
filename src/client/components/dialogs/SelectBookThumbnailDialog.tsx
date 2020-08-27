@@ -124,7 +124,7 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
                   >
                     <Img
                       className={classes.thumbnail}
-                      src={`/book/${bookId}/${n}_125x0.jpg`}
+                      src={`/book/${bookId}/${n}_${125 * window.devicePixelRatio}x0.jpg`}
                       alt={(i + 1).toString(10)}
                       minWidth={125}
                       minHeight={150}

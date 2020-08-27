@@ -329,7 +329,7 @@ const Book: React.FC = (props: BookProps) => {
 
   const pages = React.useMemo(() => {
     if (!data || !data.book) return [];
-    const sizes = [width, height];
+    const sizes = [width * window.devicePixelRatio, height * window.devicePixelRatio];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
     const pad = data.book.pages.toString(10).length;
     const suffix = store.showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;

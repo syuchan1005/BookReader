@@ -238,7 +238,7 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
         <Img
-          src={thumbnail ? thumbnail.replace('.jpg', `_${thumbnailSize}x0.jpg`) : undefined}
+          src={thumbnail ? thumbnail.replace('.jpg', `_${thumbnailSize * window.devicePixelRatio}x0.jpg`) : undefined}
           alt={name}
           className={classes.thumbnail}
           noSave={false}
