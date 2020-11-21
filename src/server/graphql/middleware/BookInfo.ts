@@ -53,7 +53,7 @@ class BookInfo extends GQLMiddleware {
               : {
                 [Op.in]: Sequelize.literal('('
                   // @ts-ignore
-                  + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => Database.sequelize.getQueryInterface().QueryGenerator.escape(g)).join(', ')})`
+                  + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => `'${g}'`).join(', ')})` // TODO: escape
                   + ')'),
               },
             name: search ? {
