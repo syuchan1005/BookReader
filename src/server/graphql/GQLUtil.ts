@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 import rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
-import { SubClass } from 'gm';
 import { PubSubEngine } from 'apollo-server-koa';
 
 import {
@@ -28,15 +27,27 @@ import InfoGenreModel from '@server/sequelize/models/InfoGenre';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
 import GenreModel from '@server/sequelize/models/Genre';
 import { OrderItem } from 'sequelize';
+import { convertAndSaveJpg } from '../ImageUtil';
 
 const GQLUtil = {
   Mutation: {
-    addBooks: async (gm: SubClass, pubsub: PubSubEngine, parent, {
-      id: infoId,
-      books,
-    }: MutationAddBooksArgs, context, info, customData): Promise<Result[]> => asyncMap(books,
+    addBooks: async (
+      pubsub: PubSubEngine,
+      parent,
+      {
+        id: infoId,
+        books,
+      }: MutationAddBooksArgs,
+      context,
+      info,
+      customData,
+    ): Promise<Result[]> => asyncMap(books,
       (book) => GQLUtil.Mutation.addBook(
-        gm, pubsub, infoId, book, context, info,
+        pubsub,
+        infoId,
+        book,
+        context,
+        info,
         customData || {
           pubsub: {
             key: SubscriptionKeys.ADD_BOOKS,
@@ -46,7 +57,6 @@ const GQLUtil = {
         },
       )),
     addBook: async (
-      gm: SubClass,
       pubsub: PubSubEngine,
       infoId: string,
       book: InputBook,
@@ -83,7 +93,6 @@ const GQLUtil = {
         });
       }
       return GQLUtil.addBookFromLocalPath(
-        gm,
         tempPath,
         infoId,
         bookId,
@@ -95,7 +104,6 @@ const GQLUtil = {
     },
   },
   async addBookFromLocalPath(
-    gm: SubClass,
     tempPath: string,
     infoId: string,
     bookId: string,
@@ -124,14 +132,7 @@ const GQLUtil = {
       if (/\.jpe?g$/i.test(f)) {
         await renameFile(f, dist);
       } else {
-        await new Promise((resolve, reject) => {
-          gm(f)
-            .quality(85)
-            .write(dist, (err) => {
-              if (err) reject(err);
-              else resolve();
-            });
-        });
+        await convertAndSaveJpg(f, dist);
       }
     }).catch((reason) => new Promise((resolve, reject) => {
       if (deleteTempFolder) {

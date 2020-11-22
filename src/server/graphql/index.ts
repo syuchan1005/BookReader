@@ -7,7 +7,6 @@ import {
   PubSub,
   PubSubEngine,
 } from 'apollo-server-koa';
-import { SubClass } from 'gm';
 import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 
 // @ts-ignore
@@ -19,6 +18,7 @@ import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
 import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 import GQLUtil from './GQLUtil';
+import { convertAndSaveJpg } from '../ImageUtil';
 
 export const SubscriptionKeys = {
   ADD_BOOK_INFO: 'ADD_BOOK_INFO',
@@ -26,20 +26,19 @@ export const SubscriptionKeys = {
 };
 
 export default class GraphQL {
-  private readonly gm: SubClass;
-
   private readonly middlewares: { [key: string]: GQLMiddleware };
+
+  public readonly util = { saveImage: convertAndSaveJpg };
+
+  public readonly pubsub: PubSubEngine;
 
   public readonly server: ApolloServer;
 
   private readonly gqlKoaMiddleware; // : (ctx: any, next: Promise<any>) => any;
 
-  private readonly pubsub: PubSubEngine;
-
   private readonly plugins: InternalGQLPlugin[];
 
-  constructor(gmModule) {
-    this.gm = gmModule;
+  constructor() {
     this.pubsub = new PubSub();
     this.plugins = loadPlugins();
 

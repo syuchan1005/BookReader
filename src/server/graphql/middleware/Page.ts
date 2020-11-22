@@ -11,6 +11,7 @@ import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
+import { splitImage } from '../../ImageUtil';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -84,7 +85,6 @@ class Page extends GQLMiddleware {
           };
         }
 
-        const cropOption = type === SplitType.Vertical ? '2x1@' : '1x2@';
         const bookPath = `storage/book/${bookId}`;
         let files = await fs.readdir(bookPath);
         let pageCount = 0;
@@ -94,55 +94,9 @@ class Page extends GQLMiddleware {
             return;
           }
 
-          // eslint-disable-next-line no-prototype-builtins
-          if (!this.gm.hasOwnProperty('subClass')) {
-            await new Promise((resolve, reject) => {
-              this.gm(`${bookPath}/${f}`)
-                .out('-crop', cropOption)
-                .repage('+')
-                .write(`${bookPath}/${f.replace('.jpg', '-%d.jpg')}`, (err) => {
-                  if (err) reject(err);
-                  else {
-                    fs.unlink(`${bookPath}/${f}`)
-                      .then(() => {
-                        pageCount += 2;
-                        resolve();
-                      });
-                  }
-                });
-            });
-          } else {
-            const size = await new Promise<{ width: number, height: number }>((resolve, reject) => {
-              this.gm(`${bookPath}/${f}`)
-                .size((err, s) => {
-                  if (err) reject(err);
-                  else resolve(s);
-                });
-            });
-
-            const crops = type === SplitType.Vertical ? [
-              [size.width / 2, size.height, 0, 0],
-              [size.width / 2, size.height, size.width / 2, 0],
-            ] : [
-              [size.width, size.height / 2, 0, 0],
-              [size.width, size.height / 2, 0, size.height / 2],
-            ];
-
-            await asyncForEach(crops, (crop, fileIndex) => new Promise((resolve, reject) => {
-              this.gm(`${bookPath}/${f}`)
-                // @ts-ignore
-                .crop(...crop)
-                .write(`${bookPath}/${f.replace('.jpg', `-${fileIndex}.jpg`)}`, (err) => {
-                  if (err) reject(err);
-                  else {
-                    pageCount += 1;
-                    resolve();
-                  }
-                });
-            }));
-
-            await fs.unlink(`${bookPath}/${f}`);
-          }
+          await splitImage(`${bookPath}.${f}`, type === SplitType.Vertical ? 'vertical' : 'horizontal');
+          await fs.unlink(`${bookPath}/${f}`);
+          pageCount += 2;
         });
 
         files = orderBy((await fs.readdir(bookPath)), [

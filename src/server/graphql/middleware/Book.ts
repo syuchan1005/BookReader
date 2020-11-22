@@ -73,10 +73,7 @@ class Book extends GQLMiddleware {
     return {
       addBooks: async (
         parent, args, context, info,
-      ) => GQLUtil.Mutation.addBooks(
-        this.gm, this.pubsub,
-        parent, args, context, info, undefined,
-      ),
+      ) => GQLUtil.Mutation.addBooks(this.pubsub, parent, args, context, info, undefined),
       addCompressBook: async (parent, {
         id: infoId,
         file: compressBooks,
@@ -130,7 +127,6 @@ class Book extends GQLMiddleware {
           }
           addedNums.push(nums);
           return GQLUtil.addBookFromLocalPath(
-            this.gm,
             folderPath,
             infoId,
             uuidv4(),

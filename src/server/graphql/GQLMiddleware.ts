@@ -1,4 +1,3 @@
-import { SubClass } from 'gm';
 import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
 import { Database } from '@server/sequelize/models';
 import * as Util from '@server/Util';
@@ -11,7 +10,7 @@ import {
 import { SubscriptionKeys } from './index';
 
 export default class GQLMiddleware {
-  readonly gm: SubClass;
+  readonly util: { saveImage: (dist: string, buf: Buffer) => Promise<any> };
 
   readonly server: ApolloServer;
 
@@ -21,7 +20,7 @@ export default class GQLMiddleware {
 
   Query(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): QueryResolvers {
@@ -30,7 +29,7 @@ export default class GQLMiddleware {
 
   Mutation(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): MutationResolvers {
@@ -39,7 +38,7 @@ export default class GQLMiddleware {
 
   Subscription(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): SubscriptionResolvers {
@@ -48,7 +47,7 @@ export default class GQLMiddleware {
 
   Resolver(
     db: Database,
-    middleware: Pick<GQLMiddleware, 'gm' | 'server' | 'pubsub'>,
+    middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): { [key: string]: object } {
