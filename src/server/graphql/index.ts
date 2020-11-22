@@ -1,5 +1,6 @@
 // @ts-ignore
 import path from 'path';
+import { GraphQLUpload, graphqlUploadKoa } from 'graphql-upload';
 
 import {
   ApolloServer,
@@ -68,11 +69,13 @@ export default class GraphQL {
 
     // eslint-disable-next-line no-underscore-dangle
     this.server = new ApolloServer({
+      uploads: false,
       schema: makeExecutableSchema({
         typeDefs: mergeTypeDefs([typeDefs, ...this.plugins.map((pl) => pl.typeDefs)]),
         resolvers: {
           BigInt,
           IntRange,
+          Upload: GraphQLUpload,
           /* handler(parent, args, context, info) */
           Query: {
             ...middlewareOps('Query'),
@@ -97,6 +100,7 @@ export default class GraphQL {
   async middleware(app) {
     await GraphQL.createFolders();
 
+    app.use(graphqlUploadKoa());
     // eslint-disable-next-line no-underscore-dangle
     app.use((ctx, next) => {
       ctx.request.socket.setTimeout(15 * 60 * 1000);
