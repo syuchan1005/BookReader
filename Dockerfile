@@ -26,7 +26,7 @@ EXPOSE 80
 
 ENV DEBUG=""
 
-RUN apk add --no-cache supervisor nginx graphicsmagick libwebp-tools git \
+RUN apk add --no-cache supervisor nginx git \
     && mkdir /bookReader
 
 COPY --from=build ["/bookReader/package.json", "/bookReader/package-lock.json", "/bookReader/"]
