@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Button, ButtonGroup,
   CircularProgress,
@@ -38,6 +38,7 @@ import PluginsQuery from '@client/graphqls/AddBookDialog_plugins.gql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
+import useStateWithReset from '@client/hooks/useStateWithReset';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -113,6 +114,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const [nameType, setNameType] = React.useState<'number' | 'filename'>('number');
   const [editContent, setEditContent] = React.useState({});
   React.useEffect(() => setEditContent({}), [addType]);
+  const [_, setTitle, resetTitle] = useStateWithReset(document.title);
 
   const {
     data,
@@ -141,6 +143,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
     setSubscriptionId(undefined);
     setAddType('file');
     setEditContent({});
+    resetTitle();
   }, [onClose, onAdded]);
 
   const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
@@ -219,6 +222,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       id: subscriptionId,
     },
   });
+
+  useEffect(() => {
+    setTitle((initValue) => `${initValue} - ${subscriptionData.addBooks}`);
+  }, [subscriptionData]);
 
   const closeDialog = () => {
     if (!loading) {
