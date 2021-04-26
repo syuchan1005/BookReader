@@ -49,7 +49,7 @@ interface EditPagesDialogProps {
   persistor?: any;
 }
 
-const parsePagesStr = (pages, maxPage): string | IntRange => {
+const parsePagesStr = (pages: string, maxPage: number): (number | [number, number])[] | string => {
   const pageList = pages
     .split(/,\s*/)
     .map((s) => {
@@ -57,7 +57,7 @@ const parsePagesStr = (pages, maxPage): string | IntRange => {
       if (!m) return undefined;
       if (m[3]) {
         const arr = [Number(m[1]), Number(m[3])];
-        return [Math.min(...arr) - 1, Math.max(...arr) - 1];
+        return [Math.min(...arr) - 1, Math.max(...arr) - 1] as [number, number];
       }
       return Number(m[1]) - 1;
     });
@@ -67,7 +67,9 @@ const parsePagesStr = (pages, maxPage): string | IntRange => {
       return s[0] >= 0 && s[0] < maxPage && s[1] >= 0 && s[1] < maxPage;
     }
     return s >= 0 && s < maxPage;
-  })) return 'Range error';
+  })) {
+    return 'Range error';
+  }
   return pageList;
 };
 
@@ -132,10 +134,6 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
   const [editPageMutation, {
     loading: editLoading,
   }] = useMutation<EditPageMutationType, EditPageMutationVariables>(EditPageMutation, {
-    // @ts-ignore
-    variables: {
-      id: bookId,
-    },
     onCompleted() {
       purgeCache();
     },
@@ -144,10 +142,6 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
   const [splitPage, {
     loading: splitLoading,
   }] = useMutation<SplitPagesMutationType, SplitPagesMutationVariables>(SplitMutation, {
-    // @ts-ignore
-    variables: {
-      id: bookId,
-    },
     onCompleted() {
       purgeCache();
     },
@@ -156,10 +150,6 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
   const [deletePage, {
     loading: deleteLoading,
   }] = useMutation<DeletePagesMutationType, DeletePagesMutationVariables>(DeleteMutation, {
-    // @ts-ignore
-    variables: {
-      id: bookId,
-    },
     onCompleted() {
       purgeCache();
     },
@@ -230,6 +220,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
                   // noinspection JSIgnoredPromiseFromCall
                   editPageMutation({
                     variables: {
+                      id: bookId,
                       image,
                       page: (editPage - 1),
                     },
@@ -238,6 +229,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
                   // noinspection JSIgnoredPromiseFromCall
                   putPageMutation({
                     variables: {
+                      id: bookId,
                       image,
                       beforePage: (editPage - 2),
                     },
@@ -263,9 +255,11 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             <Button
               disabled={splitLoading}
               classes={{ label: classes.splitButton }}
-              onClick={() => splitPage({
-                variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Vertical },
-              })}
+              onClick={() => {
+                const pages = parsePagesStr(editPages, maxPage);
+                if (typeof pages === 'string') return;
+                splitPage({ variables: { id: bookId, pages, type: SplitType.Vertical } });
+              }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                 <polygon
@@ -280,9 +274,11 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
             <Button
               disabled={splitLoading}
               classes={{ label: classes.splitButton }}
-              onClick={() => splitPage({
-                variables: { pages: parsePagesStr(editPages, maxPage), type: SplitType.Horizontal },
-              })}
+              onClick={() => {
+                const pages = parsePagesStr(editPages, maxPage);
+                if (typeof pages === 'string') return;
+                splitPage({ variables: { id: bookId, pages, type: SplitType.Horizontal } });
+              }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
                 <polygon
@@ -306,11 +302,11 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       <DeleteDialog
         open={openDeleteDialog}
         loading={deleteLoading}
-        onClickDelete={() => deletePage({
-          variables: {
-            pages: parsePagesStr(editPages, maxPage),
-          },
-        })}
+        onClickDelete={() => {
+          const pages = parsePagesStr(editPages, maxPage);
+          if (typeof pages === 'string') return;
+          deletePage({ variables: { id: bookId, pages } });
+        }}
         onClose={() => setOpenDeleteDialog(false)}
         page={editPages}
       />
