@@ -224,6 +224,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   });
 
   useEffect(() => {
+    if (subscriptionData) return;
     setTitle((initValue) => `${initValue} - ${subscriptionData.addBooks}`);
   }, [subscriptionData]);
 
