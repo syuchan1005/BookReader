@@ -114,7 +114,8 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   const [nameType, setNameType] = React.useState<'number' | 'filename'>('number');
   const [editContent, setEditContent] = React.useState({});
   React.useEffect(() => setEditContent({}), [addType]);
-  const [_, setTitle, resetTitle] = useStateWithReset(document.title);
+  const [title, setTitle, resetTitle] = useStateWithReset(document.title);
+  useEffect(() => { document.title = title; }, [title]);
 
   const {
     data,
