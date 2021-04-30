@@ -20,7 +20,7 @@ import {
   BookInfoQueryVariables,
   BookOrder,
 } from '@syuchan1005/book-reader-graphql';
-import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
+import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/common/BookInfoQuery.gql';
 
 import { commonTheme } from '@client/App';
 import { useGlobalStore } from '@client/store/StoreProvider';

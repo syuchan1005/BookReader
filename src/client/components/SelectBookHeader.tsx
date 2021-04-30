@@ -20,8 +20,8 @@ import {
   MoveBooksMutationVariables,
 } from '@syuchan1005/book-reader-graphql.ts';
 
-import DeleteBooksMutation from '@client/graphqls/SelectBookHeader_deleteBooks.gql';
-import MoveBooksMutation from '@client/graphqls/SelectBookHeader_moveBooks.gql';
+import DeleteBooksMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookHeader_deleteBooks.gql';
+import MoveBooksMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookHeader_moveBooks.gql';
 
 interface SelectBookHeaderProps {
   infoId: string;

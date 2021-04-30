@@ -23,8 +23,8 @@ import {
   EditBookInfoMutation as EditBookInfoMutationType,
   EditBookInfoMutationVariables,
 } from '@syuchan1005/book-reader-graphql';
-import DeleteBookInfoMutation from '@client/graphqls/BookInfo_deleteBookInfo.gql';
-import EditBookInfoMutation from '@client/graphqls/BookInfo_editBookInfo.gql';
+import DeleteBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/BookInfo_deleteBookInfo.gql';
+import EditBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/BookInfo_editBookInfo.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';

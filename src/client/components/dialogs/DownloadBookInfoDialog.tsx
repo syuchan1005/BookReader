@@ -17,7 +17,7 @@ import JSZip from 'jszip';
 import * as saveAs from 'jszip/vendor/FileSaver';
 import { useQuery } from '@apollo/react-hooks';
 
-import BookInfoQuery from '@client/graphqls/DownloadBookInfoDialog_bookInfo.gql';
+import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/DownloadBookInfoDialog_bookInfo.gql';
 
 interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   open: boolean;

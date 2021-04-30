@@ -31,10 +31,10 @@ import {
   PluginsQueryVariables,
   Result,
 } from '@syuchan1005/book-reader-graphql';
-import AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
-import AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
-import AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';
-import PluginsQuery from '@client/graphqls/AddBookDialog_plugins.gql';
+import AddCompressBookMutation from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_addCompressBook.gql';
+import AddBooksMutation from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_addBooks.gql';
+import AddBooksSubscription from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_addBooks_Subscription.gql';
+import PluginsQuery from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_plugins.gql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';

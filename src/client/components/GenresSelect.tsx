@@ -15,7 +15,7 @@ import {
 import { useLazyQuery } from '@apollo/react-hooks';
 
 import { GenresQuery as GenresQueryData, GenresQueryVariables } from '@syuchan1005/book-reader-graphql';
-import GenresQuery from '@client/graphqls/common/GenresQuery.gql';
+import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQuery.gql';
 
 interface GenresSelectProps {
   value: string[],

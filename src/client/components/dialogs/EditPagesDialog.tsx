@@ -27,10 +27,10 @@ import {
   SplitPagesMutationVariables,
   SplitType,
 } from '@syuchan1005/book-reader-graphql';
-import EditPageMutation from '@client/graphqls/EditPagesDialog_edit.gql';
-import SplitMutation from '@client/graphqls/EditPagesDialog_split.gql';
-import DeleteMutation from '@client/graphqls/EditPagesDialog_delete.gql';
-import PutPageMutation from '@client/graphqls/EditPagesDialog_put.gql';
+import EditPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_edit.gql';
+import SplitMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_split.gql';
+import DeleteMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_delete.gql';
+import PutPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_put.gql';
 import { useMutation } from '@apollo/react-hooks';
 import DeleteDialog from './DeleteDialog';
 

@@ -23,8 +23,8 @@ import {
   AddBookInfoMutation as AddBookInfoMutationType,
   AddBookInfoMutationVariables,
 } from '@syuchan1005/book-reader-graphql';
-import AddBookInfoMutation from '@client/graphqls/AddBookInfoDialog_addBookInfo.gql';
-import AddBookInfoHistoriesMutation from '@client/graphqls/AddBookInfoDialog_addBookInfoHistories.gql';
+import AddBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/AddBookInfoDialog_addBookInfo.gql';
+import AddBookInfoHistoriesMutation from '@syuchan1005/book-reader-graphql/queries/AddBookInfoDialog_addBookInfoHistories.gql';
 import GenresSelect from '../GenresSelect';
 
 interface AddBookInfoDialogProps {

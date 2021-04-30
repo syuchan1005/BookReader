@@ -17,8 +17,8 @@ import {
   EditBookInfoThumbnailMutation as EditBookInfoThumbnailMutationType,
   EditBookInfoThumbnailMutationVariables,
 } from '@syuchan1005/book-reader-graphql';
-import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
-import EditBookInfoMutation from '@client/graphqls/SelectBookInfoThumbnailDialog_editBookInfo.gql';
+import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/common/BookInfoQuery.gql';
+import EditBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookInfoThumbnailDialog_editBookInfo.gql';
 
 import Book from '@client/components/Book';
 import { Waypoint } from 'react-waypoint';

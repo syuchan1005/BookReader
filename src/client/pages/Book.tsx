@@ -29,7 +29,7 @@ import {
   BookQuery as BookQueryType,
   BookQueryVariables,
 } from '@syuchan1005/book-reader-graphql';
-import BookQuery from '@client/graphqls/Pages_Book_book.gql';
+import BookQuery from '@syuchan1005/book-reader-graphql/queries/Pages_Book_book.gql';
 
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';

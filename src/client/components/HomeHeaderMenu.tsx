@@ -31,9 +31,9 @@ import {
   GenresQuery as GenresQueryData,
   GenresQueryVariables,
 } from '@syuchan1005/book-reader-graphql';
-import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
-import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
-import GenresQuery from '@client/graphqls/common/GenresQuery.gql';
+import DebugFolderSizesQuery from '@syuchan1005/book-reader-graphql/queries/App_debug_folderSizes.gql';
+import DebugDeleteFolderMutation from '@syuchan1005/book-reader-graphql/queries/App_debug_deleteFolderSizes_mutation.gql';
+import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQuery.gql';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import { useApollo } from '@client/apollo/ApolloProvider';
