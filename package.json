@@ -12,7 +12,7 @@
       "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
       "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
       "test:client": "jest",
-      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=./book-reader-test-plugin node dist/server\"",
+      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=./packages/book-reader-test-plugin node dist/server\"",
       "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
       "serve": "npm-run-all --parallel serve:*",
       "build": "npm run build:client && npm run build:server -- --mode production",
