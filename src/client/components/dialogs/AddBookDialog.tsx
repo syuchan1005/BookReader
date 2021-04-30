@@ -30,7 +30,7 @@ import {
   PluginsQuery as PluginsQueryType,
   PluginsQueryVariables,
   Result,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import AddCompressBookMutation from '@client/graphqls/AddBookDialog_addCompressBook.gql';
 import AddBooksMutation from '@client/graphqls/AddBookDialog_addBooks.gql';
 import AddBooksSubscription from '@client/graphqls/AddBookDialog_addBooks_Subscription.gql';

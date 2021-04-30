@@ -1,4 +1,4 @@
-import { BookInfo, Book, Genre } from '@common/GQLTypes';
+import { BookInfo, Book, Genre } from '@syuchan1005/book-reader-graphql';
 import BookInfoModel from './sequelize/models/BookInfo';
 import BookModel from './sequelize/models/Book';
 

@@ -30,12 +30,12 @@ import {
   EditGenreMutationVariables,
   GenresQuery as GenresQueryData,
   GenresQueryVariables,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import GenresQuery from '@client/graphqls/common/GenresQuery.gql';
 import DeleteGenreMutation from '@client/graphqls/Pages_Setting_deleteGenre.gql';
 import EditGenreMutation from '@client/graphqls/Pages_Setting_editGenre.gql';
 
-import { defaultGenres } from '@common/Common';
+import { archiveTypes } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({

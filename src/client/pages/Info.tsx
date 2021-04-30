@@ -19,7 +19,7 @@ import {
   BookInfoQuery as BookInfoQueryType,
   BookInfoQueryVariables,
   BookOrder,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import BookInfoQuery from '@client/graphqls/common/BookInfoQuery.gql';
 
 import { commonTheme } from '@client/App';

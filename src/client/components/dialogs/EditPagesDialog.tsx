@@ -26,7 +26,7 @@ import {
   SplitPagesMutation as SplitPagesMutationType,
   SplitPagesMutationVariables,
   SplitType,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import EditPageMutation from '@client/graphqls/EditPagesDialog_edit.gql';
 import SplitMutation from '@client/graphqls/EditPagesDialog_split.gql';
 import DeleteMutation from '@client/graphqls/EditPagesDialog_delete.gql';

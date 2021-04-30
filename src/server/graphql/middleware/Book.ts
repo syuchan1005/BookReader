@@ -8,7 +8,7 @@ import { withFilter } from 'graphql-subscriptions';
 
 import {
   BookOrder, MutationResolvers, QueryResolvers, ResultWithBookResults, SubscriptionResolvers,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 
 import BookModel from '@server/sequelize/models/Book';
 import BookInfoModel from '@server/sequelize/models/BookInfo';

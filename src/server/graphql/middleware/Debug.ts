@@ -9,7 +9,7 @@ import rimraf from 'rimraf';
 import BookModel from '@server/sequelize/models/Book';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
-import { MutationResolvers, QueryResolvers } from '@common/GQLTypes';
+import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
 import GraphQL from '../index';
 
 class Debug extends GQLMiddleware {

@@ -1,4 +1,4 @@
-import { BookInfoOrder, BookOrder } from '@common/GQLTypes.ts';
+import { BookInfoOrder, BookOrder } from '@syuchan1005/book-reader-graphql';
 import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './middlewares';
 
 export interface IState {

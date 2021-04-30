@@ -14,7 +14,6 @@ module.exports = {
     alias: {
       '@client': resolve(__dirname, '..', 'src/client'),
       '@server': resolve(__dirname, '..', 'src/server'),
-      '@common': resolve(__dirname, '..', 'src/common'),
     },
   },
   module: {
@@ -58,7 +57,7 @@ module.exports = {
     new webpack.ProgressPlugin(),
   ],
   target: 'node',
-  externals: [nodeExternals()],
+  externals: [nodeExternals({ allowlist: [/@syuchan1005\/(.+)/] })],
   entry: './index.ts',
   output: {
     filename: 'index.js',

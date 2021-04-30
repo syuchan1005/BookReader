@@ -13,7 +13,7 @@ import {
   MutationResolvers,
   QueryResolvers,
   SubscriptionResolvers,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 
 import Database from '@server/sequelize/models';
 import BookInfoModel from '@server/sequelize/models/BookInfo';

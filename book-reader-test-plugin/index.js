@@ -4,8 +4,8 @@ const { gql } = require('apollo-server-koa');
 module.exports = {
   typeDefs: gql('type Mutation { addTest(id: ID! number: String! url: String!): Result!}'),
   middleware: {
-    Mutation: () => ({
-      addTest: () => ({ success: true }),
+    Mutation: (_, { util }) => ({
+      addTest: () => ({ success: !!util.saveImage }),
     }),
   },
   init: () => {},

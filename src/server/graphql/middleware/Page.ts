@@ -4,7 +4,7 @@ import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
 import rimraf from 'rimraf';
 
-import { MutationResolvers, SplitType } from '@common/GQLTypes';
+import { MutationResolvers, SplitType } from '@syuchan1005/book-reader-graphql';
 import BookModel from '@server/sequelize/models/Book';
 import { asyncForEach, removeBookCache, renameFile } from '@server/Util';
 import Errors from '@server/Errors';

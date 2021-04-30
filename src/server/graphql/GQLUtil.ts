@@ -13,8 +13,8 @@ import {
   BookInfoOrder, InputBook,
   MutationAddBooksArgs,
   Result, Scalars,
-} from '@common/GQLTypes';
-import { archiveTypes } from '@common/Common';
+} from '@syuchan1005/book-reader-graphql';
+import { archiveTypes } from '@syuchan1005/book-reader-common';
 
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';

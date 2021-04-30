@@ -5,11 +5,11 @@ import {
   MutationResolvers,
   MutationEditGenreArgs,
   ResolversTypes,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import Database from '@server/sequelize/models';
 import { createError } from '@server/Errors';
-import { defaultGenres } from '../../../common/Common';
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 
 class Genre extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this

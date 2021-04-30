@@ -18,7 +18,7 @@ import {
   DeleteBooksMutationVariables,
   MoveBooksMutation as MoveBooksMutationData,
   MoveBooksMutationVariables,
-} from '@common/GQLTypes.ts';
+} from '@syuchan1005/book-reader-graphql.ts';
 
 import DeleteBooksMutation from '@client/graphqls/SelectBookHeader_deleteBooks.gql';
 import MoveBooksMutation from '@client/graphqls/SelectBookHeader_moveBooks.gql';

@@ -15,7 +15,7 @@ import { hot } from 'react-hot-loader/root';
 import {
   BookInfosQuery as BookInfosQueryType,
   BookInfosQueryVariables,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import BookInfosQuery from '@client/graphqls/Pages_Home_bookInfos.gql';
 
 import { commonTheme } from '@client/App';

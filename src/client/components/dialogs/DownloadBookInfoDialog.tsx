@@ -12,7 +12,7 @@ import {
   BookInfo,
   DownloadBookInfosQuery as DownloadBookInfosQueryType,
   DownloadBookInfosQueryVariables as DownloadBookInfosQueryVariablesType,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import JSZip from 'jszip';
 import * as saveAs from 'jszip/vendor/FileSaver';
 import { useQuery } from '@apollo/react-hooks';

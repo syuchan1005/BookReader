@@ -28,7 +28,7 @@ import { hot } from 'react-hot-loader/root';
 import {
   BookQuery as BookQueryType,
   BookQueryVariables,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import BookQuery from '@client/graphqls/Pages_Book_book.gql';
 
 import useDebounceValue from '@client/hooks/useDebounceValue';

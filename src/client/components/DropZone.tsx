@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { createStyles, makeStyles, Theme } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
 
-import { archiveTypes } from '@common/Common';
+import { archiveTypes } from '@syuchan1005/book-reader-common';
 import useOS from '@client/hooks/useOS';
 
 interface FileFieldProps {

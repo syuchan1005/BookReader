@@ -30,7 +30,7 @@ import {
   FolderSizesQueryVariables,
   GenresQuery as GenresQueryData,
   GenresQueryVariables,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import DebugFolderSizesQuery from '@client/graphqls/App_debug_folderSizes.gql';
 import DebugDeleteFolderMutation from '@client/graphqls/App_debug_deleteFolderSizes_mutation.gql';
 import GenresQuery from '@client/graphqls/common/GenresQuery.gql';

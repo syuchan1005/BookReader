@@ -22,7 +22,7 @@ import {
   DeleteBookInfoMutationVariables,
   EditBookInfoMutation as EditBookInfoMutationType,
   EditBookInfoMutationVariables,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import DeleteBookInfoMutation from '@client/graphqls/BookInfo_deleteBookInfo.gql';
 import EditBookInfoMutation from '@client/graphqls/BookInfo_editBookInfo.gql';
 

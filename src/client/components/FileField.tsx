@@ -6,7 +6,7 @@ import {
   Theme,
 } from '@material-ui/core';
 
-import { archiveTypes } from '@common/Common';
+import { archiveTypes } from '@syuchan1005/book-reader-common';
 
 interface FileFieldProps {
   file?: File;

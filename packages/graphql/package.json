@@ -1,0 +1,16 @@
+{
+    "name": "@syuchan1005/book-reader-graphql",
+    "main": "generated/GQLTypes.ts",
+    "scripts": {
+        "gql-gen": "graphql-codegen --config codegen.yml"
+    },
+    "devDependencies": {
+        "@graphql-codegen/cli": "^1.17.8",
+        "@graphql-codegen/typescript": "1.17.8",
+        "@graphql-codegen/typescript-operations": "1.17.8",
+        "@graphql-codegen/typescript-resolvers": "1.17.8"
+    },
+    "dependencies": {
+        "graphql": "^15.3.0"
+    }
+}

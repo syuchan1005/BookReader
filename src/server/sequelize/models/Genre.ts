@@ -1,5 +1,5 @@
 import { Association, DataTypes, Model } from 'sequelize';
-import { defaultGenres } from '@common/Common';
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 import BookInfo from './BookInfo';
 
 export default class Genre extends Model {

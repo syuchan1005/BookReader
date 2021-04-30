@@ -6,7 +6,7 @@ import {
   QueryResolvers,
   MutationResolvers,
   SubscriptionResolvers,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import { SubscriptionKeys } from './index';
 
 export default class GQLMiddleware {

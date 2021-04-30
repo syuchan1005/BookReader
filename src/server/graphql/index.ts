@@ -11,7 +11,7 @@ import {
 import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 
 // @ts-ignore
-import typeDefs from '@server/schema.graphql';
+import typeDefs from '@syuchan1005/book-reader-graphql/schema.graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import Database from '@server/sequelize/models';
 import * as Util from '../Util';

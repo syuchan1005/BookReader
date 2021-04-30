@@ -17,7 +17,7 @@ import {
   BookPagesQueryVariables,
   EditBookThumbnailMutation as EditBookThumbnailMutationType,
   EditBookThumbnailMutationVariables,
-} from '@common/GQLTypes';
+} from '@syuchan1005/book-reader-graphql';
 import BookQuery from '@client/graphqls/SelectBookThumbnailDialog_book.gql';
 import EditBookMutation from '@client/graphqls/SelectBookThumbnailDialog_editBook.gql';
 
