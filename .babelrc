@@ -8,11 +8,6 @@
       "plugins": [
         "react-hot-loader/babel"
       ]
-    },
-    "koa": {
-      "presets": [
-        "@babel/preset-env"
-      ]
     }
   }
 }

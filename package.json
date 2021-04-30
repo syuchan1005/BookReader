@@ -6,20 +6,20 @@
    "license": "MIT",
    "workspaces": [
       "packages/graphql",
-      "packages/common"
+      "packages/common",
+      "packages/server"
    ],
    "scripts": {
       "serve:client": "cross-env NODE_ENV=react webpack-dev-server --config webpack/webpack.development.client.js",
       "build:client": "cross-env NODE_ENV=react webpack --config webpack/webpack.production.client.js",
       "test:client": "jest",
-      "serve:server": "nodemon --watch src/server --ext .js,.ts --exec \"npm run build:server -- -d && cross-env BOOKREADER_PLUGIN=./packages/book-reader-test-plugin node dist/server\"",
-      "build:server": "cross-env NODE_ENV=koa webpack --config webpack/webpack.common.server.js",
+      "serve:server": "npm run serve --workspace=\"packages/server\"",
+      "build:server": "npm run build --workspace=\"packages/server\"",
       "serve": "npm-run-all --parallel serve:*",
       "build": "npm run build:client && npm run build:server -- --mode production",
       "start": "node dist/server",
       "lint": "eslint src/**/*.*",
-      "script:sequelize": "ts-node node_modules/sequelize-cli/lib/sequelize",
-      "script:db-migrate": "node scripts/db-migrate.js",
+      "script:db-migrate": "npm run db-migrate --workspace=\"packages/server\"",
       "gql-gen": "npm run gql-gen --workspace=\"packages/graphql\"",
       "prebuild:plugin": "rimraf dist/plugin",
       "build:plugin": "tsc -P ./tsconfig.plugin.json",

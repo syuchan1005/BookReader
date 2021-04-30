@@ -7,12 +7,12 @@ const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  context: resolve('src/server'),
+  context: resolve('src'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
-      '@server': resolve(__dirname, '..', 'src/server'),
+      '@server': resolve(__dirname, 'src'),
     },
   },
   module: {
@@ -36,7 +36,6 @@ module.exports = {
           {
             loader: 'ts-loader',
             options: {
-              configFile: 'tsconfig.server.json',
               transpileOnly: true,
             },
           },
@@ -51,16 +50,19 @@ module.exports = {
     ],
   },
   plugins: [
-    new HardSourceWebpackPlugin(),
+    // new HardSourceWebpackPlugin(),
     new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
   ],
   target: 'node',
-  externals: [nodeExternals({ allowlist: [/@syuchan1005\/(.+)/] })],
+  externals: [nodeExternals({
+     allowlist: [/@syuchan1005\/(.+)/],
+     modulesDir: resolve(__dirname, '../../node_modules'),
+  })],
   entry: './index.ts',
   output: {
     filename: 'index.js',
-    path: resolve('dist/server'),
+    path: resolve('dist'),
   },
   devtool: 'source-map',
 };

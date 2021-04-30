@@ -28,7 +28,7 @@ console.log(`Migration for env: ${env}`);
   if (steps.includes('migrate')) {
     await new Promise((resolve, reject) => {
       const npm = exec(
-        `npm run script:sequelize -- db:migrate --env ${env}`,
+        `sequelize-cli db:migrate --env ${env}`,
         (err) => { if (err) reject(err); else resolve(); },
       );
       npm.stdout.pipe(process.stdout);

@@ -1,0 +1,8 @@
+{
+    "name": "@syuchan1005/book-reader-server",
+    "scripts": {
+        "serve": "nodemon --watch src --ext .js,.ts --exec \"npm run build -- -d && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node dist\"",
+        "build": "webpack --config webpack.config.js",
+        "db-migrate": "node scripts/db-migrate.js"
+    }
+}
