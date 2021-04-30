@@ -12,7 +12,6 @@ module.exports = {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
-      '@client': resolve(__dirname, '..', 'src/client'),
       '@server': resolve(__dirname, '..', 'src/server'),
     },
   },

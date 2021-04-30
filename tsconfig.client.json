@@ -1,0 +1,6 @@
+{
+    "extends": "./tsconfig",
+    "paths": {
+        "@client*" :["src/client*"],
+    }
+}

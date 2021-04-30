@@ -15,7 +15,6 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
       '@client': resolve(__dirname, '..', 'src/client'),
-      '@server': resolve(__dirname, '..', 'src/server'),
     },
   },
   module: {
@@ -32,6 +31,7 @@ module.exports = {
           {
             loader: 'ts-loader',
             options: {
+              configFile: 'tsconfig.client.json',
               transpileOnly: true,
             },
           },
