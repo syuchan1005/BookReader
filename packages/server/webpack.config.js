@@ -17,14 +17,6 @@ module.exports = {
   },
   module: {
     rules: [
-      /*
-      {
-        enforce: 'pre',
-        test: /\.(ts|tsx)?$/,
-        loader: 'tslint-loader',
-        exclude: [resolve('node_modules')],
-      },
-      */
       {
         test: /\.(graphql|gql)$/,
         exclude: /node_modules/,
@@ -50,7 +42,7 @@ module.exports = {
     ],
   },
   plugins: [
-    // new HardSourceWebpackPlugin(),
+    new HardSourceWebpackPlugin(),
     new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
   ],

@@ -9,12 +9,12 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
-  context: resolve('src/client'),
+  context: resolve('src'),
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
-      '@client': resolve(__dirname, '..', 'src/client'),
+      '@client': resolve(__dirname, '..', 'src'),
     },
   },
   module: {
@@ -31,7 +31,6 @@ module.exports = {
           {
             loader: 'ts-loader',
             options: {
-              configFile: 'tsconfig.client.json',
               transpileOnly: true,
             },
           },
@@ -99,7 +98,7 @@ module.exports = {
       patterns: [
         {
           from: resolve('public'),
-          to: resolve('dist/client'),
+          to: resolve('dist'),
           globOptions: {
             ignore: [
               'index.html',
