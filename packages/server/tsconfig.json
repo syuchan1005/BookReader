@@ -1,31 +1,17 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es5",
-      "es6",
-      "es2019",
-      "esnext",
-      "webworker",
-      "dom"
-    ],
-    "target": "es6",
+    "target": "esnext",
     "module": "commonjs",
-    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "sourceMap": true,
-    "jsx": "react",
-    "baseUrl": ".",
-    "typeRoots": ["node_modules/@types", "src/@types"],
     "moduleResolution": "node",
+    "baseUrl": ".",
     "esModuleInterop": true,
     "downlevelIteration": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "paths": {
+      "@server*" :["src/*"]
+    }
   },
-  "paths": {
-    "@server*" :["src/server*"]
-  },
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ]
+  "exclude": ["node_modules"]
 }
