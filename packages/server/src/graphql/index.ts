@@ -20,6 +20,7 @@ import IntRange from './scalar/IntRange';
 import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 import GQLUtil from './GQLUtil';
 import { convertAndSaveJpg } from '../ImageUtil';
+import internalMiddlewares from './middleware/index';
 
 export const SubscriptionKeys = {
   ADD_BOOK_INFO: 'ADD_BOOK_INFO',
@@ -43,22 +44,13 @@ export default class GraphQL {
     this.pubsub = new PubSub();
     this.plugins = loadPlugins();
 
-    // @ts-ignore
-    const context = require.context('./middleware', false, /\.ts$/);
     this.middlewares = {
       ...(this.plugins.reduce((obj, p) => {
         // eslint-disable-next-line no-param-reassign
         obj[p.info.name] = p.middleware;
         return obj;
       }, {})),
-      ...(context.keys().reduce((obj, p) => {
-        const df = context(p).default;
-        if (df) {
-          // eslint-disable-next-line no-param-reassign,new-cap
-          obj[path.basename(p, path.extname(p))] = new df();
-        }
-        return obj;
-      }, {})),
+      ...internalMiddlewares,
     };
     const util = { ...GQLUtil, ...Util };
     const middlewareOps = (key) => Object.keys(this.middlewares)
