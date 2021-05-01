@@ -1,6 +1,6 @@
 version: "2"
 exclude_patterns:
-  - "webpack/"
-  - "scripts/"
+  - "**/webpack/"
+  - "**/scripts/"
   - "screenshots/"
   - "public/"

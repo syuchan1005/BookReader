@@ -1,23 +1,21 @@
-FROM node:12.16.1-alpine3.11 as build
+FROM node:16-alpine as build
 
 COPY . /build
 
 WORKDIR /build
 
-RUN npm ci \
-    && npm run build && npm run script:db-migrate production compile \
-    && mkdir /bookReader \
-    && mkdir /bookReader/src \
-    && mv dist/ /bookReader/ \
-    && cp -r /bookReader/dist/client /bookReader/public/ \
-    && mv src/server/ /bookReader/src/server/ \
-    && mv .sequelizerc /bookReader/ \
-    && mv build-migrations /bookReader \
-    && mv scripts/ /bookReader/scripts \
-    && mv package.json /bookReader/ \
-    && mv package-lock.json /bookReader/
+RUN npm ci
+RUN npm run build && npm run script:db-migrate production compile
+RUN mkdir /bookReader \
+    && cp -r packages/client/dist /bookReader/public \
+    && cp packages/server/dist/index.js /bookReader/ \
+    && mv packages/server/.sequelizerc /bookReader/ \
+    && mv packages/server/sequelize.config.js /bookReader/ \
+    && mv packages/server/build-migrations /bookReader/ \
+    && mv packages/server/scripts/ /bookReader/ \
+    && mv packages/server/package.json /bookReader/
 
-FROM node:12.16.1-alpine3.11
+FROM node:16-alpine
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
@@ -29,16 +27,14 @@ ENV DEBUG=""
 RUN apk add --no-cache supervisor nginx git \
     && mkdir /bookReader
 
-COPY --from=build ["/bookReader/package.json", "/bookReader/package-lock.json", "/bookReader/"]
+COPY --from=build /bookReader /bookReader
 
 WORKDIR /bookReader
 
-RUN npm ci
+RUN npm install
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/
-
-COPY --from=build /bookReader /bookReader
 
 COPY docker-entrypoint.sh /bookReader/
 
