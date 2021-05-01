@@ -7,7 +7,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 const commonConfig = require('./webpack.common.client');
 
-const dist = resolve('dist/client');
+const dist = resolve('dist');
 
 module.exports = merge(commonConfig, {
   mode: 'production',
