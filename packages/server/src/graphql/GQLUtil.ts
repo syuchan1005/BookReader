@@ -4,7 +4,6 @@ import path from 'path';
 
 import unzipper from 'unzipper';
 import { v4 as uuidv4 } from 'uuid';
-import rimraf from 'rimraf';
 import { createExtractorFromData } from 'node-unrar-js';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { PubSubEngine } from 'apollo-server-koa';
@@ -97,9 +96,7 @@ const GQLUtil = {
         infoId,
         bookId,
         book.number,
-        (resolve) => {
-          rimraf(tempPath, () => resolve());
-        },
+        () => fs.rm(tempPath, { recursive: true, force: true }),
       );
     },
   },
@@ -108,13 +105,13 @@ const GQLUtil = {
     infoId: string,
     bookId: string,
     number: string,
-    deleteTempFolder?: (resolve, reject) => void,
+    deleteTempFolder?: () => Promise<void>,
   ): Promise<Result> {
     let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
       (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
     ));
     if (files.length <= 0) {
-      if (deleteTempFolder) await new Promise(deleteTempFolder);
+      if (deleteTempFolder) await deleteTempFolder;
       return {
         success: false,
         code: 'QL0003',
@@ -134,13 +131,7 @@ const GQLUtil = {
       } else {
         await convertAndSaveJpg(f, dist);
       }
-    }).catch((reason) => new Promise((resolve, reject) => {
-      if (deleteTempFolder) {
-        deleteTempFolder(resolve, () => {
-        });
-      }
-      reject(reason);
-    }));
+    }).catch((reason) =>  (deleteTempFolder ? deleteTempFolder() : Promise.reject(reason)));
     if (deleteTempFolder) await new Promise(deleteTempFolder);
 
     const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;

@@ -4,7 +4,6 @@ import os from 'os';
 import { promises as fs } from 'fs';
 
 import du from 'du';
-import rimraf from 'rimraf';
 
 import BookModel from '@server/sequelize/models/Book';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
@@ -60,8 +59,7 @@ class Debug extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       debug_deleteUnusedFolders: async () => {
-        const rmdir = (p) => new Promise((resolve) => rimraf(p, resolve));
-        await rmdir('storage/cache');
+        await fs.rm('storage/cache', { recursive: true, force: true });
         await GraphQL.createFolders();
 
         const dbBookIds = (await BookModel.findAll({
@@ -70,7 +68,7 @@ class Debug extends GQLMiddleware {
         const fsBookIds = await fs.readdir('storage/book');
         await asyncForEach(fsBookIds, async (id) => {
           if (!dbBookIds.includes(id)) {
-            return rmdir(`storage/book/${id}`);
+            return fs.rm(`storage/book/${id}`, { recursive: true, force: true });
           }
           return undefined;
         });

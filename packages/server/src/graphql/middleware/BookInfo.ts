@@ -3,7 +3,6 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { promises as fs } from 'fs';
 
 import { v4 as uuidv4 } from 'uuid';
-import rimraf from 'rimraf';
 import Sequelize, { Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
@@ -222,11 +221,8 @@ class BookInfo extends GQLMiddleware {
         });
 
         await asyncForEach(books, async (book) => {
-          await new Promise((resolve) => {
-            rimraf(`storage/book/${book.id}`, () => {
-              rimraf(`storage/cache/book/${book.id}`, () => resolve());
-            });
-          });
+          await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
+          await fs.rm(`storage/book/${book.id}`, { recursive: true, force: true });
         });
 
         return {
