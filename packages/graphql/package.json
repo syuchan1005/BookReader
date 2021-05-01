@@ -5,12 +5,12 @@
         "gql-gen": "graphql-codegen --config codegen.yml"
     },
     "devDependencies": {
-        "@graphql-codegen/cli": "^1.17.8",
-        "@graphql-codegen/typescript": "1.17.8",
-        "@graphql-codegen/typescript-operations": "1.17.8",
-        "@graphql-codegen/typescript-resolvers": "1.17.8"
+        "@graphql-codegen/cli": "^1.21.4",
+        "@graphql-codegen/typescript": "1.22.0",
+        "@graphql-codegen/typescript-operations": "1.17.16",
+        "@graphql-codegen/typescript-resolvers": "1.19.1"
     },
     "dependencies": {
-        "graphql": "^15.3.0"
+        "graphql": "^15.5.0"
     }
 }

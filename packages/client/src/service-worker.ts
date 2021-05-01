@@ -1,35 +1,43 @@
-/* global workbox, skipWaiting */
-/* eslint-disable no-underscore-dangle,no-restricted-globals, default-case */
-workbox.core.setCacheNameDetails({ prefix: 'bookReader' });
-workbox.core.skipWaiting(); workbox.core.clientsClaim();
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
+import { skipWaiting, clientsClaim, setCacheNameDetails } from 'workbox-core';
+import { precacheAndRoute } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { ExpirationPlugin } from 'workbox-expiration';
+
+setCacheNameDetails({ prefix: 'bookReader' });
+skipWaiting();
+clientsClaim();
+// @ts-ignore
+precacheAndRoute(self.__WB_MANIFEST);
+
 
 // https://github.com/GoogleChrome/workbox/issues/1599
-workbox.routing.registerRoute(/^https:\/\/fonts\.googleapis\.com/, new workbox.strategies.StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
-workbox.routing.registerRoute(/^https:\/\/fonts\.gstatic\.com/, new workbox.strategies.CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new workbox.CacheableResponsePlugin({ statuses: [0, 200] }), new workbox.ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
+registerRoute(/^https:\/\/fonts\.googleapis\.com/, new StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
+registerRoute(/^https:\/\/fonts\.gstatic\.com/, new CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
 
 const BookImageCacheName = 'bookReader-images';
-workbox.routing.registerRoute(
+registerRoute(
   /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]/,
-  new workbox.strategies.CacheFirst({
+  new StaleWhileRevalidate({
     cacheName: BookImageCacheName,
     plugins: [
-      new workbox.CacheableResponsePlugin({
+      new CacheableResponsePlugin({
         statuses: [200],
       }),
     ],
   }),
   'GET',
 );
-workbox.routing.registerRoute(
+registerRoute(
   /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?\?nosave/,
-  new workbox.strategies.CacheFirst({
+  new StaleWhileRevalidate({
     cacheName: `${BookImageCacheName}-expires`,
     plugins: [
-      new workbox.CacheableResponsePlugin({
+      new CacheableResponsePlugin({
         statuses: [200],
       }),
-      new workbox.ExpirationPlugin({
+      new ExpirationPlugin({
         maxEntries: 20,
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
       }),

@@ -7,12 +7,12 @@ import { SnackbarProvider } from 'notistack';
 import MyApolloProvider from '@client/apollo/ApolloProvider';
 import getClient from '@client/apollo/index';
 import StoreProvider from '@client/store/StoreProvider';
-import regSW from './registerServiceWorker';
+import registerServiceWorker from './registerServiceWorker';
 import App from './App';
 
 import db from './Database';
 
-const wb = regSW();
+const wb = registerServiceWorker();
 
 (async () => {
   await db.connect();
