@@ -26,5 +26,26 @@ export default defineConfig({
   ],
   server: {
     port: 8080,
+    proxy: {
+      '**/*.jpg': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
+      '**/*.webp': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
+      '/graphql': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+        ws: true,
+      },
+    },
   },
 });
