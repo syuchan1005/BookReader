@@ -31,7 +31,7 @@ COPY --from=build /bookReader /bookReader
 
 WORKDIR /bookReader
 
-RUN npm install
+RUN npm install --force
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/

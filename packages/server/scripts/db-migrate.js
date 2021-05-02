@@ -17,7 +17,7 @@ console.log(`Migration for env: ${env}`);
     await tsFiles.reduce((p, filename) => p.then(() => new Promise((resolve, reject) => {
       console.log(`  - ${filename}`);
       const tsc = exec(
-        `tsc --target es2017 --module CommonJS --skipLibCheck --outDir "${sequelizeResource['migrations-path']}" "${sequelizeResource['ts-migrations-path']}/${filename}"`,
+        `esbuild "${sequelizeResource['ts-migrations-path']}/${filename}" --outdir="${sequelizeResource['migrations-path']}" --platform=node`,
         (err) => { if (err) reject(err); else resolve(); },
       );
       tsc.stdout.pipe(process.stdout);
