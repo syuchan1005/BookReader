@@ -1,24 +1,23 @@
-import { promises as fs, createReadStream as fsCreateReadStream } from 'fs';
+import { promises as fs, createWriteStream as fsCreateWriteStream } from 'fs';
 import os from 'os';
 import path from 'path';
 
-import unzipper from 'unzipper';
 import { v4 as uuidv4 } from 'uuid';
-import { createExtractorFromData } from 'node-unrar-js';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { PubSubEngine } from 'apollo-server-koa';
+import sevenZipBin from '7zip-bin';
+import { extractFull } from 'node-7z';
 
 import {
   BookInfoOrder, InputBook,
   MutationAddBooksArgs,
   Result, Scalars,
 } from '@syuchan1005/book-reader-graphql';
-import { archiveTypes } from '@syuchan1005/book-reader-common';
 
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
 import {
-  asyncForEach, asyncMap, mkdirpIfNotExists, readdirRecursively, renameFile,
+  asyncForEach, asyncMap, readdirRecursively, renameFile,
 } from '@server/Util';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
@@ -70,11 +69,10 @@ const GQLUtil = {
         };
       }
 
-      const type = await GQLUtil.checkArchiveType(book.file, book.path);
-      if (type.success !== true) {
-        return type;
+      const archiveFile = await GQLUtil.saveArchiveFile(book.file, book.path);
+      if (archiveFile.success !== true) {
+        return archiveFile;
       }
-      const { createReadStream, archiveType } = type;
 
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
@@ -84,7 +82,13 @@ const GQLUtil = {
       }
       // extract
       const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
-      await GQLUtil.extractCompressFile(tempPath, archiveType, createReadStream);
+      const progressListener = customData ? async (percent: number) => {
+        await pubsub.publish(customData.pubsub.key, {
+          ...customData.pubsub,
+          [customData.pubsub.fieldName]: `Extract Book (${book.number}) ${percent}%`,
+        });
+      } : () => {};
+      await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, progressListener);
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
@@ -96,8 +100,16 @@ const GQLUtil = {
         infoId,
         bookId,
         book.number,
+        async (current, total) => {
+          if (customData) {
+            await pubsub.publish(customData.pubsub.key, {
+              ...customData.pubsub,
+              [customData.pubsub.fieldName]: `Move Book (${book.number}) ${current}/${total}`,
+            });
+          }
+        },
         () => fs.rm(tempPath, { recursive: true, force: true }),
-      );
+      ).finally(() => fs.rm(archiveFile.archiveFilePath, { force: true }));
     },
   },
   async addBookFromLocalPath(
@@ -105,6 +117,7 @@ const GQLUtil = {
     infoId: string,
     bookId: string,
     number: string,
+    onProgress: (current: number, total: number) => void,
     deleteTempFolder?: () => Promise<void>,
   ): Promise<Result> {
     let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
@@ -126,13 +139,15 @@ const GQLUtil = {
     await asyncForEach(files, async (f, i) => {
       const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
       const dist = `storage/book/${bookId}/${fileName}`;
+
+      onProgress(i + 1, files.length);
       if (/\.jpe?g$/i.test(f)) {
         await renameFile(f, dist);
       } else {
         await convertAndSaveJpg(f, dist);
       }
-    }).catch((reason) =>  (deleteTempFolder ? deleteTempFolder() : Promise.reject(reason)));
-    if (deleteTempFolder) await new Promise(deleteTempFolder);
+    }).catch(async (reason) =>  (deleteTempFolder ? deleteTempFolder() : reason));
+    if (deleteTempFolder) await deleteTempFolder();
 
     const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
     await Database.sequelize.transaction(async (transaction) => {
@@ -178,47 +193,15 @@ const GQLUtil = {
       success: true,
     };
   },
-  async extractCompressFile(
-    tempPath: string,
-    archiveType: typeof archiveTypes[keyof typeof archiveTypes],
-    createReadStream: () => NodeJS.ReadableStream,
-  ) {
-    if (archiveType === 'zip') {
-      await new Promise((resolve) => {
-        createReadStream()
-          .pipe(unzipper.Extract({ path: tempPath }))
-          .on('close', resolve);
-      });
-    } else if (archiveType === 'rar') {
-      const readStream = createReadStream();
-      const buffer: Buffer = await new Promise((resolve, reject) => {
-        const chunks = [];
-        readStream.once('error', (err) => reject(err));
-        readStream.once('end', () => resolve(Buffer.concat(chunks)));
-        readStream.on('data', (c) => chunks.push(c));
-      });
-
-      await new Promise((resolve, reject) => {
-        const extractor = createExtractorFromData(buffer);
-        // eslint-disable-next-line camelcase
-        const [obj_state, obj_header] = extractor.extractAll();
-        if (obj_state.state !== 'SUCCESS') {
-          reject(new Error('Unrar failed'));
-        }
-        // eslint-disable-next-line camelcase
-        asyncForEach(obj_header.files, async (f) => {
-          if (f.fileHeader.flags.directory) return;
-          await mkdirpIfNotExists(path.join(tempPath, f.fileHeader.name, '..'));
-          await fs.writeFile(path.join(tempPath, f.fileHeader.name), f.extract[1]);
-        }).then(resolve);
-      });
-    }
+  extractCompressFile(tempPath: string, archiveFilePath: string, onProgress: (percent: number) => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const extractStream = extractFull(archiveFilePath, tempPath, { recursive: true, $progress: true, $bin: sevenZipBin.path7za });
+      extractStream.on('progress', (event) => { onProgress && onProgress(event.percent) });
+      extractStream.on('error', reject);
+      extractStream.on('end', resolve);
+    });
   },
-  async checkArchiveType(file?: Scalars['Upload'], localPath?: string): Promise<({ success: false } & Result) | {
-    success: true,
-    archiveType: typeof archiveTypes[keyof typeof archiveTypes],
-    createReadStream: () => NodeJS.ReadableStream,
-  }> {
+  async saveArchiveFile(file?: Scalars['Upload'], localPath?: string): Promise<({ success: false } & Result) | { success: true, archiveFilePath: string }> {
     if (!file && !path) {
       return {
         success: false,
@@ -227,11 +210,8 @@ const GQLUtil = {
       };
     }
 
-    let archiveType: typeof archiveTypes[keyof typeof archiveTypes] | undefined;
-    let createReadStream: () => NodeJS.ReadableStream;
+    let archiveFilePath: string;
     if (localPath) {
-      archiveType = [...new Set(Object.values(archiveTypes))]
-        .find((ext) => localPath.endsWith(`.${ext}`));
       const downloadPath = path.normalize('downloads');
       const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
       if (path.relative(downloadPath, normalizeLocalPath).startsWith('../')) {
@@ -241,30 +221,25 @@ const GQLUtil = {
           message: Errors.QL0012,
         };
       }
-      createReadStream = () => fsCreateReadStream(normalizeLocalPath);
+      archiveFilePath = path.resolve(normalizeLocalPath);
     } else if (file) {
       const awaitFile = await file;
-      const { mimetype, filename } = awaitFile;
-      archiveType = archiveTypes[mimetype];
-      if (!archiveType) {
-        archiveType = [...new Set(Object.values(archiveTypes))]
-          .find((ext) => filename.endsWith(`.${ext}`));
-      }
-      createReadStream = awaitFile.createReadStream;
+      archiveFilePath = path.resolve(`storage/downloads/${uuidv4()}`);
+      await GQLUtil.writeFile(archiveFilePath, awaitFile.createReadStream());
     }
 
-    if (!archiveType) {
-      return {
-        success: false,
-        code: 'QL0002',
-        message: Errors.QL0002,
-      };
-    }
-    return {
-      success: true,
-      createReadStream,
-      archiveType,
-    };
+    return { success: true, archiveFilePath };
+  },
+  async writeFile(filePath: string, readableStream: NodeJS.ReadableStream): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const writableStream = fsCreateWriteStream(filePath);
+      readableStream.pipe(writableStream);
+      readableStream.on('error', (err) => {
+        writableStream.destroy(err);
+        reject();
+      });
+      readableStream.on('end', resolve);
+    });
   },
   async searchBookFolders(tempPath: string) {
     let booksFolderPath = '/';

@@ -45,7 +45,7 @@
       "filerobot-image-editor": "^3.12.17",
       "graphql": "^15.5.0",
       "graphql-tag": "^2.12.4",
-      "history": "^5.0.0",
+      "history": "4.10.1",
       "jszip": "^3.6.0",
       "notistack": "^1.0.6",
       "react": "^17.0.2",

@@ -80,18 +80,22 @@ class Book extends GQLMiddleware {
         path: localPath,
       }) => {
         const tempPath = `${os.tmpdir()}/bookReader/${infoId}`;
-        const type = await GQLUtil.checkArchiveType(compressBooks, localPath);
-        if (type.success === false) {
-          return type as unknown as ResultWithBookResults;
+        const archiveFile = await GQLUtil.saveArchiveFile(compressBooks, localPath);
+        if (archiveFile.success === false) {
+          return archiveFile as unknown as ResultWithBookResults;
         }
-        const { createReadStream, archiveType } = type;
 
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
           id: infoId,
           addBooks: 'Extract Book...',
         });
 
-        await GQLUtil.extractCompressFile(tempPath, archiveType, createReadStream);
+        await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, async (percent) => {
+          await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+            id: infoId,
+            addBooks: `Extract Book ${percent}%`,
+          });
+        });
 
         const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {
@@ -117,26 +121,34 @@ class Book extends GQLMiddleware {
             nums = `${i + 1}`;
           }
 
+          if (addedNums.includes(nums)) {
+            nums = `[DUP]${nums}: ${p}`;
+          }
+
           await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
             id: infoId,
             addBooks: `Move Book (${nums}) ...`,
           });
 
-          if (addedNums.includes(nums)) {
-            nums = `[DUP]${nums}: ${p}`;
-          }
           addedNums.push(nums);
           return GQLUtil.addBookFromLocalPath(
             folderPath,
             infoId,
             uuidv4(),
             nums,
+            (current, total) => {
+              this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+                id: infoId,
+                addBooks: `Move Book (${nums}) ${current}/${total}`,
+              });
+            },
             () => fs.rm(folderPath, { recursive: true, force: true }),
           ).catch((e) => {
             throw e;
           });
         });
         await fs.rm(tempPath, { recursive: true, force: true });
+        await fs.rm(archiveFile.archiveFilePath, { force: true });
         return {
           success: true,
           bookResults: results,

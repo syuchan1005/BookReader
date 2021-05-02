@@ -87,6 +87,7 @@ export default class GraphQL {
     await Util.mkdirpIfNotExists('storage/bookInfo');
     await Util.mkdirpIfNotExists('storage/book');
     await Util.mkdirpIfNotExists('storage/cache/book');
+    await Util.mkdirpIfNotExists('storage/downloads');
   }
 
   async middleware(app) {
