@@ -1,7 +1,15 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
+        "jsx": "react",
+        "target": "es6",
+        "module": "commonjs",
+        "lib": ["webworker", "dom"],
+        "moduleResolution": "node",
         "esModuleInterop": true,
+        "skipLibCheck": true,
+        "downlevelIteration": true,
+        "outDir": "./dist",
         "paths": {
             "@client*" :["src/*"]
         }

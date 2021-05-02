@@ -1,5 +1,5 @@
-import React from 'react';
-import { useDropzone } from 'react-dropzone';
+import * as React from 'react';
+import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { createStyles, makeStyles, Theme } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
 
@@ -7,8 +7,7 @@ import { archiveTypes } from '@syuchan1005/book-reader-common';
 import useOS from '@client/hooks/useOS';
 
 interface FileFieldProps {
-  onChange?<T extends File>
-  (acceptedFiles: T[], rejectedFiles: T[], event: React.DragEvent<HTMLElement>): void;
+  onChange?: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({

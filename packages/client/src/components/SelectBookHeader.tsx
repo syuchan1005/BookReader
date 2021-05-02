@@ -18,7 +18,7 @@ import {
   DeleteBooksMutationVariables,
   MoveBooksMutation as MoveBooksMutationData,
   MoveBooksMutationVariables,
-} from '@syuchan1005/book-reader-graphql.ts';
+} from '@syuchan1005/book-reader-graphql';
 
 import DeleteBooksMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookHeader_deleteBooks.gql';
 import MoveBooksMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookHeader_moveBooks.gql';

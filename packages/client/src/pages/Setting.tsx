@@ -35,7 +35,7 @@ import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQ
 import DeleteGenreMutation from '@syuchan1005/book-reader-graphql/queries/Pages_Setting_deleteGenre.gql';
 import EditGenreMutation from '@syuchan1005/book-reader-graphql/queries/Pages_Setting_editGenre.gql';
 
-import { archiveTypes } from '@syuchan1005/book-reader-common';
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({

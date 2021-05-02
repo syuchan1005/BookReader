@@ -2,7 +2,7 @@
    "name": "@syuchan1005/book-reader-client",
    "scripts": {
       "serve": "vite",
-      "build": "tsc && vite build",
+      "build": "vite build",
       "serve:prod": "vite preview",
       "test": "jest"
    },
