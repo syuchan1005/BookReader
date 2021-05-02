@@ -5,6 +5,9 @@ COPY . /build
 WORKDIR /build
 
 RUN npm ci
+
+ENV NODE_ENV="production"
+
 RUN npm run build && npm run script:db-migrate production compile
 RUN mkdir /bookReader \
     && cp -r packages/client/dist /bookReader/public \
@@ -22,7 +25,7 @@ LABEL name="BookReader"
 
 EXPOSE 80
 
-ENV DEBUG=""
+ENV DEBUG="" NODE_ENV="production"
 
 RUN apk add --no-cache supervisor nginx git \
     && mkdir /bookReader

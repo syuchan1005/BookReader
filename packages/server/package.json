@@ -1,7 +1,7 @@
 {
     "name": "@syuchan1005/book-reader-server",
     "scripts": {
-        "serve": "nodemon --watch src --ext .js,.ts --exec \"npm run build -- -d && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node dist\"",
+        "serve": "nodemon --watch src --ext .js,.ts --exec \"npm run build && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node dist\"",
         "build": "node scripts/build.js",
         "db-migrate": "node scripts/db-migrate.js"
     },
@@ -16,7 +16,6 @@
         "@types/sharp": "^0.28.0",
         "cross-env": "^7.0.3",
         "nodemon": "^2.0.7",
-        "sequelize-cli": "^6.2.0",
         "esbuild": "^0.11.16",
         "@esbuild-plugins/node-resolve": "^0.1.4"
     },
@@ -35,6 +34,7 @@
         "koa2-connect-history-api-fallback": "^0.1.3",
         "natural-orderby": "^2.0.3",
         "sequelize": "^6.6.2",
+        "sequelize-cli": "^6.2.0",
         "sharp": "^0.28.1",
         "sqlite3": "^5.0.2",
         "uuid": "^8.3.2",

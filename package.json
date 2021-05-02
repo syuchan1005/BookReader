@@ -15,7 +15,7 @@
       "test:client": "npm run test --workspace=\"packages/client\"",
       "serve:server": "npm run serve --workspace=\"packages/server\"",
       "build:server": "npm run build --workspace=\"packages/server\"",
-      "build": "npm run build:client && npm run build:server -- -- -p",
+      "build": "npm run build:client && npm run build:server",
       "start": "node dist/server",
       "script:db-migrate": "npm run db-migrate --workspace=\"packages/server\"",
       "gql-gen": "npm run gql-gen --workspace=\"packages/graphql\""
