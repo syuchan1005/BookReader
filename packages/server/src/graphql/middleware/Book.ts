@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs, rmSync as fsRmSync } from 'fs';
 import os from 'os';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -95,7 +95,12 @@ class Book extends GQLMiddleware {
             id: infoId,
             addBooks: `Extract Book ${percent}%`,
           });
-        });
+        })
+          .catch((err) => {
+            fsRmSync(archiveFile.archiveFilePath, { force: true });
+            fsRmSync(tempPath, { recursive: true, force: true });
+            return Promise.reject(err);
+          });
 
         const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {

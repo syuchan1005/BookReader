@@ -27,7 +27,7 @@ EXPOSE 80
 
 ENV DEBUG="" NODE_ENV="production"
 
-RUN apk add --no-cache supervisor nginx git \
+RUN apk add --no-cache supervisor nginx git p7zip \
     && mkdir /bookReader
 
 COPY --from=build /bookReader /bookReader

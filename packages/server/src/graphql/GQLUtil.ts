@@ -1,11 +1,10 @@
-import { promises as fs, createWriteStream as fsCreateWriteStream } from 'fs';
+import { promises as fs, createWriteStream as fsCreateWriteStream, rmSync as fsRmSync } from 'fs';
 import os from 'os';
 import path from 'path';
 
 import { v4 as uuidv4 } from 'uuid';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { PubSubEngine } from 'apollo-server-koa';
-import sevenZipBin from '7zip-bin';
 import { extractFull } from 'node-7z';
 
 import {
@@ -88,7 +87,12 @@ const GQLUtil = {
           [customData.pubsub.fieldName]: `Extract Book (${book.number}) ${percent}%`,
         });
       } : () => {};
-      await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, progressListener);
+      await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, progressListener)
+        .catch((err) => {
+          fsRmSync(archiveFile.archiveFilePath, { force: true });
+          fsRmSync(tempPath, { recursive: true, force: true });
+          return Promise.reject(err)
+        });
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
@@ -195,7 +199,7 @@ const GQLUtil = {
   },
   extractCompressFile(tempPath: string, archiveFilePath: string, onProgress: (percent: number) => void): Promise<void> {
     return new Promise((resolve, reject) => {
-      const extractStream = extractFull(archiveFilePath, tempPath, { recursive: true, $progress: true, $bin: sevenZipBin.path7za });
+      const extractStream = extractFull(archiveFilePath, tempPath, { recursive: true, $progress: true });
       extractStream.on('progress', (event) => { onProgress && onProgress(event.percent) });
       extractStream.on('error', reject);
       extractStream.on('end', resolve);
