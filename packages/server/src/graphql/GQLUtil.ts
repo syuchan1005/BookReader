@@ -135,9 +135,14 @@ const GQLUtil = {
         message: Errors.QL0003,
       };
     }
-    files = naturalOrderBy(
-      files.map((s) => s.replace(/cover/g, '!!!!!cover')),
-    ).map((s) => s.replace(/!!!!!cover/g, 'cover'));
+    files = naturalOrderBy(files).reduce((prev, file) => {
+      if (file.includes('cover')) {
+        prev.unshift(file);
+      } else {
+        prev.push(file);
+      }
+      return prev;
+    }, []);
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
     await asyncForEach(files, async (f, i) => {
