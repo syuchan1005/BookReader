@@ -2,7 +2,10 @@ const { build } = require('esbuild');
 const graphqlPlugin = require('@luckycatfactory/esbuild-graphql-loader').default;
 const NodeResolve = require('@esbuild-plugins/node-resolve').default;
 
-build({
+
+const argEnv = process.argv[2] || 'development';
+
+const config = {
   entryPoints: ['src/index.ts'],
   bundle: true,
   outbase: './src',
@@ -22,9 +25,14 @@ build({
       },
   }),
   ],
-  define: {
-    'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
-  },
   watch: false,
   minify: process.env.NODE_ENV === 'production',
-});
+};
+
+if (argEnv !== 'development') {
+  config.define = {
+    'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
+  };
+}
+
+build(config);

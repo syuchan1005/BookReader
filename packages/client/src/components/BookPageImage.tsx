@@ -1,8 +1,8 @@
 import React from 'react';
 import { createStyles, makeStyles } from '@material-ui/core';
 
-interface ImgProps {
-  src: string;
+type ImageProps = {
+  src?: string;
   alt?: string;
   minWidth?: number;
   minHeight?: number;
@@ -14,7 +14,21 @@ interface ImgProps {
 
   onClick?: () => void;
   onLoad?: (success: boolean) => void;
-}
+};
+
+type BookPageImageProps = {
+  bookId: string;
+  pageIndex: number;
+  bookPageCount: number;
+  width?: number;
+  height?: number;
+} & Omit<ImageProps, 'src'>;
+
+type ThumbnailBookPageImageProps = {
+  thumbnail?: string;
+  width?: number;
+  height?: number;
+} & Omit<ImageProps, 'src'>;
 
 const useStyles = makeStyles(() => createStyles({
   noImg: {
@@ -42,7 +56,25 @@ const useStyles = makeStyles(() => createStyles({
   },
 }));
 
-const Img: React.FC<ImgProps> = (props: ImgProps) => {
+const createSizeUrlSuffix = (width?: number, height?: number) => (!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`;
+
+export const createBookPageUrl = (
+  bookId: string,
+  pageIndex: number,
+  bookPageCount: number,
+  width?: number,
+  height?: number,
+) => {
+  const pageFileName = pageIndex.toString(10).padStart(bookPageCount.toString(10).length, '0');
+  const sizeString = createSizeUrlSuffix(width, height);
+
+  console.info(width, height, sizeString);
+  return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
+};
+
+const minOrNot = (value: number | undefined, minValue: number): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
+
+const Image: React.FC<ImageProps> = (props: ImageProps) => {
   const classes = useStyles(props);
   const {
     src,
@@ -100,4 +132,42 @@ const Img: React.FC<ImgProps> = (props: ImgProps) => {
   );
 };
 
-export default Img;
+const Thumbnail: React.FC<ThumbnailBookPageImageProps> = (props: ThumbnailBookPageImageProps) => {
+  const {
+    thumbnail,
+    width,
+    height,
+    minWidth = 150,
+    minHeight = 200,
+  } = props;
+
+  const src = React.useMemo(
+    () => thumbnail.replace('.jpg', `${createSizeUrlSuffix(minOrNot(width, minWidth), minOrNot(height, minHeight))}.jpg`),
+    [thumbnail, width, height, minWidth, minHeight]
+  );
+
+  return (<Image {...props} src={src} />);
+};
+
+const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnail } = (props: BookPageImageProps) => {
+  const {
+    bookId,
+    pageIndex,
+    bookPageCount,
+    width,
+    height,
+    minWidth = 150,
+    minHeight = 200,
+  } = props;
+
+  const src = React.useMemo(
+    () => createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight)),
+    [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight]
+  );
+
+  return (<Image {...props} src={src} />);
+};
+
+BookPageImage.Thumbnail = Thumbnail;
+
+export default BookPageImage;

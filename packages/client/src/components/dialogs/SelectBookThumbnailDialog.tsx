@@ -21,7 +21,7 @@ import {
 import BookQuery from '@syuchan1005/book-reader-graphql/queries/SelectBookThumbnailDialog_book.gql';
 import EditBookMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookThumbnailDialog_editBook.gql';
 
-import Img from '@client/components/Img';
+import BookPageImage, { createBookPageUrl } from '@client/components/BookPageImage';
 import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
@@ -111,21 +111,22 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
             {[...Array(count).keys()]
-              .map((i) => i.toString(10).padStart(data.book.pages.toString(10).length, '0'))
-              .map((n, i) => (
-                <Card key={`/book/${bookId}/${n}_125x0.jpg`}>
+              .map((i) => (
+                <Card key={`${bookId}_${i}`}>
                   <CardActionArea
                     onClick={() => changeThumbnail({
                       variables: {
                         id: bookId,
-                        th: `/book/${bookId}/${n}.jpg`,
+                        th: createBookPageUrl(bookId, i, data.book.pages),
                       },
                     })}
                   >
-                    <Img
+                    <BookPageImage
                       className={classes.thumbnail}
-                      src={`/book/${bookId}/${n}_${125 * window.devicePixelRatio}x0.jpg`}
-                      alt={(i + 1).toString(10)}
+                      bookId={bookId}
+                      pageIndex={i}
+                      bookPageCount={data.book.pages}
+                      width={125 * window.devicePixelRatio}
                       minWidth={125}
                       minHeight={150}
                     />

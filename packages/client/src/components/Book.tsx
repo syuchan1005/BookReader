@@ -28,7 +28,7 @@ import EditBookMutation from '@syuchan1005/book-reader-graphql/queries/Book_edit
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import Img from './Img';
+import BookPageImage from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
 
@@ -199,9 +199,9 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
         </CardActions>
       )}
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
-        <Img
-          src={thumbnail ? `${thumbnail.replace('.jpg', `_${thumbnailSize * window.devicePixelRatio}x0.jpg`)}` : undefined}
-          alt={number}
+        <BookPageImage.Thumbnail
+          thumbnail={thumbnail}
+          width={thumbnailSize * window.devicePixelRatio}
           className={classes.thumbnail}
           noSave={thumbnailNoSave}
         />

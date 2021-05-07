@@ -38,7 +38,7 @@ import { commonTheme } from '@client/App';
 
 import { orange } from '@material-ui/core/colors';
 import db from '../Database';
-import Img from '../components/Img';
+import BookPageImage from '../components/BookPageImage';
 import useNetworkType from '../hooks/useNetworkType';
 import EditPagesDialog from '../components/dialogs/EditPagesDialog';
 import { useApollo } from '../apollo/ApolloProvider';
@@ -327,15 +327,12 @@ const Book: React.FC = (props: BookProps) => {
     history.push(`/book/${bookId}`);
   }, [prevBook, nextBook, data, history]);
 
-  const pages = React.useMemo(() => {
-    if (!data || !data.book) return [];
+  const imageSize = React.useMemo(() => {
+    if (store.showOriginalImage) return { width: undefined, height: undefined };
     const sizes = [width * window.devicePixelRatio, height * window.devicePixelRatio];
     sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
-    const pad = data.book.pages.toString(10).length;
-    const suffix = store.showOriginalImage ? '' : `_${sizes[0]}x${sizes[1]}`;
-    return [...Array(data.book.pages).keys()]
-      .map((i) => `/book/${params.id}/${i.toString(10).padStart(pad, '0')}${suffix}.jpg`);
-  }, [data, store.showOriginalImage, width, height]);
+    return { width: sizes[0], height: sizes[1] };
+  }, [width, height, store]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -516,15 +513,18 @@ const Book: React.FC = (props: BookProps) => {
               dir={store.readOrder === 0 ? 'ltr' : 'rtl'}
               className={classes.pageContainer}
             >
-              {pages.map((t, i) => (
+              {[...new Array(data.book.pages).keys()].map((i) => (
                 <SwiperSlide
-                  key={t}
+                  key={`${i}_${imageSize[0]}_${imageSize[1]}`}
                   className={classes.page}
                 >
                   {(Math.abs(i - debouncePage) <= 1) ? (
-                    <Img
+                    <BookPageImage
                       imgStyle={effectBackGround}
-                      src={t}
+                      bookId={params.id}
+                      pageIndex={i}
+                      bookPageCount={data.book.pages}
+                      {...imageSize}
                       alt={(i + 1).toString(10)}
                       className={classes.pageImage}
                     />
