@@ -12,7 +12,6 @@ export interface IState {
   theme: 'light' | 'dark';
   primary: string;
   secondary: string;
-  webp: boolean;
   readOrder: number;
   showOriginalImage: boolean;
   showBookInfoName: boolean;
@@ -20,7 +19,6 @@ export interface IState {
 
 export const initialState: IState = {
   wb: undefined,
-  webp: false,
   searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
   sortBookOrder: BookOrder.NumberAsc,
