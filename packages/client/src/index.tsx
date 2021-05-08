@@ -14,6 +14,11 @@ import db from './Database';
 
 const wb = registerServiceWorker();
 
+if (process.env.NODE_ENV !== 'production') {
+  import('why-did-you-update')
+  .then(({ whyDidYouUpdate }) => whyDidYouUpdate(React));
+}
+
 (async () => {
   await db.connect();
   const [client, persistor] = await getClient();
