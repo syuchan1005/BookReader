@@ -116,6 +116,14 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
   React.useEffect(() => setEditContent({}), [addType]);
   const [title, setTitle, resetTitle] = useStateWithReset(document.title);
   useEffect(() => { document.title = title; }, [title]);
+  useEffect(() => {
+    if (!addBookProgress) {
+      resetTitle();
+    } else {
+      const percent = (addBookProgress.loaded / addBookProgress.total) * 100;
+      setTitle((initValue) => `${initValue} - Uploading ${percent}%`);
+    }
+  }, [addBookProgress]);
 
   const {
     data,
