@@ -330,7 +330,7 @@ const Book: React.FC = (props: BookProps) => {
   const imageSize = React.useMemo(() => {
     if (store.showOriginalImage) return { width: undefined, height: undefined };
     const sizes = [width * window.devicePixelRatio, height * window.devicePixelRatio];
-    sizes[sizes[0] > sizes[1] ? 0 : 1] = 0;
+    sizes[sizes[0] > sizes[1] ? 0 : 1] = undefined;
     return { width: sizes[0], height: sizes[1] };
   }, [width, height, store]);
 
