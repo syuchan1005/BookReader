@@ -142,7 +142,7 @@ const Thumbnail: React.FC<ThumbnailBookPageImageProps> = (props: ThumbnailBookPa
   } = props;
 
   const src = React.useMemo(
-    () => thumbnail.replace('.jpg', `${createSizeUrlSuffix(minOrNot(width, minWidth), minOrNot(height, minHeight))}.jpg`),
+    () => !thumbnail ? undefined : thumbnail.replace('.jpg', `${createSizeUrlSuffix(minOrNot(width, minWidth), minOrNot(height, minHeight))}.jpg`),
     [thumbnail, width, height, minWidth, minHeight]
   );
 
