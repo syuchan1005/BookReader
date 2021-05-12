@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "paths": {
-      "@server/*" :["src/*"]
+      "@server/*" :["src/*"],
+      "natural-orderby": ["src/sort"]
     }
   },
   "exclude": ["node_modules"]

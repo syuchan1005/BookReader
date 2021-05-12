@@ -1,0 +1,3 @@
+const isFunction = (value: unknown): boolean => typeof value === 'function';
+
+export default isFunction;
