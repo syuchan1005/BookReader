@@ -2,7 +2,7 @@ import parseNumber from './parseNumber';
 import parseDate from './parseDate';
 import type { ParsedNumber } from '../types';
 
-const numberify = (value: string): ParsedNumber | void => {
+const numberify = (value: string): ParsedNumber | undefined => {
   const parsedNumber = parseNumber(value);
 
   if (parsedNumber !== undefined) {

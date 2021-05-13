@@ -42,28 +42,28 @@ describe('getIdentifiers()', () => {
   describe('invalid values', () => {
     it('should return empty array, if object provided', () => {
       const identifiers = {};
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if symbol provided', () => {
       const identifiers = Symbol();
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if boolean provided', () => {
       const identifiers = true;
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if one element has invalid type', () => {
       const identifiers = [[1]];
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);
@@ -74,7 +74,7 @@ describe('getIdentifiers()', () => {
           a: 1,
         },
       ];
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);
@@ -95,14 +95,14 @@ describe('getIdentifiers()', () => {
     });
     it('should return empty array, if one element has invalid type', () => {
       const identifiers = [Symbol()];
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if one element has invalid type', () => {
       const identifiers = [true];
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getIdentifiers(identifiers);
       const expected = [];
       expect(value).toEqual(expected);

@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "downlevelIteration": true,
     "skipLibCheck": true,
-    "isolatedModules": true,
+    "noImplicitAny": false,
     "paths": {
       "@server/*" :["src/*"],
       "natural-orderby": ["src/sort"]

@@ -1,8 +1,9 @@
+import { OrderEnum } from '@server/sort/types';
 import getOrders from '../getOrders';
 describe('getOrders()', () => {
   describe('valid values', () => {
     it('should return original value, if ["asc"] provided', () => {
-      const orders = ['asc'];
+      const orders: OrderEnum[] = ['asc'];
       const value = getOrders(orders);
       const expected = orders;
       expect(value).toEqual(expected);
@@ -14,7 +15,7 @@ describe('getOrders()', () => {
       expect(value).toEqual(expected);
     });
     it('should return original value, if ["desc"] provided', () => {
-      const orders = ['desc'];
+      const orders: OrderEnum[] = ['desc'];
       const value = getOrders(orders);
       const expected = orders;
       expect(value).toEqual(expected);
@@ -67,35 +68,35 @@ describe('getOrders()', () => {
   describe('invalid values', () => {
     it('should return empty array, if number provided', () => {
       const orders = 1;
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getOrders(orders);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if boolean provided', () => {
       const orders = true;
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getOrders(orders);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if object provided', () => {
       const orders = {};
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getOrders(orders);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if symbol provided', () => {
       const orders = Symbol();
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getOrders(orders);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if invalid elements provided', () => {
       const orders = ['asc', 'invalid'];
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const value = getOrders(orders);
       const expected = [];
       expect(value).toEqual(expected);

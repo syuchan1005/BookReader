@@ -14,7 +14,7 @@ describe('createIdentifierFn()', () => {
       user: 'barney',
       age: 34,
     };
-    const getValue = createIdentifierFn(v => v.user);
+    const getValue = createIdentifierFn((v: typeof element) => v.user);
     const expected = element.user;
     expect(getValue(element)).toEqual(expected);
   });

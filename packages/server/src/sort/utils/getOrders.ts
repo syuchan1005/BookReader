@@ -1,10 +1,6 @@
 import type { Order } from '../types';
 
-const getOrders = (
-  orders?:
-    | (ReadonlyArray<Order> | null | undefined)
-    | (Order | null | undefined),
-): Array<Order> => {
+const getOrders = (orders?: ReadonlyArray<Order> | Order): Array<Order> => {
   if (!orders) {
     return [];
   }

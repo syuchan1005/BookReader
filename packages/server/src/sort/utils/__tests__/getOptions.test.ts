@@ -1,3 +1,4 @@
+import { OrderEnum } from '@server/sort/types';
 import getOptions from '../getOptions';
 const defaultOptions = {
   order: 'asc',
@@ -6,7 +7,7 @@ describe('getOptions()', () => {
   describe('valid options', () => {
     it('should return custom options, if argument is object', () => {
       const customOptions = {
-        order: 'desc',
+        order: 'desc' as OrderEnum,
       };
       const options = getOptions(customOptions);
       const expected = customOptions;
@@ -36,7 +37,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: 'abc',
       };
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
@@ -45,7 +46,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: true,
       };
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
@@ -54,7 +55,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: 1,
       };
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
@@ -63,7 +64,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: {},
       };
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
@@ -72,7 +73,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: () => {},
       };
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
@@ -81,7 +82,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: Symbol(),
       };
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
@@ -90,47 +91,46 @@ describe('getOptions()', () => {
       const customOptions = {
         order: null,
       };
-      // $FlowInvalidInputTest
       const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is null', () => {
-      // $FlowInvalidInputTest
       const options = getOptions(null);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is an object with unknown properties', () => {
-      // $FlowInvalidInputTest
-      const options = getOptions({
+      const customOptions = {
         a: 1,
         b: 2,
         c: 3,
-      });
+      };
+      // @ts-ignore invalid input test
+      const options = getOptions(customOptions);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is an invalid string', () => {
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions('abc');
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is a number', () => {
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(123);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is a function', () => {
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(() => {});
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is a symbol', () => {
-      // $FlowInvalidInputTest
+      // @ts-ignore invalid input test
       const options = getOptions(Symbol());
       const expected = defaultOptions;
       expect(options).toEqual(expected);

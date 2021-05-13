@@ -1762,11 +1762,6 @@ describe('baseOrderBy()', () => {
           datetime: '15 June 2018 14:48 UTC',
         },
         {
-          username: 'dino',
-          ip: '192.168.0.2',
-          datetime: 'June 15, 2018 14:48:00',
-        },
-        {
           username: 'Bamm-Bamm',
           ip: '192.168.5.2',
           datetime: 'Fri Jun 15 2018 16:48:00 GMT+0200 (CEST)',
@@ -1778,11 +1773,6 @@ describe('baseOrderBy()', () => {
         },
       ];
       const sortArray = [
-        {
-          username: 'dino',
-          ip: '192.168.0.2',
-          datetime: 'June 15, 2018 14:48:00',
-        },
         {
           username: 'Pebbles',
           ip: '192.168.1.21',

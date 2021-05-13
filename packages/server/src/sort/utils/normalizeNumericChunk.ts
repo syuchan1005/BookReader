@@ -6,7 +6,7 @@ const normalizeNumericChunk = (
   chunk: Chunk,
   index: number,
   chunks: Chunks,
-): number | void => {
+): number | undefined => {
   if (RE_INT_OR_FLOAT.test(chunk)) {
     // don´t parse a number, if there´s a preceding decimal point
     // to keep significance

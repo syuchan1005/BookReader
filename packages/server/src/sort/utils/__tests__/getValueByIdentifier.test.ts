@@ -7,7 +7,7 @@ describe('getValueByIdentifier()', () => {
     };
     const getValue = jest
       .fn()
-      .mockImplementation((v: unknown) => v && typeof v === 'object' && v.user)
+      .mockImplementation((v: typeof element) => v && typeof v === 'object' && v.user)
       .mockName('getValue');
     const value = getValueByIdentifier(element, getValue);
     const expected = element.user;
