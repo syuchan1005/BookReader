@@ -107,6 +107,7 @@ function orderBy<T>(
   orders?:
     | (ReadonlyArray<Order> | null | undefined)
     | (Order | null | undefined),
+  customChunkString?: string[] | undefined,
 ): Array<T> {
   if (!collection || !Array.isArray(collection)) {
     return [];
@@ -114,7 +115,7 @@ function orderBy<T>(
 
   const validatedIdentifiers = getIdentifiers(identifiers);
   const validatedOrders = getOrders(orders);
-  return baseOrderBy(collection, validatedIdentifiers, validatedOrders);
+  return baseOrderBy(collection, validatedIdentifiers, validatedOrders, customChunkString);
 }
 
 export default orderBy;

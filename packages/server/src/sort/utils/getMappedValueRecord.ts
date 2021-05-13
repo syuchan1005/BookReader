@@ -9,7 +9,7 @@ import isObject from './isObject';
 import isSymbol from './isSymbol';
 import isUndefined from './isUndefined';
 
-const getMappedValueRecord = (value: unknown): MappedValueRecord => {
+const getMappedValueRecord = (value: unknown, customChunkString?: string[] | undefined): MappedValueRecord => {
   if (
     typeof value === 'string' ||
     value instanceof String ||
@@ -22,6 +22,7 @@ const getMappedValueRecord = (value: unknown): MappedValueRecord => {
     const parsedNumber = numberify(stringValue);
     const chunks = createChunkMaps(
       parsedNumber ? `${parsedNumber}` : stringValue,
+      customChunkString
     );
     return {
       parsedNumber,

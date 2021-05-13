@@ -1981,5 +1981,51 @@ describe('baseOrderBy()', () => {
         sortArray,
       );
     });
+    it('should order first custom strings', () => {
+      const origArray = [
+        'ABC-04.jpg',
+        'ABC-03.jpg',
+        'ABC-.02.jpg',
+        'ABC-02.jpg',
+        'ABC-.03.jpg',
+        'ABC-01.jpg',
+        'ABC-.04.jpg',
+        'ABC-.01.jpg',
+      ];
+      const expected = [
+        'ABC-.01.jpg',
+        'ABC-.02.jpg',
+        'ABC-.03.jpg',
+        'ABC-.04.jpg',
+        'ABC-01.jpg',
+        'ABC-02.jpg',
+        'ABC-03.jpg',
+        'ABC-04.jpg',
+      ];
+      expect(baseOrderBy(origArray, [], [], ['.'])).toEqual(expected);
+    });
+    it('should order first custom strings 2', () => {
+      const origArray = [
+        'ABC-04.jpg',
+        '!cover/ABC-03.jpg',
+        'ABC-.02.jpg',
+        'cover/ABC-02.jpg',
+        'cover/ABC-.03.jpg',
+        'ABC-01.jpg',
+        '!ABC-.04.jpg',
+        'ABC-.01.jpg',
+      ];
+      const expected = [
+        '!cover/ABC-03.jpg',
+        '!ABC-.04.jpg',
+        'cover/ABC-.03.jpg',
+        'cover/ABC-02.jpg',
+        'ABC-.01.jpg',
+        'ABC-.02.jpg',
+        'ABC-01.jpg',
+        'ABC-04.jpg',
+      ];
+      expect(baseOrderBy(origArray, [], [], ['cover', '.', '!'])).toEqual(expected);
+    });
   });
 });

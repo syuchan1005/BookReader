@@ -18,6 +18,7 @@ export type Chunks = ReadonlyArray<Chunk>;
 export type ChunkMap = {
   parsedNumber?: number;
   normalizedString: string;
+  isCustomChunk?: boolean;
 };
 export type ChunkMaps = ReadonlyArray<ChunkMap>;
 export type MappedValueRecord = {

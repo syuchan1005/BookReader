@@ -17,7 +17,7 @@ describe('compare()', () => {
 
     compare();
     expect(baseCompare).toHaveBeenCalledTimes(1);
-    expect(baseCompare).toHaveBeenCalledWith(defaultOptions);
+    expect(baseCompare).toHaveBeenCalledWith(defaultOptions, undefined);
   });
   it('should call baseCompare() with { order: "desc" } ', () => {
     const compare = require('..').default;
@@ -30,6 +30,6 @@ describe('compare()', () => {
     const expectedOptions = { ...defaultOptions, ...options };
     compare(options);
     expect(baseCompare).toHaveBeenCalledTimes(1);
-    expect(baseCompare).toHaveBeenCalledWith(expectedOptions);
+    expect(baseCompare).toHaveBeenCalledWith(expectedOptions, undefined);
   });
 });

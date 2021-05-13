@@ -18,7 +18,7 @@ describe('orderBy()', () => {
       const orders = undefined;
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection, identifiers and orders arguments', () => {
       const orderBy = require('..').default;
@@ -30,7 +30,7 @@ describe('orderBy()', () => {
       const orders = ['desc'];
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, orders);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, orders, undefined);
     });
   });
   describe('exceptional cases', () => {
@@ -61,7 +61,7 @@ describe('orderBy()', () => {
       const orders = null;
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
       const orderBy = require('..').default;
@@ -91,7 +91,7 @@ describe('orderBy()', () => {
       // $FlowInvalidInputTest
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
       const orderBy = require('..').default;
@@ -121,7 +121,7 @@ describe('orderBy()', () => {
       // $FlowInvalidInputTest
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
       const orderBy = require('..').default;
@@ -151,7 +151,7 @@ describe('orderBy()', () => {
       // $FlowInvalidInputTest
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection and identifiers argument and an empty array value for orders', () => {
       const orderBy = require('..').default;
@@ -181,7 +181,7 @@ describe('orderBy()', () => {
       // $FlowInvalidInputTest
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, [], undefined);
     });
     it('should call baseOrderBy() with provided collection and identifiers argument and an empty array value for orders', () => {
       const orderBy = require('..').default;
@@ -211,7 +211,7 @@ describe('orderBy()', () => {
       // $FlowInvalidInputTest
       orderBy(collection, identifiers, orders);
       expect(baseOrderBy).toHaveBeenCalledTimes(1);
-      expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, []);
+      expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, [], undefined);
     });
     it('should return an empty array, if collection is null', () => {
       const orderBy = require('..').default;
@@ -222,7 +222,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -235,7 +235,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -248,7 +248,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -261,7 +261,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -274,7 +274,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -287,7 +287,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -301,7 +301,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });
@@ -314,7 +314,7 @@ describe('orderBy()', () => {
       const identifiers = undefined;
       const orders = undefined;
       // $FlowInvalidInputTest
-      const result = orderBy(collection, identifiers, orders);
+      const result = orderBy(collection, identifiers, orders, undefined);
       expect(baseOrderBy).not.toHaveBeenCalledTimes(1);
       expect(result).toEqual([]);
     });

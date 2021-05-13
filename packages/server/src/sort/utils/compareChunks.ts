@@ -13,6 +13,10 @@ const compareChunks = (chunksA: ChunkMaps, chunksB: ChunkMaps): number => {
     const chunkA = chunksA[i];
     const chunkB = chunksB[i];
 
+    if ((chunkA.isCustomChunk || chunkB.isCustomChunk) && chunkA.isCustomChunk !== chunkB.isCustomChunk) {
+      return chunkA.isCustomChunk ? -1 : 1;
+    }
+
     if (chunkA.normalizedString !== chunkB.normalizedString) {
       if (
         (chunkA.normalizedString === '') !==

@@ -94,9 +94,9 @@ import type { CompareOptions, CompareFn } from '../types';
  * //      }
  * //    ]
  */
-function compare(options?: CompareOptions): CompareFn {
+function compare(options?: CompareOptions, customChunkString?: string[] | undefined): CompareFn {
   const validatedOptions = getOptions(options);
-  return baseCompare(validatedOptions);
+  return baseCompare(validatedOptions, customChunkString);
 }
 
 export default compare;

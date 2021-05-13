@@ -14,6 +14,7 @@ const baseOrderBy = <T>(
   collection: ReadonlyArray<T>,
   identifiers: ReadonlyArray<Identifier<T>>,
   orders: ReadonlyArray<Order>,
+  customChunkString?: string[] | undefined,
 ): Array<T> => {
   const identifierFns: Array<IdentifierFn<T>> = identifiers.length
     ? identifiers.map(createIdentifierFn)
@@ -23,7 +24,7 @@ const baseOrderBy = <T>(
     (element, index) => {
       const values = identifierFns
         .map(identifier => getValueByIdentifier(element, identifier))
-        .map(getMappedValueRecord);
+        .map((v) => getMappedValueRecord(v, customChunkString));
       return {
         index,
         values,
