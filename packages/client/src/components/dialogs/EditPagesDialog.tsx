@@ -158,10 +158,6 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
   const [putPageMutation, {
     loading: putLoading,
   }] = useMutation<PutPageMutationType, PutPageMutationVariables>(PutPageMutation, {
-    // @ts-ignore
-    variables: {
-      id: bookId,
-    },
     onCompleted() {
       purgeCache();
     },

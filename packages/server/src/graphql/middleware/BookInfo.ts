@@ -24,6 +24,7 @@ import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach } from '@server/Util';
 import { SubscriptionKeys } from '@server/graphql';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
+import { purgeImageCache } from '@server/ImageUtil';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -224,6 +225,7 @@ class BookInfo extends GQLMiddleware {
           await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
           await fs.rm(`storage/book/${book.id}`, { recursive: true, force: true });
         });
+        purgeImageCache();
 
         return {
           success: true,

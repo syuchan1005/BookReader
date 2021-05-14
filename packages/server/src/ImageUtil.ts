@@ -105,12 +105,13 @@ export const splitImage = async (src: string, orientation: 'horizontal' | 'verti
     case 'vertical': {
       const widthPerPage = meta.width / splitCount;
       for (let i = 0; i < splitCount; i += 1) {
+        const left = Math.round(widthPerPage * i);
         // eslint-disable-next-line no-await-in-loop
         await sharp(src)
           .extract({
             top: 0,
-            left: widthPerPage * i,
-            width: widthPerPage,
+            left,
+            width: Math.min(Math.round(widthPerPage * (i + 1)) - left, meta.width),
             height: meta.height,
           })
           .toFile(src.replace('.jpg', `-${toString(i)}.jpg`));
@@ -120,13 +121,14 @@ export const splitImage = async (src: string, orientation: 'horizontal' | 'verti
     case 'horizontal': {
       const heightPerPage = meta.height / splitCount;
       for (let i = 0; i < splitCount; i += 1) {
+        const top = Math.round(heightPerPage * i);
         // eslint-disable-next-line no-await-in-loop
         await sharp(src)
           .extract({
-            top: heightPerPage * i,
+            top,
             left: 0,
             width: meta.width,
-            height: heightPerPage,
+            height: Math.min(Math.round(heightPerPage * (i + 1)) - top, meta.height),
           })
           .toFile(src.replace('.jpg', `-${toString(i)}.jpg`));
       }
@@ -134,4 +136,9 @@ export const splitImage = async (src: string, orientation: 'horizontal' | 'verti
     }
     default: /* ignored */
   }
+};
+
+export const purgeImageCache = () => {
+  sharp.cache(false);
+  sharp.cache(true);
 };

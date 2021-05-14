@@ -19,6 +19,7 @@ import Database from '@server/sequelize/models';
 import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach, asyncMap } from '@server/Util';
+import { purgeImageCache } from '@server/ImageUtil';
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -225,6 +226,7 @@ class Book extends GQLMiddleware {
         });
         await fs.rm(`storage/cache/book/${bookId}`, { recursive: true, force: true });
         await fs.rm(`storage/book/${bookId}`, { recursive: true, force: true });
+        purgeImageCache();
         return {
           success: true,
         };
@@ -250,6 +252,7 @@ class Book extends GQLMiddleware {
           await fs.rm(`storage/cache/book/${bookId}`, { recursive: true, force: true });
           await fs.rm(`storage/book/${bookId}`, { recursive: true, force: true });
         });
+        purgeImageCache();
         return {
           success: true,
         };

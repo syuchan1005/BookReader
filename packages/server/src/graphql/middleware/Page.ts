@@ -10,7 +10,7 @@ import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
-import { splitImage } from '../../ImageUtil';
+import { splitImage, purgeImageCache } from '../../ImageUtil';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -48,6 +48,7 @@ class Page extends GQLMiddleware {
 
         await GQLUtil.numberingFiles(bookPath, pad);
         await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
+        purgeImageCache();
 
         await BookModel.update({
           pages: book.pages - numbers.length,
@@ -91,7 +92,7 @@ class Page extends GQLMiddleware {
             return;
           }
 
-          await splitImage(`${bookPath}.${f}`, type === SplitType.Vertical ? 'vertical' : 'horizontal');
+          await splitImage(`${bookPath}/${f}`, type === SplitType.Vertical ? 'vertical' : 'horizontal');
           await fs.unlink(`${bookPath}/${f}`);
           pageCount += 2;
         });
@@ -100,8 +101,9 @@ class Page extends GQLMiddleware {
           (v) => Number(v.match(/\d+/g)[0]),
           (v) => Number(v.match(/\d+/g)[1]) + 1 || 0,
         ], ['asc', 'desc']);
-        await GQLUtil.numberingFiles(bookPath, pageCount.toString(10).length, files);
+        await GQLUtil.numberingFiles(bookPath, pageCount.toString(10).length, files, true);
         await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
+        purgeImageCache();
 
         await BookModel.update({
           pages: pageCount,
@@ -148,6 +150,7 @@ class Page extends GQLMiddleware {
           wStream.on('close', resolve);
         });
         await removeBookCache(bookId, page, book.pages);
+        purgeImageCache();
 
         return {
           success: true,
@@ -221,6 +224,7 @@ class Page extends GQLMiddleware {
           ], ['asc', 'asc']);
           await GQLUtil.numberingFiles(bookPath, (book.pages + 1).toString(10).length, files, true);
           await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
+          purgeImageCache();
         }
 
         await BookModel.update({
