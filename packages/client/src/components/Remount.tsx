@@ -12,7 +12,7 @@ type RemountProps = {
 
 // @ts-ignore
 // eslint-disable-next-line import/prefer-default-export
-export const Remount: FC<RemountProps> = (props: RemountProps) => {
+export const Remount: FC<RemountProps> = React.memo((props: RemountProps) => {
   const [remount, setRemount] = useState(false);
   useEffect(() => {
     if (!props.remount) return;
@@ -23,4 +23,4 @@ export const Remount: FC<RemountProps> = (props: RemountProps) => {
   }, [props.remount]);
 
   return remount ? null : props.children;
-};
+});

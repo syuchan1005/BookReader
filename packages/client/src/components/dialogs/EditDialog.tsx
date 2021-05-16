@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
+const EditDialog: React.FC<EditDialogProps> = React.memo((props: EditDialogProps) => {
   const {
     open,
     loading,
@@ -100,6 +100,6 @@ const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default EditDialog;

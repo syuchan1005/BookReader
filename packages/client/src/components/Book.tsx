@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Book: React.FC<BookProps> = (props: BookProps) => {
+const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
   const classes = useStyles(props);
   const {
     thumbnailSize = 200,
@@ -249,6 +249,6 @@ const Book: React.FC<BookProps> = (props: BookProps) => {
       )}
     </Card>
   );
-};
+});
 
 export default Book;

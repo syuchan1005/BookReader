@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const GenresSelect: React.FC<GenresSelectProps> = (props: GenresSelectProps) => {
+const GenresSelect: React.FC<GenresSelectProps> = React.memo((props: GenresSelectProps) => {
   const classes = useStyles(props);
   const {
     value,
@@ -135,6 +135,6 @@ const GenresSelect: React.FC<GenresSelectProps> = (props: GenresSelectProps) => 
       )}
     </div>
   );
-};
+});
 
 export default GenresSelect;

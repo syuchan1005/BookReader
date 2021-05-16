@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SelectBookHeader: React.FC<SelectBookHeaderProps> = (props: SelectBookHeaderProps) => {
+const SelectBookHeader: React.FC<SelectBookHeaderProps> = React.memo((props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
   const {
     infoId,
@@ -185,6 +185,6 @@ const SelectBookHeader: React.FC<SelectBookHeaderProps> = (props: SelectBookHead
       </Dialog>
     </>
   );
-};
+});
 
 export default SelectBookHeader;

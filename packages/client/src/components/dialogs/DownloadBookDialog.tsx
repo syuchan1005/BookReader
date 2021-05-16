@@ -18,7 +18,7 @@ interface DownloadBookDialogProps {
   pages?: number;
 }
 
-const DownloadBookDialog: React.FC<DownloadBookDialogProps> = (props: DownloadBookDialogProps) => {
+const DownloadBookDialog: React.FC<DownloadBookDialogProps> = React.memo((props: DownloadBookDialogProps) => {
   const {
     open,
     onClose,
@@ -80,6 +80,6 @@ const DownloadBookDialog: React.FC<DownloadBookDialogProps> = (props: DownloadBo
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default DownloadBookDialog;

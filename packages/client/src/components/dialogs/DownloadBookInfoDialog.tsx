@@ -24,7 +24,7 @@ interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   onClose?: () => any;
 }
 
-const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = (
+const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo((
   props: DownloadBookInfoDialogProps,
 ) => {
   const {
@@ -125,6 +125,6 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = (
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default hot(DownloadBookInfoDialog);

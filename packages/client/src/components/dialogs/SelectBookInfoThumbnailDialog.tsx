@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
+const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = React.memo((
   props: SelectThumbnailDialogProps,
 ) => {
   const classes = useStyles(props);
@@ -139,6 +139,6 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default SelectBookInfoThumbnailDialog;

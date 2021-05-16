@@ -93,7 +93,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) => {
+const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDialogProps) => {
   const classes = useStyles(props);
   const {
     open,
@@ -491,6 +491,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) 
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default AddBookDialog;

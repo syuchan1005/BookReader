@@ -86,7 +86,7 @@ const useStyles = makeStyles(() => createStyles({
   },
 }));
 
-const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogProps) => {
+const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditPagesDialogProps) => {
   const classes = useStyles(props);
   const {
     open,
@@ -348,6 +348,6 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = (props: EditPagesDialogP
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default EditPagesDialog;

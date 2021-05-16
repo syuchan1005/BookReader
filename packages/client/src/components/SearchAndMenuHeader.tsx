@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SearchAndMenuHeader: React.FC<SearchAndMenuHeaderProps> = (
+const SearchAndMenuHeader: React.FC<SearchAndMenuHeaderProps> = React.memo((
   props: SearchAndMenuHeaderProps,
 ) => {
   const classes = useStyles(props);
@@ -125,6 +125,6 @@ const SearchAndMenuHeader: React.FC<SearchAndMenuHeaderProps> = (
       </Toolbar>
     </AppBar>
   );
-};
+});
 
 export default SearchAndMenuHeader;

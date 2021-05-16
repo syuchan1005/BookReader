@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Setting: React.FC = (props) => {
+const Setting: React.FC = React.memo((props) => {
   const classes = useStyles(props);
   const theme = useTheme();
 
@@ -218,6 +218,6 @@ const Setting: React.FC = (props) => {
       </main>
     </>
   );
-};
+});
 
 export default hot(Setting);

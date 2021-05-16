@@ -89,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Home: React.FC = (props: HomeProps) => {
+const Home: React.FC = React.memo((props: HomeProps) => {
   const { state: store } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
@@ -228,6 +228,6 @@ const Home: React.FC = (props: HomeProps) => {
       </main>
     </>
   );
-};
+});
 
 export default hot(Home);

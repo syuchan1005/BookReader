@@ -123,7 +123,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
+const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
     style,
@@ -302,6 +302,6 @@ const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
       )}
     </Card>
   );
-};
+});
 
 export default BookInfo;

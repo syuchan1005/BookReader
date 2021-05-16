@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const DropZone: React.FC<FileFieldProps> = (props: FileFieldProps) => {
+const DropZone: React.FC<FileFieldProps> = React.memo((props: FileFieldProps) => {
   const classes = useStyles(props);
   const { onChange } = props;
 
@@ -58,6 +58,6 @@ const DropZone: React.FC<FileFieldProps> = (props: FileFieldProps) => {
       }
     </div>
   );
-};
+});
 
 export default DropZone;

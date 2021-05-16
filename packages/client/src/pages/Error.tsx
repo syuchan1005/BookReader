@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Error: React.FC = (props) => {
+const Error: React.FC = React.memo((props) => {
   const classes = useStyles(props);
   const history = useHistory();
   const svgTestId = useTestId('svg');
@@ -74,6 +74,6 @@ const Error: React.FC = (props) => {
       </Fab>
     </main>
   );
-};
+});
 
 export default hot(Error);

@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => createStyles({
   },
 }));
 
-const TitleAndBackHeader: React.FC<TitleAndBackHeaderProps> = (props: TitleAndBackHeaderProps) => {
+const TitleAndBackHeader: React.FC<TitleAndBackHeaderProps> = React.memo((props: TitleAndBackHeaderProps) => {
   const classes = useStyles(props);
   const history = useHistory();
   const {
@@ -76,6 +76,6 @@ const TitleAndBackHeader: React.FC<TitleAndBackHeaderProps> = (props: TitleAndBa
       </Toolbar>
     </AppBar>
   );
-};
+});
 
 export default TitleAndBackHeader;

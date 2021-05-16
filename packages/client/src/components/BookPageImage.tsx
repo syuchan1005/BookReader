@@ -74,7 +74,7 @@ export const createBookPageUrl = (
 
 const minOrNot = (value: number | undefined, minValue: number): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
 
-const Image: React.FC<ImageProps> = (props: ImageProps) => {
+const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
   const classes = useStyles(props);
   const {
     src,
@@ -130,7 +130,7 @@ const Image: React.FC<ImageProps> = (props: ImageProps) => {
       ) : null}
     </div>
   );
-};
+});
 
 const Thumbnail: React.FC<ThumbnailBookPageImageProps> = (props: ThumbnailBookPageImageProps) => {
   const {
