@@ -135,7 +135,7 @@ const GQLUtil = {
         message: Errors.QL0003,
       };
     }
-    files = naturalOrderBy(files, undefined, undefined, ['.', '!', 'cover']);
+    files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
     await asyncForEach(files, async (f, i) => {
