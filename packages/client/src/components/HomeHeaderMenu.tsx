@@ -260,6 +260,9 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
             )}
           </Collapse>
         </Collapse>
+        <MenuItem onClick={() => window.open('https://github.com/syuchan1005/BookReader')}>
+          GitHub - BookReader
+        </MenuItem>
       </Menu>
       <Menu
         getContentAnchorEl={null}
