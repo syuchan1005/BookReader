@@ -23,7 +23,6 @@ import { useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
-import { hot } from 'react-hot-loader/root';
 
 import {
   BookQuery as BookQueryType,
@@ -549,4 +548,4 @@ const Book: React.FC = React.memo((props: BookProps) => {
   );
 });
 
-export default hot(Book);
+export default Book;

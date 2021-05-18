@@ -1,5 +1,4 @@
 import React from 'react';
-import { hot } from 'react-hot-loader/root';
 import {
   Button, CircularProgress,
   Dialog,
@@ -127,4 +126,4 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
   );
 });
 
-export default hot(DownloadBookInfoDialog);
+export default DownloadBookInfoDialog;

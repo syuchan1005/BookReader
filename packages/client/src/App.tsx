@@ -10,7 +10,6 @@ import * as colors from '@material-ui/core/colors';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
-import { hot } from 'react-hot-loader/root';
 import { useApolloClient } from '@apollo/react-hooks';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -132,4 +131,4 @@ const App: React.FC<AppProps> = (props: AppProps) => {
   );
 };
 
-export default hot(App);
+export default App;

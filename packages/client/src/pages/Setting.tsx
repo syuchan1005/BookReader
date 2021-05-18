@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import { hot } from 'react-hot-loader/root';
 import {
   Button,
   createStyles,
@@ -224,4 +223,4 @@ const Setting: React.FC = React.memo((props) => {
   );
 });
 
-export default hot(Setting);
+export default Setting;

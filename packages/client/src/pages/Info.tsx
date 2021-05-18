@@ -13,7 +13,6 @@ import {
 import { common } from '@material-ui/core/colors';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { hot } from 'react-hot-loader/root';
 
 import {
   BookInfoQuery as BookInfoQueryType,
@@ -289,4 +288,4 @@ const Info: React.FC = React.memo((props: InfoProps) => {
   );
 });
 
-export default hot(Info);
+export default Info;

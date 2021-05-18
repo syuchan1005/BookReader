@@ -10,7 +10,6 @@ import {
 import { useHistory } from 'react-router-dom';
 import { useQuery } from '@apollo/react-hooks';
 import { Waypoint } from 'react-waypoint';
-import { hot } from 'react-hot-loader/root';
 
 import {
   BookInfosQuery as BookInfosQueryType,
@@ -235,4 +234,4 @@ const Home: React.FC = React.memo((props: HomeProps) => {
   );
 });
 
-export default hot(Home);
+export default Home;

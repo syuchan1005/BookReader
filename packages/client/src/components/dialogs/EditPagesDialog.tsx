@@ -36,8 +36,6 @@ import DeleteDialog from './DeleteDialog';
 
 const FilerobotImageEditor = loadable(() => import(/* webpackChunkName: 'ImageEditor' */ 'filerobot-image-editor'));
 
-type IntRange = [number | [number, number]]
-
 interface EditPagesDialogProps {
   open: boolean;
   onClose?: () => any,

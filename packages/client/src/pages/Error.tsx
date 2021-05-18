@@ -7,7 +7,6 @@ import {
   Icon, Typography,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
-import { hot } from 'react-hot-loader/root';
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import useTestId from '../hooks/useTestId';
 
@@ -81,4 +80,4 @@ const Error: React.FC = React.memo((props) => {
   );
 });
 
-export default hot(Error);
+export default Error;
