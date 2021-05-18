@@ -9,3 +9,5 @@ export const defaultGenres = [
   'Invisible',
   'Completed',
 ];
+
+export const defaultTitle = "Book Reader";

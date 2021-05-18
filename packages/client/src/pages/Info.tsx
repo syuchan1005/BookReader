@@ -98,6 +98,9 @@ const Info: React.FC = React.memo((props: InfoProps) => {
   const [mode, setMode] = React.useState(0); // 0:normal, 1:select
   const [selectIds, setSelectIds] = React.useState([]);
 
+  const [title, setTitle] = React.useState(document.title);
+  React.useEffect(() => { document.title = title; }, [title]);
+
   const {
     refetch,
     loading,
@@ -107,6 +110,10 @@ const Info: React.FC = React.memo((props: InfoProps) => {
     variables: {
       id: params.id,
       order: store.sortBookOrder,
+    },
+    onCompleted: (d) => {
+      const bookName = d?.bookInfo?.name;
+      setTitle((title) => `${bookName} - ${title}`);
     },
   });
 

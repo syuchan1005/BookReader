@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { hot } from 'react-hot-loader/root';
+import { defaultTitle } from '@syuchan1005/book-reader-common';
 import useTestId from '../hooks/useTestId';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -40,6 +41,10 @@ const Error: React.FC = React.memo((props) => {
   const svgTestId = useTestId('svg');
   const textTestId = useTestId('text');
   const buttonTestId = useTestId('button');
+
+  React.useEffect(() => {
+    document.title = defaultTitle;
+  }, []);
 
   return (
     <main className={classes.error}>

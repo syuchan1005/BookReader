@@ -35,7 +35,7 @@ import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQ
 import DeleteGenreMutation from '@syuchan1005/book-reader-graphql/queries/Pages_Setting_deleteGenre.gql';
 import EditGenreMutation from '@syuchan1005/book-reader-graphql/queries/Pages_Setting_editGenre.gql';
 
-import { defaultGenres } from '@syuchan1005/book-reader-common';
+import { defaultGenres, defaultTitle } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -48,6 +48,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const Setting: React.FC = React.memo((props) => {
   const classes = useStyles(props);
   const theme = useTheme();
+
+  React.useEffect(() => {
+    document.title = defaultTitle;
+  }, []);
 
   const {
     data: genreData,

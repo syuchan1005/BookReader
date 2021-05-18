@@ -25,6 +25,7 @@ import useDebounceValue from '@client/hooks/useDebounceValue';
 import useLoadMore from '@client/hooks/useLoadMore';
 import { useGlobalStore } from '@client/store/StoreProvider';
 
+import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
@@ -99,6 +100,10 @@ const Home: React.FC = React.memo((props: HomeProps) => {
   const [open, setOpen] = React.useState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
   const debounceSearch = useDebounceValue(store.searchText, 800);
+
+  React.useEffect(() => {
+    document.title = defaultTitle;
+  }, []);
 
   const {
     refetch,

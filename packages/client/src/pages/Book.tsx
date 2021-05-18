@@ -36,6 +36,7 @@ import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import { useGlobalStore } from '@client/store/StoreProvider';
 import { commonTheme } from '@client/App';
 
+import { defaultTitle } from '@syuchan1005/book-reader-common';
 import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import BookPageImage from '../components/BookPageImage';
@@ -44,6 +45,7 @@ import EditPagesDialog from '../components/dialogs/EditPagesDialog';
 import { useApollo } from '../apollo/ApolloProvider';
 import TitleAndBackHeader from '../components/TitleAndBackHeader';
 import { Remount } from '../components/Remount';
+
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -177,6 +179,10 @@ const Book: React.FC = React.memo((props: BookProps) => {
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
   const [showAppBar, setShowAppBar] = React.useState(false);
+
+  React.useEffect(() => {
+    document.title = defaultTitle;
+  }, []);
 
   React.useEffect(() => {
     updatePage(0);
