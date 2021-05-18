@@ -68,7 +68,6 @@ export const createBookPageUrl = (
   const pageFileName = pageIndex.toString(10).padStart(bookPageCount.toString(10).length, '0');
   const sizeString = createSizeUrlSuffix(width, height);
 
-  console.info(width, height, sizeString);
   return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
 };
 

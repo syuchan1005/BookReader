@@ -3,6 +3,7 @@ import {
   ReactNode,
   useEffect,
   useState,
+  memo,
 } from 'react';
 
 type RemountProps = {
@@ -12,7 +13,7 @@ type RemountProps = {
 
 // @ts-ignore
 // eslint-disable-next-line import/prefer-default-export
-export const Remount: FC<RemountProps> = React.memo((props: RemountProps) => {
+export const Remount: FC<RemountProps> = memo((props: RemountProps) => {
   const [remount, setRemount] = useState(false);
   useEffect(() => {
     if (!props.remount) return;
