@@ -45,7 +45,6 @@ const DownloadBookDialog: React.FC<DownloadBookDialogProps> = React.memo((props:
     }))
       .then(() => zip.generateAsync({ type: 'blob' }))
       .then((content) => {
-        console.log(saveAs);
         saveAs(content, `book-${number}.zip`);
         setDownloadImages(false);
       });
