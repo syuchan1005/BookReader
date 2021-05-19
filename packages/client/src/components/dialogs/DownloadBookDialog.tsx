@@ -8,7 +8,7 @@ import {
   LinearProgress,
 } from '@material-ui/core';
 import JSZip from 'jszip';
-import * as saveAs from 'jszip/vendor/FileSaver';
+import { saveAs } from 'file-saver';
 
 interface DownloadBookDialogProps {
   open: boolean;
@@ -42,12 +42,13 @@ const DownloadBookDialog: React.FC<DownloadBookDialogProps> = React.memo((props:
           setDownloadImages(num);
           zip.file(`${name}.jpg`, res.blob());
         });
-    })).then(() => {
-      zip.generateAsync({ type: 'blob' }).then((content) => {
+    }))
+      .then(() => zip.generateAsync({ type: 'blob' }))
+      .then((content) => {
+        console.log(saveAs);
         saveAs(content, `book-${number}.zip`);
         setDownloadImages(false);
       });
-    });
   }, []);
 
   return (
