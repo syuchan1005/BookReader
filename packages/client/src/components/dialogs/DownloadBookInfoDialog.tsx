@@ -34,6 +34,7 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
 
   const [downloadBooks, setDownloadBooks] = React.useState<number>(undefined);
   const [downloadImages, setDownloadImages] = React.useState<number>(undefined);
+  const [compressPercent, setCompressPercent] = React.useState<number | undefined>(undefined);
 
   const {
     data,
@@ -58,7 +59,7 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
     const bookLen = data.bookInfo.books.length;
     for (let i = 0; i < bookLen; i += 1) {
       const book = data.bookInfo.books[i];
-      setDownloadBooks(i);
+      setDownloadBooks(i + 1);
       const bookFolder = zip.folder(book.number);
       let num = 0;
       // eslint-disable-next-line no-await-in-loop
@@ -73,10 +74,11 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
       }));
       setDownloadImages(0);
     }
-    zip.generateAsync({ type: 'blob' }).then((content) => {
+    zip.generateAsync({ type: 'blob' }, ({ percent }) => setCompressPercent(percent)).then((content) => {
       saveAs(content, `book-${data.bookInfo.name}.zip`);
       setDownloadImages(undefined);
       setDownloadBooks(undefined);
+      setCompressPercent(undefined);
     });
   }, [data]);
 
@@ -108,6 +110,9 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
               value={(downloadBooks / data.bookInfo.books.length) * 100}
             />
             <div style={{ textAlign: 'center' }}>{`${downloadBooks} / ${data.bookInfo.books.length}`}</div>
+            {(compressPercent) && (
+              <div style={{ textAlign: 'center' }}>{`Compressing: ${Math.round(compressPercent)}%`}</div>
+            )}
           </>
         )}
       </DialogContent>

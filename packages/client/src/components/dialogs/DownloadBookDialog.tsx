@@ -28,6 +28,7 @@ const DownloadBookDialog: React.FC<DownloadBookDialogProps> = React.memo((props:
   } = props;
 
   const [downloadImages, setDownloadImages] = React.useState<boolean | number>(false);
+  const [compressPercent, setCompressPercent] = React.useState<number | undefined>(undefined);
 
   const onClickDownload = React.useCallback(() => {
     setDownloadImages(0);
@@ -43,9 +44,10 @@ const DownloadBookDialog: React.FC<DownloadBookDialogProps> = React.memo((props:
           zip.file(`${name}.jpg`, res.blob());
         });
     }))
-      .then(() => zip.generateAsync({ type: 'blob' }))
+      .then(() => zip.generateAsync({ type: 'blob' }, ({ percent }) => setCompressPercent(percent)))
       .then((content) => {
         saveAs(content, `book-${number}.zip`);
+        setCompressPercent(undefined);
         setDownloadImages(false);
       });
   }, []);
@@ -64,6 +66,9 @@ const DownloadBookDialog: React.FC<DownloadBookDialogProps> = React.memo((props:
               value={(downloadImages / pages) * 100}
             />
             <div style={{ textAlign: 'center' }}>{`${downloadImages} / ${pages}`}</div>
+            {(compressPercent) && (
+              <div style={{ textAlign: 'center' }}>{`Compressing: ${Math.round(compressPercent)}%`}</div>
+            )}
           </>
         )}
       </DialogContent>
