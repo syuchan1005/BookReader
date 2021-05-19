@@ -13,7 +13,7 @@ import {
   DownloadBookInfosQueryVariables as DownloadBookInfosQueryVariablesType,
 } from '@syuchan1005/book-reader-graphql';
 import JSZip from 'jszip';
-import * as saveAs from 'jszip/vendor/FileSaver';
+import { saveAs } from 'file-saver';
 import { useQuery } from '@apollo/react-hooks';
 
 import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/DownloadBookInfoDialog_bookInfo.gql';
@@ -72,7 +72,6 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
             bookFolder.file(`${nameA}.jpg`, res.blob());
           });
       }));
-      setDownloadImages(0);
     }
     zip.generateAsync({ type: 'blob' }, ({ percent }) => setCompressPercent(percent)).then((content) => {
       saveAs(content, `book-${data.bookInfo.name}.zip`);
