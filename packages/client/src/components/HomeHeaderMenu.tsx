@@ -108,11 +108,11 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
     (i !== 1 ? persistor.purge() : Promise.resolve())
       .then(() => {
         if (store.wb && i === 1) {
-          navigator.serviceWorker.addEventListener('message', reload);
           store.wb.messageSW({
             type: 'PURGE_CACHE',
+          }).then(() => {
+            reload();
           });
-          setTimeout(reload, 10 * 1000);
         } else {
           reload();
         }

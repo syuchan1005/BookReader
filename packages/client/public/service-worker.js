@@ -46,37 +46,35 @@ registerRoute(
   'GET',
 );
 
-addEventListener('message', (event) => {
+const onMessage = async (event) => {
   if (!event.data || !event.data.type) return;
   let cb;
+
   switch (event.data.type) {
     case 'SKIP_WAITING':
       skipWaiting();
       return;
     case 'BOOK_CACHE':
       if (!event.clientId) return;
-      cb = (cache, urls) => event.waitUntil((async () => {
+      cb = (cache, urls) => async () => {
         await cache.addAll(urls);
         const client = await self.clients.get(event.clientId);
-        if (client) client.postMessage({ type: 'BOOK_CACHE', state: 'Finish' });
-      })());
+      };
       break;
     case 'BOOK_REMOVE':
       cb = (cache, urls) => urls.forEach((k) => cache.delete(k));
       break;
     case 'PURGE_CACHE':
-      event.waitUntil((async () => {
-        const ks = await caches.keys();
-        await Promise.all(ks.map((k) => caches.delete(k)));
-        const client = await self.clients.get(event.clientId);
-        if (client) client.postMessage({ type: 'PURGE_CACHE', state: 'Finish' });
-      })());
+      const ks = await caches.keys();
+      await Promise.all(ks.map((k) => caches.delete(k)));
       return;
   }
   if (cb) {
     const pad = event.data.pages.toString(10).length;
     const urls = [...Array(event.data.pages).keys()]
       .map((i) => `/book/${event.data.bookId}/${i.toString(10).padStart(pad, '0')}.jpg`);
-    event.waitUntil(caches.open(BookImageCacheName).then((cache) => cb(cache, urls)));
+    await Promise.all(caches.open(BookImageCacheName).then((cache) => cb(cache, urls)));
   }
-});
+};
+
+addEventListener('message', (event) => event.waitUntil(onMessage()));

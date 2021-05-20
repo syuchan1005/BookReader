@@ -16,6 +16,7 @@ import {
   Theme,
 } from '@material-ui/core';
 import loadable from '@loadable/component';
+import { Workbox } from 'workbox-window';
 
 import {
   DeletePagesMutation as DeletePagesMutationType,
@@ -48,7 +49,7 @@ interface EditPagesDialogProps {
   maxPage: number;
   bookId: string;
   theme: 'light' | 'dark';
-  wb?: any;
+  wb?: Workbox;
   persistor?: any;
 }
 
@@ -127,15 +128,11 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
     (persistor ? persistor.purge() : Promise.resolve())
       .then(() => {
         if (wb) {
-          navigator.serviceWorker.addEventListener('message', () => {
-            window.location.reload(true);
-          });
           wb.messageSW({
             type: 'PURGE_CACHE',
-          });
-          setTimeout(() => {
+          }).then(() => {
             window.location.reload(true);
-          }, 10 * 1000);
+          });
         } else {
           window.location.reload(true);
         }
