@@ -3,14 +3,14 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
 
-import { MutationResolvers, SplitType } from '@syuchan1005/book-reader-graphql';
+import { MutationResolvers, SplitType } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import BookModel from '@server/sequelize/models/Book';
 import { asyncForEach, removeBookCache, renameFile } from '@server/Util';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
-import { splitImage, purgeImageCache } from '../../ImageUtil';
+import { splitImage, purgeImageCache, cropImage } from '../../ImageUtil';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -234,6 +234,42 @@ class Page extends GQLMiddleware {
             id: bookId,
           },
         });
+
+        return {
+          success: true,
+        };
+      },
+      cropPages: async (parent, { id: bookId, pages, left, width }) => {
+        const numbers = flatRange(pages);
+        const book = await BookModel.findOne({ where: { id: bookId } });
+        if (!book) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
+        const minNum = Math.min(...numbers);
+        const maxNum = Math.max(...numbers);
+        if (book.pages < maxNum || minNum < 0) {
+          return {
+            success: false,
+            code: 'QL0007',
+            message: Errors.QL0007,
+          };
+        }
+
+        const bookPath = `storage/book/${bookId}`;
+        let files = await fs.readdir(bookPath);
+        await asyncForEach(orderBy(files), async (f, i) => {
+          if (!numbers.includes(i)) {
+            return;
+          }
+
+          await cropImage(`${bookPath}/${f}`, left, width);
+        });
+        await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
+        purgeImageCache();
 
         return {
           success: true,

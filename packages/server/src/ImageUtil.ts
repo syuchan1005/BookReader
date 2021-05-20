@@ -138,6 +138,19 @@ export const splitImage = async (src: string, orientation: 'horizontal' | 'verti
   }
 };
 
+export const cropImage = async (src: string, left: number, width: number) => {
+  const meta = await sharp(src).metadata();
+  const buffer = await sharp(src)
+    .extract({
+      top: 0,
+      left,
+      width: width,
+      height: meta.height,
+    })
+    .toBuffer();
+  await fs.writeFile(src, buffer);
+};
+
 export const purgeImageCache = () => {
   sharp.cache(false);
   sharp.cache(true);

@@ -13,6 +13,7 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Theme,
 } from '@material-ui/core';
 import loadable from '@loadable/component';
 
@@ -26,13 +27,17 @@ import {
   SplitPagesMutation as SplitPagesMutationType,
   SplitPagesMutationVariables,
   SplitType,
+  CropPagesMutation as CropPagesMutationType,
+  CropPagesMutationVariables
 } from '@syuchan1005/book-reader-graphql';
 import EditPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_edit.gql';
 import SplitMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_split.gql';
 import DeleteMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_delete.gql';
 import PutPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_put.gql';
+import CropPagesMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_crop.gql';
 import { useMutation } from '@apollo/react-hooks';
 import DeleteDialog from './DeleteDialog';
+import CalcImagePaddingDialog from './CalcImagePaddingDialog';
 
 const FilerobotImageEditor = loadable(() => import(/* webpackChunkName: 'ImageEditor' */ 'filerobot-image-editor'));
 
@@ -71,7 +76,7 @@ const parsePagesStr = (pages: string, maxPage: number): (number | [number, numbe
   return pageList;
 };
 
-const useStyles = makeStyles(() => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   splitButtonWrapper: {
     display: 'flex',
     alignItems: 'center',
@@ -81,6 +86,11 @@ const useStyles = makeStyles(() => createStyles({
     display: 'grid',
     gridTemplateColumns: '150px',
     gridTemplateRows: '100px auto',
+  },
+  inputs: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
   },
 }));
 
@@ -101,6 +111,9 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
   const [editPages, setEditPages] = React.useState('');
   const [editPage, setEditPage] = React.useState(1);
   const [openCropDialog, setOpenCropDialog] = React.useState(false);
+  const [openCalcPaddingDialog, setOpenCalcPaddingDialog] = React.useState(false);
+  const [openRemovePaddingDialog, setOpenRemovePaddingDialog] = React.useState(false);
+  const [paddingSize, setPaddingSize] = React.useState([0, 0]);
   const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
   const [openPutDialog, setOpenPutDialog] = React.useState(false);
@@ -161,13 +174,21 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
     },
   });
 
+  const [cropPagesMutation, {
+    loading: cropLoading,
+  }] = useMutation<CropPagesMutationType, CropPagesMutationVariables>(CropPagesMutation, {
+    onCompleted() {
+      purgeCache();
+    },
+  });
+
   React.useEffect(() => {
     setEditPage(openPage + 1);
     setEditPages(`${openPage + 1}`);
   }, [openPage]);
 
   const onClose = React.useCallback(() => {
-    if (editLoading || putLoading) return;
+    if (editLoading || putLoading || cropLoading) return;
     propsOnClose();
   }, [propsOnClose, editLoading]);
 
@@ -184,6 +205,7 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
 
   const onClickEdit = React.useCallback(() => {
     if (editType === 'crop') setOpenCropDialog(true);
+    else if (editType === 'removePadding') setOpenRemovePaddingDialog(true);
     else if (editType === 'delete') setOpenDeleteDialog(true);
     else if (editType === 'split') setOpenSplitDialog(true);
     else if (editType === 'put') setOpenPutDialog(true);
@@ -234,6 +256,40 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
           }}
         />
       )}
+
+      <Dialog
+        open={openRemovePaddingDialog}
+        onClose={() => setOpenRemovePaddingDialog(false)}
+      >
+        <DialogTitle>Remove page paddings</DialogTitle>
+        <DialogContent>
+          <div>{`Crop: ${paddingSize[0]}x${paddingSize[1]}`}</div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenRemovePaddingDialog(false)} disabled={cropLoading}>
+            close
+        </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            disabled={cropLoading}
+            onClick={() => {
+              const pages = parsePagesStr(editPages, maxPage);
+              if (typeof pages === 'string') return;
+              cropPagesMutation({
+                variables: {
+                  id: bookId,
+                  pages,
+                  left: Math.min(paddingSize[0]),
+                  width: Math.abs(paddingSize[0] - paddingSize[1])
+                },
+              });
+            }}
+          >
+            Crop
+        </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={openSplitDialog}
@@ -309,39 +365,59 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
         <FormLabel>Edit Type</FormLabel>
         <RadioGroup value={editType} onChange={(e) => setEditType(e.target.value)}>
           <FormControlLabel label="CropAndResize" value="crop" control={<Radio />} />
+          <FormControlLabel label="RemovePadding" value="removePadding" control={<Radio />} />
           <FormControlLabel label="Split" value="split" control={<Radio />} />
           <FormControlLabel label="Delete" value="delete" control={<Radio />} />
           <FormControlLabel label="Edit and Put Before Page" value="put" control={<Radio />} />
         </RadioGroup>
 
-        {(editType === 'crop' || editType === 'put') ? (
-          <TextField
-            error={!!inputValidate}
-            helperText={inputValidate}
-            type="number"
-            label={`page(max: ${maxPage})`}
-            color="secondary"
-            value={editPage}
-            onChange={(e) => setEditPage(Number(e.target.value))}
-          />
-        ) : (
-          <TextField
-            error={!!inputValidate}
-            helperText={inputValidate}
-            label={`pages(max: ${maxPage})`}
-            placeholder="ex. 1, 2, 3-5"
-            color="secondary"
-            value={editPages}
-            onChange={(e) => setEditPages(e.target.value)}
-          />
-        )}
+        <div className={classes.inputs}>
+          {(editType === 'removePadding') && (
+            <>
+              <TextField color="secondary" label="Left" type="number" value={paddingSize[0]} onChange={(e) => setPaddingSize([Number(e.target.value), paddingSize[1]])} />
+              <TextField color="secondary" label="Right" type="number" value={paddingSize[1]} onChange={(e) => setPaddingSize([paddingSize[0], Number(e.target.value)])} />
+              <Button onClick={() => setOpenCalcPaddingDialog(true)}>Detect</Button>
+              <CalcImagePaddingDialog
+                open={openCalcPaddingDialog}
+                bookId={bookId}
+                left={paddingSize[0]}
+                right={paddingSize[1]}
+                maxPage={maxPage}
+                onClose={() => setOpenCalcPaddingDialog(false)}
+                onSizeChange={(l, r) => setPaddingSize([l, r])}
+              />
+            </>
+          )}
+
+          {(editType === 'crop' || editType === 'put') ? (
+            <TextField
+              error={!!inputValidate}
+              helperText={inputValidate}
+              type="number"
+              label={`page(max: ${maxPage})`}
+              color="secondary"
+              value={editPage}
+              onChange={(e) => setEditPage(Number(e.target.value))}
+            />
+          ) : (
+            <TextField
+              error={!!inputValidate}
+              helperText={inputValidate}
+              label={`pages(max: ${maxPage})`}
+              placeholder="ex. 1, 2, 3-5"
+              color="secondary"
+              value={editPages}
+              onChange={(e) => setEditPages(e.target.value)}
+            />
+          )}
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>
           Close
         </Button>
         <Button color="secondary" variant="outlined" onClick={onClickEdit}>
-          {editType}
+          {editType.replace(/([A-Z])/g, ' $1')}
         </Button>
       </DialogActions>
     </Dialog>

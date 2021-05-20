@@ -1,14 +1,14 @@
 import { GraphQLScalarType, IntValueNode } from 'graphql';
 import { Kind } from 'graphql/language/kinds';
-import { Scalars } from '../../../common/GQLTypes';
+import { Scalars } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 
 export const flatRange = (range: Scalars['IntRange']): number[] => {
   if (!range) return [];
   let arr = [];
   range.forEach((a) => {
     if (Array.isArray(a)) {
-      const min = Math.min(...a);
-      arr = [...arr, ...[...Array(Math.max(...a) - min + 1).keys()].map((i) => i + min)];
+      const [ max, min ] = a[0] > a[1] ? a : [a[1], a[0]];
+      arr = [...arr, ...[...Array(max - min + 1).keys()].map((i) => i + min)];
     } else {
       arr.push(a);
     }

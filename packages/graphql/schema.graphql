@@ -51,6 +51,7 @@ type Mutation {
     # if beforePage -1  -> put, 0, 1
     # if beforePage 100 -> 100, put, 101
     putPage(id: ID! beforePage: Int! image: Upload!): Result!
+    cropPages(id: ID!, pages: IntRange!, left: Int!, width: Int!): Result!
 
     ## Debug
     debug_deleteUnusedFolders: Result!
