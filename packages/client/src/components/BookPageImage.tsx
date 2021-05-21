@@ -131,7 +131,7 @@ const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
   );
 });
 
-const Thumbnail: React.FC<ThumbnailBookPageImageProps> = (props: ThumbnailBookPageImageProps) => {
+const Thumbnail: React.FC<ThumbnailBookPageImageProps> = React.memo((props: ThumbnailBookPageImageProps) => {
   const {
     thumbnail,
     width,
@@ -146,9 +146,10 @@ const Thumbnail: React.FC<ThumbnailBookPageImageProps> = (props: ThumbnailBookPa
   );
 
   return (<Image {...props} src={src} />);
-};
+});
 
-const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnail } = (props: BookPageImageProps) => {
+// @ts-ignore
+const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnail } = React.memo((props: BookPageImageProps) => {
   const {
     bookId,
     pageIndex,
@@ -165,7 +166,7 @@ const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnai
   );
 
   return (<Image {...props} src={src} />);
-};
+});
 
 BookPageImage.Thumbnail = Thumbnail;
 
