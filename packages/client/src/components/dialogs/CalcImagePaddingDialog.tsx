@@ -27,7 +27,6 @@ const urlToImageData = (url: string): Promise<ImageData> => new Promise((resolve
 });
 
 const calcPadding = (imageData: ImageData, threshold: number): { left: number, right: number } => {
-    console.log(threshold);
     const isWhite = (width: number, height: number) => {
         const pixelIndex = width + height * imageData.width;
         const dataIndex = pixelIndex * 4;
@@ -41,9 +40,6 @@ const calcPadding = (imageData: ImageData, threshold: number): { left: number, r
     leftWidth: for (let w = 0; w < imageData.width; w += 1) {
         for (let h = 0; h < imageData.height; h += 1) {
             if (isWhite(w, h)) continue;
-            const pixelIndex = w + h * imageData.width;
-            const dataIndex = pixelIndex * 4;
-            console.log(imageData.data[dataIndex], imageData.data[dataIndex + 1], imageData.data[dataIndex + 2]);
             left = w;
             break leftWidth;
         }
