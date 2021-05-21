@@ -26,29 +26,43 @@ const urlToImageData = (url: string): Promise<ImageData> => new Promise((resolve
     image.src = url;
 });
 
-const calcPadding = (imageData: ImageData): { left: number, right: number } => {
-    var left;
-    for (let w = 0; w < imageData.width; w += 1) {
+const calcPadding = (imageData: ImageData, threshold: number): { left: number, right: number } => {
+    console.log(threshold);
+    const isWhite = (width: number, height: number) => {
+        const pixelIndex = width + height * imageData.width;
+        const dataIndex = pixelIndex * 4;
         /* isWhite (R G B (A))*/
-        if (imageData.data[w * 4] === 255 && imageData.data[w * 4 + 1] === 255 && imageData.data[w * 4 + 2] === 255) continue;
-        left = w;
-        break;
-    }
+        return (255 - imageData.data[dataIndex]) <= threshold &&
+            (255 - imageData.data[dataIndex + 1]) <= threshold &&
+            (255 - imageData.data[dataIndex + 2]) <= threshold;
+    };
 
-    var right;
-    for (let w = imageData.width; w >= 0; w -= 1) {
-        /* isWhite (R G B (A))*/
-        if (imageData.data[w * 4] === 255 && imageData.data[w * 4 + 1] === 255 && imageData.data[w * 4 + 2] === 255) continue;
-        right = w;
-        break;
+    let left = 0;
+    leftWidth: for (let w = 0; w < imageData.width; w += 1) {
+        for (let h = 0; h < imageData.height; h += 1) {
+            if (isWhite(w, h)) continue;
+            const pixelIndex = w + h * imageData.width;
+            const dataIndex = pixelIndex * 4;
+            console.log(imageData.data[dataIndex], imageData.data[dataIndex + 1], imageData.data[dataIndex + 2]);
+            left = w;
+            break leftWidth;
+        }
     }
-
+    let right = 0;
+    rightWidth: for (let w = imageData.width - 1; w >= 0; w -= 1) {
+        for (let h = 0; h < imageData.height; h += 1) {
+            if (isWhite(w, h)) continue;
+            right = w;
+            break rightWidth;
+        }
+    }
     return { left, right };
 };
 
 const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.memo((props: CalcImagePaddingDialogProps) => {
     const { open, bookId, maxPage, onClose, left, right, onSizeChange } = props;
     const [pageIndex, setPageIndex] = React.useState(1);
+    const [threshold, setThreshold] = React.useState(10);
     const [imageData, setImageData] = React.useState<ImageData | undefined>(undefined);
     const canvasRef = React.useRef<HTMLCanvasElement>();
     const canvasContainerRef = React.useRef<HTMLDivElement>();
@@ -57,7 +71,7 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
         if (!onSizeChange) return;
         const url = createBookPageUrl(bookId, pageIndex - 1, maxPage);
         const imageData = await urlToImageData(url);
-        const { left: l, right: r } = calcPadding(imageData);
+        const { left: l, right: r } = calcPadding(imageData, threshold);
         onSizeChange(l, r);
         setImageData(imageData);
     }, [bookId, pageIndex, onSizeChange]);
@@ -82,11 +96,12 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
             <DialogTitle>Preview Crop Pages</DialogTitle>
             <DialogContent>
                 <TextField color="secondary" label={`page(max: ${maxPage})`} value={pageIndex} onChange={(e) => setPageIndex(Number(e.target.value))} />
+                <TextField color="secondary" label="threshold" value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} />
                 <TextField color="secondary" label="Left" type="number" value={left} onChange={(e) => onSizeChange(Number(e.target.value), right)} />
                 <TextField color="secondary" label="Right" type="number" value={right} onChange={(e) => onSizeChange(left, Number(e.target.value))} />
                 <Button onClick={onDetectClick}>Detect & Preview</Button>
-                <div ref={canvasContainerRef} style={{position: 'relative', height: 0, overflow: 'hidden'}}>
-                    <canvas ref={canvasRef} style={{position: 'absolute', top:0, left: 0, width:'100%', height: '100%'}} />
+                <div ref={canvasContainerRef} style={{ position: 'relative', height: 0, overflow: 'hidden', border: 'solid lightgray 2px' }}>
+                    <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
                 </div>
             </DialogContent>
             <DialogActions>
