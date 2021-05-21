@@ -79,4 +79,4 @@ const onMessage = async (event) => {
   }
 };
 
-addEventListener('message', (event) => event.waitUntil(onMessage()));
+addEventListener('message', (event) => event.waitUntil(onMessage(event)));
