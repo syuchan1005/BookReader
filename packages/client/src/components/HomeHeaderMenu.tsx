@@ -96,27 +96,17 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
   const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<DeleteUnusedFoldersMutation,
     DeleteUnusedFoldersMutationVariables>(DebugDeleteFolderMutation, {
       onCompleted() {
-      // noinspection JSIgnoredPromiseFromCall
+        // noinspection JSIgnoredPromiseFromCall
         refetch();
       },
     });
 
   /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
-    // noinspection JSDeprecatedSymbols
-    const reload = () => window.location.reload(true);
-    (i !== 1 ? persistor.purge() : Promise.resolve())
-      .then(() => {
-        if (store.wb && i === 1) {
-          store.wb.messageSW({
-            type: 'PURGE_CACHE',
-          }).then(() => {
-            reload();
-          });
-        } else {
-          reload();
-        }
-      });
+    const wb = i === 1 ? store.wb : undefined;
+    (!wb ? persistor.purge() : Promise.resolve())
+      .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
+      .finally(() => window.location.reload(true));
   }, [store.wb]);
 
   const {

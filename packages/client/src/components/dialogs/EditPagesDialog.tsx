@@ -126,17 +126,8 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
 
   const purgeCache = React.useCallback(() => {
     (persistor ? persistor.purge() : Promise.resolve())
-      .then(() => {
-        if (wb) {
-          wb.messageSW({
-            type: 'PURGE_CACHE',
-          }).then(() => {
-            window.location.reload(true);
-          });
-        } else {
-          window.location.reload(true);
-        }
-      });
+      .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
+      .finally(() => window.location.reload(true));
   }, [wb, persistor]);
 
   const [editPageMutation, {
