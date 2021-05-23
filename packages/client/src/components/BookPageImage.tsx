@@ -24,12 +24,6 @@ type BookPageImageProps = {
   height?: number;
 } & Omit<ImageProps, 'src'>;
 
-type ThumbnailBookPageImageProps = {
-  thumbnail?: string;
-  width?: number;
-  height?: number;
-} & Omit<ImageProps, 'src'>;
-
 const useStyles = makeStyles(() => createStyles({
   noImg: {
     width: '100%',
@@ -131,25 +125,8 @@ const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
   );
 });
 
-const Thumbnail: React.FC<ThumbnailBookPageImageProps> = React.memo((props: ThumbnailBookPageImageProps) => {
-  const {
-    thumbnail,
-    width,
-    height,
-    minWidth = 150,
-    minHeight = 200,
-  } = props;
-
-  const src = React.useMemo(
-    () => !thumbnail ? undefined : thumbnail.replace('.jpg', `${createSizeUrlSuffix(minOrNot(width, minWidth), minOrNot(height, minHeight))}.jpg`),
-    [thumbnail, width, height, minWidth, minHeight]
-  );
-
-  return (<Image {...props} src={src} />);
-});
-
 // @ts-ignore
-const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnail } = React.memo((props: BookPageImageProps) => {
+const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageImageProps) => {
   const {
     bookId,
     pageIndex,
@@ -172,7 +149,5 @@ const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnai
 
   return (<Image {...props} src={src} />);
 });
-
-BookPageImage.Thumbnail = Thumbnail;
 
 export default BookPageImage;
