@@ -16,10 +16,9 @@ precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(/^https:\/\/fonts\.googleapis\.com/, new StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
 registerRoute(/^https:\/\/fonts\.gstatic\.com/, new CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
 
-/*
 const BookImageCacheName = 'bookReader-images';
 registerRoute(
-  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]/,
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]$/,
   new StaleWhileRevalidate({
     cacheName: BookImageCacheName,
     plugins: [
@@ -30,6 +29,7 @@ registerRoute(
   }),
   'GET',
 );
+/*
 registerRoute(
   /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?\?nosave/,
   new StaleWhileRevalidate({

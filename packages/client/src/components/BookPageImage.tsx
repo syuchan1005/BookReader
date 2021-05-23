@@ -139,7 +139,7 @@ const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageI
 
   const src = React.useMemo(
     () => {
-      if ([bookId, pageIndex, bookPageCount].find((a) => a === null || a === undefined)) {
+      if ([bookId, pageIndex, bookPageCount].findIndex((a) => a === null || a === undefined) !== -1) {
         return undefined;
       }
       return createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight))
