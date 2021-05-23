@@ -21,6 +21,7 @@ import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/common/BookI
 import EditBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookInfoThumbnailDialog_editBookInfo.gql';
 
 import Book from '@client/components/Book';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
@@ -114,7 +115,7 @@ const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = Reac
                 onClick={() => {
                   changeThumbnail({
                     variables: {
-                      th: book.thumbnail,
+                      th: createBookPageUrl(book.id, book.thumbnail, book.pages),
                       id: infoId,
                     },
                   });

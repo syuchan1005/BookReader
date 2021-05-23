@@ -4,7 +4,7 @@ import BookInfo from './BookInfo';
 export default class Book extends Model {
   public id!: string;
 
-  public thumbnail: string | null;
+  public thumbnail: number | null;
 
   public number!: string;
 
@@ -31,7 +31,8 @@ export default class Book extends Model {
         type: DataTypes.UUID,
       },
       thumbnail: {
-        type: DataTypes.STRING,
+        allowNull: true,
+        type: DataTypes.INTEGER,
       },
       number: {
         allowNull: false,

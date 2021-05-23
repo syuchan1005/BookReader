@@ -199,8 +199,10 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
         </CardActions>
       )}
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
-        <BookPageImage.Thumbnail
-          thumbnail={thumbnail}
+        <BookPageImage
+          bookId={bookId}
+          pageIndex={thumbnail}
+          bookPageCount={pages}
           width={thumbnailSize * window.devicePixelRatio}
           className={classes.thumbnail}
           noSave={thumbnailNoSave}

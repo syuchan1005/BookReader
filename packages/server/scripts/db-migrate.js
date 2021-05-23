@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 const { exec } = require('child_process');
-const { readdir, rmdir } = require('fs').promises;
+const { readdir, rm } = require('fs').promises;
 
 const sequelizeResource = require('../.sequelizerc');
 
@@ -28,7 +28,7 @@ console.log(`Migration for env: ${env}`);
   if (steps.includes('migrate')) {
     await new Promise((resolve, reject) => {
       const npm = exec(
-        `sequelize-cli db:migrate --env ${env}`,
+        `npm run sequelize-cli -- db:migrate --env ${env} --debug`,
         (err) => { if (err) reject(err); else resolve(); },
       );
       npm.stdout.pipe(process.stdout);
@@ -37,6 +37,6 @@ console.log(`Migration for env: ${env}`);
   }
 
   if (steps.includes('clean')) {
-    await rmdir(sequelizeResource['migrations-path'], { recursive: true });
+    await rm(sequelizeResource['migrations-path'], { recursive: true });
   }
 })();

@@ -51,12 +51,13 @@ Table(bookInfos) {
 }
 
 Table(books) {
-  primary_key(id) uuid
+  primary_key(id) uuidZ
   ---
-  thumbnail varchar(255)
+  unique_not_null(infoId)unique_key(info) uuid
+  ---
+  thumbnail integer
   unique_not_null(number)unique_key(info) varchar(255)
   $not_null(pages) integer
-  unique_not_null(infoId)unique_key(info) uuid
   ---
   $not_null(createdAt) datetime
   $not_null(updatedAt) datetime

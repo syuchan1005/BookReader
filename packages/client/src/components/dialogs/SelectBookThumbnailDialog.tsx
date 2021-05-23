@@ -117,7 +117,7 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = React.me
                     onClick={() => changeThumbnail({
                       variables: {
                         id: bookId,
-                        th: createBookPageUrl(bookId, i, data.book.pages),
+                        th: i,
                       },
                     })}
                   >

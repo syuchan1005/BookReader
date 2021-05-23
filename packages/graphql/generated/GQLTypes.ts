@@ -20,7 +20,7 @@ export type Scalars = {
 export type Book = {
   __typename?: 'Book';
   id: Scalars['ID'];
-  thumbnail?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['Int']>;
   number: Scalars['String'];
   pages: Scalars['Int'];
   info?: Maybe<BookInfo>;
@@ -171,7 +171,7 @@ export type MutationAddCompressBookArgs = {
 export type MutationEditBookArgs = {
   id: Scalars['ID'];
   number?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['Int']>;
 };
 
 
@@ -496,7 +496,7 @@ export type DeleteBookMutation = (
 export type EditBookMutationVariables = Exact<{
   id: Scalars['ID'];
   number?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['Int']>;
 }>;
 
 
@@ -728,7 +728,7 @@ export type BookPagesQuery = (
 
 export type EditBookThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
-  th?: Maybe<Scalars['String']>;
+  th?: Maybe<Scalars['Int']>;
 }>;
 
 
@@ -854,8 +854,8 @@ export type ResolversTypes = {
   BigInt: ResolverTypeWrapper<Scalars['BigInt']>;
   Book: ResolverTypeWrapper<Book>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
-  String: ResolverTypeWrapper<Scalars['String']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  String: ResolverTypeWrapper<Scalars['String']>;
   BookInfo: ResolverTypeWrapper<BookInfo>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   BookInfoHistory: BookInfoHistory;
@@ -886,8 +886,8 @@ export type ResolversParentTypes = {
   BigInt: Scalars['BigInt'];
   Book: Book;
   ID: Scalars['ID'];
-  String: Scalars['String'];
   Int: Scalars['Int'];
+  String: Scalars['String'];
   BookInfo: BookInfo;
   Boolean: Scalars['Boolean'];
   BookInfoHistory: BookInfoHistory;
@@ -916,7 +916,7 @@ export interface BigIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type BookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Book'] = ResolversParentTypes['Book']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  thumbnail?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   number?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   info?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType>;
