@@ -151,11 +151,10 @@ const GQLUtil = {
     }).catch(async (reason) =>  (deleteTempFolder ? deleteTempFolder() : reason));
     if (deleteTempFolder) await deleteTempFolder();
 
-    const bThumbnail = `/book/${bookId}/${'0'.padStart(pad, '0')}.jpg`;
     await Database.sequelize.transaction(async (transaction) => {
       await BookModel.create({
         id: bookId,
-        thumbnail: bThumbnail,
+        thumbnail: 0,
         number,
         pages: files.length,
         infoId,
@@ -182,7 +181,7 @@ const GQLUtil = {
         transaction,
       });
       await BookInfoModel.update({
-        thumbnail: bThumbnail,
+        thumbnail: bookId,
       }, {
         where: {
           id: infoId,

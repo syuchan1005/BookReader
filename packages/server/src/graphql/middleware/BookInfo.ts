@@ -60,10 +60,16 @@ class BookInfo extends GQLMiddleware {
               [Op.like]: `%${search}%`,
             } : undefined,
           }).filter((e) => e[1] !== undefined)),
-          include: [{
-            model: GenreModel,
-            as: 'genres',
-          }],
+          include: [
+            {
+              model: GenreModel,
+              as: 'genres',
+            },
+            {
+              model: BookModel,
+              as: 'thumbnailBook'
+            }
+          ],
         });
 
         return {
@@ -145,7 +151,7 @@ class BookInfo extends GQLMiddleware {
           if (e[1] !== undefined) {
             if (Array.isArray(e[1])) {
               if (e[1].filter((a) => !info[e[0]].includes(a)).length !== 0
-                  || info[e[0]].filter((a) => !e[1].includes(a)).length !== 0) {
+                || info[e[0]].filter((a) => !e[1].includes(a)).length !== 0) {
                 // eslint-disable-next-line no-param-reassign,prefer-destructuring
                 o[e[0]] = e[1];
               }
@@ -220,8 +226,8 @@ class BookInfo extends GQLMiddleware {
             id: uuidv4(),
             history: true,
           })), {
-            ignoreDuplicates: true,
-          },
+          ignoreDuplicates: true,
+        },
         );
         return {
           success: true,

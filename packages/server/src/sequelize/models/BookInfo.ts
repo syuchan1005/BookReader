@@ -7,7 +7,7 @@ export default class BookInfo extends Model {
 
   public name!: string;
 
-  public thumbnail: string | null;
+  public thumbnail: number | null;
 
   public count!: number;
 
@@ -21,9 +21,12 @@ export default class BookInfo extends Model {
 
   public genres?: Genre[];
 
+  public thumbnailBook?: Book;
+
   public static associations: {
     books: Association<BookInfo, Book>;
     genres: Association<BookInfo, Genre>;
+    thumbnail: Association<BookInfo, Book>;
   };
 
   public static async hasId(infoId: string): Promise<boolean> {
@@ -51,7 +54,7 @@ export default class BookInfo extends Model {
         type: DataTypes.STRING,
       },
       thumbnail: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUIDV4,
       },
       count: {
         allowNull: false,
@@ -77,6 +80,11 @@ export default class BookInfo extends Model {
       foreignKey: 'infoId',
       as: 'genres',
       timestamps: false,
+    });
+    BookInfo.belongsTo(Book, {
+      foreignKey: 'thumbnail',
+      as: 'thumbnailBook',
+      constraints: false,
     });
   }
 }

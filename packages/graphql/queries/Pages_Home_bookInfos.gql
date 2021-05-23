@@ -5,7 +5,11 @@ query bookInfos($limit: Int! $offset: Int! $search: String $order: BookInfoOrder
             id
             name
             count
-            thumbnail
+            thumbnail {
+                bookId
+                pageIndex
+                bookPageCount
+            }
             history
             genres {
                 id

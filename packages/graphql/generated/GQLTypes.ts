@@ -30,7 +30,7 @@ export type BookInfo = {
   __typename?: 'BookInfo';
   id: Scalars['ID'];
   name: Scalars['String'];
-  thumbnail?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<BookInfoThumbnail>;
   count: Scalars['Int'];
   history: Scalars['Boolean'];
   genres: Array<Genre>;
@@ -68,6 +68,13 @@ export type BookInfoResult = {
   code?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   books: Array<Book>;
+};
+
+export type BookInfoThumbnail = {
+  __typename?: 'BookInfoThumbnail';
+  bookId: Scalars['ID'];
+  pageIndex: Scalars['Int'];
+  bookPageCount: Scalars['Int'];
 };
 
 export enum BookOrder {
@@ -140,7 +147,7 @@ export type MutationAddBookInfoArgs = {
 export type MutationEditBookInfoArgs = {
   id: Scalars['ID'];
   name?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['ID']>;
   genres?: Maybe<Array<Scalars['String']>>;
 };
 
@@ -467,7 +474,6 @@ export type DeleteBookInfoMutation = (
 export type EditBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
   name?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['String']>;
   genres: Array<Scalars['String']> | Scalars['String'];
 }>;
 
@@ -496,7 +502,6 @@ export type DeleteBookMutation = (
 export type EditBookMutationVariables = Exact<{
   id: Scalars['ID'];
   number?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['Int']>;
 }>;
 
 
@@ -634,8 +639,11 @@ export type BookInfosQuery = (
     & Pick<BookInfoList, 'hasNext'>
     & { infos: Array<(
       { __typename?: 'BookInfo' }
-      & Pick<BookInfo, 'id' | 'name' | 'count' | 'thumbnail' | 'history'>
-      & { genres: Array<(
+      & Pick<BookInfo, 'id' | 'name' | 'count' | 'history'>
+      & { thumbnail?: Maybe<(
+        { __typename?: 'BookInfoThumbnail' }
+        & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
+      )>, genres: Array<(
         { __typename?: 'Genre' }
         & Pick<Genre, 'id' | 'name' | 'invisible'>
       )> }
@@ -701,7 +709,7 @@ export type MoveBooksMutation = (
 
 export type EditBookInfoThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
-  th?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['ID']>;
 }>;
 
 
@@ -862,6 +870,7 @@ export type ResolversTypes = {
   BookInfoList: ResolverTypeWrapper<BookInfoList>;
   BookInfoOrder: BookInfoOrder;
   BookInfoResult: ResolverTypeWrapper<BookInfoResult>;
+  BookInfoThumbnail: ResolverTypeWrapper<BookInfoThumbnail>;
   BookOrder: BookOrder;
   CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>;
   Debug_FolderSizes: ResolverTypeWrapper<Debug_FolderSizes>;
@@ -893,6 +902,7 @@ export type ResolversParentTypes = {
   BookInfoHistory: BookInfoHistory;
   BookInfoList: BookInfoList;
   BookInfoResult: BookInfoResult;
+  BookInfoThumbnail: BookInfoThumbnail;
   CommonPluginQuery: CommonPluginQuery;
   Debug_FolderSizes: Debug_FolderSizes;
   Genre: Genre;
@@ -926,7 +936,7 @@ export type BookResolvers<ContextType = any, ParentType extends ResolversParentT
 export type BookInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfo'] = ResolversParentTypes['BookInfo']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  thumbnail?: Resolver<Maybe<ResolversTypes['BookInfoThumbnail']>, ParentType, ContextType>;
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   history?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
@@ -945,6 +955,13 @@ export type BookInfoResultResolvers<ContextType = any, ParentType extends Resolv
   code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type BookInfoThumbnailResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoThumbnail'] = ResolversParentTypes['BookInfoThumbnail']> = {
+  bookId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  pageIndex?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  bookPageCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1062,6 +1079,7 @@ export type Resolvers<ContextType = any> = {
   BookInfo?: BookInfoResolvers<ContextType>;
   BookInfoList?: BookInfoListResolvers<ContextType>;
   BookInfoResult?: BookInfoResultResolvers<ContextType>;
+  BookInfoThumbnail?: BookInfoThumbnailResolvers<ContextType>;
   CommonPluginQuery?: CommonPluginQueryResolvers<ContextType>;
   Debug_FolderSizes?: Debug_FolderSizesResolvers<ContextType>;
   Genre?: GenreResolvers<ContextType>;

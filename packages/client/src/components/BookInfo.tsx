@@ -237,8 +237,10 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
         </Menu>
       </CardActions>
       <CardActionArea onClick={(e) => onClick && onClick(e)}>
-        <BookPageImage.Thumbnail
-          thumbnail={thumbnail}
+        <BookPageImage
+          bookId={thumbnail?.bookId}
+          pageIndex={thumbnail?.pageIndex}
+          bookPageCount={thumbnail?.bookPageCount}
           alt={name}
           width={thumbnailSize * window.devicePixelRatio}
           className={classes.thumbnail}

@@ -30,7 +30,7 @@ type Query {
 type Mutation {
     ## BookInfo
     addBookInfo(name: String!, genres: [String!]): ResultWithInfoId!
-    editBookInfo(id: ID!, name: String, thumbnail: String, genres: [String!]): Result!
+    editBookInfo(id: ID!, name: String, thumbnail: ID, genres: [String!]): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 
     addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
@@ -90,12 +90,18 @@ enum SplitType {
 type BookInfo {
     id: ID!
     name: String!
-    thumbnail: String
+    thumbnail: BookInfoThumbnail
     count: Int!
     history: Boolean!
     genres: [Genre!]!
 
     books(order: BookOrder = Number_Asc): [Book!]!
+}
+
+type BookInfoThumbnail {
+    bookId: ID!
+    pageIndex: Int!
+    bookPageCount: Int!
 }
 
 type Book {

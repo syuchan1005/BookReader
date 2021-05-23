@@ -17,9 +17,9 @@ type ImageProps = {
 };
 
 type BookPageImageProps = {
-  bookId: string;
-  pageIndex: number;
-  bookPageCount: number;
+  bookId?: string;
+  pageIndex?: number;
+  bookPageCount?: number;
   width?: number;
   height?: number;
 } & Omit<ImageProps, 'src'>;
@@ -161,7 +161,12 @@ const BookPageImage: React.FC<BookPageImageProps> & { Thumbnail: typeof Thumbnai
   } = props;
 
   const src = React.useMemo(
-    () => createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight)),
+    () => {
+      if ([bookId, pageIndex, bookPageCount].find((a) => a === null || a === undefined)) {
+        return undefined;
+      }
+      return createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight))
+    },
     [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight]
   );
 

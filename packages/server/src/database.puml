@@ -40,7 +40,7 @@ Table(bookInfos) {
   primary_key(id) uuid
   ---
   unique_not_null(name)unique_key(name) varchar(255)
-  thumbnail varchar(255)
+  thumbnail uuid
   $not_null(count) integer = 0
   $not_null(history) tinyint(1) = 0
   ---
@@ -48,10 +48,11 @@ Table(bookInfos) {
   $not_null(updatedAt) datetime
   ---
   unique_name(name)
+  fk_thumbnail(thumbnail -> books(id))
 }
 
 Table(books) {
-  primary_key(id) uuidZ
+  primary_key(id) uuid
   ---
   unique_not_null(infoId)unique_key(info) uuid
   ---

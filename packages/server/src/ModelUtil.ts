@@ -7,7 +7,11 @@ const util = {
     return {
       id: model.id,
       name: model.name,
-      thumbnail: model.thumbnail,
+      thumbnail: model.thumbnailBook ? {
+        bookId: model.thumbnailBook.id,
+        pageIndex: model.thumbnailBook.thumbnail,
+        bookPageCount: model.thumbnailBook.pages,
+      } : undefined,
       count: model.count,
       history: model.history,
       genres: model.genres as unknown as Genre[] ?? [],
