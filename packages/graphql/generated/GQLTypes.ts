@@ -133,7 +133,6 @@ export type Mutation = {
 
 export type MutationAddBookInfoArgs = {
   name: Scalars['String'];
-  thumbnail?: Maybe<Scalars['Upload']>;
   genres?: Maybe<Array<Scalars['String']>>;
 };
 

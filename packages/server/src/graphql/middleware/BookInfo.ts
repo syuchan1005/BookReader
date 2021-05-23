@@ -88,36 +88,17 @@ class BookInfo extends GQLMiddleware {
     return {
       addBookInfo: async (parent, {
         name,
-        thumbnail,
         genres,
       }) => {
         const infoId = uuidv4();
-        let thumbnailStream;
-        if (thumbnail) {
-          const { createReadStream, mimetype } = await thumbnail;
-          if (!mimetype.startsWith('image/jpeg')) {
-            return {
-              success: false,
-              code: 'QL0000',
-              message: Errors.QL0000,
-            };
-          }
-          thumbnailStream = createReadStream;
-        }
         await BookInfoModel.create({
           id: infoId,
           name,
-          thumbnail: thumbnail ? `bookInfo/${infoId}.jpg` : null,
         });
         if (genres && genres.length >= 1) {
           await GQLUtil.linkGenres(infoId, genres);
         }
         await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
-
-        if (thumbnailStream) {
-          await fs.writeFile(`storage/bookInfo/${infoId}.jpg`, thumbnailStream());
-          await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'Thumbnail Saved' });
-        }
 
         return {
           success: true,
