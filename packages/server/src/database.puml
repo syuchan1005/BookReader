@@ -48,7 +48,6 @@ Table(bookInfos) {
   $not_null(updatedAt) datetime
   ---
   unique_name(name)
-  fk_thumbnail(thumbnail -> books(id))
 }
 
 Table(books) {

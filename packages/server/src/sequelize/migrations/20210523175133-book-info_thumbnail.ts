@@ -1,11 +1,29 @@
 /* eslint-disable no-console */
 import { DataTypes, QueryInterface, ModelAttributes } from 'sequelize';
 
+const t = async (
+  queryInterface: QueryInterface,
+  func: (execQuery: (sql: string) => Promise<void>) => Promise<void>,
+): Promise<void> => {
+  const execQuery = queryInterface.sequelize.query.bind(queryInterface.sequelize);
+  await execQuery('PRAGMA foreign_keys = OFF;');
+  try {
+    await queryInterface.sequelize.query('BEGIN TRANSACTION;');
+    await func(execQuery);
+    await execQuery('COMMIT;');
+    await execQuery('PRAGMA foreign_keys = ON;');
+  } catch (e) {
+    await execQuery('ROLLBACK;');
+    await execQuery('PRAGMA foreign_keys = ON;');
+    throw e;
+  }
+};
+
 module.exports = {
-  up: async (
+  up: (
     queryInterface: QueryInterface,
     Sequelize: typeof DataTypes,
-  ) => queryInterface.sequelize.transaction(async (transaction) => {
+  ) => t(queryInterface, async (execQuery) => {
     const dialect = queryInterface.sequelize.getDialect();
     if (dialect !== 'sqlite') {
       throw new Error(`${dialect} do not support.`);
@@ -19,9 +37,9 @@ module.exports = {
     // @ts-ignore
     table.name.unique = false;
 
-    await queryInterface.createTable('new_bookInfos', table, { transaction });
+    await queryInterface.createTable('new_bookInfos', table);
     // noinspection SqlResolve
-    await queryInterface.sequelize.query(
+    await execQuery(
       `INSERT INTO new_bookInfos
          SELECT 
           id,
@@ -32,76 +50,36 @@ module.exports = {
           updatedAt, 
           history
          FROM bookInfos;`,
-      { transaction }
     );
 
-    await queryInterface.removeConstraint('infoGenres', 'fk_infoId', { transaction });
-    await queryInterface.removeConstraint('books', 'fk_infoId', { transaction });
-    await queryInterface.dropTable('bookInfos', { transaction });
-    await queryInterface.renameTable('new_bookInfos', 'bookInfos', { transaction });
+    await queryInterface.dropTable('bookInfos');
+    await queryInterface.renameTable('new_bookInfos', 'bookInfos');
     await queryInterface.addConstraint('bookInfos', {
       fields: ['name'],
       type: 'unique',
       name: 'unique_name',
-      transaction,
-    });
-    await queryInterface.addConstraint('infoGenres', {
-      fields: ['infoId'],
-      type: 'foreign key',
-      name: 'fk_infoId',
-      references: {
-        table: 'bookInfos',
-        field: 'id',
-      },
-      onUpdate: 'cascade',
-      onDelete: 'no action',
-      transaction,
-    });
-    await queryInterface.addConstraint('books', {
-      fields: ['infoId'],
-      type: 'foreign key',
-      name: 'fk_infoId',
-      references: {
-        table: 'bookInfos',
-        field: 'id',
-      },
-      onUpdate: 'cascade',
-      onDelete: 'no action',
-      transaction,
-    });
-    await queryInterface.addConstraint('bookInfos', {
-      fields: ['thumbnail'],
-      type: 'foreign key',
-      name: 'fk_thumbnail',
-      references: {
-        table: 'books',
-        field: 'id',
-      },
-      onUpdate: 'cascade',
-      onDelete: 'no action',
-      transaction,
     });
   }),
   down: (
     queryInterface: QueryInterface,
     Sequelize: typeof DataTypes,
-  ) => queryInterface.sequelize.transaction(async (transaction) => {
+  ) => t(queryInterface, async (execQuery) => {
     const dialect = queryInterface.sequelize.getDialect();
     if (dialect !== 'sqlite') {
       throw new Error(`${dialect} do not support.`);
     }
     const table = await queryInterface.describeTable('bookInfos') as ModelAttributes;
     table.thumbnail = {
-      type: Sequelize.UUIDV4,
+      type: Sequelize.STRING,
       allowNull: true,
     };
     // table description dont have actual unique constraint.
     // @ts-ignore
     table.name.unique = false;
 
-    await queryInterface.createTable('new_bookInfos', table, { transaction });
+    await queryInterface.createTable('new_bookInfos', table);
     // noinspection SqlResolve
-    await queryInterface.sequelize.query(
+    await execQuery(
       `INSERT INTO new_bookInfos
         SELECT 
           bookInfos.id,
@@ -112,42 +90,14 @@ module.exports = {
           bookInfos.updatedAt, 
           history
         FROM bookInfos LEFT OUTER JOIN books ON bookInfos.thumbnail = books.id;`,
-      { transaction }
     );
 
-    await queryInterface.removeConstraint('infoGenres', 'fk_infoId', { transaction });
-    await queryInterface.removeConstraint('books', 'fk_infoId', { transaction });
-    await queryInterface.dropTable('bookInfos', { transaction });
-    await queryInterface.renameTable('new_bookInfos', 'bookInfos', { transaction });
+    await queryInterface.dropTable('bookInfos');
+    await queryInterface.renameTable('new_bookInfos', 'bookInfos');
     await queryInterface.addConstraint('bookInfos', {
       fields: ['name'],
       type: 'unique',
       name: 'unique_name',
-      transaction,
-    });
-    await queryInterface.addConstraint('infoGenres', {
-      fields: ['infoId'],
-      type: 'foreign key',
-      name: 'fk_infoId',
-      references: {
-        table: 'bookInfos',
-        field: 'id',
-      },
-      onUpdate: 'cascade',
-      onDelete: 'no action',
-      transaction,
-    });
-    await queryInterface.addConstraint('books', {
-      fields: ['infoId'],
-      type: 'foreign key',
-      name: 'fk_infoId',
-      references: {
-        table: 'bookInfos',
-        field: 'id',
-      },
-      onUpdate: 'cascade',
-      onDelete: 'no action',
-      transaction,
     });
   }),
 };

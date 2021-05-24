@@ -2,6 +2,7 @@
 const { exec } = require('child_process');
 const { readdir, rm } = require('fs').promises;
 
+// eslint-disable-next-line import/extensions
 const sequelizeResource = require('../.sequelizerc');
 
 const env = process.argv[2] || 'development';
