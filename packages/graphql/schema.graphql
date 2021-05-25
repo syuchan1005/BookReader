@@ -94,6 +94,7 @@ type BookInfo {
     count: Int!
     history: Boolean!
     genres: [Genre!]!
+    updatedAt: String! # milliseconds unix time string
 
     books(order: BookOrder = Number_Asc): [Book!]!
 }
@@ -109,6 +110,7 @@ type Book {
     thumbnail: Int
     number: String!
     pages: Int!
+    updatedAt: String! # milliseconds unix time string
 
     # infoId: ID!
     info: BookInfo

@@ -23,8 +23,10 @@ import {
   EditBookInfoMutation as EditBookInfoMutationType,
   EditBookInfoMutationVariables,
 } from '@syuchan1005/book-reader-graphql';
-import DeleteBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/BookInfo_deleteBookInfo.gql';
-import EditBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/BookInfo_editBookInfo.gql';
+import DeleteBookInfoMutation
+  from '@syuchan1005/book-reader-graphql/queries/BookInfo_deleteBookInfo.gql';
+import EditBookInfoMutation
+  from '@syuchan1005/book-reader-graphql/queries/BookInfo_editBookInfo.gql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -38,6 +40,7 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   style?: React.CSSProperties;
   thumbnailSize?: number;
   showName?: boolean;
+  updatedAt?: string;
 
   onClick?: Function;
   onDeleted?: Function;
@@ -109,6 +112,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     color: 'white',
     textShadow: '1px 1px 1px black',
   },
+  newLabel: {
+    position: 'absolute',
+    top: theme.spacing(1.5),
+    left: theme.spacing(1.5),
+    color: 'white',
+    textShadow: '1px 1px 2px black',
+  },
   cardContent: {
     position: 'absolute',
     bottom: '0',
@@ -123,6 +133,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
+const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
+
 const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
@@ -134,6 +146,7 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
     count,
     history,
     genres,
+    updatedAt,
     showName,
     onClick,
     onDeleted,
@@ -151,41 +164,37 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBookInfo, { loading: delLoading }] = useMutation<
-    DeleteBookInfoMutationType,
-    DeleteBookInfoMutationVariables
-  >(
-    DeleteBookInfoMutation,
-    {
-      variables: {
-        id: infoId,
+  const [deleteBookInfo, { loading: delLoading }] = useMutation<DeleteBookInfoMutationType,
+    DeleteBookInfoMutationVariables>(
+      DeleteBookInfoMutation,
+      {
+        variables: {
+          id: infoId,
+        },
+        onCompleted(d) {
+          if (!d) return;
+          setAskDelete(!d.del.success);
+          if (d.del.success && onDeleted) onDeleted(d.del.books);
+        },
       },
-      onCompleted(d) {
-        if (!d) return;
-        setAskDelete(!d.del.success);
-        if (d.del.success && onDeleted) onDeleted(d.del.books);
-      },
-    },
-  );
+    );
 
-  const [editBookInfo, { loading: editLoading }] = useMutation<
-    EditBookInfoMutationType,
-    EditBookInfoMutationVariables
-  >(
-    EditBookInfoMutation,
-    {
-      variables: {
-        id: infoId,
-        name: editContent.name,
-        genres: editContent.genres,
+  const [editBookInfo, { loading: editLoading }] = useMutation<EditBookInfoMutationType,
+    EditBookInfoMutationVariables>(
+      EditBookInfoMutation,
+      {
+        variables: {
+          id: infoId,
+          name: editContent.name,
+          genres: editContent.genres,
+        },
+        onCompleted(d) {
+          if (!d) return;
+          setEditDialog(!d.edit.success);
+          if (d.edit.success && onEdit) onEdit();
+        },
       },
-      onCompleted(d) {
-        if (!d) return;
-        setEditDialog(!d.edit.success);
-        if (d.edit.success && onEdit) onEdit();
-      },
-    },
-  );
+    );
 
   const clickEditBookInfo = React.useCallback(() => {
     setMenuAnchor(null);
@@ -208,7 +217,10 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
   }, []);
 
   const onChangeEvent = (k, e) => {
-    setEditContent({ ...editContent, [k]: e });
+    setEditContent({
+      ...editContent,
+      [k]: e,
+    });
   };
 
   return (
@@ -264,6 +276,9 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
         {(genres.some((g) => g.invisible)) ? (
           <Icon className={classes.invisibleLabel}>visibility_off</Icon>
         ) : null}
+        {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
+          <Icon className={classes.newLabel}>tips_and_updates</Icon>
+        )}
       </CardActionArea>
 
       <DeleteDialog
@@ -282,7 +297,10 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
         genres={editContent.genres}
         onChange={onChangeEvent}
         onClose={() => setEditDialog(false)}
-        onClickRestore={() => setEditContent({ ...editContent, name })}
+        onClickRestore={() => setEditContent({
+          ...editContent,
+          name,
+        })}
         onClickEdit={() => editBookInfo()}
       />
 

@@ -58,6 +58,6 @@ export default class Genre extends Model {
   }
 
   public static async seed() {
-    await Promise.all(defaultGenres.map((name) => Genre.upsert({ name })));
+    await Promise.all(defaultGenres.map((name) => Genre.upsert({ name, invisible: name === 'Invisible' })));
   }
 }

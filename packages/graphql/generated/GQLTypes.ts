@@ -23,6 +23,7 @@ export type Book = {
   thumbnail?: Maybe<Scalars['Int']>;
   number: Scalars['String'];
   pages: Scalars['Int'];
+  updatedAt: Scalars['String'];
   info?: Maybe<BookInfo>;
 };
 
@@ -34,6 +35,7 @@ export type BookInfo = {
   count: Scalars['Int'];
   history: Scalars['Boolean'];
   genres: Array<Genre>;
+  updatedAt: Scalars['String'];
   books: Array<Book>;
 };
 
@@ -639,7 +641,7 @@ export type BookInfosQuery = (
     & Pick<BookInfoList, 'hasNext'>
     & { infos: Array<(
       { __typename?: 'BookInfo' }
-      & Pick<BookInfo, 'id' | 'name' | 'count' | 'history'>
+      & Pick<BookInfo, 'id' | 'name' | 'count' | 'history' | 'updatedAt'>
       & { thumbnail?: Maybe<(
         { __typename?: 'BookInfoThumbnail' }
         & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
@@ -929,6 +931,7 @@ export type BookResolvers<ContextType = any, ParentType extends ResolversParentT
   thumbnail?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   number?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   info?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -940,6 +943,7 @@ export type BookInfoResolvers<ContextType = any, ParentType extends ResolversPar
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   history?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<BookInfoBooksArgs, 'order'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

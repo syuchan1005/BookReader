@@ -10,4 +10,4 @@ export const defaultGenres = [
   'Completed',
 ];
 
-export const defaultTitle = "Book Reader";
+export const defaultTitle = 'Book Reader';

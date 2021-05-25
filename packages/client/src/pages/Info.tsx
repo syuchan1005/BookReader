@@ -112,7 +112,7 @@ const Info: React.FC = React.memo((props: InfoProps) => {
     },
     onCompleted: (d) => {
       const bookName = d?.bookInfo?.name;
-      setTitle((title) => `${bookName} - ${title}`);
+      setTitle((t) => `${bookName} - ${t}`);
     },
   });
 

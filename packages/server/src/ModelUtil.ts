@@ -18,6 +18,7 @@ const util = {
       books: convertBook && model.books
         ? model.books.map((b) => util.book(b, false, model.id))
         : [],
+      updatedAt: model.updatedAt.getTime().toString(),
     };
   },
   book(model: BookModel, convertInfo = true, infoId?): Book {
@@ -30,6 +31,7 @@ const util = {
       pages: model.pages,
       number: model.number,
       thumbnail: model.thumbnail,
+      updatedAt: model.updatedAt.getTime().toString(),
       info,
     };
   },

@@ -16,6 +16,7 @@ query bookInfos($limit: Int! $offset: Int! $search: String $order: BookInfoOrder
                 name
                 invisible
             }
+            updatedAt
         }
     }
 }

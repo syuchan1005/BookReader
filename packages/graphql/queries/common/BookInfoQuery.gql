@@ -10,6 +10,7 @@ query bookInfo($id: ID! $order: BookOrder){
             number
             pages
             thumbnail
+            updatedAt
 
             info {
                 id

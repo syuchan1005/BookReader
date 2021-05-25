@@ -38,6 +38,7 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
   thumbnailSize?: number;
   thumbnailNoSave?: boolean;
   name: string;
+  updatedAt?: string;
   reading?: boolean;
   onClick?: Function;
   onDeleted?: Function;
@@ -72,14 +73,24 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: theme.spacing(1),
     borderTopRightRadius: theme.spacing(0.5),
   },
-  readLabel: {
+  labelContainer: {
     position: 'absolute',
     top: 0,
-    left: theme.spacing(1),
+    left: 0,
+    display: 'flex',
+  },
+  readLabel: {
+    marginLeft: theme.spacing(1),
     background: theme.palette.secondary.main,
     color: theme.palette.secondary.contrastText,
     padding: theme.spacing(1),
     borderRadius: theme.spacing(1),
+  },
+  newLabel: {
+    marginTop: theme.spacing(0.5),
+    marginLeft: theme.spacing(0.5),
+    color: 'white',
+    textShadow: '1px 1px 2px black',
   },
   headerMenu: {
     position: 'absolute',
@@ -87,6 +98,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: 0,
   },
 }));
+
+const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
   const classes = useStyles(props);
@@ -98,6 +111,7 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
     pages,
     reading,
     id: bookId,
+    updatedAt,
     onClick,
     onDeleted,
     onEdit,
@@ -115,34 +129,30 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<
-    DeleteBookMutationType,
-    DeleteBookMutationVariables
-  >(DeleteBookMutation, {
-    variables: {
-      id: bookId,
-    },
-    onCompleted(d) {
-      if (!d) return;
-      setAskDelete(!d.del.success);
-      if (d.del.success && onDeleted) onDeleted();
-    },
-  });
+  const [deleteBook, { loading: delLoading }] = useMutation<DeleteBookMutationType,
+    DeleteBookMutationVariables>(DeleteBookMutation, {
+      variables: {
+        id: bookId,
+      },
+      onCompleted(d) {
+        if (!d) return;
+        setAskDelete(!d.del.success);
+        if (d.del.success && onDeleted) onDeleted();
+      },
+    });
 
-  const [editBook, { loading: editLoading }] = useMutation<
-    EditBookMutationType,
-    EditBookMutationVariables
-  >(EditBookMutation, {
-    variables: {
-      id: bookId,
-      ...editContent,
-    },
-    onCompleted(d) {
-      if (!d) return;
-      setEditDialog(!d.edit.success);
-      if (d.edit.success && onEdit) onEdit();
-    },
-  });
+  const [editBook, { loading: editLoading }] = useMutation<EditBookMutationType,
+    EditBookMutationVariables>(EditBookMutation, {
+      variables: {
+        id: bookId,
+        ...editContent,
+      },
+      onCompleted(d) {
+        if (!d) return;
+        setEditDialog(!d.edit.success);
+        if (d.edit.success && onEdit) onEdit();
+      },
+    });
 
   const clickEditBook = React.useCallback(() => {
     setMenuAnchor(null);
@@ -210,9 +220,14 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
         <CardContent className={classes.cardContent}>
           <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
         </CardContent>
-        {(reading && !simple) ? (
-          <div className={classes.readLabel}>Reading</div>
-        ) : null}
+        <div className={classes.labelContainer}>
+          {(reading && !simple) ? (
+            <div className={classes.readLabel}>Reading</div>
+          ) : null}
+          {((Date.now() - Number(updatedAt)) < NEW_BOOK_EXPIRED) && (
+            <Icon className={classes.newLabel}>tips_and_updates</Icon>
+          )}
+        </div>
       </CardActionArea>
 
       <DeleteDialog
@@ -227,9 +242,15 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
         open={editDialog}
         loading={editLoading}
         fieldValue={editContent.number}
-        onChange={(k, e) => setEditContent({ ...editContent, [k]: e })}
+        onChange={(k, e) => setEditContent({
+          ...editContent,
+          [k]: e,
+        })}
         onClose={() => setEditDialog(false)}
-        onClickRestore={() => setEditContent({ ...editContent, number })}
+        onClickRestore={() => setEditContent({
+          ...editContent,
+          number,
+        })}
         onClickEdit={() => editBook()}
       />
 
