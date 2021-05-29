@@ -22,6 +22,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       filename: 'service-worker.js',
       injectRegister: false,
+      manifest: false,
     }),
   ],
   server: {
