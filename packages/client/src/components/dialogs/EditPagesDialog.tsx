@@ -15,8 +15,8 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
-import loadable from '@loadable/component';
 import { Workbox } from 'workbox-window';
+import { useMutation } from '@apollo/react-hooks';
 
 import {
   DeletePagesMutation as DeletePagesMutationType,
@@ -36,11 +36,9 @@ import SplitMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDia
 import DeleteMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_delete.gql';
 import PutPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_put.gql';
 import CropPagesMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_crop.gql';
-import { useMutation } from '@apollo/react-hooks';
 import DeleteDialog from './DeleteDialog';
 import CalcImagePaddingDialog from './CalcImagePaddingDialog';
-
-const FilerobotImageEditor = loadable(() => import(/* webpackChunkName: 'ImageEditor' */ 'filerobot-image-editor'));
+import CropImageDialog from './CropImageDialog';
 
 interface EditPagesDialogProps {
   open: boolean;
@@ -210,40 +208,34 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
 
   return (
     <Dialog open={open} onClose={onClose}>
-      {(openEditor) && (
-        <FilerobotImageEditor
-          show={openEditor}
-          src={editImgSrc}
-          config={imageEditorConfig}
-          onClose={() => { setOpenCropDialog(false); setOpenPutDialog(false); }}
-          onBeforeComplete={() => false}
-          onComplete={({ canvas }) => {
-            canvas.toBlob((image) => {
-              if (image) {
-                if (openCropDialog) {
-                  // noinspection JSIgnoredPromiseFromCall
-                  editPageMutation({
-                    variables: {
-                      id: bookId,
-                      image,
-                      page: (editPage - 1),
-                    },
-                  });
-                } else {
-                  // noinspection JSIgnoredPromiseFromCall
-                  putPageMutation({
-                    variables: {
-                      id: bookId,
-                      image,
-                      beforePage: (editPage - 2),
-                    },
-                  });
-                }
-              }
-            }, 'image/jpeg', 0.9);
-          }}
-        />
-      )}
+      <CropImageDialog
+        open={openEditor}
+        src={editImgSrc}
+        onClose={() => { setOpenCropDialog(false); setOpenPutDialog(false); }}
+        onCropped={(image) => {
+          if (openCropDialog) {
+            // noinspection JSIgnoredPromiseFromCall
+            editPageMutation({
+              variables: {
+                id: bookId,
+                // @ts-ignore
+                image,
+                page: (editPage - 1),
+              },
+            });
+          } else {
+            // noinspection JSIgnoredPromiseFromCall
+            putPageMutation({
+              variables: {
+                id: bookId,
+                // @ts-ignore
+                image,
+                beforePage: (editPage - 2),
+              },
+            });
+          }
+        }}
+      />
 
       <Dialog
         open={openRemovePaddingDialog}
@@ -352,11 +344,11 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
       <DialogContent>
         <FormLabel>Edit Type</FormLabel>
         <RadioGroup value={editType} onChange={(e) => setEditType(e.target.value)}>
-          <FormControlLabel label="CropAndResize" value="crop" control={<Radio />} />
+          <FormControlLabel label="Crop" value="crop" control={<Radio />} />
           <FormControlLabel label="RemovePadding" value="removePadding" control={<Radio />} />
           <FormControlLabel label="Split" value="split" control={<Radio />} />
           <FormControlLabel label="Delete" value="delete" control={<Radio />} />
-          <FormControlLabel label="Edit and Put Before Page" value="put" control={<Radio />} />
+          <FormControlLabel label="Crop and Put Before Page" value="put" control={<Radio />} />
         </RadioGroup>
 
         <div className={classes.inputs}>
