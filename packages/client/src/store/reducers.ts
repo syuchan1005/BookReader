@@ -1,9 +1,10 @@
 import { BookInfoOrder, BookOrder } from '@syuchan1005/book-reader-graphql';
+import { Workbox } from 'workbox-window';
 import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './middlewares';
 
 export interface IState {
   [key: string]: any;
-  wb: any;
+  wb: Workbox | undefined;
   searchText: string;
   sortOrder: BookInfoOrder;
   sortBookOrder: BookOrder;

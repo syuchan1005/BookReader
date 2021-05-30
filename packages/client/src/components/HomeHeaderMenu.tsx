@@ -103,10 +103,13 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
 
   /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
-    const wb = i === 1 ? store.wb : undefined;
-    (!wb ? persistor.purge() : Promise.resolve())
-      .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
-      .finally(() => window.location.reload(true));
+    const isApollo = i === 0 || i === 2;
+    const isStorage = i === 1 || i ===2;
+    const wb = isStorage ? store.wb : undefined;
+    Promise.all([
+      (isApollo ? persistor.purge() : Promise.resolve()),
+      (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+    ]).finally(() => window.location.reload())
   }, [store.wb]);
 
   const {

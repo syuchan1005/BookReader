@@ -48,35 +48,41 @@ registerRoute(
 );
 */
 
-const onMessage = async (event) => {
-  if (!event.data || !event.data.type) return;
-  let cb;
-
-  switch (event.data.type) {
-    case 'SKIP_WAITING':
-      skipWaiting();
-      return;
-    case 'BOOK_CACHE':
-      if (!event.clientId) return;
-      cb = (cache, urls) => async () => {
-        await cache.addAll(urls);
-        const client = await self.clients.get(event.clientId);
-      };
-      break;
-    case 'BOOK_REMOVE':
-      cb = (cache, urls) => urls.forEach((k) => cache.delete(k));
-      break;
-    case 'PURGE_CACHE':
-      const ks = await caches.keys();
-      await Promise.all(ks.map((k) => caches.delete(k)));
-      return;
+addEventListener('message', (event) => {
+  // When no response, client cannot resolve Promise.
+  const postMessage = (arg = true) => event.ports[0].postMessage(arg);
+  if (!event.data || !event.data.type) {
+    postMessage();
+    return;
   }
-  if (cb) {
-    const pad = event.data.pages.toString(10).length;
-    const urls = [...Array(event.data.pages).keys()]
-      .map((i) => `/book/${event.data.bookId}/${i.toString(10).padStart(pad, '0')}.jpg`);
-    await Promise.all(caches.open(BookImageCacheName).then((cache) => cb(cache, urls)));
-  }
-};
 
-addEventListener('message', (event) => event.waitUntil(onMessage(event)));
+  const onMessage = async () => {
+    let cb: (cache: Cache, urls: string[]) => Promise<any>;
+    switch (event.data.type) {
+      case 'SKIP_WAITING':
+        skipWaiting();
+        break;
+      case 'PURGE_CACHE':
+        const ks = await caches.keys();
+        await Promise.all(ks.map((k) => caches.delete(k)));
+        break;
+      case 'BOOK_CACHE':
+        cb = (cache, urls) => cache.addAll(urls);
+        break;
+      case 'BOOK_REMOVE':
+        cb = (cache, urls) => Promise.all(urls.map((k) => cache.delete(k)));
+        break;
+    }
+    if (cb) {
+      const pad = event.data.pages.toString(10).length;
+      const urls = [...Array(event.data.pages).keys()]
+        .map((i) => `/book/${event.data.bookId}/${i.toString(10).padStart(pad, '0')}.jpg`);
+      const cache = await caches.open(BookImageCacheName);
+      await cb(cache, urls);
+    }
+    postMessage();
+  };
+
+  // @ts-ignore waitUntil is not resolved
+  event.waitUntil(onMessage());
+});

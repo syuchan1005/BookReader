@@ -11,6 +11,7 @@
    ],
    "scripts": {
       "serve:client": "npm run serve --workspace=\"packages/client\"",
+      "serve:client:prod": "npm run serve:prod --workspace=\"packages/client\"",
       "build:client": "npm run build --workspace=\"packages/client\"",
       "test:client": "npm run test --workspace=\"packages/client\"",
       "serve:server": "npm run serve --workspace=\"packages/server\"",
