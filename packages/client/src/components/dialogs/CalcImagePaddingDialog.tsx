@@ -74,17 +74,16 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
 
     React.useEffect(() => {
         if (!imageData || !canvasRef.current) return;
-        createImageBitmap(imageData, left, 0, right - left, imageData.height)
-            .then((bitmap) => {
-                const canvas = canvasRef.current;
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
-                canvas.getContext('2d').drawImage(bitmap, 0, 0);
-                const container = canvasContainerRef.current;
-                if (container) {
-                    container.style.paddingTop = `${bitmap.height / bitmap.width * 100}%`;
-                }
-            });
+        const width = right - left;
+        const height = imageData.height;
+        const canvas = canvasRef.current;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').putImageData(imageData, left, 0);
+        const container = canvasContainerRef.current;
+        if (container) {
+            container.style.paddingTop = `${height / width * 100}%`;
+        }
     }, [left, right, imageData, canvasRef]);
 
     return (

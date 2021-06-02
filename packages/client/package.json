@@ -1,7 +1,7 @@
 {
    "name": "@syuchan1005/book-reader-client",
    "scripts": {
-      "serve": "vite",
+      "serve": "vite --host",
       "build": "vite build",
       "serve:prod": "vite preview",
       "test": "jest"
