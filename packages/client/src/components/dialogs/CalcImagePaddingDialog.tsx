@@ -90,8 +90,8 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
         <Dialog open={open} onClose={onClose}>
             <DialogTitle>Preview Crop Pages</DialogTitle>
             <DialogContent>
-                <TextField color="secondary" label={`page(max: ${maxPage})`} value={pageIndex} onChange={(e) => setPageIndex(Number(e.target.value))} />
-                <TextField color="secondary" label="threshold" value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} />
+                <TextField color="secondary" label={`page(max: ${maxPage})`} type="number" value={pageIndex} onChange={(e) => setPageIndex(Number(e.target.value))} />
+                <TextField color="secondary" label="threshold" type="number" value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} />
                 <TextField color="secondary" label="Left" type="number" value={left} onChange={(e) => onSizeChange(Number(e.target.value), right)} />
                 <TextField color="secondary" label="Right" type="number" value={right} onChange={(e) => onSizeChange(left, Number(e.target.value))} />
                 <Button onClick={onDetectClick}>Detect & Preview</Button>
