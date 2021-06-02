@@ -79,7 +79,7 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
         const canvas = canvasRef.current;
         canvas.width = width;
         canvas.height = height;
-        canvas.getContext('2d').putImageData(imageData, left, 0);
+        canvas.getContext('2d').putImageData(imageData, left * -1, 0);
         const container = canvasContainerRef.current;
         if (container) {
             container.style.paddingTop = `${height / width * 100}%`;
