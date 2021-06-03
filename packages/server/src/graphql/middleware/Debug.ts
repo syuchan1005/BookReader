@@ -1,15 +1,10 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-
-import os from 'os';
 import { promises as fs } from 'fs';
-
-import du from 'du';
-
 import BookModel from '@server/sequelize/models/Book';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
-import GraphQL from '../index';
+import { bookFolderPath, getBookFolderSize, getCacheFolderSize, getTemporaryFolderSize, removeBookCache } from '@server/StorageUtil';
 
 class Debug extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -17,19 +12,16 @@ class Debug extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       debug_folderSize: async () => {
-        let tmp;
-        try {
-          tmp = await du(`${os.tmpdir()}/bookReader/`);
-        } catch (e) { tmp = -1; }
-        const cache = await du('storage/cache');
+        const tmp = await getTemporaryFolderSize();
+        const cache = await getCacheFolderSize();
 
         const dbBookIds = (await BookModel.findAll({
           attributes: ['id'],
         })).map(({ id }) => id);
-        const fsBookIds = await fs.readdir('storage/book');
+        const fsBookIds = await fs.readdir(bookFolderPath);
         const bookSizes = await asyncMap(fsBookIds, async (b) => ({
           id: b,
-          size: await du(`storage/book/${b}`),
+          size: await getBookFolderSize(b),
         }));
         let book = 0;
         let unusedBook = 0;
@@ -59,13 +51,12 @@ class Debug extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       debug_deleteUnusedFolders: async () => {
-        await fs.rm('storage/cache', { recursive: true, force: true });
-        await GraphQL.createFolders();
+        removeBookCache(undefined, undefined, undefined, true);
 
         const dbBookIds = (await BookModel.findAll({
           attributes: ['id'],
         })).map(({ id }) => id);
-        const fsBookIds = await fs.readdir('storage/book');
+        const fsBookIds = await fs.readdir(bookFolderPath);
         await asyncForEach(fsBookIds, async (id) => {
           if (!dbBookIds.includes(id)) {
             return fs.rm(`storage/book/${id}`, { recursive: true, force: true });

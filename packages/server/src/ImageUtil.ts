@@ -1,7 +1,5 @@
-import path from 'path';
 import { createReadStream, promises as fs } from 'fs';
 import sharp from 'sharp';
-import { mkdirpIfNotExists } from './Util';
 
 const jpegQuality = 85;
 
@@ -81,7 +79,6 @@ export const convertImage = async (
     };
   }
   if (isSave) {
-    await mkdirpIfNotExists(path.join(cacheFilePath, '..'));
     await fs.writeFile(cacheFilePath, imageBuffer);
   }
   return {

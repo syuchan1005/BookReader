@@ -5,12 +5,14 @@ import { orderBy } from 'natural-orderby';
 
 import { MutationResolvers, SplitType } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import BookModel from '@server/sequelize/models/Book';
-import { asyncForEach, removeBookCache, renameFile } from '@server/Util';
+import { asyncForEach } from '@server/Util';
+import { renameFile } from '@server/StorageUtil';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
 import { splitImage, purgeImageCache, cropImage } from '../../ImageUtil';
+import { createBookFolderPath, removeBookCache } from '@server/StorageUtil';
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -38,7 +40,7 @@ class Page extends GQLMiddleware {
           };
         }
 
-        const bookPath = `storage/book/${bookId}`;
+        const bookPath = createBookFolderPath(bookId);
         let pad = book.pages.toString(10).length;
         await Promise.all(numbers
           .map((i) => `${bookPath}/${i.toString(10).padStart(pad, '0')}.jpg`)
@@ -47,7 +49,7 @@ class Page extends GQLMiddleware {
         pad = (book.pages - numbers.length).toString(10).length;
 
         await GQLUtil.numberingFiles(bookPath, pad);
-        await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
+        await removeBookCache(book.id);
         purgeImageCache();
 
         await BookModel.update({

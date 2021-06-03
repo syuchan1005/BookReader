@@ -3,19 +3,19 @@ import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 
 import { convertImage } from './ImageUtil';
+import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
 import Database from './sequelize/models';
-import { mkdirpIfNotExists } from './Util';
 
 (async () => {
+  await createStorageFolders();
+
   const app = new Koa();
   const graphql = new GraphQL();
 
-  await mkdirpIfNotExists('downloads');
+  app.use(Serve(storageBasePath));
 
-  app.use(Serve('storage/'));
-
-  app.use(Serve('storage/cache/'));
+  app.use(Serve(cacheFolderPath));
 
   app.use(async (ctx, next) => {
     const { url } = ctx.req;

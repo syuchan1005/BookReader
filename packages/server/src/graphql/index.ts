@@ -83,16 +83,7 @@ export default class GraphQL {
     this.gqlKoaMiddleware = this.server.getMiddleware({});
   }
 
-  static async createFolders() {
-    await Util.mkdirpIfNotExists('storage/bookInfo');
-    await Util.mkdirpIfNotExists('storage/book');
-    await Util.mkdirpIfNotExists('storage/cache/book');
-    await Util.mkdirpIfNotExists('storage/downloads');
-  }
-
   async middleware(app) {
-    await GraphQL.createFolders();
-
     app.use(graphqlUploadKoa());
     // eslint-disable-next-line no-underscore-dangle
     app.use((ctx, next) => {

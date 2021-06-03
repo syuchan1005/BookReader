@@ -3,14 +3,16 @@ import { promises as fs, createReadStream, createWriteStream } from 'fs';
 import os from 'os';
 import du from 'du';
 
-const basePath = 'storage';
-const bookFolderName = path.join(basePath, 'book');
-const cacheBookFolderName = path.join(basePath, 'cache', 'book');
-const downloadFolderName = path.join(basePath, 'downloads');
-const userDownloadFolderName = 'downloads';
+export const storageBasePath = 'storage';
+export const bookFolderPath = path.join(storageBasePath, 'book');
+export const cacheFolderPath = path.join(storageBasePath, 'cache');
+const cacheBookFolderName = path.join(cacheFolderPath, 'book');
+const downloadFolderName = path.join(storageBasePath, 'downloads');
+export const userDownloadFolderName = 'downloads';
 
-export const createBookFolderPath = (bookId: string): string => path.join(bookFolderName, bookId);
+export const createBookFolderPath = (bookId: string): string => path.join(bookFolderPath, bookId);
 export const createTemporaryFolderPath = (folderName: string) => path.join(os.tmpdir(), folderName);
+export const createDownloadFilePath = (bookId: string) => path.join(downloadFolderName, bookId);
 
 export const removeBookCache = async (bookId?: string, page?: number, pages?: number, recreate: boolean = false): Promise<void> => {
     const pageFileName = (bookId && page && pages) ? page.toString(10).padStart(pages.toString(10).length, '0') : undefined;
@@ -28,7 +30,7 @@ export const removeBookCache = async (bookId?: string, page?: number, pages?: nu
 };
 
 export const createStorageFolders = async (): Promise<void> => {
-    await fs.mkdir(bookFolderName, { recursive: true });
+    await fs.mkdir(bookFolderPath, { recursive: true });
     await fs.mkdir(cacheBookFolderName, { recursive: true });
     await fs.mkdir(downloadFolderName, { recursive: true });
     await fs.mkdir(userDownloadFolderName, { recursive: true });
@@ -54,5 +56,5 @@ export const renameFile = async (srcPath: string, destPath: string, fallback = t
 };
 
 export const getTemporaryFolderSize = (): Promise<number> => du(path.join(os.tmpdir(), 'bookReader')).catch(() => -1);
-export const getBookFolderSize = (bookId: string): Promise<number> => du(path.join(bookFolderName, bookId)).catch(() => -1);
+export const getBookFolderSize = (bookId: string): Promise<number> => du(path.join(bookFolderPath, bookId)).catch(() => -1);
 export const getCacheFolderSize = (): Promise<number> => du(cacheBookFolderName).catch(() => -1);

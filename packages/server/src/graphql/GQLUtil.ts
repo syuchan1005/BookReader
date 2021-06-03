@@ -1,5 +1,4 @@
 import { promises as fs, createWriteStream as fsCreateWriteStream, rmSync as fsRmSync } from 'fs';
-import os from 'os';
 import path from 'path';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -15,9 +14,8 @@ import {
 
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
-import {
-  asyncForEach, asyncMap, readdirRecursively, renameFile,
-} from '@server/Util';
+import { asyncForEach, asyncMap, readdirRecursively } from '@server/Util';
+import { createDownloadFilePath, createTemporaryFolderPath, renameFile, userDownloadFolderName } from '@server/StorageUtil';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
@@ -80,7 +78,7 @@ const GQLUtil = {
         });
       }
       // extract
-      const tempPath = `${os.tmpdir()}/bookReader/${bookId}`;
+      const tempPath = createTemporaryFolderPath(bookId);
       const progressListener = customData ? async (percent: number) => {
         await pubsub.publish(customData.pubsub.key, {
           ...customData.pubsub,
@@ -203,7 +201,7 @@ const GQLUtil = {
     });
   },
   async saveArchiveFile(file?: Scalars['Upload'], localPath?: string): Promise<({ success: false } & Result) | { success: true, archiveFilePath: string }> {
-    if (!file && !path) {
+    if (!file && !localPath) {
       return {
         success: false,
         code: 'QL0012',
@@ -213,7 +211,7 @@ const GQLUtil = {
 
     let archiveFilePath: string;
     if (localPath) {
-      const downloadPath = path.normalize('downloads');
+      const downloadPath = userDownloadFolderName;
       const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
       if (path.relative(downloadPath, normalizeLocalPath).startsWith('../')) {
         return {
@@ -225,7 +223,7 @@ const GQLUtil = {
       archiveFilePath = path.resolve(normalizeLocalPath);
     } else if (file) {
       const awaitFile = await file;
-      archiveFilePath = path.resolve(`storage/downloads/${uuidv4()}`);
+      archiveFilePath = createDownloadFilePath(uuidv4());
       await GQLUtil.writeFile(archiveFilePath, awaitFile.createReadStream());
     }
 

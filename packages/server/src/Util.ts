@@ -1,5 +1,4 @@
-// @ts-ignore
-import { promises as fs, createReadStream, createWriteStream } from 'fs';
+import { promises as fs } from 'fs';
 
 export const asyncForEach = async <T> (
   arr: Array<T>,
@@ -43,47 +42,4 @@ export const readdirRecursively = async (dir, files: string[] = []): Promise<str
     files = await readdirRecursively(d, files);
   });
   return Promise.resolve(files);
-};
-
-export const mkdirpIfNotExists = async (path) => {
-  let stat;
-  try {
-    stat = await fs.stat(path);
-  } catch (e) {
-    await fs.mkdir(path, {
-      recursive: true,
-    });
-    return;
-  }
-  if (!stat.isDirectory()) {
-    throw new Error(`${path} is file exists`);
-  }
-};
-
-export const renameFile = async (srcPath: string, destPath: string, fallback = true) => {
-  try {
-    await fs.rename(srcPath, destPath);
-  } catch (e) {
-    if (!e) return;
-    if (e.code !== 'EXDEV' || !fallback) throw e;
-
-    const srcStream = createReadStream(srcPath);
-    const destStream = createWriteStream(destPath);
-    await new Promise((resolve) => {
-      destStream.once('close', () => {
-        fs.unlink(srcPath)
-          .then(resolve);
-      });
-      srcStream
-        .pipe(destStream);
-    });
-  }
-};
-
-export const removeBookCache = async (bookId, page, pages) => {
-  const pageStr = page.toString(10).padStart(pages.toString(10).length, '0');
-  const dirPath = `storage/cache/book/${bookId}`;
-  const files = (await fs.readdir(dirPath))
-    .filter((f) => f.startsWith(pageStr) && ['.', '_'].includes(f[pageStr.length]));
-  await Promise.all(files.map((f) => fs.unlink(`${dirPath}/${f}`)));
 };
