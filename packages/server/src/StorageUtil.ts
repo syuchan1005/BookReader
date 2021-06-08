@@ -37,6 +37,23 @@ export const createStorageFolders = async (): Promise<void> => {
     // `${os.tmp}/bookReader/${bookId|infoId}` processing extracted files.
 };
 
+export const withPageEditFolder = async <T>(bookId: string, block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>): Promise<T> => {
+    const oldFolderPath = createBookFolderPath(bookId);
+    const folderPath = `${oldFolderPath}_new`;
+    await fs.mkdir(folderPath, { recursive: true });
+    const replaceNewFiles = async () => {
+        await fs.rm(oldFolderPath);
+        await fs.rename(folderPath, oldFolderPath);
+    };
+    try {
+        return block(folderPath, replaceNewFiles);
+    } catch (e) {
+        throw e;
+    } finally {
+        await fs.rm(folderPath, { recursive: true });
+    }
+};
+
 export const renameFile = async (srcPath: string, destPath: string, fallback = true) => {
     try {
         await fs.rename(srcPath, destPath);

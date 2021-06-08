@@ -95,6 +95,11 @@ export const convertAndSaveJpg = async (src: string | Buffer, dist: string) => {
     .toFile(dist);
 };
 
+export const getImageSize = async (src: string): Promise<{ width: number, height: number }> => {
+  const { width, height } = await sharp(src).metadata();
+  return { width, height };
+};
+
 export const splitImage = async (src: string, orientation: 'horizontal' | 'vertical', splitCount: number = 2) => {
   const meta = await sharp(src).metadata();
   const toString = (num) => num.toString().padStart(splitCount.toString().length, '0');

@@ -52,6 +52,7 @@ type Mutation {
     # if beforePage 100 -> 100, put, 101
     putPage(id: ID! beforePage: Int! image: Upload!): Result!
     cropPages(id: ID!, pages: IntRange!, left: Int!, width: Int!): Result!
+    bulkEditPage(id: ID!, actions: [EditAction!]!): Result!
 
     ## Debug
     debug_deleteUnusedFolders: Result!
@@ -174,6 +175,50 @@ type Genre {
     id: Int!
     name: String!
     invisible: Boolean!
+}
+
+enum EditType {
+    # intermediate operations
+    Crop
+    Replace
+
+    # terminal operations
+    Delete
+    Put
+    Split
+}
+
+input EditAction {
+    editType: EditType!
+
+    crop: CropEditAction
+    replace: UploadEditAction
+    delete: DeleteEditAction
+    put: UploadEditAction
+    split: SplitEditAction
+}
+
+input CropEditAction {
+    pageRange: IntRange!
+    left: Int
+    right: Int
+    top: Int
+    bottom: Int
+}
+
+input UploadEditAction {
+    pageIndex: Int!
+    image: Upload!
+}
+
+input DeleteEditAction {
+    pageRange: IntRange!
+}
+
+input SplitEditAction {
+    pageRange: IntRange!
+    splitType: SplitType!
+    splitCount: Int = 2
 }
 
 input InputBook {

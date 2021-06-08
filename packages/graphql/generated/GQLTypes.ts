@@ -93,6 +93,14 @@ export type CommonPluginQuery = {
   subscription?: Maybe<Scalars['Boolean']>;
 };
 
+export type CropEditAction = {
+  pageRange: Scalars['IntRange'];
+  left?: Maybe<Scalars['Int']>;
+  right?: Maybe<Scalars['Int']>;
+  top?: Maybe<Scalars['Int']>;
+  bottom?: Maybe<Scalars['Int']>;
+};
+
 export type Debug_FolderSizes = {
   __typename?: 'Debug_FolderSizes';
   tmp: Scalars['BigInt'];
@@ -102,6 +110,23 @@ export type Debug_FolderSizes = {
   bookInfoCount: Scalars['Int'];
   bookCount: Scalars['Int'];
 };
+
+export type EditAction = {
+  editType: EditType;
+  crop?: Maybe<CropEditAction>;
+  replace?: Maybe<UploadEditAction>;
+  delete?: Maybe<Scalars['IntRange']>;
+  put?: Maybe<UploadEditAction>;
+  split?: Maybe<SplitEditAction>;
+};
+
+export enum EditType {
+  Crop = 'Crop',
+  Replace = 'Replace',
+  Delete = 'Delete',
+  Put = 'Put',
+  Split = 'Split'
+}
 
 export type Genre = {
   __typename?: 'Genre';
@@ -134,6 +159,7 @@ export type Mutation = {
   editPage: Result;
   putPage: Result;
   cropPages: Result;
+  bulkEditPage: Result;
   debug_deleteUnusedFolders: Result;
   deleteGenre: Result;
   editGenre: Result;
@@ -236,6 +262,12 @@ export type MutationCropPagesArgs = {
 };
 
 
+export type MutationBulkEditPageArgs = {
+  id: Scalars['ID'];
+  actions: Array<EditAction>;
+};
+
+
 export type MutationDeleteGenreArgs = {
   genre: Scalars['String'];
 };
@@ -326,6 +358,12 @@ export type ResultWithInfoId = {
   infoId?: Maybe<Scalars['ID']>;
 };
 
+export type SplitEditAction = {
+  pageRange: Scalars['IntRange'];
+  splitType: SplitType;
+  splitCount?: Maybe<Scalars['Int']>;
+};
+
 export enum SplitType {
   Vertical = 'VERTICAL',
   Horizontal = 'HORIZONTAL'
@@ -347,6 +385,11 @@ export type SubscriptionAddBooksArgs = {
   id: Scalars['ID'];
 };
 
+
+export type UploadEditAction = {
+  pageIndex: Scalars['Int'];
+  image: Scalars['Upload'];
+};
 
 export type AddBooksMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -763,7 +806,7 @@ export type BookInfoQuery = (
     & Pick<BookInfo, 'id' | 'name'>
     & { books: Array<(
       { __typename?: 'Book' }
-      & Pick<Book, 'id' | 'number' | 'pages' | 'thumbnail'>
+      & Pick<Book, 'id' | 'number' | 'pages' | 'thumbnail' | 'updatedAt'>
       & { info?: Maybe<(
         { __typename?: 'BookInfo' }
         & Pick<BookInfo, 'id'>
@@ -875,7 +918,10 @@ export type ResolversTypes = {
   BookInfoThumbnail: ResolverTypeWrapper<BookInfoThumbnail>;
   BookOrder: BookOrder;
   CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>;
+  CropEditAction: CropEditAction;
   Debug_FolderSizes: ResolverTypeWrapper<Debug_FolderSizes>;
+  EditAction: EditAction;
+  EditType: EditType;
   Genre: ResolverTypeWrapper<Genre>;
   InputBook: InputBook;
   IntRange: ResolverTypeWrapper<Scalars['IntRange']>;
@@ -887,9 +933,11 @@ export type ResolversTypes = {
   Result: ResolverTypeWrapper<Result>;
   ResultWithBookResults: ResolverTypeWrapper<ResultWithBookResults>;
   ResultWithInfoId: ResolverTypeWrapper<ResultWithInfoId>;
+  SplitEditAction: SplitEditAction;
   SplitType: SplitType;
   Subscription: ResolverTypeWrapper<{}>;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
+  UploadEditAction: UploadEditAction;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -906,7 +954,9 @@ export type ResolversParentTypes = {
   BookInfoResult: BookInfoResult;
   BookInfoThumbnail: BookInfoThumbnail;
   CommonPluginQuery: CommonPluginQuery;
+  CropEditAction: CropEditAction;
   Debug_FolderSizes: Debug_FolderSizes;
+  EditAction: EditAction;
   Genre: Genre;
   InputBook: InputBook;
   IntRange: Scalars['IntRange'];
@@ -918,8 +968,10 @@ export type ResolversParentTypes = {
   Result: Result;
   ResultWithBookResults: ResultWithBookResults;
   ResultWithInfoId: ResultWithInfoId;
+  SplitEditAction: SplitEditAction;
   Subscription: {};
   Upload: Scalars['Upload'];
+  UploadEditAction: UploadEditAction;
 };
 
 export interface BigIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['BigInt'], any> {
@@ -1013,6 +1065,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   editPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditPageArgs, 'id' | 'page' | 'image'>>;
   putPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationPutPageArgs, 'id' | 'beforePage' | 'image'>>;
   cropPages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationCropPagesArgs, 'id' | 'pages' | 'left' | 'width'>>;
+  bulkEditPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationBulkEditPageArgs, 'id' | 'actions'>>;
   debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
   deleteGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteGenreArgs, 'genre'>>;
   editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>;

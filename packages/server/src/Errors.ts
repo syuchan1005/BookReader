@@ -12,9 +12,10 @@ const Errors = {
   QL0010: 'can not edit default genre',
   QL0011: 'genre name must be unique',
   QL0012: 'Invalid arguments',
+  QL0013: 'Failed to save image',
 
   Unknown: 'Unknown',
-};
+} as const;
 
 export const createError = (code: keyof typeof Errors, msg?: string) => ({
   success: false,
