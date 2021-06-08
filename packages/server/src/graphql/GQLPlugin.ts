@@ -20,6 +20,8 @@ export interface InternalGQLPlugin extends GQLPlugin {
   };
 }
 
+const runtimeRequire = require;
+
 // eslint-disable-next-line import/prefer-default-export
 export const loadPlugins = (): InternalGQLPlugin[] => {
   const env = process.env.BOOKREADER_PLUGIN;
@@ -38,15 +40,12 @@ export const loadPlugins = (): InternalGQLPlugin[] => {
           moduleName = strings[1] || strings[0];
         }
         if (s[0] === '.') {
-          // eslint-disable-next-line no-eval
-          moduleName = path.resolve(eval('require.main.filename'), `../../../${moduleName}`);
+          moduleName = path.resolve(runtimeRequire.main.filename, `../../../${moduleName}`);
         }
         try {
-          // eslint-disable-next-line no-eval
-          const req = eval('require')(moduleName);
+          const req = runtimeRequire(moduleName);
           const module: GQLPlugin = req.default || req;
-          // eslint-disable-next-line no-eval
-          const { name, version, bookReader } = eval('require')(`${moduleName}/package.json`);
+          const { name, version, bookReader } = runtimeRequire(`${moduleName}/package.json`);
 
           const queriesName = bookReader.name || moduleName;
           return {
