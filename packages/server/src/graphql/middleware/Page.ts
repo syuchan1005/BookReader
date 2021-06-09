@@ -5,6 +5,7 @@ import { orderBy } from 'natural-orderby';
 import sharp from 'sharp';
 
 import { MutationResolvers, Result, SplitType, EditAction, Scalars, EditType } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
+import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import { asyncForEach } from '@server/Util';
@@ -307,29 +308,32 @@ type ImageEditAction = {
 
 const createImageEditAction = (pageIndex: number): ImageEditAction => ({ pageIndex, willDelete: false, image: undefined, cropTransforms: undefined });
 
-const validateEditActions = (actions: EditAction[]): Boolean => actions.every((action, index, arr) => {
-  const hasPageCountEffect = hasPageCountEffectMap[action.editType];
-  if (hasPageCountEffect === undefined) {
-    return false;
-  }
-  const isLast = index === arr.length - 1;
-  if (hasPageCountEffect && !isLast) {
-    return false;
-  }
-
-  switch (action.editType) {
-    case EditType.Crop:
-      return !['top', 'bottom', 'left', 'right'].every((k) => !action.crop[k]);
-    case EditType.Delete:
-    case EditType.Put:
-    case EditType.Replace:
-    case EditType.Split:
-      return !!action[action.editType.toLowerCase()];
-  }
-});
+const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefined => {
+  const isVaild = actions.every((action, index, arr) => {
+    const hasPageCountEffect = hasPageCountEffectMap[action.editType];
+    if (hasPageCountEffect === undefined) {
+      return false;
+    }
+    const isLast = index === arr.length - 1;
+    if (hasPageCountEffect && !isLast) {
+      return false;
+    }
+  
+    switch (action.editType) {
+      case EditType.Crop:
+        return !['top', 'bottom', 'left', 'right'].every((k) => !action.crop[k]);
+      case EditType.Delete:
+      case EditType.Put:
+      case EditType.Replace:
+      case EditType.Split:
+        return !!action[action.editType.toLowerCase()];
+    }
+  });
+  return isVaild ? actions as StrictEditAction[] : undefined;
+};
 
 const calculateEditActions = (
-  actions: EditAction[],
+  actions: StrictEditAction[],
   initImageEditActions: ImageEditAction[]
 ): ImageEditAction[] => {
   let imageEditActions = [...initImageEditActions];
@@ -499,7 +503,8 @@ class Page extends GQLMiddleware {
             message: Errors.QL0004,
           };
         }
-        if (!validateEditActions(actions)) {
+        const strictEditActions = validateEditActions(actions);
+        if (strictEditActions === undefined) {
           return {
             success: false,
             code: 'QL0012',
@@ -507,7 +512,7 @@ class Page extends GQLMiddleware {
           };
         }
         const editActions = calculateEditActions(
-          actions,
+          strictEditActions,
           [...Array(book.pages).keys()].map(createImageEditAction),
         ).filter(({ willDelete }) => !willDelete);
         return withPageEditFolder(id, async (folderPath, replaceNewFiles) => {

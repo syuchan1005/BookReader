@@ -5,6 +5,7 @@
         "gql-gen": "graphql-codegen --config codegen.yml"
     },
     "devDependencies": {
+        "@graphql-codegen/add": "^2.0.2",
         "@graphql-codegen/cli": "^1.21.4",
         "@graphql-codegen/typescript": "1.22.0",
         "@graphql-codegen/typescript-operations": "1.17.16",
