@@ -16,26 +16,9 @@ import {
   Theme,
 } from '@material-ui/core';
 import { Workbox } from 'workbox-window';
-import { useMutation } from '@apollo/react-hooks';
 
-import {
-  DeletePagesMutation as DeletePagesMutationType,
-  DeletePagesMutationVariables,
-  EditPageMutation as EditPageMutationType,
-  EditPageMutationVariables,
-  PutPageMutation as PutPageMutationType,
-  PutPageMutationVariables,
-  SplitPagesMutation as SplitPagesMutationType,
-  SplitPagesMutationVariables,
-  SplitType,
-  CropPagesMutation as CropPagesMutationType,
-  CropPagesMutationVariables
-} from '@syuchan1005/book-reader-graphql';
-import EditPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_edit.gql';
-import SplitMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_split.gql';
-import DeleteMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_delete.gql';
-import PutPageMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_put.gql';
-import CropPagesMutation from '@syuchan1005/book-reader-graphql/queries/EditPagesDialog_crop.gql';
+import { useCropPagesMutation, useDeletePagesMutation, useEditPageMutation, usePutPageMutation, useSplitPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { SplitType } from '@syuchan1005/book-reader-graphql';
 import DeleteDialog from './DeleteDialog';
 import CalcImagePaddingDialog from './CalcImagePaddingDialog';
 import CropImageDialog from './CropImageDialog';
@@ -128,41 +111,31 @@ const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditP
       .finally(() => window.location.reload());
   }, [wb, persistor]);
 
-  const [editPageMutation, {
-    loading: editLoading,
-  }] = useMutation<EditPageMutationType, EditPageMutationVariables>(EditPageMutation, {
+  const [editPageMutation, { loading: editLoading }] = useEditPageMutation({
     onCompleted() {
       purgeCache();
     },
   });
 
-  const [splitPage, {
-    loading: splitLoading,
-  }] = useMutation<SplitPagesMutationType, SplitPagesMutationVariables>(SplitMutation, {
+  const [splitPage, { loading: splitLoading }] = useSplitPagesMutation({
     onCompleted() {
       purgeCache();
     },
   });
 
-  const [deletePage, {
-    loading: deleteLoading,
-  }] = useMutation<DeletePagesMutationType, DeletePagesMutationVariables>(DeleteMutation, {
+  const [deletePage, { loading: deleteLoading }] = useDeletePagesMutation({
     onCompleted() {
       purgeCache();
     },
   });
 
-  const [putPageMutation, {
-    loading: putLoading,
-  }] = useMutation<PutPageMutationType, PutPageMutationVariables>(PutPageMutation, {
+  const [putPageMutation, { loading: putLoading }] = usePutPageMutation({
     onCompleted() {
       purgeCache();
     },
   });
 
-  const [cropPagesMutation, {
-    loading: cropLoading,
-  }] = useMutation<CropPagesMutationType, CropPagesMutationVariables>(CropPagesMutation, {
+  const [cropPagesMutation, { loading: cropLoading }] = useCropPagesMutation({
     onCompleted() {
       purgeCache();
     },

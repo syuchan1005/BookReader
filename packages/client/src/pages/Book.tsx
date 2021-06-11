@@ -19,16 +19,11 @@ import { Swiper as SwiperCore } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.min.css';
 
-import { useQuery } from '@apollo/react-hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
 
-import {
-  BookQuery as BookQueryType,
-  BookQueryVariables,
-} from '@syuchan1005/book-reader-graphql';
-import BookQuery from '@syuchan1005/book-reader-graphql/queries/Pages_Book_book.gql';
+import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
@@ -211,7 +206,7 @@ const Book: React.FC = React.memo((props: BookProps) => {
     loading,
     error,
     data,
-  } = useQuery<BookQueryType, BookQueryVariables>(BookQuery, {
+  } = useBookQuery({
     variables: {
       id: params.id,
     },

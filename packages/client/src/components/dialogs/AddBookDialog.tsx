@@ -17,24 +17,10 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
-import { useMutation, useQuery, useSubscription } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
+import { gql, useMutation } from '@apollo/client';
 
-import {
-  AddCompressBookMutation as AddCompressBookMutationType,
-  AddCompressBookMutationVariables,
-  AddBooksMutation as AddBooksMutationType,
-  AddBooksMutationVariables,
-  AddBooksProgressSubscription,
-  AddBooksProgressSubscriptionVariables,
-  PluginsQuery as PluginsQueryType,
-  PluginsQueryVariables,
-  Result,
-} from '@syuchan1005/book-reader-graphql';
-import AddCompressBookMutation from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_addCompressBook.gql';
-import AddBooksMutation from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_addBooks.gql';
-import AddBooksSubscription from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_addBooks_Subscription.gql';
-import PluginsQuery from '@syuchan1005/book-reader-graphql/queries/AddBookDialog_plugins.gql';
+import { Result } from '@syuchan1005/book-reader-graphql';
+import { useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation, usePluginsQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
@@ -127,7 +113,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
 
   const {
     data,
-  } = useQuery<PluginsQueryType, PluginsQueryVariables>(PluginsQuery);
+  } = usePluginsQuery();
 
   const selectedPlugin = React.useMemo(() => {
     if (!data || addType === 'file' || addType === 'file_compressed') return undefined;
@@ -173,10 +159,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
     },
   );
 
-  const [addBook, { loading: addBookLoading }] = useMutation<
-    AddBooksMutationType,
-    AddBooksMutationVariables
-  >(AddBooksMutation, {
+  const [addBook, { loading: addBookLoading }] = useAddBooksMutation({
     fetchPolicy: 'no-cache',
     variables: {
       id: infoId,
@@ -193,27 +176,26 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
     },
   });
 
+
   const [addCompressBook, {
     loading: addCompressBookLoading,
-  }] = useMutation<AddCompressBookMutationType, AddCompressBookMutationVariables>(
-    AddCompressBookMutation,
-    {
-      fetchPolicy: 'no-cache',
-      variables: {
-        id: infoId,
-        file: (addBooks[0] || {}).file,
-        path: (addBooks[0] || {}).path,
-      },
-      onCompleted(d) {
-        if (!d) return;
-        mutateCloseDialog(d.add.success);
-      },
-      onError() {
-        setAddBookProgress(undefined);
-        setAddBookAbort(undefined);
-        setSubscriptionId(undefined);
-      },
+  }] = useAddCompressBookMutation({
+    fetchPolicy: 'no-cache',
+    variables: {
+      id: infoId,
+      file: (addBooks[0] || {}).file,
+      path: (addBooks[0] || {}).path,
     },
+    onCompleted(d) {
+      if (!d) return;
+      mutateCloseDialog(d.add.success);
+    },
+    onError() {
+      setAddBookProgress(undefined);
+      setAddBookAbort(undefined);
+      setSubscriptionId(undefined);
+    },
+  },
   );
 
   const loading = React.useMemo(
@@ -221,10 +203,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
     [addBookLoading, addCompressBookLoading, addPluginLoading],
   );
 
-  const { data: subscriptionData, loading: subscriptionLoading } = useSubscription<
-    AddBooksProgressSubscription,
-    AddBooksProgressSubscriptionVariables
-  >(AddBooksSubscription, {
+  const { data: subscriptionData, loading: subscriptionLoading } = useAddBooksProgressSubscription({
     fetchPolicy: 'no-cache',
     skip: !subscriptionId,
     variables: {
@@ -279,7 +258,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
     setAddBooks(books);
   }, [addBooks]);
 
-  const clickAddButton = React.useCallback(async() => {
+  const clickAddButton = React.useCallback(async () => {
     if (!selectedPlugin) {
       setSubscriptionId(infoId);
       let count = 1;
@@ -339,7 +318,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
       {(() => {
         if (
           (subscriptionData && (!addBookProgress
-          || (addBookProgress.loaded / addBookProgress.total) < 97)
+            || (addBookProgress.loaded / addBookProgress.total) < 97)
           ) || (selectedPlugin && addPluginLoading)) {
           return (
             <DialogContent className={classes.addBookSubscription}>

@@ -8,14 +8,9 @@ import {
   Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
-import { useQuery } from '@apollo/react-hooks';
 import { Waypoint } from 'react-waypoint';
 
-import {
-  BookInfosQuery as BookInfosQueryType,
-  BookInfosQueryVariables,
-} from '@syuchan1005/book-reader-graphql';
-import BookInfosQuery from '@syuchan1005/book-reader-graphql/queries/Pages_Home_bookInfos.gql';
+import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
@@ -110,7 +105,7 @@ const Home: React.FC = React.memo((props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useQuery<BookInfosQueryType, BookInfosQueryVariables>(BookInfosQuery, {
+  } = useBookInfosQuery({
     variables: {
       offset: 0,
       limit: 10,

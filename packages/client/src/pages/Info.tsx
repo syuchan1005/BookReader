@@ -1,5 +1,4 @@
 import React from 'react';
-import { useQuery } from '@apollo/react-hooks';
 import {
   makeStyles,
   createStyles,
@@ -14,12 +13,8 @@ import { common } from '@material-ui/core/colors';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-import {
-  BookInfoQuery as BookInfoQueryType,
-  BookInfoQueryVariables,
-  BookOrder,
-} from '@syuchan1005/book-reader-graphql';
-import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/common/BookInfoQuery.gql';
+import { BookOrder } from '@syuchan1005/book-reader-graphql';
+import { useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
 import { useGlobalStore } from '@client/store/StoreProvider';
@@ -105,7 +100,7 @@ const Info: React.FC = React.memo((props: InfoProps) => {
     loading,
     error,
     data,
-  } = useQuery<BookInfoQueryType, BookInfoQueryVariables>(BookInfoQuery, {
+  } = useBookInfoQuery({
     variables: {
       id: params.id,
       order: store.sortBookOrder,

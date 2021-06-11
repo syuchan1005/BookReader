@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useMutation, useQuery } from '@apollo/react-hooks';
 import {
   Button,
   createStyles,
@@ -22,17 +21,7 @@ import {
   makeStyles, useTheme, Switch,
 } from '@material-ui/core';
 
-import {
-  DeleteGenreMutation as DeleteGenreMutationData,
-  DeleteGenreMutationVariables,
-  EditGenreMutation as EditGenreMutationData,
-  EditGenreMutationVariables,
-  GenresQuery as GenresQueryData,
-  GenresQueryVariables,
-} from '@syuchan1005/book-reader-graphql';
-import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQuery.gql';
-import DeleteGenreMutation from '@syuchan1005/book-reader-graphql/queries/Pages_Setting_deleteGenre.gql';
-import EditGenreMutation from '@syuchan1005/book-reader-graphql/queries/Pages_Setting_editGenre.gql';
+import { useDeleteGenreMutation, useEditGenreMutation, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { defaultGenres, defaultTitle } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
@@ -56,8 +45,7 @@ const Setting: React.FC = React.memo((props) => {
     data: genreData,
     loading: genreLoading,
     refetch: genreRefetch,
-  } = useQuery<GenresQueryData,
-    GenresQueryVariables>(GenresQuery);
+  } = useGenresQuery();
 
   const [editGenre, setEditGenre] = useState<string>(undefined);
   const [editGenreContent, setEditGenreContent] = useState('');
@@ -66,7 +54,7 @@ const Setting: React.FC = React.memo((props) => {
   const [
     doDeleteGenre,
     { loading: deleteGenreLoading },
-  ] = useMutation<DeleteGenreMutationData, DeleteGenreMutationVariables>(DeleteGenreMutation, {
+  ] = useDeleteGenreMutation({
     variables: {
       name: deleteGenre,
     },
@@ -80,7 +68,7 @@ const Setting: React.FC = React.memo((props) => {
   const [
     doEditGenre,
     { loading: editGenreLoading },
-  ] = useMutation<EditGenreMutationData, EditGenreMutationVariables>(EditGenreMutation, {
+  ] = useEditGenreMutation({
     onCompleted({ editGenre: genreResult }) {
       if (genreResult.success) {
         setEditGenreContent(undefined);

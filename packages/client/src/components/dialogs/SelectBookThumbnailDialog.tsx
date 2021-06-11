@@ -10,18 +10,10 @@ import {
   makeStyles,
   Theme, useMediaQuery, useTheme,
 } from '@material-ui/core';
-import { useMutation, useQuery } from '@apollo/react-hooks';
 
-import {
-  BookPagesQuery as BookPagesQueryType,
-  BookPagesQueryVariables,
-  EditBookThumbnailMutation as EditBookThumbnailMutationType,
-  EditBookThumbnailMutationVariables,
-} from '@syuchan1005/book-reader-graphql';
-import BookQuery from '@syuchan1005/book-reader-graphql/queries/SelectBookThumbnailDialog_book.gql';
-import EditBookMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookThumbnailDialog_editBook.gql';
+import { useBookPagesQuery, useEditBookThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-import BookPageImage, { createBookPageUrl } from '@client/components/BookPageImage';
+import BookPageImage from '@client/components/BookPageImage';
 import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
@@ -64,25 +56,20 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = React.me
     loading: infoLoading,
     error,
     data,
-  } = useQuery<BookPagesQueryType, BookPagesQueryVariables>(BookQuery, {
+  } = useBookPagesQuery({
     skip: !open,
     variables: {
       id: bookId,
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useMutation<
-    EditBookThumbnailMutationType,
-    EditBookThumbnailMutationVariables
-  >(
-    EditBookMutation,
-    {
-      onCompleted(d) {
-        if (!d) return;
-        if (d.edit.success && onClose) onClose();
-        if (d.edit.success && onEdit) onEdit();
-      },
+  const [changeThumbnail, { loading: changeLoading }] = useEditBookThumbnailMutation({
+    onCompleted(d) {
+      if (!d) return;
+      if (d.edit.success && onClose) onClose();
+      if (d.edit.success && onEdit) onEdit();
     },
+  },
   );
 
   const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);

@@ -9,19 +9,10 @@ import {
   Theme,
   Toolbar,
 } from '@material-ui/core';
-import { useMutation } from '@apollo/react-hooks';
 
 import { commonTheme } from '@client/App';
 
-import {
-  DeleteBooksMutation as DeleteBooksMutationData,
-  DeleteBooksMutationVariables,
-  MoveBooksMutation as MoveBooksMutationData,
-  MoveBooksMutationVariables,
-} from '@syuchan1005/book-reader-graphql';
-
-import DeleteBooksMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookHeader_deleteBooks.gql';
-import MoveBooksMutation from '@syuchan1005/book-reader-graphql/queries/SelectBookHeader_moveBooks.gql';
+import { useDeleteBooksMutation, useMoveBooksMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 interface SelectBookHeaderProps {
   infoId: string;
@@ -56,25 +47,21 @@ const SelectBookHeader: React.FC<SelectBookHeaderProps> = React.memo((props: Sel
 
   const [openMoveDialog, setOpenMoveDialog] = React.useState(false);
   const [moveInfoId, setMoveInfoId] = React.useState(infoId);
-  const [doMoveBooks, { loading: moveBooksLoading }] = useMutation<
-    MoveBooksMutationData,
-    MoveBooksMutationVariables
-    >(MoveBooksMutation, {
-      variables: {
-        infoId: moveInfoId,
-        ids: selectIds,
-      },
-      onCompleted() {
-        setOpenMoveDialog(false);
-        if (onMoveBooks) onMoveBooks();
-      },
-    });
+
+  const [doMoveBooks, { loading: moveBooksLoading }] = useMoveBooksMutation({
+    variables: {
+      infoId: moveInfoId,
+      ids: selectIds,
+    },
+    onCompleted() {
+      setOpenMoveDialog(false);
+      if (onMoveBooks) onMoveBooks();
+    },
+  });
 
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
-  const [doDeleteBooks, { loading: deleteBooksLoading }] = useMutation<
-    DeleteBooksMutationData,
-    DeleteBooksMutationVariables
-  >(DeleteBooksMutation, {
+
+  const [doDeleteBooks, { loading: deleteBooksLoading }] = useDeleteBooksMutation({
     variables: {
       infoId,
       ids: selectIds,

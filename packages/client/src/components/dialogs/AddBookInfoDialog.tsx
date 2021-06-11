@@ -15,16 +15,8 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
-import { useMutation } from '@apollo/react-hooks';
 
-import {
-  AddBookInfoHistoriesMutation as AddBookInfoHistoriesMutationType,
-  AddBookInfoHistoriesMutationVariables,
-  AddBookInfoMutation as AddBookInfoMutationType,
-  AddBookInfoMutationVariables,
-} from '@syuchan1005/book-reader-graphql';
-import AddBookInfoMutation from '@syuchan1005/book-reader-graphql/queries/AddBookInfoDialog_addBookInfo.gql';
-import AddBookInfoHistoriesMutation from '@syuchan1005/book-reader-graphql/queries/AddBookInfoDialog_addBookInfoHistories.gql';
+import { useAddBookInfoMutation, useAddBookInfoHistoriesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import GenresSelect from '../GenresSelect';
 
 interface AddBookInfoDialogProps {
@@ -89,10 +81,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = React.memo((props: A
     setSelectGenres([]);
   };
 
-  const [addBookInfo, { loading: addLoading }] = useMutation<
-    AddBookInfoMutationType,
-    AddBookInfoMutationVariables
-  >(AddBookInfoMutation, {
+  const [addBookInfo, { loading: addLoading }] = useAddBookInfoMutation({
     variables: {
       name,
       genres: selectGenres,
@@ -104,21 +93,16 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = React.memo((props: A
     },
   });
 
-  const [addBookInfoHistories, { loading: histLoading }] = useMutation<
-    AddBookInfoHistoriesMutationType,
-    AddBookInfoHistoriesMutationVariables
-  >(
-    AddBookInfoHistoriesMutation,
-    {
-      onCompleted(d) {
-        if (!d) return;
-        closeDialog();
-        if (d.add.success && onAdded) onAdded();
-      },
-      variables: {
-        histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
-      },
+  const [addBookInfoHistories, { loading: histLoading }] = useAddBookInfoHistoriesMutation({
+    onCompleted(d) {
+      if (!d) return;
+      closeDialog();
+      if (d.add.success && onAdded) onAdded();
     },
+    variables: {
+      histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
+    },
+  },
   );
 
   const loading = React.useMemo(() => addLoading || histLoading, [addLoading, histLoading]);

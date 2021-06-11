@@ -7,16 +7,11 @@ import {
   DialogTitle,
   LinearProgress,
 } from '@material-ui/core';
-import {
-  BookInfo,
-  DownloadBookInfosQuery as DownloadBookInfosQueryType,
-  DownloadBookInfosQueryVariables as DownloadBookInfosQueryVariablesType,
-} from '@syuchan1005/book-reader-graphql';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { useQuery } from '@apollo/react-hooks';
 
-import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/DownloadBookInfoDialog_bookInfo.gql';
+import { BookInfo } from '@syuchan1005/book-reader-graphql';
+import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   open: boolean;
@@ -36,11 +31,11 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
   const [downloadImages, setDownloadImages] = React.useState<number>(undefined);
   const [compressPercent, setCompressPercent] = React.useState<number | undefined>(undefined);
 
+  
   const {
     data,
     loading: booksLoading,
-  } = useQuery<DownloadBookInfosQueryType,
-  DownloadBookInfosQueryVariablesType>(BookInfoQuery, {
+  } = useDownloadBookInfosQuery({
     variables: {
       id,
     },

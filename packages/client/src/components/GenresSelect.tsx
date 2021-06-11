@@ -12,10 +12,8 @@ import {
   MenuItem,
   Select, TextField, Theme,
 } from '@material-ui/core';
-import { useLazyQuery } from '@apollo/react-hooks';
 
-import { GenresQuery as GenresQueryData, GenresQueryVariables } from '@syuchan1005/book-reader-graphql';
-import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQuery.gql';
+import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 interface GenresSelectProps {
   value: string[],
@@ -59,8 +57,7 @@ const GenresSelect: React.FC<GenresSelectProps> = React.memo((props: GenresSelec
   const [loadGenres, {
     called,
     data: genreData,
-  }] = useLazyQuery<GenresQueryData,
-    GenresQueryVariables>(GenresQuery);
+  }] = useGenresLazyQuery();
 
   return (
     <div className={classes.genreSelect}>

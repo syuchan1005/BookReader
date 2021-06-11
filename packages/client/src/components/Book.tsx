@@ -13,18 +13,10 @@ import {
   Menu,
   MenuItem,
 } from '@material-ui/core';
-import { useMutation } from '@apollo/react-hooks';
 import loadable from '@loadable/component';
 
-import {
-  Book as BookType,
-  DeleteBookMutation as DeleteBookMutationType,
-  DeleteBookMutationVariables,
-  EditBookMutation as EditBookMutationType,
-  EditBookMutationVariables,
-} from '@syuchan1005/book-reader-graphql';
-import DeleteBookMutation from '@syuchan1005/book-reader-graphql/queries/Book_deleteBook.gql';
-import EditBookMutation from '@syuchan1005/book-reader-graphql/queries/Book_editBook.gql';
+import { Book as BookType } from '@syuchan1005/book-reader-graphql';
+import { useDeleteBookMutation, useEditBookMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -129,8 +121,7 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBook, { loading: delLoading }] = useMutation<DeleteBookMutationType,
-    DeleteBookMutationVariables>(DeleteBookMutation, {
+  const [deleteBook, { loading: delLoading }] = useDeleteBookMutation({
       variables: {
         id: bookId,
       },
@@ -141,8 +132,7 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
       },
     });
 
-  const [editBook, { loading: editLoading }] = useMutation<EditBookMutationType,
-    EditBookMutationVariables>(EditBookMutation, {
+  const [editBook, { loading: editLoading }] = useEditBookMutation({
       variables: {
         id: bookId,
         ...editContent,

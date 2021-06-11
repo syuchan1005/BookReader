@@ -19,21 +19,11 @@ import {
   useTheme,
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors';
-import { useLazyQuery, useMutation, useQuery } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 
-import {
-  BookInfoOrder,
-  DeleteUnusedFoldersMutation,
-  DeleteUnusedFoldersMutationVariables,
-  FolderSizesQuery,
-  FolderSizesQueryVariables,
-  GenresQuery as GenresQueryData,
-  GenresQueryVariables,
-} from '@syuchan1005/book-reader-graphql';
-import DebugFolderSizesQuery from '@syuchan1005/book-reader-graphql/queries/App_debug_folderSizes.gql';
-import DebugDeleteFolderMutation from '@syuchan1005/book-reader-graphql/queries/App_debug_deleteFolderSizes_mutation.gql';
-import GenresQuery from '@syuchan1005/book-reader-graphql/queries/common/GenresQuery.gql';
+import { BookInfoOrder } from '@syuchan1005/book-reader-graphql';
+import { useDeleteUnusedFoldersMutation, useFolderSizesLazyQuery, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import { useApollo } from '@client/apollo/ApolloProvider';
@@ -90,32 +80,27 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
 
   const [historyAnchorEl, setHistoryAnchorEl] = React.useState(null);
 
-  const [getFolderSizes, { refetch, loading, data }] = useLazyQuery<FolderSizesQuery,
-    FolderSizesQueryVariables>(DebugFolderSizesQuery);
+  const [getFolderSizes, { refetch, loading, data }] = useFolderSizesLazyQuery();
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation<DeleteUnusedFoldersMutation,
-    DeleteUnusedFoldersMutationVariables>(DebugDeleteFolderMutation, {
-      onCompleted() {
-        // noinspection JSIgnoredPromiseFromCall
-        refetch();
-      },
-    });
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useDeleteUnusedFoldersMutation({
+    onCompleted() {
+      // noinspection JSIgnoredPromiseFromCall
+      refetch();
+    },
+  });
+
+  const { data: genreData } = useGenresQuery();
 
   /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
     const isApollo = i === 0 || i === 2;
-    const isStorage = i === 1 || i ===2;
+    const isStorage = i === 1 || i === 2;
     const wb = isStorage ? store.wb : undefined;
     Promise.all([
       (isApollo ? persistor.purge() : Promise.resolve()),
       (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
     ]).finally(() => window.location.reload())
-  }, [store.wb]);
-
-  const {
-    data: genreData,
-  } = useQuery<GenresQueryData,
-    GenresQueryVariables>(GenresQuery);
+  }, [store.wb]);    
 
   return (
     <>

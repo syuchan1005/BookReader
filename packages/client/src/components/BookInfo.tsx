@@ -13,20 +13,10 @@ import {
   Theme,
 } from '@material-ui/core';
 import { orange as color } from '@material-ui/core/colors';
-import { useMutation } from '@apollo/react-hooks';
 import loadable from '@loadable/component';
 
-import {
-  BookInfo as QLBookInfo,
-  DeleteBookInfoMutation as DeleteBookInfoMutationType,
-  DeleteBookInfoMutationVariables,
-  EditBookInfoMutation as EditBookInfoMutationType,
-  EditBookInfoMutationVariables,
-} from '@syuchan1005/book-reader-graphql';
-import DeleteBookInfoMutation
-  from '@syuchan1005/book-reader-graphql/queries/BookInfo_deleteBookInfo.gql';
-import EditBookInfoMutation
-  from '@syuchan1005/book-reader-graphql/queries/BookInfo_editBookInfo.gql';
+import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
+import { useDeleteBookInfoMutation, useEditBookInfoMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -164,10 +154,7 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
   const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
-  const [deleteBookInfo, { loading: delLoading }] = useMutation<DeleteBookInfoMutationType,
-    DeleteBookInfoMutationVariables>(
-      DeleteBookInfoMutation,
-      {
+  const [deleteBookInfo, { loading: delLoading }] = useDeleteBookInfoMutation({
         variables: {
           id: infoId,
         },
@@ -179,10 +166,7 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
       },
     );
 
-  const [editBookInfo, { loading: editLoading }] = useMutation<EditBookInfoMutationType,
-    EditBookInfoMutationVariables>(
-      EditBookInfoMutation,
-      {
+  const [editBookInfo, { loading: editLoading }] = useEditBookInfoMutation({
         variables: {
           id: infoId,
           name: editContent.name,
