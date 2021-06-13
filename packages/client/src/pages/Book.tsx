@@ -35,10 +35,11 @@ import { orange } from '@material-ui/core/colors';
 import db from '../Database';
 import BookPageImage from '../components/BookPageImage';
 import useNetworkType from '../hooks/useNetworkType';
-import EditPagesDialog from '../components/dialogs/EditPagesDialog';
+import ObsolateEditPagesDialog from '../components/dialogs/ObsolateEditPagesDialog';
 import { useApollo } from '../apollo/ApolloProvider';
 import TitleAndBackHeader from '../components/TitleAndBackHeader';
 import { Remount } from '../components/Remount';
+import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 
 
 interface BookProps {
@@ -171,6 +172,7 @@ const Book: React.FC = React.memo((props: BookProps) => {
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
+  const [openObsolateEditDialog, setOpenObsolateEditDialog] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
   const [showAppBar, setShowAppBar] = React.useState(false);
 
@@ -293,11 +295,11 @@ const Book: React.FC = React.memo((props: BookProps) => {
     }
   }, [isPageSet, page]);
 
-  useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
-  useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
+  useKey('ArrowRight', () => (openObsolateEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog]);
+  useKey('ArrowLeft', () => (openObsolateEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog]);
 
   const clickPage = React.useCallback((event) => {
-    if (openEditDialog) return;
+    if (openObsolateEditDialog) return;
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     switch (store.readOrder) {
       case 0:
@@ -313,7 +315,7 @@ const Book: React.FC = React.memo((props: BookProps) => {
       default:
         setShowAppBar(!showAppBar);
     }
-  }, [store.readOrder, increment, decrement, openEditDialog]);
+  }, [store.readOrder, increment, decrement, openObsolateEditDialog]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -373,9 +375,9 @@ const Book: React.FC = React.memo((props: BookProps) => {
       <main>
         {/* eslint-disable-next-line */}
         <div className={classes.book} onClick={clickPage}>
-          <EditPagesDialog
-            open={openEditDialog}
-            onClose={() => setOpenEditDialog(false)}
+          <ObsolateEditPagesDialog
+            open={openObsolateEditDialog}
+            onClose={() => setOpenObsolateEditDialog(false)}
             openPage={page}
             maxPage={data ? data.book.pages : 0}
             bookId={params.id}
@@ -383,6 +385,8 @@ const Book: React.FC = React.memo((props: BookProps) => {
             wb={store.wb}
             persistor={persistor}
           />
+
+          <EditPagesDialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} />
 
           {/* eslint-disable-next-line */}
           <div
@@ -443,6 +447,14 @@ const Book: React.FC = React.memo((props: BookProps) => {
                       }}
                     >
                       Edit pages
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        setSettingsMenuAnchor(null);
+                        setOpenObsolateEditDialog(true);
+                      }}
+                    >
+                      [Obsolate] Edit pages
                     </MenuItem>
                     <MenuItem
                       onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
