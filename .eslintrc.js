@@ -24,7 +24,11 @@ module.exports = {
       jsx: true,
     },
   },
-  ignorePatterns: ['src/common/GQLTypes.ts', '**/*.puml'],
+  ignorePatterns: [
+    'packages/graphql/generated/*.ts',
+    'packages/server/src/sort/**/*.ts',
+    '**/*.puml',
+  ],
   rules: {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

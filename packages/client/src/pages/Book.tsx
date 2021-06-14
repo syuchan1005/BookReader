@@ -22,6 +22,7 @@ import 'swiper/swiper-bundle.min.css';
 import { useParams, useHistory } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
+import { orange } from '@material-ui/core/colors';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
@@ -31,16 +32,13 @@ import { useGlobalStore } from '@client/store/StoreProvider';
 import { commonTheme } from '@client/App';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
-import { orange } from '@material-ui/core/colors';
+import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 import db from '../Database';
 import BookPageImage from '../components/BookPageImage';
 import useNetworkType from '../hooks/useNetworkType';
 import ObsolateEditPagesDialog from '../components/dialogs/ObsolateEditPagesDialog';
-import { useApollo } from '../apollo/ApolloProvider';
 import TitleAndBackHeader from '../components/TitleAndBackHeader';
 import { Remount } from '../components/Remount';
-import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
-
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -158,7 +156,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const Book: React.FC = React.memo((props: BookProps) => {
   const { state: store, dispatch } = useGlobalStore();
-  const { persistor } = useApollo();
   const classes = useStyles(props);
   const history = useHistory();
   const params = useParams<{ id: string }>();
@@ -383,7 +380,6 @@ const Book: React.FC = React.memo((props: BookProps) => {
             bookId={params.id}
             theme={store.theme}
             wb={store.wb}
-            persistor={persistor}
           />
 
           <EditPagesDialog

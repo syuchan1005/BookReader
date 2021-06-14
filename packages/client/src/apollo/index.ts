@@ -1,12 +1,7 @@
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
-import { CachePersistor } from 'apollo-cache-persist';
+import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
 import { createUploadLink } from 'apollo-upload-client';
-import { WebSocketLink } from 'apollo-link-ws';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { getMainDefinition } from 'apollo-utilities';
-import { onError } from 'apollo-link-error';
-import { ApolloLink } from 'apollo-link';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 
@@ -70,60 +65,47 @@ const customFetch = (uri1: any, options: any) => {
   return fetch(uri1, options);
 };
 
-const getClient = async ()
-  : Promise<[ApolloClient<NormalizedCacheObject>, CachePersistor<NormalizedCacheObject>]> => {
-  const cache = new InMemoryCache({
-    freezeResults: false,
-  });
-
+const getClient = async (): Promise<ApolloClient<any>> => {
   const apolloClient = new ApolloClient({
-    link: ApolloLink.from([
-      onError(({ graphQLErrors, networkError }) => {
-        const log = (message) => {
-          // @ts-ignore
-          if (apolloClient.snackbar) apolloClient.snackbar(message, { variant: 'error' });
-          // eslint-disable-next-line
-          console.log(message);
-        };
-        if (graphQLErrors) {
-          graphQLErrors.forEach(({ message, locations, path }) => log(
-            `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-          ));
-        }
-        if (networkError) log(`[Network error]: ${networkError}`);
-      }),
-      ApolloLink.split(
-        ({ query }) => {
-          const definition = getMainDefinition(query);
-          return (
-            definition.kind === 'OperationDefinition'
-            && definition.operation === 'subscription'
-          );
+    link: ApolloLink.split(
+      ({ query }) => {
+        const definition = getMainDefinition(query);
+        return (
+          definition.kind === 'OperationDefinition'
+          && definition.operation === 'subscription'
+        );
+      },
+      new WebSocketLink({
+        uri: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
+        options: {
+          lazy: true,
+          reconnect: true,
         },
-        new WebSocketLink(new SubscriptionClient(
-          `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
-          {
-            lazy: true,
-            reconnect: true,
-          },
-        )),
-        createUploadLink({
-          uri: `${window.location.protocol}${uri}`,
-          // credentials: "same-origin",
-          fetch: customFetch as any,
-        }),
-      ),
-    ]),
-    cache,
+      }),
+      createUploadLink({
+        uri: `${window.location.protocol}${uri}`,
+        // credentials: "same-origin",
+        fetch: customFetch as any,
+      }),
+    ).setOnError(({ graphQLErrors, networkError }) => {
+      const log = (message) => {
+        // @ts-ignore
+        if (apolloClient.snackbar) apolloClient.snackbar(message, { variant: 'error' });
+        // eslint-disable-next-line
+        console.log(message);
+      };
+      if (graphQLErrors) {
+        graphQLErrors.forEach(({ message, locations, path }) => log(
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        ));
+      }
+      if (networkError) log(`[Network error]: ${networkError}`);
+    }),
+    cache: new InMemoryCache(),
     connectToDevTools: process.env.NODE_ENV !== 'production',
   });
 
-  const cachePersistor = new CachePersistor({
-    cache,
-    storage: window.localStorage,
-  });
-
-  return [apolloClient, cachePersistor];
+  return apolloClient;
 };
 
 export default getClient;

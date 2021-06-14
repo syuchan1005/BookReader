@@ -16,6 +16,7 @@ import {
   Theme,
 } from '@material-ui/core';
 import { Workbox } from 'workbox-window';
+import { useApolloClient } from '@apollo/react-hooks';
 
 import { useCropPagesMutation, useDeletePagesMutation, useEditPageMutation, usePutPageMutation, useSplitPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { SplitType } from '@syuchan1005/book-reader-graphql';
@@ -31,7 +32,6 @@ interface ObsolateEditPagesDialogProps {
   bookId: string;
   theme: 'light' | 'dark';
   wb?: Workbox;
-  persistor?: any;
 }
 
 const parsePagesStr = (pages: string, maxPage: number): (number | [number, number])[] | string => {
@@ -86,8 +86,8 @@ const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.me
     bookId,
     theme,
     wb,
-    persistor,
   } = props;
+  const apolloClient = useApolloClient();
 
   const [editType, setEditType] = React.useState('delete');
   const [editPages, setEditPages] = React.useState('');
@@ -106,10 +106,10 @@ const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.me
   );
 
   const purgeCache = React.useCallback(() => {
-    (persistor ? persistor.purge() : Promise.resolve())
+    apolloClient.resetStore()
       .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
       .finally(() => window.location.reload());
-  }, [wb, persistor]);
+  }, [wb, apolloClient]);
 
   const [editPageMutation, { loading: editLoading }] = useEditPageMutation({
     onCompleted() {
@@ -155,12 +155,6 @@ const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.me
     const pad = maxPage.toString(10).length;
     return `/book/${bookId}/${(editPage - 1).toString(10).padStart(pad, '0')}.jpg`;
   }, [maxPage, editPage, bookId]);
-
-  const imageEditorConfig = React.useMemo(() => ({
-    tools: ['adjust', 'rotate', 'crop', 'resize'],
-    translations: { en: { 'toolbar.download': 'Upload' } },
-    colorScheme: theme,
-  }), [theme]);
 
   const onClickEdit = React.useCallback(() => {
     if (editType === 'crop') setOpenCropDialog(true);

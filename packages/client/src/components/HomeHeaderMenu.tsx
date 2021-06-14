@@ -26,8 +26,8 @@ import { useDeleteUnusedFoldersMutation, useFolderSizesLazyQuery, useGenresQuery
 
 
 import { useGlobalStore } from '@client/store/StoreProvider';
-import { useApollo } from '@client/apollo/ApolloProvider';
 import ColorTile from './ColorTile';
+import { useApolloClient } from '@apollo/react-hooks';
 
 interface HeaderMenuProps {
   anchorEl: Element;
@@ -67,7 +67,7 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
 
   const history = useHistory();
   const { state: store, dispatch } = useGlobalStore();
-  const { persistor } = useApollo();
+  const apolloClient = useApolloClient();
   const theme = useTheme();
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
@@ -97,10 +97,10 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
     const isStorage = i === 1 || i === 2;
     const wb = isStorage ? store.wb : undefined;
     Promise.all([
-      (isApollo ? persistor.purge() : Promise.resolve()),
+      (isApollo ? apolloClient.resetStore() : Promise.resolve()),
       (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-    ]).finally(() => window.location.reload())
-  }, [store.wb]);    
+    ]).finally(() => window.location.reload());
+  }, [store.wb]);
 
   return (
     <>
