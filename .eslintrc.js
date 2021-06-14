@@ -28,6 +28,8 @@ module.exports = {
     'packages/graphql/generated/*.ts',
     'packages/server/src/sort/**/*.ts',
     '**/*.puml',
+    '**/*.yml',
+    '**/*.json',
   ],
   rules: {
     'no-unused-vars': 'off',
