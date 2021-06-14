@@ -28,10 +28,14 @@ module.exports = {
   rules: {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-use-before-define': 'off',
     'react/jsx-no-target-blank': 'error',
     'react/jsx-filename-extension': [1, { extensions: ['.tsx', '.jsx'] }],
     'react/jsx-props-no-spreading': 0,
     'react/require-default-props': 0,
+    'react/prop-types': 0,
+    'react/no-unused-prop-types': 0,
+    'import/no-extraneous-dependencies': 'off',
     'import/extensions': ['error', 'ignorePackages', {
       ts: 'never',
       tsx: 'never',
@@ -45,8 +49,12 @@ module.exports = {
       node: {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs'],
       },
-      webpack: {
-        config: path.join(__dirname, 'webpack/webpack.common.client.js'),
+      alias: {
+        map: [
+          ['@client', path.resolve(__dirname, 'packages', 'client', 'src')],
+          ['@server', path.resolve(__dirname, 'packages', 'server', 'src')],
+        ],
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs'],
       },
     },
   },
