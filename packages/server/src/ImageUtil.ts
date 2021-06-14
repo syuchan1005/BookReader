@@ -21,7 +21,8 @@ export const convertImage = async (
 }> => {
   const originalFilePath = `storage/book/${bookId}/${pageNum}.jpg`;
   const sizeString = info.size ? `_${info.size.width}x${info.size.height}` : '';
-  const cacheFilePath = `storage/cache/book/${bookId}/${pageNum}${sizeString}.${info.ext}`;
+  const cacheFolderPath = `storage/cache/book/${bookId}`;
+  const cacheFilePath = `${cacheFolderPath}/${pageNum}${sizeString}.${info.ext}`;
   const type = info.ext === 'jpg' ? 'image/jpeg' : 'image/webp';
 
   try {
@@ -34,8 +35,7 @@ export const convertImage = async (
         lastModified: cacheStats.mtime.toUTCString(),
       };
     }
-  } catch (e) { /* ignored */
-  }
+  } catch (e) { /* ignored */ }
 
   const stats = await fs.stat(originalFilePath);
   if (!stats.isFile()) {
@@ -79,6 +79,7 @@ export const convertImage = async (
     };
   }
   if (isSave) {
+    await fs.mkdir(cacheFolderPath, { recursive: true });
     await fs.writeFile(cacheFilePath, imageBuffer);
   }
   return {

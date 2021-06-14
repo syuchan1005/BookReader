@@ -318,7 +318,7 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
     if (hasPageCountEffect && !isLast) {
       return false;
     }
-  
+
     switch (action.editType) {
       case EditType.Crop:
         return !['top', 'bottom', 'left', 'right'].every((k) => !action.crop[k]);
@@ -347,9 +347,9 @@ const calculateEditActions = (
               ...(imageEditAction.cropTransforms ?? []),
               (w, h) => ({
                 left: action.crop.left ?? 0,
-                right: w - (action.crop.right ?? 0),
+                right: action.crop.right ?? w,
                 top: action.crop.top ?? 0,
-                bottom: h - (action.crop.bottom ?? 0),
+                bottom: action.crop.bottom ?? h,
               }),
             ];
           }
@@ -472,7 +472,7 @@ const executeEditActions = async (editActions: ImageEditAction[], editFolderPath
           await fs.copyFile(srcFilePath, distFilePath);
         }
         return { success: true };
-      } catch {
+      } catch (e) {
         return {
           success: false,
           code: 'QL0013',
@@ -521,23 +521,25 @@ class Page extends GQLMiddleware {
             return result;
           }
 
+          const transaction = await Database.sequelize.transaction();
           try {
-            await Database.sequelize.transaction(async (transaction) => {
-              await BookModel.update(
-                { pages: editActions.length },
-                {
-                  where: { id },
-                  transaction,
-                },
-              );
-              await replaceNewFiles();
-            });
+            await BookModel.update(
+              { pages: editActions.length },
+              {
+                where: { id },
+                transaction,
+              },
+            );
+            await replaceNewFiles();
+            await transaction.commit();
           } catch (e) {
+            await transaction.rollback();
+            console.log(e);
             return {
               success: false,
               code: 'QL0013',
               message: Errors.QL0013,
-            }
+            };
           }
           return { success: true };
         });

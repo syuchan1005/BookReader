@@ -1,5 +1,6 @@
 import path from 'path';
 import { promises as fs, createReadStream, createWriteStream } from 'fs';
+import { move } from 'fs-extra';
 import os from 'os';
 import du from 'du';
 
@@ -42,15 +43,28 @@ export const withPageEditFolder = async <T>(bookId: string, block: (folderPath: 
     const folderPath = `${oldFolderPath}_new`;
     await fs.mkdir(folderPath, { recursive: true });
     const replaceNewFiles = async () => {
-        await fs.rm(oldFolderPath);
-        await fs.rename(folderPath, oldFolderPath);
+        await fs.rm(oldFolderPath, { recursive: true });
+        await move(folderPath, oldFolderPath, { overwrite: true });
     };
+    let result;
+    let error;
     try {
-        return block(folderPath, replaceNewFiles);
+        result = await block(folderPath, replaceNewFiles);
     } catch (e) {
-        throw e;
+        error = e;
     } finally {
-        await fs.rm(folderPath, { recursive: true });
+        for (let i = 0; i < 4; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            try {
+                await fs.rm(folderPath, { recursive: true, force: true });
+                break;
+            } catch (ignored) {}
+        }
+    }
+    if (error) {
+        throw error;
+    } else {
+        return result;
     }
 };
 
