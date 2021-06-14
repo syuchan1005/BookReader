@@ -116,11 +116,15 @@ export type Debug_FolderSizes = {
   bookCount: Scalars['Int'];
 };
 
+export type DeleteEditAction = {
+  pageRange: Scalars['IntRange'];
+};
+
 export type EditAction = {
   editType: EditType;
   crop?: Maybe<CropEditAction>;
   replace?: Maybe<UploadEditAction>;
-  delete?: Maybe<Scalars['IntRange']>;
+  delete?: Maybe<DeleteEditAction>;
   put?: Maybe<UploadEditAction>;
   split?: Maybe<SplitEditAction>;
 };
@@ -578,6 +582,20 @@ export type DownloadBookInfosQuery = (
       & Pick<Book, 'id' | 'number' | 'pages'>
     )> }
   )> }
+);
+
+export type BulkEditPagesMutationVariables = Exact<{
+  bookId: Scalars['ID'];
+  editActions: Array<EditAction> | EditAction;
+}>;
+
+
+export type BulkEditPagesMutation = (
+  { __typename?: 'Mutation' }
+  & { bulkEditPage: (
+    { __typename?: 'Result' }
+    & Pick<Result, 'success' | 'code' | 'message'>
+  ) }
 );
 
 export type CropPagesMutationVariables = Exact<{
@@ -1300,6 +1318,42 @@ export function useDownloadBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHook
 export type DownloadBookInfosQueryHookResult = ReturnType<typeof useDownloadBookInfosQuery>;
 export type DownloadBookInfosLazyQueryHookResult = ReturnType<typeof useDownloadBookInfosLazyQuery>;
 export type DownloadBookInfosQueryResult = Apollo.QueryResult<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>;
+export const BulkEditPagesDocument = gql`
+    mutation bulkEditPages($bookId: ID!, $editActions: [EditAction!]!) {
+  bulkEditPage(id: $bookId, actions: $editActions) {
+    success
+    code
+    message
+  }
+}
+    `;
+export type BulkEditPagesMutationFn = Apollo.MutationFunction<BulkEditPagesMutation, BulkEditPagesMutationVariables>;
+
+/**
+ * __useBulkEditPagesMutation__
+ *
+ * To run a mutation, you first call `useBulkEditPagesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useBulkEditPagesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [bulkEditPagesMutation, { data, loading, error }] = useBulkEditPagesMutation({
+ *   variables: {
+ *      bookId: // value for 'bookId'
+ *      editActions: // value for 'editActions'
+ *   },
+ * });
+ */
+export function useBulkEditPagesMutation(baseOptions?: Apollo.MutationHookOptions<BulkEditPagesMutation, BulkEditPagesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<BulkEditPagesMutation, BulkEditPagesMutationVariables>(BulkEditPagesDocument, options);
+      }
+export type BulkEditPagesMutationHookResult = ReturnType<typeof useBulkEditPagesMutation>;
+export type BulkEditPagesMutationResult = Apollo.MutationResult<BulkEditPagesMutation>;
+export type BulkEditPagesMutationOptions = Apollo.BaseMutationOptions<BulkEditPagesMutation, BulkEditPagesMutationVariables>;
 export const CropPagesDocument = gql`
     mutation cropPages($id: ID!, $pages: IntRange!, $left: Int!, $width: Int!) {
   crop: cropPages(id: $id, pages: $pages, left: $left, width: $width) {

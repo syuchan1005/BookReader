@@ -295,11 +295,11 @@ const Book: React.FC = React.memo((props: BookProps) => {
     }
   }, [isPageSet, page]);
 
-  useKey('ArrowRight', () => (openObsolateEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog]);
-  useKey('ArrowLeft', () => (openObsolateEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog]);
+  useKey('ArrowRight', () => (openObsolateEditDialog || openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog, openEditDialog]);
+  useKey('ArrowLeft', () => (openObsolateEditDialog || openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog, openEditDialog]);
 
   const clickPage = React.useCallback((event) => {
-    if (openObsolateEditDialog) return;
+    if (openObsolateEditDialog || openEditDialog) return;
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     switch (store.readOrder) {
       case 0:
@@ -315,7 +315,7 @@ const Book: React.FC = React.memo((props: BookProps) => {
       default:
         setShowAppBar(!showAppBar);
     }
-  }, [store.readOrder, increment, decrement, openObsolateEditDialog]);
+  }, [store.readOrder, increment, decrement, openObsolateEditDialog, openEditDialog]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -386,7 +386,12 @@ const Book: React.FC = React.memo((props: BookProps) => {
             persistor={persistor}
           />
 
-          <EditPagesDialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} />
+          <EditPagesDialog
+            open={openEditDialog}
+            onClose={() => setOpenEditDialog(false)}
+            maxPage={data ? data.book.pages : 0}
+            bookId={params.id}
+          />
 
           {/* eslint-disable-next-line */}
           <div

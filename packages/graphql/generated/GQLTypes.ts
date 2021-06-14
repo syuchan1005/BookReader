@@ -115,11 +115,15 @@ export type Debug_FolderSizes = {
   bookCount: Scalars['Int'];
 };
 
+export type DeleteEditAction = {
+  pageRange: Scalars['IntRange'];
+};
+
 export type EditAction = {
   editType: EditType;
   crop?: Maybe<CropEditAction>;
   replace?: Maybe<UploadEditAction>;
-  delete?: Maybe<Scalars['IntRange']>;
+  delete?: Maybe<DeleteEditAction>;
   put?: Maybe<UploadEditAction>;
   split?: Maybe<SplitEditAction>;
 };
@@ -579,6 +583,20 @@ export type DownloadBookInfosQuery = (
   )> }
 );
 
+export type BulkEditPagesMutationVariables = Exact<{
+  bookId: Scalars['ID'];
+  editActions: Array<EditAction> | EditAction;
+}>;
+
+
+export type BulkEditPagesMutation = (
+  { __typename?: 'Mutation' }
+  & { bulkEditPage: (
+    { __typename?: 'Result' }
+    & Pick<Result, 'success' | 'code' | 'message'>
+  ) }
+);
+
 export type CropPagesMutationVariables = Exact<{
   id: Scalars['ID'];
   pages: Scalars['IntRange'];
@@ -924,6 +942,7 @@ export type ResolversTypes = {
   CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>;
   CropEditAction: CropEditAction;
   Debug_FolderSizes: ResolverTypeWrapper<Debug_FolderSizes>;
+  DeleteEditAction: DeleteEditAction;
   EditAction: EditAction;
   EditType: EditType;
   Genre: ResolverTypeWrapper<Genre>;
@@ -960,6 +979,7 @@ export type ResolversParentTypes = {
   CommonPluginQuery: CommonPluginQuery;
   CropEditAction: CropEditAction;
   Debug_FolderSizes: Debug_FolderSizes;
+  DeleteEditAction: DeleteEditAction;
   EditAction: EditAction;
   Genre: Genre;
   InputBook: InputBook;

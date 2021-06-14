@@ -1,0 +1,7 @@
+mutation bulkEditPages($bookId: ID!, $editActions: [EditAction!]!) {
+    bulkEditPage(id: $bookId, actions: $editActions) {
+        success
+        code
+        message
+    }
+}

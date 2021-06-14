@@ -1,4 +1,4 @@
-import { Maybe, EditAction, EditType } from './generated/GQLTypes';
+ import { Maybe, EditAction, EditType } from './generated/GQLTypes';
 
 type Clean<T> = T;
 

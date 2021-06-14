@@ -48,7 +48,7 @@ const FileField: React.FC<FileFieldProps> = React.memo((props: FileFieldProps) =
       style={style}
     >
       <p className={classes.fieldLabel}>
-        {file.name || 'Upload'}
+        {file ? file.name : 'Upload'}
       </p>
       <input
         hidden

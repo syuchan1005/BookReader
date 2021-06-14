@@ -12,7 +12,7 @@ interface CalcImagePaddingDialogProps {
     onClose?: () => void;
 }
 
-const urlToImageData = (url: string): Promise<ImageData> => new Promise((resolve, reject) => {
+export const urlToImageData = (url: string): Promise<ImageData> => new Promise((resolve, reject) => {
     if (url == null) return reject();
     var canvas = document.createElement('canvas'),
         context = canvas.getContext('2d'),
@@ -26,7 +26,7 @@ const urlToImageData = (url: string): Promise<ImageData> => new Promise((resolve
     image.src = url;
 });
 
-const calcPadding = (imageData: ImageData, threshold: number): { left: number, right: number } => {
+export const calcPadding = (imageData: ImageData, threshold: number): { left: number, right: number } => {
     const isWhite = (width: number, height: number) => {
         const pixelIndex = width + height * imageData.width;
         const dataIndex = pixelIndex * 4;

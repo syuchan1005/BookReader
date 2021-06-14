@@ -1,380 +1,561 @@
 import React from 'react';
 import {
   Button,
-  createStyles,
+  Card,
   Dialog,
   DialogActions,
-  DialogContent,
-  DialogContentText,
   DialogTitle,
+  FormControl,
   FormControlLabel,
   FormLabel,
-  makeStyles,
+  Icon,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
+  Menu,
+  MenuItem,
   Radio,
   RadioGroup,
   TextField,
-  Theme,
+  useTheme,
 } from '@material-ui/core';
-import { Workbox } from 'workbox-window';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { v4 as uuidv4 } from 'uuid';
 
-import { useCropPagesMutation, useDeletePagesMutation, useEditPageMutation, usePutPageMutation, useSplitPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-import { SplitType } from '@syuchan1005/book-reader-graphql';
-import DeleteDialog from './DeleteDialog';
-import CalcImagePaddingDialog from './CalcImagePaddingDialog';
-import CropImageDialog from './CropImageDialog';
+import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
+import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import IntRangeInputField from '@client/components/IntRangeInputField';
+import FileField from '@client/components/FileField';
+import LoadingFullscreen from '@client/components/LoadingFullscreen';
+import CalcImagePaddingDialog, {
+  calcPadding,
+  urlToImageData
+} from '@client/components/dialogs/CalcImagePaddingDialog';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface EditPagesDialogProps {
   open: boolean;
-  onClose?: () => any,
-  openPage: number;
+  onClose: () => void;
   maxPage: number;
   bookId: string;
-  theme: 'light' | 'dark';
-  wb?: Workbox;
-  persistor?: any;
 }
 
-const parsePagesStr = (pages: string, maxPage: number): (number | [number, number])[] | string => {
-  const pageList = pages
-    .split(/,\s*/)
-    .map((s) => {
-      const m = s.match(/(\d+)(-(\d+))?$/);
-      if (!m) return undefined;
-      if (m[3]) {
-        const arr = [Number(m[1]), Number(m[3])];
-        return [Math.min(...arr) - 1, Math.max(...arr) - 1] as [number, number];
-      }
-      return Number(m[1]) - 1;
-    });
-  if (!pageList.every((s) => s !== undefined)) return 'Format error';
-  if (!pageList.every((s) => {
-    if (Array.isArray(s)) {
-      return s[0] >= 0 && s[0] < maxPage && s[1] >= 0 && s[1] < maxPage;
-    }
-    return s >= 0 && s < maxPage;
-  })) {
-    return 'Range error';
+interface ListItemProps {
+  draggableProps: { [key: string]: unknown };
+  dragHandleProps?: unknown;
+
+  bookId: string;
+  content: { [key: string]: any };
+  setContent: (key: string, content: any) => void;
+  maxPage: number;
+  onDelete: () => void;
+}
+
+interface ListItemCardProps extends ListItemProps {
+  ref: React.ForwardedRef<unknown>;
+  menuText: string;
+
+  children?: React.ReactNode;
+}
+
+const createInitValue = (editType: EditType) => {
+  switch (editType) {
+    case EditType.Crop:
+      return {
+        pageRange: [],
+        left: 0,
+        right: 0,
+      };
+    case EditType.Replace:
+    case EditType.Put:
+      return {
+        pageIndex: 1,
+        image: undefined,
+      };
+    case EditType.Delete:
+      return {
+        pageRange: [],
+      };
+    case EditType.Split:
+      return {
+        pageRange: [],
+        splitType: SplitType.Vertical,
+      };
+    default:
+      return {};
   }
-  return pageList;
 };
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  splitButtonWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  splitButton: {
-    display: 'grid',
-    gridTemplateColumns: '150px',
-    gridTemplateRows: '100px auto',
-  },
-  inputs: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-  },
-}));
+const ListItemCard: React.VFC<ListItemCardProps> = React.memo(
+  React.forwardRef((props: ListItemCardProps, ref) => {
+    const {
+      draggableProps,
+      dragHandleProps,
+      menuText,
+      onDelete,
+      children,
+    } = props;
+    const theme = useTheme();
+    return (
+      <ListItem
+        // @ts-ignore
+        ref={ref}
+        {...draggableProps}
+        style={{
+          // @ts-ignore
+          ...(draggableProps.style),
+          flexWrap: 'wrap',
+        }}
+      >
+        <Card
+          variant="outlined"
+          style={{
+            width: '100%',
+            padding: theme.spacing(1),
+          }}
+        >
+          <ListItem disableGutters ContainerComponent="div" style={{ paddingTop: 0 }}>
+            <ListItemIcon><Icon {...dragHandleProps}>menu</Icon></ListItemIcon>
+            <ListItemText primary={menuText} />
+            <ListItemSecondaryAction>
+              <IconButton edge="end" onClick={onDelete}>
+                <Icon>delete</Icon>
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
+          {children}
+        </Card>
+      </ListItem>
+    );
+  }),
+);
 
-const EditPagesDialog: React.FC<EditPagesDialogProps> = React.memo((props: EditPagesDialogProps) => {
-  const classes = useStyles(props);
+const ListItems = {
+  [EditType.Crop]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+    const {
+      maxPage,
+      content,
+      setContent,
+      bookId,
+    } = props;
+    const theme = useTheme();
+    const [isOpen, setOpen] = React.useState(false);
+    return (
+      <ListItemCard ref={ref} {...props} menuText="Crop">
+        <IntRangeInputField
+          initValue={content.pageRange || []}
+          onChange={(r) => setContent('pageRange', r)}
+          maxPage={maxPage}
+        />
+        {['Left', 'Right'].map((label) => (
+          <TextField
+            key={label}
+            label={label}
+            color="secondary"
+            type="number"
+            value={content[label.toLowerCase()]}
+            onChange={(e) => setContent(label.toLowerCase(), Number(e.target.value))}
+          />
+        ))}
+        <Button
+          fullWidth
+          variant="outlined"
+          style={{ marginTop: theme.spacing(1) }}
+          onClick={() => setOpen(true)}
+        >
+          Detect padding
+        </Button>
+        <CalcImagePaddingDialog
+          bookId={bookId}
+          open={isOpen}
+          onClose={() => setOpen(false)}
+          maxPage={maxPage}
+          left={content.left ?? 0}
+          right={content.right ?? 0}
+          onSizeChange={(left: number, right: number) => {
+            setContent('left', left);
+            setContent('right', right);
+          }}
+        />
+      </ListItemCard>
+    );
+  })),
+  [EditType.Replace]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+    const {
+      maxPage,
+      content,
+      setContent,
+    } = props;
+    return (
+      <ListItemCard ref={ref} {...props} menuText="Replace">
+        <TextField
+          type="number"
+          label={`page (max: ${maxPage})`}
+          color="secondary"
+          value={content.pageIndex}
+          onChange={(e) => setContent('pageIndex', Number(e.target.value))}
+        />
+        <FileField
+          file={content.image}
+          onChange={(f) => setContent('image', f)}
+        />
+      </ListItemCard>
+    );
+  })),
+  [EditType.Delete]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+    const {
+      maxPage,
+      content,
+      setContent,
+    } = props;
+    return (
+      <ListItemCard ref={ref} {...props} menuText="Delete">
+        <IntRangeInputField
+          initValue={content.pageRange || []}
+          onChange={(r) => setContent('pageRange', r)}
+          maxPage={maxPage}
+          fullWidth
+        />
+      </ListItemCard>
+    );
+  })),
+  [EditType.Put]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+    const {
+      maxPage,
+      content,
+      setContent,
+    } = props;
+    return (
+      <ListItemCard ref={ref} {...props} menuText="Put">
+        <TextField
+          type="number"
+          label={`page (max: ${maxPage})`}
+          color="secondary"
+          value={content.pageIndex}
+          onChange={(e) => setContent('pageIndex', Number(e.target.value))}
+        />
+        <FileField
+          file={content.image}
+          onChange={(f) => setContent('image', f)}
+        />
+      </ListItemCard>
+    );
+  })),
+  [EditType.Split]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+    const {
+      maxPage,
+      content,
+      setContent,
+    } = props;
+    const theme = useTheme();
+    return (
+      <ListItemCard ref={ref} {...props} menuText="Split">
+        <IntRangeInputField
+          initValue={content.pageRange || []}
+          onChange={(r) => setContent('pageRange', r)}
+          maxPage={maxPage}
+        />
+        <FormControl
+          component="fieldset"
+          color="secondary"
+          style={{ marginLeft: theme.spacing(1) }}
+        >
+          <FormLabel component="legend">SplitType</FormLabel>
+          <RadioGroup
+            value={content.splitType}
+            onChange={(e) => setContent('splitType', e.target.value)}
+          >
+            <FormControlLabel control={<Radio />} value={SplitType.Vertical} label="Vertical" />
+            <FormControlLabel control={<Radio />} value={SplitType.Horizontal} label="Horizontal" />
+          </RadioGroup>
+        </FormControl>
+      </ListItemCard>
+    );
+  })),
+};
+
+const UnknownListItem: React.VFC<ListItemProps> = React.memo(
+  React.forwardRef(
+    // @ts-ignore
+    (props, ref) => (<ListItemCard ref={ref} {...props} menuText="Unknown" />),
+  ),
+);
+
+interface AddItemListItemProps {
+  onAdded: (editType: EditType) => void;
+}
+
+const AddItemListItem: React.VFC<AddItemListItemProps> = React.memo(
+  (props: AddItemListItemProps) => {
+    const { onAdded } = props;
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    return (
+      <>
+        <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
+          <ListItemIcon><Icon>add</Icon></ListItemIcon>
+          <ListItemText primary="Add Action" />
+        </ListItem>
+        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
+          {Object.keys(ListItems)
+            .map((editType: EditType) => (
+              <MenuItem
+                key={editType}
+                onClick={() => {
+                  onAdded(editType);
+                  setAnchorEl(null);
+                }}
+              >
+                {editType}
+              </MenuItem>
+            ))}
+        </Menu>
+      </>
+    );
+  },
+);
+
+const getPadding = async (
+  bookId: string,
+  maxPage: number,
+  pageIndex: number,
+  threshold: number,
+): Promise<{ left: number, right: number }> => {
+  const coverUrl = createBookPageUrl(bookId, pageIndex, maxPage);
+  const coverImageData = await urlToImageData(coverUrl);
+  return calcPadding(coverImageData, threshold);
+};
+
+const Templates = {
+  PaddingOnCoverAndContents: async (
+    bookId: string,
+    maxPage: number,
+    coverIndex: number = 0,
+    contentPaddingPage: number = 4,
+  ): Promise<EditTypeContent[]> => {
+    const [coverPadding, contentsPadding] = await Promise.all([
+      getPadding(bookId, maxPage, coverIndex, 200),
+      getPadding(bookId, maxPage, contentPaddingPage, 10),
+    ]);
+    return [
+      {
+        id: uuidv4(),
+        editType: EditType.Crop,
+        content: {
+          pageRange: [coverIndex],
+          ...coverPadding,
+        },
+      },
+      {
+        id: uuidv4(),
+        editType: EditType.Crop,
+        content: {
+          pageRange: [[1, maxPage - 1]],
+          ...contentsPadding,
+        },
+      },
+      {
+        id: uuidv4(),
+        editType: EditType.Split,
+        content: {
+          pageRange: [[1, maxPage - 1]],
+          splitType: SplitType.Vertical,
+        },
+      },
+    ];
+  },
+};
+
+interface AddTemplateListItemProps {
+  bookId: string;
+  maxPage: number;
+  onAdded: (editTypeContents: EditTypeContent[]) => void;
+}
+
+const AddTemplateListItem: React.VFC<AddTemplateListItemProps> = React.memo(
+  (props: AddTemplateListItemProps) => {
+    const {
+      bookId,
+      maxPage,
+      onAdded
+    } = props;
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    return (
+      <>
+        <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
+          <ListItemIcon><Icon>add</Icon></ListItemIcon>
+          <ListItemText primary="Add Template" />
+        </ListItem>
+        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
+          {Object.keys(Templates)
+            .map((key: string) => (
+              <MenuItem
+                key={key}
+                onClick={async () => {
+                  const editContents = await Templates[key](bookId, maxPage);
+                  onAdded(editContents);
+                  setAnchorEl(null);
+                }}
+              >
+                {key}
+              </MenuItem>
+            ))}
+        </Menu>
+      </>
+    );
+  },
+);
+
+interface ActionListItemProps extends ListItemProps {
+  ref: React.ForwardedRef<unknown>;
+  editType?: EditType;
+}
+
+const ActionListItem: React.VFC<ActionListItemProps> = React.memo(
+  React.forwardRef(
+    (props: ActionListItemProps, ref) => {
+      const {
+        editType,
+        ...forwardProps
+      } = props;
+      const Item = ListItems[editType] ?? UnknownListItem;
+      return <Item ref={ref} {...forwardProps} />;
+    },
+  ),
+);
+
+interface EditTypeContent {
+  id: string,
+  editType: EditType
+  content: { [key: string]: any };
+}
+
+const EditPagesDialog: React.VFC<EditPagesDialogProps> = (props: EditPagesDialogProps) => {
   const {
     open,
-    onClose: propsOnClose,
-    openPage,
+    onClose,
     maxPage,
     bookId,
-    theme,
-    wb,
-    persistor,
   } = props;
+  const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>([]);
 
-  const [editType, setEditType] = React.useState('delete');
-  const [editPages, setEditPages] = React.useState('');
-  const [editPage, setEditPage] = React.useState(1);
-  const [openCropDialog, setOpenCropDialog] = React.useState(false);
-  const [openCalcPaddingDialog, setOpenCalcPaddingDialog] = React.useState(false);
-  const [openRemovePaddingDialog, setOpenRemovePaddingDialog] = React.useState(false);
-  const [paddingSize, setPaddingSize] = React.useState([0, 0]);
-  const [openSplitDialog, setOpenSplitDialog] = React.useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
-  const [openPutDialog, setOpenPutDialog] = React.useState(false);
+  const handleOnDragEnd = React.useCallback((result) => {
+    const items = Array.from(actions);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setActions(items);
+  }, [actions]);
 
-  const openEditor = React.useMemo(
-    () => openCropDialog || openPutDialog,
-    [openCropDialog, openPutDialog],
-  );
+  const handleDeleteAction = React.useCallback((index: number) => {
+    const items = Array.from(actions);
+    items.splice(index, 1);
+    setActions(items);
+  }, [actions]);
 
-  const purgeCache = React.useCallback(() => {
-    (persistor ? persistor.purge() : Promise.resolve())
-      .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
-      .finally(() => window.location.reload());
-  }, [wb, persistor]);
+  const setContentValue = React.useCallback((actionIndex, key, c) => {
+    setActions((a) => {
+      const items = Array.from(a);
+      items[actionIndex].content[key] = c;
+      return items;
+    });
+  }, [actions, setActions]);
 
-  const [editPageMutation, { loading: editLoading }] = useEditPageMutation({
-    onCompleted() {
-      purgeCache();
+  const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
+    onCompleted(data) {
+      if (data.bulkEditPage.success) {
+        window.location.reload();
+      }
     },
   });
 
-  const [splitPage, { loading: splitLoading }] = useSplitPagesMutation({
-    onCompleted() {
-      purgeCache();
+  const handleEdit = React.useCallback(() => doBulkEditPages({
+    variables: {
+      bookId,
+      editActions: actions.map((action) => ({
+        editType: action.editType,
+        [action.editType.toLowerCase()]: action.content,
+      })),
     },
-  });
-
-  const [deletePage, { loading: deleteLoading }] = useDeletePagesMutation({
-    onCompleted() {
-      purgeCache();
-    },
-  });
-
-  const [putPageMutation, { loading: putLoading }] = usePutPageMutation({
-    onCompleted() {
-      purgeCache();
-    },
-  });
-
-  const [cropPagesMutation, { loading: cropLoading }] = useCropPagesMutation({
-    onCompleted() {
-      purgeCache();
-    },
-  });
-
-  React.useEffect(() => {
-    setEditPage(openPage + 1);
-    setEditPages(`${openPage + 1}`);
-  }, [openPage]);
-
-  const onClose = React.useCallback(() => {
-    if (editLoading || putLoading || cropLoading) return;
-    propsOnClose();
-  }, [propsOnClose, editLoading]);
-
-  const editImgSrc = React.useMemo(() => {
-    const pad = maxPage.toString(10).length;
-    return `/book/${bookId}/${(editPage - 1).toString(10).padStart(pad, '0')}.jpg`;
-  }, [maxPage, editPage, bookId]);
-
-  const imageEditorConfig = React.useMemo(() => ({
-    tools: ['adjust', 'rotate', 'crop', 'resize'],
-    translations: { en: { 'toolbar.download': 'Upload' } },
-    colorScheme: theme,
-  }), [theme]);
-
-  const onClickEdit = React.useCallback(() => {
-    if (editType === 'crop') setOpenCropDialog(true);
-    else if (editType === 'removePadding') setOpenRemovePaddingDialog(true);
-    else if (editType === 'delete') setOpenDeleteDialog(true);
-    else if (editType === 'split') setOpenSplitDialog(true);
-    else if (editType === 'put') setOpenPutDialog(true);
-  }, [editType]);
-
-  const inputValidate = React.useMemo(() => {
-    if (editType === 'crop') {
-      return (editPage > 0 && editPage <= maxPage) ? false : 'Range error';
-    }
-    const p = parsePagesStr(editPages, maxPage);
-    if (typeof p === 'string') return p;
-    return false;
-  }, [editType, editPage, editPages, maxPage]);
+  }), [actions, bookId, doBulkEditPages]);
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <CropImageDialog
-        open={openEditor}
-        src={editImgSrc}
-        onClose={() => { setOpenCropDialog(false); setOpenPutDialog(false); }}
-        onCropped={(image) => {
-          if (openCropDialog) {
-            // noinspection JSIgnoredPromiseFromCall
-            editPageMutation({
-              variables: {
-                id: bookId,
-                // @ts-ignore
-                image,
-                page: (editPage - 1),
-              },
-            });
-          } else {
-            // noinspection JSIgnoredPromiseFromCall
-            putPageMutation({
-              variables: {
-                id: bookId,
-                // @ts-ignore
-                image,
-                beforePage: (editPage - 2),
-              },
-            });
-          }
-        }}
-      />
-
-      <Dialog
-        open={openRemovePaddingDialog}
-        onClose={() => setOpenRemovePaddingDialog(false)}
-      >
-        <DialogTitle>Remove page paddings</DialogTitle>
-        <DialogContent>
-          <div>{`Crop: ${paddingSize[0]}x${paddingSize[1]}`}</div>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenRemovePaddingDialog(false)} disabled={cropLoading}>
-            close
-        </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            disabled={cropLoading}
-            onClick={() => {
-              const pages = parsePagesStr(editPages, maxPage);
-              if (typeof pages === 'string') return;
-              cropPagesMutation({
-                variables: {
-                  id: bookId,
-                  pages,
-                  left: Math.min(paddingSize[0]),
-                  width: Math.abs(paddingSize[0] - paddingSize[1])
-                },
-              });
-            }}
-          >
-            Crop
-        </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={openSplitDialog}
-        onClose={() => !splitLoading && setOpenSplitDialog(false)}
-      >
-        <DialogTitle>Split page</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Do you want to split page?
-          </DialogContentText>
-
-          <div className={classes.splitButtonWrapper}>
-            <Button
-              disabled={splitLoading}
-              classes={{ label: classes.splitButton }}
-              onClick={() => {
-                const pages = parsePagesStr(editPages, maxPage);
-                if (typeof pages === 'string') return;
-                splitPage({ variables: { id: bookId, pages, type: SplitType.Vertical } });
+    <Dialog open={open} fullWidth>
+      <DialogTitle>Edit Pages</DialogTitle>
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="editTypes">
+          {(provided) => (
+            <List {...provided.droppableProps} ref={provided.innerRef}>
+              {(actions.length === 0) ? (
+                <>
+                  <AddTemplateListItem
+                    bookId={bookId}
+                    maxPage={maxPage}
+                    onAdded={setActions}
+                  />
+                  <ListItem>
+                    <ListItemText primary="or" style={{ textAlign: 'center' }} />
+                  </ListItem>
+                </>
+              ) : (
+                <>
+                  {actions.map((ctx, index) => (
+                    <Draggable key={ctx.id} draggableId={ctx.id} index={index}>
+                      {(providedInner) => (
+                        // @ts-ignore
+                        <ActionListItem
+                          ref={providedInner.innerRef}
+                          editType={ctx.editType}
+                          maxPage={maxPage}
+                          bookId={bookId}
+                          content={ctx.content}
+                          setContent={(k, c) => setContentValue(index, k, c)}
+                          onDelete={() => handleDeleteAction(index)}
+                          {...providedInner}
+                        />
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </>
+              )}
+              <AddItemListItem onAdded={(editType) => {
+                setActions([
+                  ...actions,
+                  {
+                    id: uuidv4(),
+                    editType,
+                    content: createInitValue(editType),
+                  },
+                ]);
               }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
-                <polygon
-                  points="10,10 140,10 140,80 10,80"
-                  style={{ fill: 'rgba(0, 0, 0, 0)', stroke: `rgba(0, 0, 0, ${splitLoading ? 0.26 : 1})`, strokeWidth: 3 }}
-                />
-                <line x1="75" y1="0" x2="75" y2="100" strokeWidth="5" style={{ stroke: `rgba(255, 0, 0, ${splitLoading ? 0.26 : 1})` }} />
-              </svg>
-              Vertical
-            </Button>
-
-            <Button
-              disabled={splitLoading}
-              classes={{ label: classes.splitButton }}
-              onClick={() => {
-                const pages = parsePagesStr(editPages, maxPage);
-                if (typeof pages === 'string') return;
-                splitPage({ variables: { id: bookId, pages, type: SplitType.Horizontal } });
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">
-                <polygon
-                  points="10,10 140,10 140,80 10,80"
-                  style={{ fill: 'rgba(0, 0, 0, 0)', stroke: `rgba(0, 0, 0, ${splitLoading ? 0.26 : 1})`, strokeWidth: 3 }}
-                />
-                <line x1="0" y1="45" x2="150" y2="45" strokeWidth="5" style={{ stroke: `rgba(0, 0, 255, ${splitLoading ? 0.26 : 1})` }} />
-              </svg>
-              Horizontal
-            </Button>
-          </div>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setOpenSplitDialog(false)} disabled={splitLoading}>
-            close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <DeleteDialog
-        open={openDeleteDialog}
-        loading={deleteLoading}
-        onClickDelete={() => {
-          const pages = parsePagesStr(editPages, maxPage);
-          if (typeof pages === 'string') return;
-          deletePage({ variables: { id: bookId, pages } });
-        }}
-        onClose={() => setOpenDeleteDialog(false)}
-        page={editPages}
-      />
-
-      <DialogContent>
-        <FormLabel>Edit Type</FormLabel>
-        <RadioGroup value={editType} onChange={(e) => setEditType(e.target.value)}>
-          <FormControlLabel label="Crop" value="crop" control={<Radio />} />
-          <FormControlLabel label="RemovePadding" value="removePadding" control={<Radio />} />
-          <FormControlLabel label="Split" value="split" control={<Radio />} />
-          <FormControlLabel label="Delete" value="delete" control={<Radio />} />
-          <FormControlLabel label="Crop and Put Before Page" value="put" control={<Radio />} />
-        </RadioGroup>
-
-        <div className={classes.inputs}>
-          {(editType === 'removePadding') && (
-            <>
-              <TextField color="secondary" label="Left" type="number" value={paddingSize[0]} onChange={(e) => setPaddingSize([Number(e.target.value), paddingSize[1]])} />
-              <TextField color="secondary" label="Right" type="number" value={paddingSize[1]} onChange={(e) => setPaddingSize([paddingSize[0], Number(e.target.value)])} />
-              <Button onClick={() => setOpenCalcPaddingDialog(true)}>Detect</Button>
-              <CalcImagePaddingDialog
-                open={openCalcPaddingDialog}
-                bookId={bookId}
-                left={paddingSize[0]}
-                right={paddingSize[1]}
-                maxPage={maxPage}
-                onClose={() => setOpenCalcPaddingDialog(false)}
-                onSizeChange={(l, r) => setPaddingSize([l, r])}
               />
-            </>
+            </List>
           )}
-
-          {(editType === 'crop' || editType === 'put') ? (
-            <TextField
-              error={!!inputValidate}
-              helperText={inputValidate}
-              type="number"
-              label={`page(max: ${maxPage})`}
-              color="secondary"
-              value={editPage}
-              onChange={(e) => setEditPage(Number(e.target.value))}
-            />
-          ) : (
-            <TextField
-              error={!!inputValidate}
-              helperText={inputValidate}
-              label={`pages(max: ${maxPage})`}
-              placeholder="ex. 1, 2, 3-5"
-              color="secondary"
-              value={editPages}
-              onChange={(e) => setEditPages(e.target.value)}
-            />
-          )}
-        </div>
-      </DialogContent>
+        </Droppable>
+      </DragDropContext>
       <DialogActions>
-        <Button onClick={onClose}>
-          Close
+        <Button
+          onClick={() => {
+            onClose();
+            setActions([]);
+          }}
+        >
+          Cancel
         </Button>
-        <Button color="secondary" variant="outlined" onClick={onClickEdit}>
-          {editType.replace(/([A-Z])/g, ' $1')}
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleEdit}
+          disabled={actions.length === 0}
+        >
+          Edit
         </Button>
+        <LoadingFullscreen open={loading} />
       </DialogActions>
     </Dialog>
   );
-});
+};
 
-export default EditPagesDialog;
+export default React.memo(EditPagesDialog);
