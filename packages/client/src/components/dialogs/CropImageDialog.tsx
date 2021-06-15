@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Icon, IconButton } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@material-ui/core';
 import { Cropper } from 'react-cropper';
 import "cropperjs/dist/cropper.css";
 
@@ -26,13 +26,6 @@ const CropImageDialog: React.VFC<CropImageDialogProps> = React.memo((props: Crop
         const canvasElem: HTMLCanvasElement = cropper.getCroppedCanvas();
         canvasElem.toBlob(onCropped, 'image/jpeg');
     }, [onCropped]);
-
-    const onRotateClicked = React.useCallback(() => {
-        // @ts-ignore
-        const cropper = cropperRef?.current?.cropper;
-        console.log(cropper);
-        cropper?.rotate(90);
-    }, []);
 
     return (
         <Dialog open={open} onClose={onClose}>
