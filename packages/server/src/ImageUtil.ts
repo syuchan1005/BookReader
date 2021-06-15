@@ -1,10 +1,17 @@
 import { createReadStream, promises as fs } from 'fs';
 import sharp from 'sharp';
+import { Buffer } from 'buffer';
+import {
+  cacheBookFolderName,
+  createBookPagePath,
+  createCacheBookPagePath
+} from '@server/StorageUtil';
+import ReadableStream = NodeJS.ReadableStream;
 
 const jpegQuality = 85;
 
 // eslint-disable-next-line import/prefer-default-export
-export const convertImage = async (
+export const obsoleteConvertImage = async (
   bookId: string,
   pageNum: string,
   info: { ext: 'jpg', size: { width: number, height: number } } | { ext: 'jpg.webp', size?: { width: number, height: number } },
@@ -88,6 +95,88 @@ export const convertImage = async (
     body: imageBuffer,
     lastModified: stats.mtime.toUTCString(),
   };
+};
+
+export const getCacheOrConvertImage = async (
+  bookId: string,
+  pageNum: string,
+  extension: 'jpg' | 'webp',
+  width: number | undefined,
+  height: number | undefined,
+  isCache: boolean
+): Promise<{ success: false } | {
+  success: true,
+  body: Buffer | ReadableStream,
+  length: number,
+  mimeType: string,
+  lastModified: Date,
+}> => {
+  try {
+    const cachePagePath = createCacheBookPagePath(bookId, pageNum, extension, width, height);
+    try {
+      const stat = await fs.stat(cachePagePath);
+      if (stat.isFile()) {
+        return {
+          success: true,
+          body: createReadStream(cachePagePath),
+          length: stat.size,
+          mimeType: 'image/jpeg',
+          lastModified: stat.mtime,
+        };
+      }
+    } catch (e) {
+      /* ignored */
+    }
+
+    const pagePath = createBookPagePath(bookId, pageNum);
+    const stats = await fs.stat(pagePath);
+    if (!stats.isFile()) {
+      return { success: false };
+    }
+
+    let sharpInstance = sharp(pagePath);
+    if (width || height) {
+      sharpInstance = sharpInstance.resize({
+        width,
+        height,
+        withoutEnlargement: true,
+        fit: 'contain',
+      });
+    }
+    switch (extension) {
+      case 'jpg':
+        sharpInstance = sharpInstance.jpeg({ quality: jpegQuality });
+        break;
+      case 'webp':
+        sharpInstance = sharpInstance.webp();
+        break;
+      default:
+        return { success: false };
+    }
+    const mimeType = extension === 'jpg' ? 'image/jpeg' : 'image/webp';
+
+    let imageBuffer: Buffer;
+    try {
+      imageBuffer = await sharpInstance.toBuffer();
+    } catch (e) {
+      return { success: false };
+    }
+    if (isCache) {
+      await fs.mkdir(`${cacheBookFolderName}/${bookId}`, { recursive: true });
+      await fs.writeFile(cachePagePath, imageBuffer);
+    }
+    return {
+      success: true,
+      body: imageBuffer,
+      length: imageBuffer.length,
+      mimeType,
+      lastModified: stats.mtime,
+    };
+  } catch (e) {
+    return {
+      success: false,
+    };
+  }
 };
 
 export const convertAndSaveJpg = async (src: string | Buffer, dist: string) => {

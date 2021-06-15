@@ -7,13 +7,27 @@ import du from 'du';
 export const storageBasePath = 'storage';
 export const bookFolderPath = path.join(storageBasePath, 'book');
 export const cacheFolderPath = path.join(storageBasePath, 'cache');
-const cacheBookFolderName = path.join(cacheFolderPath, 'book');
+export const cacheBookFolderName = path.join(cacheFolderPath, 'book');
 const downloadFolderName = path.join(storageBasePath, 'downloads');
 export const userDownloadFolderName = 'downloads';
 
 export const createBookFolderPath = (bookId: string): string => path.join(bookFolderPath, bookId);
 export const createTemporaryFolderPath = (folderName: string) => path.join(os.tmpdir(), folderName);
 export const createDownloadFilePath = (bookId: string) => path.join(downloadFolderName, bookId);
+export const createCacheBookPagePath = (
+  bookId: string,
+  pageNum: string,
+  extension: string,
+  width?: number,
+  height?: number
+) => {
+  const sizeSuffix = (!width && !height)
+    ? ''
+    : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`;
+  return `${cacheBookFolderName}/${bookId}/${pageNum}${sizeSuffix}.${extension}`;
+};
+export const createBookPagePath =
+  (bookId: string, pageNum: string) => `${bookFolderPath}/${bookId}/${pageNum}.jpg`;
 
 export const removeBookCache = async (bookId?: string, page?: number, pages?: number, recreate: boolean = false): Promise<void> => {
     const pageFileName = (bookId && page && pages) ? page.toString(10).padStart(pages.toString(10).length, '0') : undefined;

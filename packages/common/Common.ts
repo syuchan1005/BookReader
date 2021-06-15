@@ -10,4 +10,10 @@ export const defaultGenres = [
   'Completed',
 ];
 
+export const ImageHeader = {
+  width: 'x-book-reader-width',
+  height: 'x-book-reader-height',
+  cache: 'x-book-reader-cache', // default=false
+};
+
 export const defaultTitle = 'Book Reader';

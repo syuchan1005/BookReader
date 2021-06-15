@@ -2,16 +2,68 @@ import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 
-import { convertImage } from './ImageUtil';
+import { getCacheOrConvertImage, obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
 import Database from './sequelize/models';
+import { ImageHeader } from '@syuchan1005/book-reader-common';
+
+const toInt = (value: string | string[]): number | undefined => {
+  let numStr;
+  if (Array.isArray(value)) {
+    numStr = value[0];
+  } else {
+    numStr = value;
+  }
+  const num = Number(numStr);
+  const intNum = parseInt(numStr);
+  if (num !== intNum || !isFinite(intNum)) {
+    return undefined;
+  }
+  return intNum;
+};
 
 (async () => {
   await createStorageFolders();
 
   const app = new Koa();
   const graphql = new GraphQL();
+
+  app.use(async (ctx, next) => {
+    const { url, headers } = ctx.req;
+    const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)\.([a-z]+)$/);
+    if (!match) {
+      await next();
+      return;
+    }
+
+    const [full, bookId, pageNum, ext] = match;
+    if (!['jpg', 'webp'].includes(ext)) {
+      ctx.code = 400;
+      return;
+    }
+    // @ts-ignore
+    const extension: 'jpg' | 'webp' = ext;
+
+    const width = toInt(headers[ImageHeader.width]);
+    const height = toInt(headers[ImageHeader.height]);
+    const isCache = headers[ImageHeader.cache] === 'true';
+    if (extension === 'jpg' && !(width || height)) {
+      await next();
+      return;
+    }
+    const result = await getCacheOrConvertImage(bookId, pageNum, extension, width, height, isCache);
+    if (!result.success) {
+      ctx.code = 503;
+      return;
+    }
+    ctx.code = 200;
+    ctx.vary([ImageHeader.width, ImageHeader.height].join(','));
+    ctx.body = result.body;
+    ctx.length = result.length;
+    ctx.type = result.mimeType;
+    ctx.lastModified = result.lastModified;
+  });
 
   app.use(Serve(storageBasePath));
 
@@ -32,7 +84,7 @@ import Database from './sequelize/models';
       return;
     }
 
-    const result = await convertImage(
+    const result = await obsoleteConvertImage(
       bookId,
       pageNum,
       {
