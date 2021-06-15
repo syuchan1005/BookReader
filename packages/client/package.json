@@ -51,6 +51,7 @@
       "react-router-dom": "^5.2.0",
       "react-use": "^17.2.4",
       "react-waypoint": "^10.1.0",
-      "swiper": "^6.6.1"
+      "swiper": "^6.6.1",
+      "vconsole": "^3.7.0"
    }
 }

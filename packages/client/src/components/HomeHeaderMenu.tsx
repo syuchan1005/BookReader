@@ -99,8 +99,24 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
     Promise.all([
       (isApollo ? apolloClient.resetStore() : Promise.resolve()),
       (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+      (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
     ]).finally(() => window.location.reload());
   }, [store.wb]);
+
+  const [vConsole, setVConsole] = React.useState(undefined);
+  const handleShowVConsole = React.useCallback(() => {
+    if (vConsole === undefined) {
+      import('vconsole').then(({ default: VConsole }) => {
+        const console = new VConsole();
+        // @ts-ignore
+        console.setSwitchPosition(80, 20);
+        setVConsole(console);
+      });
+    } else {
+      vConsole.destroy();
+      setVConsole(undefined);
+    }
+  }, []);
 
   return (
     <>
@@ -180,6 +196,9 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
           <Icon>{`keyboard_arrow_${debugAnchorEl ? 'up' : 'down'}`}</Icon>
         </MenuItem>
         <Collapse in={debugAnchorEl}>
+          <MenuItem onClick={handleShowVConsole}>
+            {`${vConsole !== undefined ? 'Hide' : 'Show'} vConsole`}
+          </MenuItem>
           <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
             Cache Control
             <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
