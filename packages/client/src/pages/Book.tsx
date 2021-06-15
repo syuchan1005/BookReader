@@ -15,6 +15,7 @@ import {
 } from '@material-ui/core';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// noinspection ES6UnusedImports
 import { Swiper as SwiperCore } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.min.css';
@@ -270,14 +271,17 @@ const Book: React.FC = React.memo((props: BookProps) => {
   React.useEffect(() => {
     if (!swiper) return;
     db.bookReads.get(params.id).then((read) => {
-      if (read) {
+      if (read && read.page !== 0) {
         let p = read.page;
         if (data && p >= data.book.pages) p = data.book.pages - 1;
         setPage(Math.max(p, 0), 0);
+        setTimeout(() => {
+          setPageSet(true);
+        }, 210);
       } else {
         setPage(0, 0);
+        setPageSet(true);
       }
-      setPageSet(true);
     });
   }, [swiper]);
 
@@ -531,7 +535,7 @@ const Book: React.FC = React.memo((props: BookProps) => {
                   key={`${i}_${imageSize[0]}_${imageSize[1]}`}
                   className={classes.page}
                 >
-                  {(Math.abs(i - debouncePage) <= 1) ? (
+                  {(Math.abs(i - debouncePage) <= 1 && imageSize && isPageSet) ? (
                     <BookPageImage
                       imgStyle={effectBackGround}
                       bookId={params.id}
