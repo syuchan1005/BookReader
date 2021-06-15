@@ -1,8 +1,13 @@
 import React from 'react';
 import { createStyles, makeStyles } from '@material-ui/core';
+import { ImageHeader } from '../../../common';
 
-type ImageProps = {
-  src?: string;
+interface BookPageImageProps {
+  bookId?: string;
+  pageIndex?: number;
+  bookPageCount?: number;
+  width?: number;
+  height?: number;
   alt?: string;
   minWidth?: number;
   minHeight?: number;
@@ -14,15 +19,7 @@ type ImageProps = {
 
   onClick?: () => void;
   onLoad?: (success: boolean) => void;
-};
-
-type BookPageImageProps = {
-  bookId?: string;
-  pageIndex?: number;
-  bookPageCount?: number;
-  width?: number;
-  height?: number;
-} & Omit<ImageProps, 'src'>;
+}
 
 const useStyles = makeStyles(() => createStyles({
   noImg: {
@@ -50,30 +47,37 @@ const useStyles = makeStyles(() => createStyles({
   },
 }));
 
-const createSizeUrlSuffix = (width?: number, height?: number) => (!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`;
-
 export const createBookPageUrl = (
   bookId: string,
   pageIndex: number,
   bookPageCount: number,
-  width?: number,
-  height?: number,
+  extension: 'jpg' | 'webp',
 ) => {
   const pageFileName = pageIndex.toString(10).padStart(bookPageCount.toString(10).length, '0');
-  const sizeString = createSizeUrlSuffix(width, height);
 
-  return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
+  return `/book/${bookId}/${pageFileName}.${extension}`;
 };
 
-const minOrNot = (value: number | undefined, minValue: number): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
+const minOrNot = (
+  value: number | undefined,
+  minValue: number
+): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
 
-const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
+const isWebpSupported = document.createElement('canvas')
+  .toDataURL('image/webp').indexOf('data:image/webp') == 0;
+
+// @ts-ignore
+const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageImageProps) => {
   const classes = useStyles(props);
   const {
-    src,
-    alt,
+    bookId,
+    pageIndex,
+    bookPageCount,
+    width,
+    height,
     minWidth = 150,
     minHeight = 200,
+    alt,
     className,
     style,
     imgStyle,
@@ -82,6 +86,23 @@ const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
     noSave = true,
     onLoad,
   } = props;
+  const imageRef = React.useRef<HTMLImageElement>();
+
+  const src = React.useMemo(
+    () => {
+      if ([bookId, pageIndex, bookPageCount]
+        .findIndex((a) => a === null || a === undefined) !== -1) {
+        return undefined;
+      }
+      return createBookPageUrl(
+        bookId,
+        pageIndex,
+        bookPageCount,
+        isWebpSupported ? 'webp' : 'jpg',
+      );
+    },
+    [bookId, pageIndex, bookPageCount]
+  );
 
   // [beforeLoading, rendered, failed]
   const [_state, setState] = React.useState(0);
@@ -90,6 +111,42 @@ const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
     if (onLoad && src === undefined) onLoad(false);
     return (src === undefined ? 2 : _state);
   }, [_state, src]);
+
+  React.useEffect(() => {
+    if (src === undefined) {
+      setState(2);
+      return;
+    }
+    const headers: { [key: string]: string | undefined } = {
+      [ImageHeader.width]: minOrNot(width, minWidth)?.toString(),
+      [ImageHeader.height]: minOrNot(height, minHeight)?.toString(),
+      [ImageHeader.cache]: noSave === true ? undefined : 'true',
+    };
+    const controller = new AbortController();
+    setState(0);
+    fetch(src, {
+      signal: controller.signal,
+      headers: Object.fromEntries(
+        Object.entries(headers).filter((e) => !!e[1]),
+      ),
+    })
+      .then((res) => res.blob())
+      .then((blob) => {
+        const imageElement = imageRef.current;
+        if (imageElement) {
+          imageElement.src = URL.createObjectURL(blob);
+        }
+        setState(1);
+      })
+      .catch(() => {
+        setState(2);
+      });
+    return () => {
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
+    };
+  }, [src, width, height, minWidth, minHeight, noSave]);
 
   return (
     // eslint-disable-next-line
@@ -102,52 +159,20 @@ const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
       }}
       onClick={onClick}
     >
-      {(state === 0 || state === 2) && (
+      {(state === 0 || state === 2 || src === undefined) && (
         <>
           <div>{state === 0 ? 'loading' : 'failed'}</div>
           <div className={classes.altText} style={{ maxHeight: minHeight }}>{alt}</div>
         </>
       )}
-      {(src) ? (
-        <picture className={classes.pic} style={{ height: state === 1 ? undefined : 0 }}>
-          <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
-          <img
-            className={className}
-            style={{ ...imgStyle, display: (state === 1) ? 'block' : 'none' }}
-            src={`${src}${noSave ? '?nosave' : ''}`}
-            alt={alt}
-            onLoad={() => { if (onLoad) { onLoad(true); } setState(1); }}
-            onError={() => { if (onLoad) { onLoad(true); } setState(2); }}
-          />
-        </picture>
-      ) : null}
+      <img
+        ref={imageRef}
+        alt={alt}
+        style={{ ...imgStyle, display: state === 1 ? 'block' : 'none' }}
+        className={`${classes.pic} ${className}`}
+      />
     </div>
   );
-});
-
-// @ts-ignore
-const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageImageProps) => {
-  const {
-    bookId,
-    pageIndex,
-    bookPageCount,
-    width,
-    height,
-    minWidth = 150,
-    minHeight = 200,
-  } = props;
-
-  const src = React.useMemo(
-    () => {
-      if ([bookId, pageIndex, bookPageCount].findIndex((a) => a === null || a === undefined) !== -1) {
-        return undefined;
-      }
-      return createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight))
-    },
-    [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight]
-  );
-
-  return (<Image {...props} src={src} />);
 });
 
 export default BookPageImage;

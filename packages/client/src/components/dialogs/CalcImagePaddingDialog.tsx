@@ -65,7 +65,7 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
 
     const onDetectClick = React.useCallback(async () => {
         if (!onSizeChange) return;
-        const url = createBookPageUrl(bookId, pageIndex - 1, maxPage);
+        const url = createBookPageUrl(bookId, pageIndex - 1, maxPage, 'jpg');
         const imageData = await urlToImageData(url);
         const { left: l, right: r } = calcPadding(imageData, threshold);
         onSizeChange(l, r);
