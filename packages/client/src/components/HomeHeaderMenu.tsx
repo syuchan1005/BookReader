@@ -116,7 +116,7 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
       vConsole.destroy();
       setVConsole(undefined);
     }
-  }, []);
+  }, [vConsole]);
 
   return (
     <>
