@@ -4,7 +4,6 @@ import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { ImageHeader } from '@syuchan1005/book-reader-common';
 
 setCacheNameDetails({ prefix: 'bookReader' });
 skipWaiting();
@@ -19,17 +18,35 @@ registerRoute(/^https:\/\/fonts\.gstatic\.com/, new CacheFirst({ cacheName: 'goo
 
 const BookImageCacheName = 'bookReader-images';
 registerRoute(
-  /\/book\/[a-f0-9-]{36}\/\d+\.(jpg|webp)$/,
-  new CacheFirst({
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]$/,
+  new StaleWhileRevalidate({
     cacheName: BookImageCacheName,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [200],
-        [ImageHeader.cache]: 'true',
       }),
     ],
   }),
+  'GET',
 );
+/*
+registerRoute(
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?\?nosave/,
+  new StaleWhileRevalidate({
+    cacheName: `${BookImageCacheName}-expires`,
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [200],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 20,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
+      }),
+    ],
+  }),
+  'GET',
+);
+*/
 
 addEventListener('message', (event) => {
   // When no response, client cannot resolve Promise.
