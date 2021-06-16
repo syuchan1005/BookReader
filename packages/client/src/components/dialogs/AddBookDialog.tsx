@@ -290,7 +290,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
                 setAddBookProgress(ev);
               },
               onAbortPossible: (abortFunc) => {
-                setAddBookAbort(() => abortFunc());
+                setAddBookAbort(() => abortFunc);
               },
             },
           },
