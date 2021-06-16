@@ -325,7 +325,7 @@ const getPadding = async (
   pageIndex: number,
   threshold: number,
 ): Promise<{ left: number, right: number }> => {
-  const coverUrl = createBookPageUrl(bookId, pageIndex, maxPage, 'jpg');
+  const coverUrl = createBookPageUrl(bookId, pageIndex, maxPage);
   const coverImageData = await urlToImageData(coverUrl);
   return calcPadding(coverImageData, threshold);
 };

@@ -51,7 +51,7 @@ export default defineConfig({
   server: {
     port: 8080,
     proxy: {
-      '^/book/.*\.(jpg|webp)[^/]*$': {
+      '^/book/.*\.(jpg|jpg.webp)[^/]*$': {
         target: {
           host: 'localhost',
           port: 8081,
