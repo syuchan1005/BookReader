@@ -316,20 +316,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
     <Dialog open={open} onClose={closeDialog}>
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
-        if (
-          (subscriptionData && (!addBookProgress
-            || (addBookProgress.loaded / addBookProgress.total) < 97)
-          ) || (selectedPlugin && addPluginLoading)) {
-          return (
-            <DialogContent className={classes.addBookSubscription}>
-              <CircularProgress color="secondary" />
-              {(subscriptionData) && (
-                <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
-              )}
-            </DialogContent>
-          );
-        }
-        if (addBookProgress || addBookAbort) {
+        if (addBookProgress && addBookProgress.loaded < addBookProgress.total) {
           return (
             <DialogContent className={classes.addBookProgress}>
               {addBookProgress && (
@@ -340,6 +327,19 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
               )}
               {addBookAbort && (
                 <Button onClick={addBookAbort}>Abort</Button>
+              )}
+            </DialogContent>
+          );
+        }
+        if (
+          (subscriptionData && (!addBookProgress
+            || (addBookProgress.loaded / addBookProgress.total) < 97)
+          ) || (selectedPlugin && addPluginLoading)) {
+          return (
+            <DialogContent className={classes.addBookSubscription}>
+              <CircularProgress color="secondary" />
+              {(subscriptionData) && (
+                <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
               )}
             </DialogContent>
           );
