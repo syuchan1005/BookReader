@@ -18,7 +18,7 @@ registerRoute(/^https:\/\/fonts\.gstatic\.com/, new CacheFirst({ cacheName: 'goo
 
 const BookImageCacheName = 'bookReader-images';
 registerRoute(
-  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?[^?nosave]$/,
+  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?$/,
   new StaleWhileRevalidate({
     cacheName: BookImageCacheName,
     plugins: [
