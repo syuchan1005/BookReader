@@ -379,7 +379,7 @@ const calculateEditActions = (
           }
           switch (action.split.splitType) {
             case SplitType.Vertical:
-              return [...Array(splitCount).keys()].map((i): ImageEditAction => ({
+              return [...Array(splitCount).keys()].reverse().map((i): ImageEditAction => ({
                 ...imageEditAction,
                 pageIndex: imageEditAction.pageIndex ?? pageIndex,
                 cropTransforms: [
