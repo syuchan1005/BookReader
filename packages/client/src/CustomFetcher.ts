@@ -56,7 +56,11 @@ const createCustomFetcher = (
       xhr.abort();
       reject(new TypeError('Network request failed'));
     });
-    options.signal?.addEventListener('abort', xhr.abort);
+    options.signal?.addEventListener('abort', () => {
+      if (xhr.readyState !== xhr.DONE) {
+        xhr.abort();
+      }
+    });
 
     xhr.send(options.body);
   });
