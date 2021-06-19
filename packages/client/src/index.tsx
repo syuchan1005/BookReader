@@ -14,7 +14,10 @@ import db from './Database';
 const wb = registerServiceWorker();
 
 if (process.env.NODE_ENV !== 'production') {
-  import('why-did-you-update').then(({ whyDidYouUpdate }) => whyDidYouUpdate(React));
+  import('why-did-you-update')
+    .then(({ whyDidYouUpdate }) => whyDidYouUpdate(React, {
+      exclude: ['Ripple', 'Transition2', /RadioButton/],
+    }));
 }
 
 (async () => {
