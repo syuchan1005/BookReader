@@ -48,7 +48,18 @@ const getClient = async (): Promise<ApolloClient<any>> => {
       }
       if (networkError) log(`[Network error]: ${networkError}`);
     }),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        BookInfo: {
+          fields: {
+            books: {
+              // always preferring incoming data.
+              merge: false,
+            },
+          },
+        },
+      },
+    }),
     connectToDevTools: process.env.NODE_ENV !== 'production',
   });
 
