@@ -125,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
-const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
+const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
     style,
@@ -304,6 +304,6 @@ const BookInfo: React.FC<BookInfoProps> = React.memo((props: BookInfoProps) => {
       )}
     </Card>
   );
-});
+};
 
-export default BookInfo;
+export default React.memo(BookInfo);

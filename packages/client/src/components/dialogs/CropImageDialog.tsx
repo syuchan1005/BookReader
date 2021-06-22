@@ -12,7 +12,7 @@ interface CropImageDialogProps {
     onCropped?: (blob: Blob) => void;
 }
 
-const CropImageDialog: React.VFC<CropImageDialogProps> = React.memo((props: CropImageDialogProps) => {
+const CropImageDialog: React.VFC<CropImageDialogProps> = (props: CropImageDialogProps) => {
   const {
     open,
     src,
@@ -50,6 +50,6 @@ const CropImageDialog: React.VFC<CropImageDialogProps> = React.memo((props: Crop
       </DialogActions>
     </Dialog>
   );
-});
+};
 
-export default CropImageDialog;
+export default React.memo(CropImageDialog);

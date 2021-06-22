@@ -93,7 +93,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
-const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
+const Book: React.FC<BookProps> = (props: BookProps) => {
   const classes = useStyles(props);
   const {
     thumbnailSize = 200,
@@ -262,6 +262,6 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
       )}
     </Card>
   );
-});
+};
 
-export default Book;
+export default React.memo(Book);

@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const FileField: React.FC<FileFieldProps> = React.memo((props: FileFieldProps) => {
+const FileField: React.FC<FileFieldProps> = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const inputRef = React.useRef(null);
   const { file, onChange, style } = props;
@@ -59,6 +59,6 @@ const FileField: React.FC<FileFieldProps> = React.memo((props: FileFieldProps) =
       />
     </Button>
   );
-});
+};
 
-export default FileField;
+export default React.memo(FileField);

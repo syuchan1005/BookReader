@@ -57,7 +57,7 @@ const useStyles = makeStyles(() => createStyles({
   },
 }));
 
-const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuProps) => {
+const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
   const {
     anchorEl,
     onClose,
@@ -331,6 +331,6 @@ const HomeHeaderMenu: React.FC<HeaderMenuProps> = React.memo((props: HeaderMenuP
       </Menu>
     </>
   );
-});
+};
 
-export default HomeHeaderMenu;
+export default React.memo(HomeHeaderMenu);

@@ -57,7 +57,7 @@ export const calcPadding = (imageData: ImageData, threshold: number): { left: nu
   return { left, right };
 };
 
-const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.memo((props: CalcImagePaddingDialogProps) => {
+const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = (props: CalcImagePaddingDialogProps) => {
   const {
     open, bookId, maxPage, onClose, left, right, onSizeChange,
   } = props;
@@ -118,6 +118,6 @@ const CalcImagePaddingDialog: React.VFC<CalcImagePaddingDialogProps> = React.mem
       </DialogActions>
     </Dialog>
   );
-});
+};
 
-export default CalcImagePaddingDialog;
+export default React.memo(CalcImagePaddingDialog);

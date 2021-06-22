@@ -67,7 +67,7 @@ export const createBookPageUrl = (
 
 const minOrNot = (value: number | undefined, minValue: number): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
 
-const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
+const Image: React.FC<ImageProps> = (props: ImageProps) => {
   const classes = useStyles(props);
   const {
     src,
@@ -123,10 +123,10 @@ const Image: React.FC<ImageProps> = React.memo((props: ImageProps) => {
       ) : null}
     </div>
   );
-});
+};
 
 // @ts-ignore
-const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageImageProps) => {
+const BookPageImage: React.FC<BookPageImageProps> = (props: BookPageImageProps) => {
   const {
     bookId,
     pageIndex,
@@ -148,6 +148,6 @@ const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageI
   );
 
   return (<Image {...props} src={src} />);
-});
+};
 
-export default BookPageImage;
+export default React.memo(BookPageImage);

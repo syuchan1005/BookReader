@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SelectBookHeader: React.FC<SelectBookHeaderProps> = React.memo((props: SelectBookHeaderProps) => {
+const SelectBookHeader: React.FC<SelectBookHeaderProps> = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
   const {
     infoId,
@@ -98,14 +98,6 @@ const SelectBookHeader: React.FC<SelectBookHeaderProps> = React.memo((props: Sel
           >
             <Icon>delete_outline</Icon>
           </IconButton>
-          {/*
-        <IconButton
-          className={classes.iconButton}
-          disabled={selectIds.length === 0}
-        >
-          <Icon>cloud_download</Icon>
-        </IconButton>
-        */}
         </Toolbar>
       </AppBar>
 
@@ -172,6 +164,6 @@ const SelectBookHeader: React.FC<SelectBookHeaderProps> = React.memo((props: Sel
       </Dialog>
     </>
   );
-});
+};
 
-export default SelectBookHeader;
+export default React.memo(SelectBookHeader);

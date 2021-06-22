@@ -155,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Book: React.FC = React.memo((props: BookProps) => {
+const Book: React.FC = (props: BookProps) => {
   const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const history = useHistory();
@@ -558,6 +558,6 @@ const Book: React.FC = React.memo((props: BookProps) => {
       </main>
     </>
   );
-});
+};
 
-export default Book;
+export default React.memo(Book);

@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Info: React.FC = React.memo((props: InfoProps) => {
+const Info: React.FC = (props: InfoProps) => {
   const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
@@ -281,6 +281,6 @@ const Info: React.FC = React.memo((props: InfoProps) => {
       </main>
     </>
   );
-});
+};
 
-export default Info;
+export default React.memo(Info);

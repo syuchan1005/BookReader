@@ -78,7 +78,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.memo((props: ObsolateEditPagesDialogProps) => {
+const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = (props: ObsolateEditPagesDialogProps) => {
   const classes = useStyles(props);
   const {
     open,
@@ -371,6 +371,6 @@ const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.me
       </DialogActions>
     </Dialog>
   );
-});
+};
 
-export default ObsolateEditPagesDialog;
+export default React.memo(ObsolateEditPagesDialog);

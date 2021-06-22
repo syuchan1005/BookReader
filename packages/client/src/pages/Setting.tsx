@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Setting: React.FC = React.memo((props) => {
+const Setting: React.FC = (props) => {
   const classes = useStyles(props);
   const theme = useTheme();
 
@@ -209,6 +209,6 @@ const Setting: React.FC = React.memo((props) => {
       </main>
     </>
   );
-});
+};
 
-export default Setting;
+export default React.memo(Setting);

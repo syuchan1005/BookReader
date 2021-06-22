@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = React.memo((props: AddBookInfoDialogProps) => {
+const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoDialogProps) => {
   const classes = useStyles(props);
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');
@@ -235,6 +235,6 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = React.memo((props: A
       </DialogActions>
     </Dialog>
   );
-});
+};
 
-export default AddBookInfoDialog;
+export default React.memo(AddBookInfoDialog);

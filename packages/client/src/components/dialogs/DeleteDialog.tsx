@@ -20,7 +20,7 @@ interface DeleteDialogProps {
   onClickDelete?: () => void;
 }
 
-const DeleteDialog: React.FC<DeleteDialogProps> = React.memo((props: DeleteDialogProps) => {
+const DeleteDialog: React.FC<DeleteDialogProps> = (props: DeleteDialogProps) => {
   const {
     open,
     loading,
@@ -61,6 +61,6 @@ const DeleteDialog: React.FC<DeleteDialogProps> = React.memo((props: DeleteDialo
       </DialogActions>
     </Dialog>
   );
-});
+};
 
-export default DeleteDialog;
+export default React.memo(DeleteDialog);

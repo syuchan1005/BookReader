@@ -9,7 +9,7 @@ interface ColorTileProps {
   marginLeft?: boolean;
 }
 
-const ColorTile: React.FC<ColorTileProps> = React.memo(({ color, num = 500, marginLeft }: ColorTileProps) => {
+const ColorTile: React.FC<ColorTileProps> = ({ color, num = 500, marginLeft }: ColorTileProps) => {
   const theme = useTheme();
   const tileTestId = useTestId('tile');
   const textTestId = useTestId('text');
@@ -29,6 +29,6 @@ const ColorTile: React.FC<ColorTileProps> = React.memo(({ color, num = 500, marg
       <span {...textTestId}>{color}</span>
     </>
   );
-});
+};
 
-export default ColorTile;
+export default React.memo(ColorTile);
