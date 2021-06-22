@@ -1,7 +1,5 @@
 const { build } = require('esbuild');
-const graphqlPlugin = require('@luckycatfactory/esbuild-graphql-loader').default;
 const NodeResolve = require('@esbuild-plugins/node-resolve').default;
-
 
 const argEnv = process.argv[2] || 'development';
 
@@ -12,19 +10,21 @@ const config = {
   outdir: './dist',
   platform: 'node',
   plugins: [
-    graphqlPlugin(),
     NodeResolve({
       extensions: ['.ts', '.js'],
       onResolved: (resolved) => {
-          if (resolved.includes('node_modules') && !resolved.includes('@syuchan1005')) {
-              return {
-                  external: true,
-              }
-          }
-          return resolved
+        if (resolved.includes('node_modules') && !resolved.includes('@syuchan1005')) {
+          return {
+            external: true,
+          };
+        }
+        return resolved;
       },
-  }),
+    }),
   ],
+  loader: {
+    '.graphql': 'text',
+  },
   watch: false,
   minify: process.env.NODE_ENV === 'production',
 };

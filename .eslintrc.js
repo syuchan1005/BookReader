@@ -1,7 +1,9 @@
 const path = require('path');
 
 module.exports = {
-  extends: 'airbnb',
+  extends: [
+    'airbnb',
+  ],
   plugins: [
     '@typescript-eslint',
     'import',

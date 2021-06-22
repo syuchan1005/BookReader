@@ -1,5 +1,3 @@
-// @ts-ignore
-import path from 'path';
 import { GraphQLUpload, graphqlUploadKoa } from 'graphql-upload';
 
 import {
@@ -7,11 +5,12 @@ import {
   makeExecutableSchema,
   PubSub,
   PubSubEngine,
+  gql,
 } from 'apollo-server-koa';
 import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 
 // @ts-ignore
-import typeDefs from '@syuchan1005/book-reader-graphql/schema.graphql';
+import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import Database from '@server/sequelize/models';
 import * as Util from '../Util';
@@ -63,7 +62,10 @@ export default class GraphQL {
     this.server = new ApolloServer({
       uploads: false,
       schema: makeExecutableSchema({
-        typeDefs: mergeTypeDefs([typeDefs, ...this.plugins.map((pl) => pl.typeDefs)]),
+        typeDefs: mergeTypeDefs([
+          gql(schemaString),
+          ...this.plugins.map((pl) => pl.typeDefs),
+        ]),
         resolvers: {
           BigInt,
           IntRange,
