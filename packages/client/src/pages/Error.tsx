@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Error: React.FC = (props) => {
+const Error = (props) => {
   const classes = useStyles(props);
   const history = useHistory();
   const svgTestId = useTestId('svg');

@@ -12,7 +12,7 @@ interface CropImageDialogProps {
     onCropped?: (blob: Blob) => void;
 }
 
-const CropImageDialog: React.VFC<CropImageDialogProps> = (props: CropImageDialogProps) => {
+const CropImageDialog = (props: CropImageDialogProps) => {
   const {
     open,
     src,

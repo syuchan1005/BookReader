@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => createStyles({
   },
 }));
 
-const TitleAndBackHeader: React.FC<TitleAndBackHeaderProps> = (props: TitleAndBackHeaderProps) => {
+const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const classes = useStyles(props);
   const history = useHistory();
   const {

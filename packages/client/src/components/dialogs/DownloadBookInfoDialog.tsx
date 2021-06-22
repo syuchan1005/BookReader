@@ -18,9 +18,7 @@ interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   onClose?: () => any;
 }
 
-const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = (
-  props: DownloadBookInfoDialogProps,
-) => {
+const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
   const {
     open,
     onClose,

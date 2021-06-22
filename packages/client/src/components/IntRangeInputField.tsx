@@ -35,7 +35,7 @@ const parseIntRange = (pages: string, maxPage: number): IntRange | string => {
   return pageList;
 };
 
-const IntRangeInputField: React.VFC<IntRangeInputFieldProps> = (props: IntRangeInputFieldProps) => {
+const IntRangeInputField = (props: IntRangeInputFieldProps) => {
   const {
     maxPage,
     onChange,

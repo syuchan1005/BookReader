@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SelectBookInfoThumbnailDialog: React.FC<SelectThumbnailDialogProps> = (
+const SelectBookInfoThumbnailDialog = (
   props: SelectThumbnailDialogProps,
 ) => {
   const classes = useStyles(props);

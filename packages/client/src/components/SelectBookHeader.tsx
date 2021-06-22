@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SelectBookHeader: React.FC<SelectBookHeaderProps> = (props: SelectBookHeaderProps) => {
+const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
   const {
     infoId,

@@ -91,7 +91,7 @@ const createInitValue = (editType: EditType) => {
   }
 };
 
-const ListItemCard: React.VFC<ListItemCardProps> = React.memo(
+const ListItemCard = React.memo(
   React.forwardRef((props: ListItemCardProps, ref) => {
     const {
       draggableProps,
@@ -279,7 +279,7 @@ const ListItems = {
   })),
 };
 
-const UnknownListItem: React.VFC<ListItemProps> = React.memo(
+const UnknownListItem = React.memo(
   React.forwardRef(
     // @ts-ignore
     (props, ref) => (<ListItemCard ref={ref} {...props} menuText="Unknown" />),
@@ -290,7 +290,7 @@ interface AddItemListItemProps {
   onAdded: (editType: EditType) => void;
 }
 
-const AddItemListItem: React.VFC<AddItemListItemProps> = React.memo(
+const AddItemListItem = React.memo(
   (props: AddItemListItemProps) => {
     const { onAdded } = props;
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -376,7 +376,7 @@ interface AddTemplateListItemProps {
   onAdded: (editTypeContents: EditTypeContent[]) => void;
 }
 
-const AddTemplateListItem: React.VFC<AddTemplateListItemProps> = React.memo(
+const AddTemplateListItem = React.memo(
   (props: AddTemplateListItemProps) => {
     const {
       bookId,
@@ -415,7 +415,7 @@ interface ActionListItemProps extends ListItemProps {
   editType?: EditType;
 }
 
-const ActionListItem: React.VFC<ActionListItemProps> = React.memo(
+const ActionListItem = React.memo(
   React.forwardRef(
     (props: ActionListItemProps, ref) => {
       const {
@@ -434,7 +434,7 @@ interface EditTypeContent {
   content: { [key: string]: any };
 }
 
-const EditPagesDialog: React.VFC<EditPagesDialogProps> = (props: EditPagesDialogProps) => {
+const EditPagesDialog = (props: EditPagesDialogProps) => {
   const {
     open,
     onClose,

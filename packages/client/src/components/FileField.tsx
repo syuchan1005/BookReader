@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const FileField: React.FC<FileFieldProps> = (props: FileFieldProps) => {
+const FileField = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const inputRef = React.useRef(null);
   const { file, onChange, style } = props;

@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = (props: AddBookInfoDialogProps) => {
+const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
   const classes = useStyles(props);
   const { onAdded, onClose, open } = props;
   const [name, setName] = React.useState('');

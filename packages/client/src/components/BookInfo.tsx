@@ -125,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
-const BookInfo: React.FC<BookInfoProps> = (props: BookInfoProps) => {
+const BookInfo = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
     style,

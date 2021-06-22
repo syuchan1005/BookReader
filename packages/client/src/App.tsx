@@ -71,7 +71,7 @@ interface AppProps {
 
 const history = createBrowserHistory();
 
-const App: React.FC<AppProps> = (props: AppProps) => {
+const App = (props: AppProps) => {
   const { state: store, dispatch } = useGlobalStore();
 
   const theme = useMatchMedia(

@@ -155,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Book: React.FC = (props: BookProps) => {
+const Book = (props: BookProps) => {
   const { state: store, dispatch } = useGlobalStore();
   const classes = useStyles(props);
   const history = useHistory();

@@ -81,7 +81,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const AddBookDialog: React.FC<AddBookDialogProps> = (props: AddBookDialogProps) => {
+const AddBookDialog = (props: AddBookDialogProps) => {
   const classes = useStyles(props);
   const {
     open,

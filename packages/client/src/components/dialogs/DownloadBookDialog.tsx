@@ -18,7 +18,7 @@ interface DownloadBookDialogProps {
   pages?: number;
 }
 
-const DownloadBookDialog: React.FC<DownloadBookDialogProps> = (props: DownloadBookDialogProps) => {
+const DownloadBookDialog = (props: DownloadBookDialogProps) => {
   const {
     open,
     onClose,

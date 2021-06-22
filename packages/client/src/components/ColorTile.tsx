@@ -9,7 +9,7 @@ interface ColorTileProps {
   marginLeft?: boolean;
 }
 
-const ColorTile: React.FC<ColorTileProps> = ({ color, num = 500, marginLeft }: ColorTileProps) => {
+const ColorTile = ({ color, num = 500, marginLeft }: ColorTileProps) => {
   const theme = useTheme();
   const tileTestId = useTestId('tile');
   const textTestId = useTestId('text');

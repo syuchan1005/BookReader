@@ -67,7 +67,7 @@ export const createBookPageUrl = (
 
 const minOrNot = (value: number | undefined, minValue: number): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
 
-const Image: React.FC<ImageProps> = (props: ImageProps) => {
+const Image = (props: ImageProps) => {
   const classes = useStyles(props);
   const {
     src,
@@ -125,8 +125,7 @@ const Image: React.FC<ImageProps> = (props: ImageProps) => {
   );
 };
 
-// @ts-ignore
-const BookPageImage: React.FC<BookPageImageProps> = (props: BookPageImageProps) => {
+const BookPageImage = (props: BookPageImageProps) => {
   const {
     bookId,
     pageIndex,

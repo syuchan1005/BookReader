@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Setting: React.FC = (props) => {
+const Setting = (props) => {
   const classes = useStyles(props);
   const theme = useTheme();
 

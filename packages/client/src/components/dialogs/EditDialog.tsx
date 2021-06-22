@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const EditDialog: React.FC<EditDialogProps> = (props: EditDialogProps) => {
+const EditDialog = (props: EditDialogProps) => {
   const {
     open,
     loading,

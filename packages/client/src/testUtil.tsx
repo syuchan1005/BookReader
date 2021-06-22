@@ -10,9 +10,9 @@ type Option = {
 
 // eslint-disable-next-line import/prefer-default-export
 export const renderWithRouter = (ui: React.ReactElement, option?: Option) => {
-  const Wrapper: React.FC<React.PropsWithChildren<object>> = ({
+  const Wrapper = ({
     children,
-  }: React.PropsWithChildren<object>) => (
+  }: { children: React.ReactNode }) => (
     <Router history={option?.history ?? createMemoryHistory()}>{children}</Router>
   );
   return { ...render(ui, { wrapper: Wrapper }) };

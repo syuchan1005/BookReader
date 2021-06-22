@@ -87,7 +87,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const Home: React.FC = (props: HomeProps) => {
+const Home = (props: HomeProps) => {
   const { state: store } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();

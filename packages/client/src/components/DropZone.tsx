@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const DropZone: React.FC<FileFieldProps> = (props: FileFieldProps) => {
+const DropZone = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const { onChange } = props;
 

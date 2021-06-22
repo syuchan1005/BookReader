@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const LoadingFullscreen: React.VFC<LoadingFullscreenProps> = (props: LoadingFullscreenProps) => {
+const LoadingFullscreen = (props: LoadingFullscreenProps) => {
   const classes = useStyles(props);
   const {
     open,

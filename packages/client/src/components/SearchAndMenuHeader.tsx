@@ -70,9 +70,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const SearchAndMenuHeader: React.FC<SearchAndMenuHeaderProps> = (
-  props: SearchAndMenuHeaderProps,
-) => {
+const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
   const {

@@ -57,7 +57,7 @@ const useStyles = makeStyles(() => createStyles({
   },
 }));
 
-const HomeHeaderMenu: React.FC<HeaderMenuProps> = (props: HeaderMenuProps) => {
+const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const {
     anchorEl,
     onClose,

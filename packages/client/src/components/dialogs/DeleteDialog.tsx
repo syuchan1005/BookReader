@@ -20,7 +20,7 @@ interface DeleteDialogProps {
   onClickDelete?: () => void;
 }
 
-const DeleteDialog: React.FC<DeleteDialogProps> = (props: DeleteDialogProps) => {
+const DeleteDialog = (props: DeleteDialogProps) => {
   const {
     open,
     loading,

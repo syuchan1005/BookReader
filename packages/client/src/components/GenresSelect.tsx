@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const GenresSelect: React.FC<GenresSelectProps> = (props: GenresSelectProps) => {
+const GenresSelect = (props: GenresSelectProps) => {
   const classes = useStyles(props);
   const {
     value,
