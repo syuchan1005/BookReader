@@ -11,6 +11,7 @@ import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
 import loadable from '@loadable/component';
 import { useApolloClient } from '@apollo/react-hooks';
+import { QueryParamProvider } from 'use-query-params';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
@@ -119,13 +120,15 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     <MuiThemeProvider theme={provideTheme}>
       <CssBaseline />
       <Router history={history}>
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route exact path="/info/:id" component={Info} />
-          <Route exact path="/book/:id" component={Book} />
-          <Route exact path="/setting" component={Setting} />
-          <Route component={Error} />
-        </Switch>
+        <QueryParamProvider ReactRouterRoute={Route}>
+          <Switch>
+            <Route exact path="/" component={Home} />
+            <Route exact path="/info/:id" component={Info} />
+            <Route exact path="/book/:id" component={Book} />
+            <Route exact path="/setting" component={Setting} />
+            <Route component={Error} />
+          </Switch>
+        </QueryParamProvider>
       </Router>
     </MuiThemeProvider>
   );

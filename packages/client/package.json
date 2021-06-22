@@ -44,6 +44,7 @@
       "history": "4.10.1",
       "jszip": "^3.6.0",
       "notistack": "^1.0.9",
+      "query-string": "^7.0.1",
       "react": "^17.0.2",
       "react-beautiful-dnd": "^13.1.0",
       "react-cropper": "^2.1.7",
@@ -53,6 +54,7 @@
       "react-use": "^17.2.4",
       "react-waypoint": "^10.1.0",
       "swiper": "^6.7.0",
+      "use-query-params": "^1.2.2",
       "vconsole": "^3.7.0"
    }
 }

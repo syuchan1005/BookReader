@@ -9,6 +9,7 @@ import {
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
+import { useQueryParam, StringParam } from 'use-query-params';
 
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
@@ -95,8 +96,17 @@ const Home: React.FC = (props: HomeProps) => {
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
-  const [searchText, setSearchText] = React.useState('');
+  const [searchText, setSearchText] = useQueryParam('search', StringParam);
   const debounceSearch = useDebounceValue(searchText, 800);
+  const handleSearchText = React.useCallback((text?: string) => {
+    if (!text) {
+      setSearchText(undefined);
+    } else if (searchText === undefined) {
+      setSearchText(text, 'push');
+    } else {
+      setSearchText(text, 'replace');
+    }
+  }, [searchText, setSearchText]);
 
   React.useEffect(() => {
     document.title = defaultTitle;
@@ -114,7 +124,11 @@ const Home: React.FC = (props: HomeProps) => {
       limit: 10,
       search: debounceSearch || '',
       order: store.sortOrder,
-      history: { SHOW: true, HIDE: false, ALL: undefined }[store.history],
+      history: {
+        SHOW: true,
+        HIDE: false,
+        ALL: undefined,
+      }[store.history],
       genres: store.genres,
     },
   });
@@ -124,13 +138,19 @@ const Home: React.FC = (props: HomeProps) => {
   const infos = React.useMemo(() => (data ? data.bookInfos.infos : []), [data]);
   const onDeletedBookInfo = React.useCallback((info, books) => {
     // noinspection JSIgnoredPromiseFromCall
-    refetch({ offset: 0, limit: infos.length });
+    refetch({
+      offset: 0,
+      limit: infos.length,
+    });
     // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(info.id);
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
     if (store.wb) {
-      books.map(({ id: bookId, pages }) => store.wb.messageSW({
+      books.map(({
+        id: bookId,
+        pages,
+      }) => store.wb.messageSW({
         type: 'BOOK_REMOVE',
         bookId,
         pages,
@@ -158,7 +178,10 @@ const Home: React.FC = (props: HomeProps) => {
 
   const refetchAll = React.useCallback(() => {
     // noinspection JSIgnoredPromiseFromCall
-    refetch({ offset: 0, limit: infos.length || 10 });
+    refetch({
+      offset: 0,
+      limit: infos.length || 10,
+    });
   }, [refetch, infos]);
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
@@ -166,8 +189,8 @@ const Home: React.FC = (props: HomeProps) => {
   return (
     <>
       <SearchAndMenuHeader
-        searchText={searchText}
-        onChangeSearchText={setSearchText}
+        searchText={searchText || ''}
+        onChangeSearchText={handleSearchText}
         onClickMenuIcon={setMenuAnchor}
       />
       <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
@@ -175,7 +198,8 @@ const Home: React.FC = (props: HomeProps) => {
         {(loading || error) ? (
           <div className={classes.loading}>
             {loading && 'Loading'}
-            {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+            {error && `${error.toString()
+              .replace(/:\s*/g, '\n')}`}
           </div>
         ) : (
           <>

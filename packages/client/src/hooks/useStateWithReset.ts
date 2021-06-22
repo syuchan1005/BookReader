@@ -1,13 +1,20 @@
 import { useCallback, useState } from 'react';
 
-const useStateWithReset = <T>(initValue: T): [T, (T) => void, () => void] => {
+const useStateWithReset = <T>(initValue: T): [T, (t: T) => void, () => void] => {
   const [state, setState] = useState(initValue);
   const reset = useCallback(() => {
     setState(initValue);
-  }, []);
-  const setValue = useCallback((setFunc: (initValue: T, prevValue: T) => T) => {
-    setState((prevValue: T) => setFunc(initValue, prevValue));
-  }, []);
+  }, [setState]);
+
+  const setValue = useCallback((creator: ((i: T, p: T) => T) | T) => {
+    setState((prevValue: T) => {
+      if (typeof creator === 'function') {
+        // @ts-ignore
+        return creator(initValue, prevValue);
+      }
+      return creator;
+    });
+  }, [setState]);
 
   return [state, setValue, reset];
 };
