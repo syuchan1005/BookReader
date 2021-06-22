@@ -23,6 +23,8 @@ import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
+import useBooleanState from '@client/hooks/useBooleanState';
+import useStateWithReset from '@client/hooks/useStateWithReset';
 import db from '../Database';
 
 interface HomeProps {
@@ -90,8 +92,8 @@ const Home: React.FC = (props: HomeProps) => {
   const theme = useTheme();
   const history = useHistory();
 
-  const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
-  const [open, setOpen] = React.useState(false);
+  const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
+  const [open, setOpen, setClose] = useBooleanState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
   const debounceSearch = useDebounceValue(store.searchText, 800);
 
@@ -162,8 +164,8 @@ const Home: React.FC = (props: HomeProps) => {
 
   return (
     <>
-      <SearchAndMenuHeader onClickMenuIcon={(e) => setMenuAnchorEl(e)} />
-      <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={() => setMenuAnchorEl(null)} />
+      <SearchAndMenuHeader onClickMenuIcon={setMenuAnchor} />
+      <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
       <main className={classes.home}>
         {(loading || error) ? (
           <div className={classes.loading}>
@@ -195,7 +197,7 @@ const Home: React.FC = (props: HomeProps) => {
             </div>
             <Fab
               className={classes.addButton}
-              onClick={() => setOpen(true)}
+              onClick={setOpen}
               aria-label="add"
             >
               <Icon>add</Icon>
@@ -215,7 +217,7 @@ const Home: React.FC = (props: HomeProps) => {
         <AddBookInfoDialog
           open={open}
           onAdded={refetchAll}
-          onClose={() => setOpen(false)}
+          onClose={setClose}
         />
 
         <AddBookDialog
