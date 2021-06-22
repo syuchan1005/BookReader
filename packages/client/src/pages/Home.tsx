@@ -95,7 +95,8 @@ const Home: React.FC = (props: HomeProps) => {
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
   const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
-  const debounceSearch = useDebounceValue(store.searchText, 800);
+  const [searchText, setSearchText] = React.useState('');
+  const debounceSearch = useDebounceValue(searchText, 800);
 
   React.useEffect(() => {
     document.title = defaultTitle;
@@ -164,7 +165,11 @@ const Home: React.FC = (props: HomeProps) => {
 
   return (
     <>
-      <SearchAndMenuHeader onClickMenuIcon={setMenuAnchor} />
+      <SearchAndMenuHeader
+        searchText={searchText}
+        onChangeSearchText={setSearchText}
+        onClickMenuIcon={setMenuAnchor}
+      />
       <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
       <main className={classes.home}>
         {(loading || error) ? (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent, useCallback } from 'react';
 import {
   AppBar,
   createStyles,
@@ -13,11 +13,12 @@ import {
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles';
 
-import { useGlobalStore } from '@client/store/StoreProvider';
 import { commonTheme } from '@client/App';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
+  searchText?: string;
+  onChangeSearchText?: (text: string) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -73,11 +74,20 @@ const SearchAndMenuHeader: React.FC<SearchAndMenuHeaderProps> = (
   props: SearchAndMenuHeaderProps,
 ) => {
   const classes = useStyles(props);
-  const { state: store, dispatch } = useGlobalStore();
   const theme = useTheme();
   const {
     onClickMenuIcon,
+    searchText,
+    onChangeSearchText,
   } = props;
+
+  const handleSearchText = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    onChangeSearchText?.(event.target.value);
+  }, [onChangeSearchText]);
+
+  const clearSearchText = useCallback(() => {
+    onChangeSearchText?.('');
+  }, [onChangeSearchText]);
 
   return (
     <AppBar className={classes.appBar}>
@@ -94,23 +104,19 @@ const SearchAndMenuHeader: React.FC<SearchAndMenuHeaderProps> = (
               input: classes.inputInput,
             }}
             inputProps={{ 'aria-label': 'search' }}
-            endAdornment={(store.searchText) ? (
+            endAdornment={(searchText) ? (
               <InputAdornment position="end">
                 <IconButton
                   size="small"
                   style={{ color: theme.palette.common.white }}
-                  onClick={() => {
-                    dispatch({ searchText: '' });
-                  }}
+                  onClick={clearSearchText}
                 >
                   <Icon>clear</Icon>
                 </IconButton>
               </InputAdornment>
             ) : undefined}
-            value={store.searchText}
-            onChange={(e) => {
-              dispatch({ searchText: e.target.value });
-            }}
+            value={searchText}
+            onChange={handleSearchText}
           />
         </div>
 

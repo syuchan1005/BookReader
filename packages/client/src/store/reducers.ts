@@ -5,7 +5,6 @@ import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './mi
 export interface IState {
   [key: string]: any;
   wb: Workbox | undefined;
-  searchText: string;
   sortOrder: BookInfoOrder;
   sortBookOrder: BookOrder;
   genres: string[];
@@ -20,7 +19,6 @@ export interface IState {
 
 export const initialState: IState = {
   wb: undefined,
-  searchText: '',
   sortOrder: BookInfoOrder.UpdateNewest,
   sortBookOrder: BookOrder.NumberAsc,
   genres: [],
