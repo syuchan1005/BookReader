@@ -20,7 +20,9 @@ import {
 import { gql, useMutation } from '@apollo/client';
 
 import { Result } from '@syuchan1005/book-reader-graphql';
-import { useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation, usePluginsQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation, usePluginsQuery,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
@@ -176,7 +178,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
     },
   });
 
-
   const [addCompressBook, {
     loading: addCompressBookLoading,
   }] = useAddCompressBookMutation({
@@ -195,8 +196,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = React.memo((props: AddBookDi
       setAddBookAbort(undefined);
       setSubscriptionId(undefined);
     },
-  },
-  );
+  });
 
   const loading = React.useMemo(
     () => addBookLoading || addCompressBookLoading || addPluginLoading,

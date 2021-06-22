@@ -31,7 +31,6 @@ const DownloadBookInfoDialog: React.FC<DownloadBookInfoDialogProps> = React.memo
   const [downloadImages, setDownloadImages] = React.useState<number>(undefined);
   const [compressPercent, setCompressPercent] = React.useState<number | undefined>(undefined);
 
-  
   const {
     data,
     loading: booksLoading,

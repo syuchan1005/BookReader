@@ -5,9 +5,9 @@ import Genre from './Genre';
 import Page from './Page';
 
 export default {
-    Book: new Book(),
-    BookInfo: new BookInfo(),
-    Debug: new Debug(),
-    Genre: new Genre(),
-    Page: new Page(),
+  Book: new Book(),
+  BookInfo: new BookInfo(),
+  Debug: new Debug(),
+  Genre: new Genre(),
+  Page: new Page(),
 };

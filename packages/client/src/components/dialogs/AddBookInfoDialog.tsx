@@ -102,8 +102,7 @@ const AddBookInfoDialog: React.FC<AddBookInfoDialogProps> = React.memo((props: A
     variables: {
       histories: addHistories.map((h) => ({ name: h.name, count: Number(h.count) })),
     },
-  },
-  );
+  });
 
   const loading = React.useMemo(() => addLoading || histLoading, [addLoading, histLoading]);
 

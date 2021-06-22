@@ -7,7 +7,7 @@ export const flatRange = (range: Scalars['IntRange']): number[] => {
   let arr = [];
   range.forEach((a) => {
     if (Array.isArray(a)) {
-      const [ max, min ] = a[0] > a[1] ? a : [a[1], a[0]];
+      const [max, min] = a[0] > a[1] ? a : [a[1], a[0]];
       arr = [...arr, ...[...Array(max - min + 1).keys()].map((i) => i + min)];
     } else {
       arr.push(a);

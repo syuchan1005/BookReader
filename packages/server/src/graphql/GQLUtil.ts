@@ -15,7 +15,9 @@ import {
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
 import { asyncForEach, asyncMap, readdirRecursively } from '@server/Util';
-import { createDownloadFilePath, createTemporaryFolderPath, renameFile, userDownloadFolderName } from '@server/StorageUtil';
+import {
+  createDownloadFilePath, createTemporaryFolderPath, renameFile, userDownloadFolderName,
+} from '@server/StorageUtil';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
@@ -89,7 +91,7 @@ const GQLUtil = {
         .catch((err) => {
           fsRmSync(archiveFile.archiveFilePath, { force: true });
           fsRmSync(tempPath, { recursive: true, force: true });
-          return Promise.reject(err)
+          return Promise.reject(err);
         });
       if (customData) {
         await pubsub.publish(customData.pubsub.key, {
@@ -146,7 +148,7 @@ const GQLUtil = {
       } else {
         await convertAndSaveJpg(f, dist);
       }
-    }).catch(async (reason) =>  (deleteTempFolder ? deleteTempFolder() : reason));
+    }).catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
     if (deleteTempFolder) await deleteTempFolder();
 
     await Database.sequelize.transaction(async (transaction) => {
@@ -195,7 +197,7 @@ const GQLUtil = {
   extractCompressFile(tempPath: string, archiveFilePath: string, onProgress: (percent: number) => void): Promise<void> {
     return new Promise((resolve, reject) => {
       const extractStream = extractFull(archiveFilePath, tempPath, { recursive: true, $progress: true });
-      extractStream.on('progress', (event) => { onProgress && onProgress(event.percent) });
+      extractStream.on('progress', (event) => { onProgress && onProgress(event.percent); });
       extractStream.on('error', reject);
       extractStream.on('end', resolve);
     });

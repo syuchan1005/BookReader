@@ -5,7 +5,7 @@ import {
   LinearProgress,
   makeStyles,
   Modal,
-  Theme
+  Theme,
 } from '@material-ui/core';
 
 interface LoadingFullscreenProps {

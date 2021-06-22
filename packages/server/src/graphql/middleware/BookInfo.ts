@@ -67,8 +67,8 @@ class BookInfo extends GQLMiddleware {
             },
             {
               model: BookModel,
-              as: 'thumbnailBook'
-            }
+              as: 'thumbnailBook',
+            },
           ],
         });
 
@@ -226,8 +226,8 @@ class BookInfo extends GQLMiddleware {
             id: uuidv4(),
             history: true,
           })), {
-          ignoreDuplicates: true,
-        },
+            ignoreDuplicates: true,
+          },
         );
         return {
           success: true,

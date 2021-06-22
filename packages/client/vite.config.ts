@@ -6,7 +6,6 @@ import reactRefresh from '@vitejs/plugin-react-refresh';
 import graphqlPlugin from '@rollup/plugin-graphql';
 import { VitePWA } from 'vite-plugin-pwa';
 
-
 const serviceWorkerFileName = 'service-worker.ts';
 const RemoveObsolateServiceWorkerPlugin = (): Plugin => {
   let outDir;

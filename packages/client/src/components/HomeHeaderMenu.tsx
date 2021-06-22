@@ -24,10 +24,9 @@ import { useHistory } from 'react-router-dom';
 import { BookInfoOrder } from '@syuchan1005/book-reader-graphql';
 import { useDeleteUnusedFoldersMutation, useFolderSizesLazyQuery, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-
 import { useGlobalStore } from '@client/store/StoreProvider';
-import ColorTile from './ColorTile';
 import { useApolloClient } from '@apollo/react-hooks';
+import ColorTile from './ColorTile';
 
 interface HeaderMenuProps {
   anchorEl: Element;

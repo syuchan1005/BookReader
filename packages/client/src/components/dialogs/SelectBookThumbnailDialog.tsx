@@ -69,8 +69,7 @@ const SelectBookThumbnailDialog: React.FC<SelectThumbnailDialogProps> = React.me
       if (d.edit.success && onClose) onClose();
       if (d.edit.success && onEdit) onEdit();
     },
-  },
-  );
+  });
 
   const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);
 

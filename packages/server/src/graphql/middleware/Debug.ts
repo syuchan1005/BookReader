@@ -4,7 +4,9 @@ import BookModel from '@server/sequelize/models/Book';
 import BookInfoModel from '@server/sequelize/models/BookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
-import { bookFolderPath, getBookFolderSize, getCacheFolderSize, getTemporaryFolderSize, removeBookCache } from '@server/StorageUtil';
+import {
+  bookFolderPath, getBookFolderSize, getCacheFolderSize, getTemporaryFolderSize, removeBookCache,
+} from '@server/StorageUtil';
 
 class Debug extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this

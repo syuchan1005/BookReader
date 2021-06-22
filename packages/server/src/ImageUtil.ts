@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import {
   cacheBookFolderName,
   createBookPagePath,
-  createCacheBookPagePath
+  createCacheBookPagePath,
 } from '@server/StorageUtil';
 import ReadableStream = NodeJS.ReadableStream;
 
@@ -103,7 +103,7 @@ export const getCacheOrConvertImage = async (
   extension: 'jpg' | 'webp',
   width: number | undefined,
   height: number | undefined,
-  isCache: boolean
+  isCache: boolean,
 ): Promise<{ success: false } | {
   success: true,
   body: Buffer | ReadableStream,
@@ -236,7 +236,7 @@ export const cropImage = async (src: string, left: number, width: number) => {
     .extract({
       top: 0,
       left,
-      width: width,
+      width,
       height: meta.height,
     })
     .toBuffer();

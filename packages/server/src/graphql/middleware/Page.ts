@@ -4,18 +4,23 @@ import { createWriteStream, promises as fs } from 'fs';
 import { orderBy } from 'natural-orderby';
 import sharp from 'sharp';
 
-import { MutationResolvers, Result, SplitType, EditAction, Scalars, EditType } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
+import {
+  MutationResolvers, Result, SplitType, EditAction, Scalars, EditType,
+} from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
 import Database from '@server/sequelize/models';
 import BookModel from '@server/sequelize/models/Book';
 import { asyncForEach } from '@server/Util';
-import { renameFile, withPageEditFolder } from '@server/StorageUtil';
+import {
+  renameFile, withPageEditFolder, createBookFolderPath, removeBookCache,
+} from '@server/StorageUtil';
 import Errors from '@server/Errors';
 
 import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
-import { splitImage, purgeImageCache, cropImage, getImageSize } from '../../ImageUtil';
-import { createBookFolderPath, removeBookCache } from '@server/StorageUtil';
+import {
+  splitImage, purgeImageCache, cropImage, getImageSize,
+} from '../../ImageUtil';
 
 const pageMutationResolvers: MutationResolvers = {
   deletePages: async (parent, { id: bookId, pages }) => {
@@ -240,7 +245,9 @@ const pageMutationResolvers: MutationResolvers = {
       success: true,
     };
   },
-  cropPages: async (parent, { id: bookId, pages, left, width }) => {
+  cropPages: async (parent, {
+    id: bookId, pages, left, width,
+  }) => {
     const numbers = flatRange(pages);
     const book = await BookModel.findOne({ where: { id: bookId } });
     if (!book) {
@@ -261,7 +268,7 @@ const pageMutationResolvers: MutationResolvers = {
     }
 
     const bookPath = `storage/book/${bookId}`;
-    let files = await fs.readdir(bookPath);
+    const files = await fs.readdir(bookPath);
     await asyncForEach(orderBy(files), async (f, i) => {
       if (!numbers.includes(i)) {
         return;
@@ -306,7 +313,9 @@ type ImageEditAction = {
   cropTransforms?: TransformFn[],
 };
 
-const createImageEditAction = (pageIndex: number): ImageEditAction => ({ pageIndex, willDelete: false, image: undefined, cropTransforms: undefined });
+const createImageEditAction = (pageIndex: number): ImageEditAction => ({
+  pageIndex, willDelete: false, image: undefined, cropTransforms: undefined,
+});
 
 const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefined => {
   const isVaild = actions.every((action, index, arr) => {
@@ -334,7 +343,7 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
 
 const calculateEditActions = (
   actions: StrictEditAction[],
-  initImageEditActions: ImageEditAction[]
+  initImageEditActions: ImageEditAction[],
 ): ImageEditAction[] => {
   let imageEditActions = [...initImageEditActions];
   actions.forEach((action) => {
@@ -364,7 +373,7 @@ const calculateEditActions = (
         break;
       }
       case EditType.Put: {
-        createImageEditAction(-1)
+        createImageEditAction(-1);
         const newImageEditAction: ImageEditAction = createImageEditAction(-1);
         newImageEditAction.image = action.put.image;
         imageEditActions.splice(action.put.pageIndex + 1, 0, newImageEditAction);
@@ -372,7 +381,7 @@ const calculateEditActions = (
       }
       case EditType.Split: {
         const pageRange = flatRange(action.split.pageRange);
-        const splitCount = action.split.splitCount;
+        const { splitCount } = action.split;
         imageEditActions = imageEditActions.flatMap((imageEditAction, pageIndex) => {
           if (!pageRange.includes(pageIndex)) {
             return imageEditAction;
@@ -427,23 +436,22 @@ const calculateEditActions = (
   return imageEditActions;
 };
 
-const calculateCropTranforms = (transforms: TransformFn[], imageWidth: number, imageHeight: number): CropValue =>
-  transforms.reduce((prev, transformFn) => {
-    const w = prev.right - prev.left;
-    const h = prev.bottom - prev.top;
-    const croppedValue = transformFn(w, h);
-    return {
-      top: prev.top + croppedValue.top,
-      left: prev.left + croppedValue.left,
-      right: prev.right - (w - croppedValue.right),
-      bottom: prev.bottom - (h - croppedValue.bottom),
-    };
-  }, {
-    top: 0,
-    left: 0,
-    right: imageWidth,
-    bottom: imageHeight,
-  } as CropValue);
+const calculateCropTranforms = (transforms: TransformFn[], imageWidth: number, imageHeight: number): CropValue => transforms.reduce((prev, transformFn) => {
+  const w = prev.right - prev.left;
+  const h = prev.bottom - prev.top;
+  const croppedValue = transformFn(w, h);
+  return {
+    top: prev.top + croppedValue.top,
+    left: prev.left + croppedValue.left,
+    right: prev.right - (w - croppedValue.right),
+    bottom: prev.bottom - (h - croppedValue.bottom),
+  };
+}, {
+  top: 0,
+  left: 0,
+  right: imageWidth,
+  bottom: imageHeight,
+} as CropValue);
 
 const executeEditActions = async (editActions: ImageEditAction[], editFolderPath: string, bookId: string, bookPages: number): Promise<Result> => {
   const bookFolderPath = createBookFolderPath(bookId);
@@ -487,7 +495,6 @@ const executeEditActions = async (editActions: ImageEditAction[], editFolderPath
     return e;
   }
 };
-
 
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this

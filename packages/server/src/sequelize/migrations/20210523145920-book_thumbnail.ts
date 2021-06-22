@@ -37,7 +37,7 @@ module.exports = {
           createdAt, 
           updatedAt
          FROM books;`,
-      { transaction }
+      { transaction },
     );
     await queryInterface.dropTable('books', { transaction });
     await queryInterface.renameTable('new_books', 'books', { transaction });
@@ -95,7 +95,7 @@ module.exports = {
           createdAt, 
           updatedAt
          FROM books;`,
-      { transaction }
+      { transaction },
     );
     await queryInterface.dropTable('books', { transaction });
     await queryInterface.renameTable('new_books', 'books', { transaction });

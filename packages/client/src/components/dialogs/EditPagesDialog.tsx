@@ -32,7 +32,7 @@ import FileField from '@client/components/FileField';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import CalcImagePaddingDialog, {
   calcPadding,
-  urlToImageData
+  urlToImageData,
 } from '@client/components/dialogs/CalcImagePaddingDialog';
 import { createBookPageUrl } from '@client/components/BookPageImage';
 import { useApolloClient } from '@apollo/react-hooks';
@@ -381,7 +381,7 @@ const AddTemplateListItem: React.VFC<AddTemplateListItemProps> = React.memo(
     const {
       bookId,
       maxPage,
-      onAdded
+      onAdded,
     } = props;
     const [anchorEl, setAnchorEl] = React.useState(null);
     return (

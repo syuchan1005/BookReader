@@ -18,7 +18,9 @@ import {
 import { Workbox } from 'workbox-window';
 import { useApolloClient } from '@apollo/react-hooks';
 
-import { useCropPagesMutation, useDeletePagesMutation, useEditPageMutation, usePutPageMutation, useSplitPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  useCropPagesMutation, useDeletePagesMutation, useEditPageMutation, usePutPageMutation, useSplitPagesMutation,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { SplitType } from '@syuchan1005/book-reader-graphql';
 import DeleteDialog from './DeleteDialog';
 import CalcImagePaddingDialog from './CalcImagePaddingDialog';
@@ -215,7 +217,7 @@ const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.me
         <DialogActions>
           <Button onClick={() => setOpenRemovePaddingDialog(false)} disabled={cropLoading}>
             close
-        </Button>
+          </Button>
           <Button
             variant="contained"
             color="secondary"
@@ -228,13 +230,13 @@ const ObsolateEditPagesDialog: React.FC<ObsolateEditPagesDialogProps> = React.me
                   id: bookId,
                   pages,
                   left: Math.min(paddingSize[0]),
-                  width: Math.abs(paddingSize[0] - paddingSize[1])
+                  width: Math.abs(paddingSize[0] - paddingSize[1]),
                 },
               });
             }}
           >
             Crop
-        </Button>
+          </Button>
         </DialogActions>
       </Dialog>
 

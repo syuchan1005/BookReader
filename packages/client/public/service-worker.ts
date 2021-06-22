@@ -11,7 +11,6 @@ clientsClaim();
 // @ts-ignore
 precacheAndRoute(self.__WB_MANIFEST);
 
-
 // https://github.com/GoogleChrome/workbox/issues/1599
 registerRoute(/^https:\/\/fonts\.googleapis\.com/, new StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
 registerRoute(/^https:\/\/fonts\.gstatic\.com/, new CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));

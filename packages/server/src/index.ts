@@ -2,11 +2,11 @@ import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 
+import { ImageHeader } from '@syuchan1005/book-reader-common';
 import { getCacheOrConvertImage, obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
 import Database from './sequelize/models';
-import { ImageHeader } from '@syuchan1005/book-reader-common';
 
 const toInt = (value: string | string[]): number | undefined => {
   let numStr;

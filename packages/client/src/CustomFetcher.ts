@@ -20,50 +20,49 @@ const parseHeaders = (rawHeaders: any) => {
 const createCustomFetcher = (
   onProgress: (ev: ProgressEvent) => void,
   onAbortPossible: (abort: () => void) => void,
-): (url: string, options: any) => Promise<Response> => {
-  return (url, options) => new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.onload = () => {
-      const opts: any = {
-        status: xhr.status,
-        statusText: xhr.statusText,
-        headers: parseHeaders(xhr.getAllResponseHeaders() || ''),
-      };
-      opts.url = 'responseURL' in xhr
-        ? xhr.responseURL
-        : opts.headers.get('X-Request-URL');
-      const body = 'response' in xhr ? xhr.response : (xhr as any).responseText;
-      resolve(new Response(body, opts));
+): (url: string, options: any
+) => Promise<Response> => (url, options) => new Promise((resolve, reject) => {
+  const xhr = new XMLHttpRequest();
+  xhr.onload = () => {
+    const opts: any = {
+      status: xhr.status,
+      statusText: xhr.statusText,
+      headers: parseHeaders(xhr.getAllResponseHeaders() || ''),
     };
-    xhr.onerror = () => {
-      reject(new TypeError('Network request failed'));
-    };
-    xhr.ontimeout = () => {
-      reject(new TypeError('Network request timeout'));
-    };
-    xhr.open(options.method, url, true);
+    opts.url = 'responseURL' in xhr
+      ? xhr.responseURL
+      : opts.headers.get('X-Request-URL');
+    const body = 'response' in xhr ? xhr.response : (xhr as any).responseText;
+    resolve(new Response(body, opts));
+  };
+  xhr.onerror = () => {
+    reject(new TypeError('Network request failed'));
+  };
+  xhr.ontimeout = () => {
+    reject(new TypeError('Network request timeout'));
+  };
+  xhr.open(options.method, url, true);
 
-    Object.keys(options.headers)
-      .forEach((key) => {
-        xhr.setRequestHeader(key, options.headers[key]);
-      });
-
-    if (xhr.upload) {
-      xhr.upload.onprogress = onProgress;
-    }
-
-    onAbortPossible(() => {
-      xhr.abort();
-      reject(new TypeError('Network request failed'));
-    });
-    options.signal?.addEventListener('abort', () => {
-      if (xhr.readyState !== xhr.DONE) {
-        xhr.abort();
-      }
+  Object.keys(options.headers)
+    .forEach((key) => {
+      xhr.setRequestHeader(key, options.headers[key]);
     });
 
-    xhr.send(options.body);
+  if (xhr.upload) {
+    xhr.upload.onprogress = onProgress;
+  }
+
+  onAbortPossible(() => {
+    xhr.abort();
+    reject(new TypeError('Network request failed'));
   });
-};
+  options.signal?.addEventListener('abort', () => {
+    if (xhr.readyState !== xhr.DONE) {
+      xhr.abort();
+    }
+  });
+
+  xhr.send(options.body);
+});
 
 export default createCustomFetcher;

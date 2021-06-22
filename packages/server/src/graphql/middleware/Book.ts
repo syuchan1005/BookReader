@@ -97,7 +97,7 @@ class Book extends GQLMiddleware {
               id: infoId,
               addBooks: `Extract Book ${percent}%`,
             });
-          })
+          });
         } catch (err) {
           await fs.rm(archiveFile.archiveFilePath, { force: true });
           await fs.rm(tempPath, { recursive: true, force: true });

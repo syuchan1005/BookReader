@@ -122,27 +122,27 @@ const Book: React.FC<BookProps> = React.memo((props: BookProps) => {
   const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
 
   const [deleteBook, { loading: delLoading }] = useDeleteBookMutation({
-      variables: {
-        id: bookId,
-      },
-      onCompleted(d) {
-        if (!d) return;
-        setAskDelete(!d.del.success);
-        if (d.del.success && onDeleted) onDeleted();
-      },
-    });
+    variables: {
+      id: bookId,
+    },
+    onCompleted(d) {
+      if (!d) return;
+      setAskDelete(!d.del.success);
+      if (d.del.success && onDeleted) onDeleted();
+    },
+  });
 
   const [editBook, { loading: editLoading }] = useEditBookMutation({
-      variables: {
-        id: bookId,
-        ...editContent,
-      },
-      onCompleted(d) {
-        if (!d) return;
-        setEditDialog(!d.edit.success);
-        if (d.edit.success && onEdit) onEdit();
-      },
-    });
+    variables: {
+      id: bookId,
+      ...editContent,
+    },
+    onCompleted(d) {
+      if (!d) return;
+      setEditDialog(!d.edit.success);
+      if (d.edit.success && onEdit) onEdit();
+    },
+  });
 
   const clickEditBook = React.useCallback(() => {
     setMenuAnchor(null);

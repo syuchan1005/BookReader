@@ -50,7 +50,7 @@ const useStyles = makeStyles(() => createStyles({
   },
 }));
 
-const createSizeUrlSuffix = (width?: number, height?: number) => (!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`;
+const createSizeUrlSuffix = (width?: number, height?: number) => ((!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`);
 
 export const createBookPageUrl = (
   bookId: string,
@@ -142,9 +142,9 @@ const BookPageImage: React.FC<BookPageImageProps> = React.memo((props: BookPageI
       if ([bookId, pageIndex, bookPageCount].findIndex((a) => a === null || a === undefined) !== -1) {
         return undefined;
       }
-      return createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight))
+      return createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight));
     },
-    [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight]
+    [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight],
   );
 
   return (<Image {...props} src={src} />);

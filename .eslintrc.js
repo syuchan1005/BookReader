@@ -29,9 +29,14 @@ module.exports = {
   ignorePatterns: [
     'packages/graphql/generated/*.ts',
     'packages/server/src/sort/**/*.ts',
+    '**/dist/*',
     '**/*.puml',
     '**/*.yml',
     '**/*.json',
+    '**/*.html',
+    '**/*.css',
+    '**/*.gql',
+    '**/*.graphql',
   ],
   rules: {
     'no-unused-vars': 'off',
