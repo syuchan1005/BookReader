@@ -14,9 +14,6 @@ import {
   IconButton,
 } from '@material-ui/core';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// noinspection ES6UnusedImports
-import { Swiper as SwiperCore } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.min.css';
 
@@ -37,7 +34,6 @@ import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 import db from '../Database';
 import BookPageImage from '../components/BookPageImage';
 import useNetworkType from '../hooks/useNetworkType';
-import ObsolateEditPagesDialog from '../components/dialogs/ObsolateEditPagesDialog';
 import TitleAndBackHeader from '../components/TitleAndBackHeader';
 import { Remount } from '../components/Remount';
 
@@ -170,7 +166,6 @@ const Book = (props: BookProps) => {
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
-  const [openObsolateEditDialog, setOpenObsolateEditDialog] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
   const [showAppBar, setShowAppBar] = React.useState(false);
 
@@ -296,11 +291,11 @@ const Book = (props: BookProps) => {
     }
   }, [isPageSet, page]);
 
-  useKey('ArrowRight', () => (openObsolateEditDialog || openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog, openEditDialog]);
-  useKey('ArrowLeft', () => (openObsolateEditDialog || openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openObsolateEditDialog, openEditDialog]);
+  useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
+  useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
 
   const clickPage = React.useCallback((event) => {
-    if (openObsolateEditDialog || openEditDialog) return;
+    if (openEditDialog) return;
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     switch (store.readOrder) {
       case 0:
@@ -316,7 +311,7 @@ const Book = (props: BookProps) => {
       default:
         setShowAppBar(!showAppBar);
     }
-  }, [store.readOrder, increment, decrement, openObsolateEditDialog, openEditDialog]);
+  }, [store.readOrder, increment, decrement, openEditDialog]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -376,14 +371,6 @@ const Book = (props: BookProps) => {
       <main>
         {/* eslint-disable-next-line */}
         <div className={classes.book} onClick={clickPage}>
-          <ObsolateEditPagesDialog
-            open={openObsolateEditDialog}
-            onClose={() => setOpenObsolateEditDialog(false)}
-            openPage={page}
-            maxPage={data ? data.book.pages : 0}
-            bookId={params.id}
-          />
-
           <EditPagesDialog
             open={openEditDialog}
             onClose={() => setOpenEditDialog(false)}
@@ -450,14 +437,6 @@ const Book = (props: BookProps) => {
                       }}
                     >
                       Edit pages
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        setSettingsMenuAnchor(null);
-                        setOpenObsolateEditDialog(true);
-                      }}
-                    >
-                      [Obsolate] Edit pages
                     </MenuItem>
                     <MenuItem
                       onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}

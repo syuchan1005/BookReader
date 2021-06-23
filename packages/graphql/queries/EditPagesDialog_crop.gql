@@ -1,6 +1,0 @@
-mutation cropPages($id: ID! $pages: IntRange! $left: Int! $width: Int!){
-    crop: cropPages(id: $id pages: $pages left: $left width: $width) {
-        success
-        code
-    }
-}

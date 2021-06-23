@@ -1,6 +1,0 @@
-mutation splitPages($id: ID! $pages: IntRange! $type: SplitType) {
-    split: splitPages(id: $id pages: $pages type: $type) {
-        success
-        code
-    }
-}
