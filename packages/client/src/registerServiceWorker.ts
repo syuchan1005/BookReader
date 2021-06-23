@@ -1,14 +1,9 @@
 import { Workbox } from 'workbox-window';
 
-export default () => {
-  let wb;
-  if (process.env.NODE_ENV === 'production') {
-    if ('serviceWorker' in navigator) {
-      wb = new Workbox('/service-worker.js');
+let wb: Workbox | undefined;
+if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+  wb = new Workbox('/service-worker.js');
+}
 
-      wb.register();
-    }
-  }
-
-  return wb;
-};
+// eslint-disable-next-line import/prefer-default-export
+export const workbox = wb;

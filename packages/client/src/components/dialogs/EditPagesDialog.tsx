@@ -36,7 +36,7 @@ import CalcImagePaddingDialog, {
 } from '@client/components/dialogs/CalcImagePaddingDialog';
 import { createBookPageUrl } from '@client/components/BookPageImage';
 import { useApolloClient } from '@apollo/react-hooks';
-import { useGlobalStore } from '@client/store/StoreProvider';
+import { workbox } from '@client/registerServiceWorker';
 
 interface EditPagesDialogProps {
   open: boolean;
@@ -465,12 +465,11 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
   }, [actions, setActions]);
 
   const apolloClient = useApolloClient();
-  const { state: { wb } } = useGlobalStore();
   const reload = React.useCallback(() => {
     apolloClient.resetStore()
-      .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
+      .then(() => (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
       .finally(() => window.location.reload(true));
-  }, [wb, apolloClient]);
+  }, [apolloClient]);
 
   const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
     onCompleted(data) {

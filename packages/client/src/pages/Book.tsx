@@ -382,8 +382,6 @@ const Book = (props: BookProps) => {
             openPage={page}
             maxPage={data ? data.book.pages : 0}
             bookId={params.id}
-            theme={store.theme}
-            wb={store.wb}
           />
 
           <EditPagesDialog

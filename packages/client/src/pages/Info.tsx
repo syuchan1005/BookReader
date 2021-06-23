@@ -24,7 +24,8 @@ import db from '@client/Database';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import Book from '@client/components/Book';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
-import SelectBookHeader from '../components/SelectBookHeader';
+import SelectBookHeader from '@client/components/SelectBookHeader';
+import { workbox } from '@client/registerServiceWorker';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -143,14 +144,12 @@ const Info = (props: InfoProps) => {
     refetch();
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.delete(bookId);
-    if (store.wb) {
-      store.wb.messageSW({
-        type: 'BOOK_REMOVE',
-        bookId,
-        pages,
-      });
-    }
-  }, [refetch, store]);
+    workbox?.messageSW({
+      type: 'BOOK_REMOVE',
+      bookId,
+      pages,
+    });
+  }, [refetch]);
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 

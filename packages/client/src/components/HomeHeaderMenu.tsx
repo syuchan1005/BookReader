@@ -26,6 +26,7 @@ import { useDeleteUnusedFoldersMutation, useFolderSizesLazyQuery, useGenresQuery
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import { useApolloClient } from '@apollo/react-hooks';
+import { workbox } from '@client/registerServiceWorker';
 import ColorTile from './ColorTile';
 
 interface HeaderMenuProps {
@@ -94,13 +95,13 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const purgeCache = React.useCallback((i) => {
     const isApollo = i === 0 || i === 2;
     const isStorage = i === 1 || i === 2;
-    const wb = isStorage ? store.wb : undefined;
+    const wb = isStorage ? workbox : undefined;
     Promise.all([
       (isApollo ? apolloClient.resetStore() : Promise.resolve()),
       (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
       (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
     ]).finally(() => window.location.reload());
-  }, [store.wb]);
+  }, []);
 
   const [vConsole, setVConsole] = React.useState(undefined);
   const handleShowVConsole = React.useCallback(() => {

@@ -15,6 +15,7 @@ import { QueryParamProvider } from 'use-query-params';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
+import { workbox } from '@client/registerServiceWorker';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -65,13 +66,9 @@ export const commonTheme = {
     }, {}),
 };
 
-interface AppProps {
-  wb: any;
-}
-
 const history = createBrowserHistory();
 
-const App = (props: AppProps) => {
+const App = () => {
   const { state: store, dispatch } = useGlobalStore();
 
   const theme = useMatchMedia(
@@ -92,17 +89,15 @@ const App = (props: AppProps) => {
   React.useEffect(() => {
     // @ts-ignore
     apolloClient.snackbar = enqueueSnackbar;
-    if (props.wb) {
-      dispatch({ wb: props.wb });
-      props.wb.addEventListener('installed', (event) => {
-        if (event.isUpdate) {
-          enqueueSnackbar('Update here! Please reload.', {
-            variant: 'warning',
-            persist: true,
-          });
-        }
-      });
-    }
+
+    workbox?.addEventListener('installed', (event) => {
+      if (event.isUpdate) {
+        enqueueSnackbar('Update here! Please reload.', {
+          variant: 'warning',
+          persist: true,
+        });
+      }
+    });
   }, []);
 
   const provideTheme = React.useMemo(

@@ -6,12 +6,11 @@ import { SnackbarProvider } from 'notistack';
 
 import getClient from '@client/apollo/index';
 import StoreProvider from '@client/store/StoreProvider';
-import registerServiceWorker from './registerServiceWorker';
 import App from './App';
 
 import db from './Database';
 
-const wb = registerServiceWorker();
+import { workbox } from './registerServiceWorker';
 
 if (process.env.NODE_ENV !== 'production') {
   import('@welldone-software/why-did-you-render')
@@ -23,13 +22,14 @@ if (process.env.NODE_ENV !== 'production') {
 (async () => {
   await db.connect();
   const client = await getClient();
+  await workbox?.register();
 
   ReactDOM.render(
     (
       <StoreProvider>
         <SnackbarProvider maxSnack={3}>
           <ApolloProvider client={client}>
-            <App wb={wb} />
+            <App />
           </ApolloProvider>
         </SnackbarProvider>
       </StoreProvider>

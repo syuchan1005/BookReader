@@ -1,10 +1,8 @@
 import { BookInfoOrder, BookOrder } from '@syuchan1005/book-reader-graphql';
-import { Workbox } from 'workbox-window';
 import { loadStateFromLocalStorage, logger, saveStateToLocalStorage } from './middlewares';
 
 export interface IState {
   [key: string]: any;
-  wb: Workbox | undefined;
   sortOrder: BookInfoOrder;
   sortBookOrder: BookOrder;
   genres: string[];
@@ -18,11 +16,10 @@ export interface IState {
 }
 
 export const initialState: IState = {
-  wb: undefined,
-  sortOrder: BookInfoOrder.UpdateNewest,
-  sortBookOrder: BookOrder.NumberAsc,
   genres: [],
   history: 'ALL',
+  sortOrder: BookInfoOrder.UpdateNewest,
+  sortBookOrder: BookOrder.NumberAsc,
   theme: 'light',
   primary: 'green',
   secondary: 'blue',

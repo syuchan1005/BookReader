@@ -15,13 +15,14 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
-import { Workbox } from 'workbox-window';
 import { useApolloClient } from '@apollo/react-hooks';
 
 import {
-  useCropPagesMutation, useDeletePagesMutation, useEditPageMutation, usePutPageMutation, useSplitPagesMutation,
+  useCropPagesMutation, useDeletePagesMutation, useEditPageMutation,
+  usePutPageMutation, useSplitPagesMutation,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { SplitType } from '@syuchan1005/book-reader-graphql';
+import { workbox } from '@client/registerServiceWorker';
 import DeleteDialog from './DeleteDialog';
 import CalcImagePaddingDialog from './CalcImagePaddingDialog';
 import CropImageDialog from './CropImageDialog';
@@ -32,8 +33,6 @@ interface ObsolateEditPagesDialogProps {
   openPage: number;
   maxPage: number;
   bookId: string;
-  theme: 'light' | 'dark';
-  wb?: Workbox;
 }
 
 const parsePagesStr = (pages: string, maxPage: number): (number | [number, number])[] | string => {
@@ -86,8 +85,6 @@ const ObsolateEditPagesDialog = (props: ObsolateEditPagesDialogProps) => {
     openPage,
     maxPage,
     bookId,
-    theme,
-    wb,
   } = props;
   const apolloClient = useApolloClient();
 
@@ -109,9 +106,9 @@ const ObsolateEditPagesDialog = (props: ObsolateEditPagesDialogProps) => {
 
   const purgeCache = React.useCallback(() => {
     apolloClient.resetStore()
-      .then(() => (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
+      .then(() => (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
       .finally(() => window.location.reload());
-  }, [wb, apolloClient]);
+  }, [apolloClient]);
 
   const [editPageMutation, { loading: editLoading }] = useEditPageMutation({
     onCompleted() {

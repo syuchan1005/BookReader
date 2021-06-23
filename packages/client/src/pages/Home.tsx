@@ -26,6 +26,7 @@ import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useStateWithReset from '@client/hooks/useStateWithReset';
+import { workbox } from '@client/registerServiceWorker';
 import db from '../Database';
 
 interface HomeProps {
@@ -146,17 +147,17 @@ const Home = (props: HomeProps) => {
     db.infoReads.delete(info.id);
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
-    if (store.wb) {
+    if (workbox) {
       books.map(({
         id: bookId,
         pages,
-      }) => store.wb.messageSW({
+      }) => workbox.messageSW({
         type: 'BOOK_REMOVE',
         bookId,
         pages,
       }));
     }
-  }, [refetch, store, infos]);
+  }, [refetch, infos]);
 
   const clickLoadMore = React.useCallback(() => {
     // @ts-ignore
