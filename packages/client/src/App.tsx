@@ -81,7 +81,7 @@ const App = () => {
     if (store.theme !== theme) {
       dispatch({ theme });
     }
-  }, [theme, store.theme]);
+  }, [dispatch, theme, store.theme]);
 
   const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
@@ -90,15 +90,20 @@ const App = () => {
     // @ts-ignore
     apolloClient.snackbar = enqueueSnackbar;
 
-    workbox?.addEventListener('installed', (event) => {
+    const handleUpdate = (event) => {
       if (event.isUpdate) {
         enqueueSnackbar('Update here! Please reload.', {
           variant: 'warning',
           persist: true,
         });
       }
-    });
-  }, []);
+    };
+    workbox?.addEventListener('installed', handleUpdate);
+
+    return () => {
+      workbox?.removeEventListener('installed', handleUpdate);
+    };
+  }, [apolloClient, enqueueSnackbar]);
 
   const provideTheme = React.useMemo(
     () => createMuiTheme({
