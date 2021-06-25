@@ -31,6 +31,7 @@ import { commonTheme } from '@client/App';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
+import useBooleanState from '@client/hooks/useBooleanState';
 import db from '../Database';
 import BookPageImage from '../components/BookPageImage';
 import useNetworkType from '../hooks/useNetworkType';
@@ -166,8 +167,8 @@ const Book = (props: BookProps) => {
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
   const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
-  const [openEditDialog, setOpenEditDialog] = React.useState(false);
-  const [showAppBar, setShowAppBar] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog, setCloseEditDialog] = useBooleanState(false);
+  const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
 
   React.useEffect(() => {
     document.title = defaultTitle;
@@ -195,7 +196,7 @@ const Book = (props: BookProps) => {
     setReBuildSwiper(false);
     s.on('slideChange', () => updatePage(s.realIndex));
     setSwiper(s);
-  }, [isPageSet, page]);
+  }, []);
 
   const {
     loading,
@@ -212,7 +213,7 @@ const Book = (props: BookProps) => {
       }
     },
     onError() {
-      setShowAppBar(true);
+      setShowAppBar();
     },
   });
 
@@ -223,15 +224,13 @@ const Book = (props: BookProps) => {
 
   const increment = React.useCallback(() => {
     setPage(Math.min(page + 1, data.book.pages - 1));
-    if (showAppBar) setShowAppBar(false);
-    // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, nextBook, showAppBar, setPage]);
+    setHideAppBar();
+  }, [page, data, setPage, setHideAppBar]);
 
   const decrement = React.useCallback(() => {
     setPage(Math.max(page - 1, 0));
-    if (showAppBar) setShowAppBar(false);
-    // eslint-disable-next-line react/destructuring-assignment
-  }, [page, data, prevBook, showAppBar, setPage]);
+    setHideAppBar();
+  }, [page, setHideAppBar, setPage]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -278,7 +277,7 @@ const Book = (props: BookProps) => {
         setPageSet(true);
       }
     });
-  }, [swiper]);
+  }, [swiper, data, params.id, setPage]);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -289,7 +288,7 @@ const Book = (props: BookProps) => {
         page,
       }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     }
-  }, [isPageSet, page]);
+  }, [isPageSet, page, enqueueSnackbar, params.id]);
 
   useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
   useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
@@ -299,19 +298,27 @@ const Book = (props: BookProps) => {
     const percentX = event.nativeEvent.x / event.target.offsetWidth;
     switch (store.readOrder) {
       case 0:
-        if (percentX <= 0.2) decrement();
-        else if (percentX >= 0.8) increment();
-        else setShowAppBar(!showAppBar);
+        if (percentX <= 0.2) {
+          decrement();
+        } else if (percentX >= 0.8) {
+          increment();
+        } else {
+          toggleAppBar();
+        }
         break;
       case 1:
-        if (percentX <= 0.2) increment();
-        else if (percentX >= 0.8) decrement();
-        else setShowAppBar(!showAppBar);
+        if (percentX <= 0.2) {
+          increment();
+        } else if (percentX >= 0.8) {
+          decrement();
+        } else {
+          toggleAppBar();
+        }
         break;
       default:
-        setShowAppBar(!showAppBar);
+        toggleAppBar();
     }
-  }, [store.readOrder, increment, decrement, openEditDialog]);
+  }, [store.readOrder, increment, decrement, openEditDialog, toggleAppBar]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -323,7 +330,7 @@ const Book = (props: BookProps) => {
     }).catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
     // history.push('/dummy');
     history.push(`/book/${bookId}`);
-  }, [prevBook, nextBook, data, history]);
+  }, [prevBook, nextBook, data, history, enqueueSnackbar]);
 
   const imageSize = React.useMemo(() => {
     if (store.showOriginalImage) return { width: undefined, height: undefined };
@@ -341,7 +348,7 @@ const Book = (props: BookProps) => {
 
   React.useEffect(() => {
     dispatch({ showOriginalImage: networkType === 'ethernet' });
-  }, [networkType]);
+  }, [networkType, dispatch]);
 
   if (loading || error) {
     return (
@@ -373,7 +380,7 @@ const Book = (props: BookProps) => {
         <div className={classes.book} onClick={clickPage}>
           <EditPagesDialog
             open={openEditDialog}
-            onClose={() => setOpenEditDialog(false)}
+            onClose={setCloseEditDialog}
             maxPage={data ? data.book.pages : 0}
             bookId={params.id}
           />
@@ -385,7 +392,7 @@ const Book = (props: BookProps) => {
             onClick={(e) => {
               if (showAppBar) {
                 e.stopPropagation();
-                setShowAppBar(false);
+                setHideAppBar();
               }
             }}
           >
@@ -433,7 +440,7 @@ const Book = (props: BookProps) => {
                     <MenuItem
                       onClick={() => {
                         setSettingsMenuAnchor(null);
-                        setOpenEditDialog(true);
+                        setOpenEditDialog();
                       }}
                     >
                       Edit pages
