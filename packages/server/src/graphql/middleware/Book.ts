@@ -26,33 +26,6 @@ class Book extends GQLMiddleware {
   Query(): QueryResolvers {
     // noinspection JSUnusedGlobalSymbols
     return {
-      books: async (parent, {
-        id: infoId,
-        limit,
-        offset,
-        order,
-      }) => {
-        const sortNumber = order.startsWith('Number_');
-        const where: any = {};
-        if (infoId) where.infoId = infoId;
-        let books = await BookModel.findAll({
-          where,
-          include: [{ model: BookInfoModel, as: 'info' }],
-          limit,
-          offset,
-          order: sortNumber ? undefined : [
-            ['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc'],
-          ],
-        });
-        if (sortNumber) {
-          books = naturalOrderBy(
-            books,
-            [(v) => v.infoId, (v) => v.number],
-          );
-          if (order === BookOrder.NumberDesc) books.reverse();
-        }
-        return books.map((b) => ModelUtil.book(b));
-      },
       book: async (parent, { id: bookId }) => {
         const book = await BookModel.findOne({
           where: { id: bookId },
@@ -92,19 +65,27 @@ class Book extends GQLMiddleware {
 
         const tempPath = createTemporaryFolderPath(infoId);
         try {
-          await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, async (percent) => {
-            await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          await GQLUtil.extractCompressFile(
+            tempPath,
+            archiveFile.archiveFilePath,
+            (percent) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
               id: infoId,
               addBooks: `Extract Book ${percent}%`,
-            });
-          });
+            }),
+          );
         } catch (err) {
           await fs.rm(archiveFile.archiveFilePath, { force: true });
-          await fs.rm(tempPath, { recursive: true, force: true });
+          await fs.rm(tempPath, {
+            recursive: true,
+            force: true,
+          });
           return Promise.reject(err);
         }
 
-        const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
+        const {
+          booksFolderPath,
+          bookFolders,
+        } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {
           return {
             success: false,
@@ -123,7 +104,8 @@ class Book extends GQLMiddleware {
           const folderPath = path.join(tempPath, booksFolderPath, p);
           let nums = p.match(/\d+/g);
           if (nums) {
-            nums = Number(nums[nums.length - 1]).toString(10);
+            nums = Number(nums[nums.length - 1])
+              .toString(10);
           } else {
             nums = `${i + 1}`;
           }
@@ -149,19 +131,30 @@ class Book extends GQLMiddleware {
                 addBooks: `Move Book (${nums}) ${current}/${total}`,
               });
             },
-            () => fs.rm(folderPath, { recursive: true, force: true }),
-          ).catch((e) => {
-            throw e;
-          });
+            () => fs.rm(folderPath, {
+              recursive: true,
+              force: true,
+            }),
+          )
+            .catch((e) => {
+              throw e;
+            });
         });
-        await fs.rm(tempPath, { recursive: true, force: true });
+        await fs.rm(tempPath, {
+          recursive: true,
+          force: true,
+        });
         await fs.rm(archiveFile.archiveFilePath, { force: true });
         return {
           success: true,
           bookResults: results,
         };
       },
-      editBook: async (parent, { id: bookId, number, thumbnail }) => {
+      editBook: async (parent, {
+        id: bookId,
+        number,
+        thumbnail,
+      }) => {
         if (number === undefined && thumbnail === undefined) {
           return {
             success: false,
@@ -179,13 +172,17 @@ class Book extends GQLMiddleware {
             message: Errors.QL0001,
           };
         }
-        const val = Object.entries({ number, thumbnail }).reduce((o, e) => {
-          if (e[1] !== undefined && book[e[0]] !== e[1]) {
-            // eslint-disable-next-line no-param-reassign,prefer-destructuring
-            o[e[0]] = e[1];
-          }
-          return o;
-        }, {});
+        const val = Object.entries({
+          number,
+          thumbnail,
+        })
+          .reduce((o, e) => {
+            if (e[1] !== undefined && book[e[0]] !== e[1]) {
+              // eslint-disable-next-line no-param-reassign,prefer-destructuring
+              o[e[0]] = e[1];
+            }
+            return o;
+          }, {});
         if (Object.keys(val).length === 0) {
           return {
             success: false,
@@ -225,14 +222,23 @@ class Book extends GQLMiddleware {
             transaction,
           });
         });
-        await fs.rm(`storage/cache/book/${bookId}`, { recursive: true, force: true });
-        await fs.rm(`storage/book/${bookId}`, { recursive: true, force: true });
+        await fs.rm(`storage/cache/book/${bookId}`, {
+          recursive: true,
+          force: true,
+        });
+        await fs.rm(`storage/book/${bookId}`, {
+          recursive: true,
+          force: true,
+        });
         purgeImageCache();
         return {
           success: true,
         };
       },
-      deleteBooks: async (parent, { infoId, ids: bookIds }) => {
+      deleteBooks: async (parent, {
+        infoId,
+        ids: bookIds,
+      }) => {
         await Database.sequelize.transaction(async (transaction) => {
           const count = await BookModel.destroy({
             where: {
@@ -250,15 +256,24 @@ class Book extends GQLMiddleware {
           });
         });
         await asyncForEach(bookIds, async (bookId) => {
-          await fs.rm(`storage/cache/book/${bookId}`, { recursive: true, force: true });
-          await fs.rm(`storage/book/${bookId}`, { recursive: true, force: true });
+          await fs.rm(`storage/cache/book/${bookId}`, {
+            recursive: true,
+            force: true,
+          });
+          await fs.rm(`storage/book/${bookId}`, {
+            recursive: true,
+            force: true,
+          });
         });
         purgeImageCache();
         return {
           success: true,
         };
       },
-      moveBooks: async (parent, { infoId, ids: bookIds }) => {
+      moveBooks: async (parent, {
+        infoId,
+        ids: bookIds,
+      }) => {
         await BookModel.update({ infoId }, {
           where: {
             id: { [Op.in]: bookIds },

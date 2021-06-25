@@ -309,7 +309,6 @@ export type Query = {
   __typename?: 'Query';
   bookInfos: BookInfoList;
   bookInfo?: Maybe<BookInfo>;
-  books: Array<Book>;
   book?: Maybe<Book>;
   debug_folderSize: Debug_FolderSizes;
   plugins: Array<Plugin>;
@@ -329,14 +328,6 @@ export type QueryBookInfosArgs = {
 
 export type QueryBookInfoArgs = {
   id: Scalars['ID'];
-};
-
-
-export type QueryBooksArgs = {
-  id?: Maybe<Scalars['ID']>;
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  order?: Maybe<BookOrder>;
 };
 
 

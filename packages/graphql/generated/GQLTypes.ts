@@ -308,7 +308,6 @@ export type Query = {
   __typename?: 'Query';
   bookInfos: BookInfoList;
   bookInfo?: Maybe<BookInfo>;
-  books: Array<Book>;
   book?: Maybe<Book>;
   debug_folderSize: Debug_FolderSizes;
   plugins: Array<Plugin>;
@@ -328,14 +327,6 @@ export type QueryBookInfosArgs = {
 
 export type QueryBookInfoArgs = {
   id: Scalars['ID'];
-};
-
-
-export type QueryBooksArgs = {
-  id?: Maybe<Scalars['ID']>;
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  order?: Maybe<BookOrder>;
 };
 
 
@@ -1040,7 +1031,6 @@ export type PluginQueriesResolvers<ContextType = any, ParentType extends Resolve
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   bookInfos?: Resolver<ResolversTypes['BookInfoList'], ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'length' | 'offset' | 'genres' | 'order'>>;
   bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
-  books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBooksArgs, 'offset' | 'limit' | 'order'>>;
   book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
   debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>;
   plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
