@@ -2,15 +2,11 @@ import React from 'react';
 import {
   Button,
   Card,
-  Dialog,
-  DialogActions,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
   Icon,
   IconButton,
-  List,
   ListItem,
   ListItemIcon,
   ListItemSecondaryAction,
@@ -22,28 +18,16 @@ import {
   TextField,
   useTheme,
 } from '@material-ui/core';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuidv4 } from 'uuid';
 
 import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
-import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import IntRangeInputField from '@client/components/IntRangeInputField';
 import FileField from '@client/components/FileField';
-import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import CalcImagePaddingDialog, {
   calcPadding,
   urlToImageData,
 } from '@client/components/dialogs/CalcImagePaddingDialog';
 import { createBookPageUrl } from '@client/components/BookPageImage';
-import { useApolloClient } from '@apollo/react-hooks';
-import { workbox } from '@client/registerServiceWorker';
-
-interface EditPagesDialogProps {
-  open: boolean;
-  onClose: () => void;
-  maxPage: number;
-  bookId: string;
-}
 
 interface ListItemProps {
   draggableProps: { [key: string]: unknown };
@@ -63,7 +47,7 @@ interface ListItemCardProps extends ListItemProps {
   children?: React.ReactNode;
 }
 
-const createInitValue = (editType: EditType) => {
+export const createInitValue = (editType: EditType) => {
   switch (editType) {
     case EditType.Crop:
       return {
@@ -91,52 +75,50 @@ const createInitValue = (editType: EditType) => {
   }
 };
 
-const ListItemCard = React.memo(
-  React.forwardRef((props: ListItemCardProps, ref) => {
-    const {
-      draggableProps,
-      dragHandleProps,
-      menuText,
-      onDelete,
-      children,
-    } = props;
-    const theme = useTheme();
-    return (
-      <ListItem
+const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
+  const {
+    draggableProps,
+    dragHandleProps,
+    menuText,
+    onDelete,
+    children,
+  } = props;
+  const theme = useTheme();
+  return (
+    <ListItem
+      // @ts-ignore
+      ref={ref}
+      {...draggableProps}
+      style={{
         // @ts-ignore
-        ref={ref}
-        {...draggableProps}
+        ...(draggableProps.style),
+        flexWrap: 'wrap',
+      }}
+    >
+      <Card
+        variant="outlined"
         style={{
-          // @ts-ignore
-          ...(draggableProps.style),
-          flexWrap: 'wrap',
+          width: '100%',
+          padding: theme.spacing(1),
         }}
       >
-        <Card
-          variant="outlined"
-          style={{
-            width: '100%',
-            padding: theme.spacing(1),
-          }}
-        >
-          <ListItem disableGutters ContainerComponent="div" style={{ paddingTop: 0 }}>
-            <ListItemIcon><Icon {...dragHandleProps}>menu</Icon></ListItemIcon>
-            <ListItemText primary={menuText} />
-            <ListItemSecondaryAction>
-              <IconButton edge="end" onClick={onDelete}>
-                <Icon>delete</Icon>
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-          {children}
-        </Card>
-      </ListItem>
-    );
-  }),
-);
+        <ListItem disableGutters ContainerComponent="div" style={{ paddingTop: 0 }}>
+          <ListItemIcon><Icon {...dragHandleProps}>menu</Icon></ListItemIcon>
+          <ListItemText primary={menuText} />
+          <ListItemSecondaryAction>
+            <IconButton edge="end" onClick={onDelete}>
+              <Icon>delete</Icon>
+            </IconButton>
+          </ListItemSecondaryAction>
+        </ListItem>
+        {children}
+      </Card>
+    </ListItem>
+  );
+});
 
 const ListItems = {
-  [EditType.Crop]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.Crop]: React.forwardRef((props: ListItemProps, ref) => {
     const {
       maxPage,
       content,
@@ -184,8 +166,8 @@ const ListItems = {
         />
       </ListItemCard>
     );
-  })),
-  [EditType.Replace]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+  }),
+  [EditType.Replace]: React.forwardRef((props: ListItemProps, ref) => {
     const {
       maxPage,
       content,
@@ -206,8 +188,8 @@ const ListItems = {
         />
       </ListItemCard>
     );
-  })),
-  [EditType.Delete]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+  }),
+  [EditType.Delete]: React.forwardRef((props: ListItemProps, ref) => {
     const {
       maxPage,
       content,
@@ -223,8 +205,8 @@ const ListItems = {
         />
       </ListItemCard>
     );
-  })),
-  [EditType.Put]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+  }),
+  [EditType.Put]: React.forwardRef((props: ListItemProps, ref) => {
     const {
       maxPage,
       content,
@@ -245,8 +227,8 @@ const ListItems = {
         />
       </ListItemCard>
     );
-  })),
-  [EditType.Split]: React.memo(React.forwardRef((props: ListItemProps, ref) => {
+  }),
+  [EditType.Split]: React.forwardRef((props: ListItemProps, ref) => {
     const {
       maxPage,
       content,
@@ -276,48 +258,42 @@ const ListItems = {
         </FormControl>
       </ListItemCard>
     );
-  })),
+  }),
 };
 
-const UnknownListItem = React.memo(
-  React.forwardRef(
-    // @ts-ignore
-    (props, ref) => (<ListItemCard ref={ref} {...props} menuText="Unknown" />),
-  ),
-);
+const UnknownListItem = React.forwardRef((props: ListItemProps, ref) => (
+  <ListItemCard ref={ref} {...props} menuText="Unknown" />));
 
 interface AddItemListItemProps {
   onAdded: (editType: EditType) => void;
 }
 
-const AddItemListItem = React.memo(
-  (props: AddItemListItemProps) => {
-    const { onAdded } = props;
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    return (
-      <>
-        <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
-          <ListItemIcon><Icon>add</Icon></ListItemIcon>
-          <ListItemText primary="Add Action" />
-        </ListItem>
-        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
-          {Object.keys(ListItems)
-            .map((editType: EditType) => (
-              <MenuItem
-                key={editType}
-                onClick={() => {
-                  onAdded(editType);
-                  setAnchorEl(null);
-                }}
-              >
-                {editType}
-              </MenuItem>
-            ))}
-        </Menu>
-      </>
-    );
-  },
-);
+export const AddItemListItem = React.memo((props: AddItemListItemProps) => {
+  const { onAdded } = props;
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  return (
+    <>
+      <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
+        <ListItemIcon><Icon>add</Icon></ListItemIcon>
+        <ListItemText primary="Add Action" />
+      </ListItem>
+      <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
+        {Object.keys(ListItems)
+          .map((editType: EditType) => (
+            <MenuItem
+              key={editType}
+              onClick={() => {
+                onAdded(editType);
+                setAnchorEl(null);
+              }}
+            >
+              {editType}
+            </MenuItem>
+          ))}
+      </Menu>
+    </>
+  );
+});
 
 const getPadding = async (
   bookId: string,
@@ -329,6 +305,12 @@ const getPadding = async (
   const coverImageData = await urlToImageData(coverUrl);
   return calcPadding(coverImageData, threshold);
 };
+
+export interface EditTypeContent {
+  id: string,
+  editType: EditType
+  content: { [key: string]: any };
+}
 
 const Templates = {
   PaddingOnCoverAndContents: async (
@@ -376,7 +358,7 @@ interface AddTemplateListItemProps {
   onAdded: (editTypeContents: EditTypeContent[]) => void;
 }
 
-const AddTemplateListItem = React.memo(
+export const AddTemplateListItem = React.memo(
   (props: AddTemplateListItemProps) => {
     const {
       bookId,
@@ -388,7 +370,7 @@ const AddTemplateListItem = React.memo(
       <>
         <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
           <ListItemIcon><Icon>add</Icon></ListItemIcon>
-          <ListItemText primary="Add Template" />
+          <ListItemText primary="Use Template" />
         </ListItem>
         <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
           {Object.keys(Templates)
@@ -415,7 +397,7 @@ interface ActionListItemProps extends ListItemProps {
   editType?: EditType;
 }
 
-const ActionListItem = React.memo(
+export const ActionListItem = React.memo(
   React.forwardRef(
     (props: ActionListItemProps, ref) => {
       const {
@@ -427,144 +409,3 @@ const ActionListItem = React.memo(
     },
   ),
 );
-
-interface EditTypeContent {
-  id: string,
-  editType: EditType
-  content: { [key: string]: any };
-}
-
-const EditPagesDialog = (props: EditPagesDialogProps) => {
-  const {
-    open,
-    onClose,
-    maxPage,
-    bookId,
-  } = props;
-  const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>([]);
-
-  const handleOnDragEnd = React.useCallback((result) => {
-    const items = Array.from(actions);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    setActions(items);
-  }, [actions]);
-
-  const handleDeleteAction = React.useCallback((index: number) => {
-    const items = Array.from(actions);
-    items.splice(index, 1);
-    setActions(items);
-  }, [actions]);
-
-  const setContentValue = React.useCallback((actionIndex, key, c) => {
-    setActions((a) => {
-      const items = Array.from(a);
-      items[actionIndex].content[key] = c;
-      return items;
-    });
-  }, [actions, setActions]);
-
-  const apolloClient = useApolloClient();
-  const reload = React.useCallback(() => {
-    apolloClient.resetStore()
-      .then(() => (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
-      .finally(() => window.location.reload(true));
-  }, [apolloClient]);
-
-  const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
-    onCompleted(data) {
-      if (data.bulkEditPage.success) {
-        reload();
-      }
-    },
-  });
-
-  const handleEdit = React.useCallback(() => doBulkEditPages({
-    variables: {
-      bookId,
-      editActions: actions.map((action) => ({
-        editType: action.editType,
-        [action.editType.toLowerCase()]: action.content,
-      })),
-    },
-  }), [actions, bookId, doBulkEditPages]);
-
-  return (
-    <Dialog open={open} fullWidth>
-      <DialogTitle>Edit Pages</DialogTitle>
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="editTypes">
-          {(provided) => (
-            <List {...provided.droppableProps} ref={provided.innerRef}>
-              {(actions.length === 0) ? (
-                <>
-                  <AddTemplateListItem
-                    bookId={bookId}
-                    maxPage={maxPage}
-                    onAdded={setActions}
-                  />
-                  <ListItem>
-                    <ListItemText primary="or" style={{ textAlign: 'center' }} />
-                  </ListItem>
-                </>
-              ) : (
-                <>
-                  {actions.map((ctx, index) => (
-                    <Draggable key={ctx.id} draggableId={ctx.id} index={index}>
-                      {(providedInner) => (
-                        // @ts-ignore
-                        <ActionListItem
-                          ref={providedInner.innerRef}
-                          editType={ctx.editType}
-                          maxPage={maxPage}
-                          bookId={bookId}
-                          content={ctx.content}
-                          setContent={(k, c) => setContentValue(index, k, c)}
-                          onDelete={() => handleDeleteAction(index)}
-                          {...providedInner}
-                        />
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </>
-              )}
-              <AddItemListItem onAdded={(editType) => {
-                setActions([
-                  ...actions,
-                  {
-                    id: uuidv4(),
-                    editType,
-                    content: createInitValue(editType),
-                  },
-                ]);
-              }}
-              />
-            </List>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            onClose();
-            setActions([]);
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleEdit}
-          disabled={actions.length === 0}
-        >
-          Edit
-        </Button>
-        <LoadingFullscreen open={loading} />
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-export default React.memo(EditPagesDialog);

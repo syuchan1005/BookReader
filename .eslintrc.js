@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   extends: [
     'airbnb',
+    'airbnb/hooks',
   ],
   plugins: [
     '@typescript-eslint',
