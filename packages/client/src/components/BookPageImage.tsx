@@ -59,13 +59,17 @@ export const createBookPageUrl = (
   width?: number,
   height?: number,
 ) => {
-  const pageFileName = pageIndex.toString(10).padStart(bookPageCount.toString(10).length, '0');
+  const pageFileName = pageIndex.toString(10)
+    .padStart(bookPageCount.toString(10).length, '0');
   const sizeString = createSizeUrlSuffix(width, height);
 
   return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
 };
 
-const minOrNot = (value: number | undefined, minValue: number): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
+const minOrNot = (
+  value: number | undefined,
+  minValue: number,
+): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
 
 const Image = (props: ImageProps) => {
   const classes = useStyles(props);
@@ -89,7 +93,21 @@ const Image = (props: ImageProps) => {
   const state = React.useMemo(() => {
     if (onLoad && src === undefined) onLoad(false);
     return (src === undefined ? 2 : _state);
-  }, [_state, src]);
+  }, [onLoad, _state, src]);
+
+  const handleLoad = React.useCallback(() => {
+    if (onLoad) {
+      onLoad(true);
+    }
+    setState(1);
+  }, [onLoad]);
+
+  const handleError = React.useCallback(() => {
+    if (onLoad) {
+      onLoad(true);
+    }
+    setState(2);
+  }, [onLoad]);
 
   return (
     // eslint-disable-next-line
@@ -97,7 +115,10 @@ const Image = (props: ImageProps) => {
       className={state !== 1 ? classes.noImg : classes.hasImg}
       style={{
         ...style,
-        ...(state !== 1 ? { minWidth, minHeight } : {}),
+        ...(state !== 1 ? {
+          minWidth,
+          minHeight,
+        } : {}),
         display: hidden === true ? 'none' : undefined,
       }}
       onClick={onClick}
@@ -112,12 +133,13 @@ const Image = (props: ImageProps) => {
         <picture className={classes.pic} style={{ height: state === 1 ? undefined : 0 }}>
           <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
           <img
+            loading="lazy"
             className={className}
-            style={{ ...imgStyle, display: (state === 1) ? 'block' : 'none' }}
+            style={imgStyle}
             src={`${src}${noSave ? '?nosave' : ''}`}
             alt={alt}
-            onLoad={() => { if (onLoad) { onLoad(true); } setState(1); }}
-            onError={() => { if (onLoad) { onLoad(true); } setState(2); }}
+            onLoad={handleLoad}
+            onError={handleError}
           />
         </picture>
       ) : null}
@@ -138,10 +160,17 @@ const BookPageImage = (props: BookPageImageProps) => {
 
   const src = React.useMemo(
     () => {
-      if ([bookId, pageIndex, bookPageCount].findIndex((a) => a === null || a === undefined) !== -1) {
+      if ([bookId, pageIndex, bookPageCount]
+        .findIndex((a) => a === null || a === undefined) !== -1) {
         return undefined;
       }
-      return createBookPageUrl(bookId, pageIndex, bookPageCount, minOrNot(width, minWidth), minOrNot(height, minHeight));
+      return createBookPageUrl(
+        bookId,
+        pageIndex,
+        bookPageCount,
+        minOrNot(width, minWidth),
+        minOrNot(height, minHeight),
+      );
     },
     [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight],
   );
