@@ -88,6 +88,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
+const defaultLoadBookInfoCount = 50;
+
 const Home = (props: HomeProps) => {
   const { state: store } = useGlobalStore();
   const classes = useStyles(props);
@@ -122,7 +124,7 @@ const Home = (props: HomeProps) => {
   } = useBookInfosQuery({
     variables: {
       offset: 0,
-      limit: 10,
+      limit: defaultLoadBookInfoCount,
       search: debounceSearch || '',
       order: store.sortOrder,
       history: {
@@ -181,7 +183,7 @@ const Home = (props: HomeProps) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch({
       offset: 0,
-      limit: infos.length || 10,
+      limit: infos.length || defaultLoadBookInfoCount,
     });
   }, [refetch, infos]);
 
