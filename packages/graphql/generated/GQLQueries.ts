@@ -1329,7 +1329,7 @@ export const BookInfosDocument = gql`
     order: $order
     history: $history
     genres: $genres
-  ) {
+  ) @connection(key: "bookInfo", filter: ["search", "order", "history", "genres"]) {
     hasNext
     infos {
       id

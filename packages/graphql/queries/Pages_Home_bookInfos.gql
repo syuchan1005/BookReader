@@ -1,5 +1,5 @@
 query bookInfos($limit: Int! $offset: Int! $search: String $order: BookInfoOrder $history: Boolean $genres: [String!]!){
-    bookInfos(length: $limit offset: $offset search: $search order: $order history: $history genres: $genres) {
+    bookInfos(length: $limit offset: $offset search: $search order: $order history: $history genres: $genres) @connection(key: "bookInfo", filter: ["search", "order", "history", "genres"]) {
         hasNext
         infos {
             id
