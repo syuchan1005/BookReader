@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
-import { useApolloClient } from '@apollo/react-hooks';
+import { resetStore } from '@client/apollo';
 import { workbox } from '@client/registerServiceWorker';
 import {
   ActionListItem, AddItemListItem,
@@ -62,12 +62,15 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     });
   }, []);
 
-  const apolloClient = useApolloClient();
   const reload = React.useCallback(() => {
-    apolloClient.resetStore()
-      .then(() => (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()))
-      .finally(() => window.location.reload(true));
-  }, [apolloClient]);
+    Promise.all([
+      resetStore(),
+      Promise.race([
+        (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+        new Promise((r) => setTimeout(r, 1000)), // timeout: 1000ms
+      ]),
+    ]).finally(() => window.location.reload());
+  }, []);
 
   const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
     onCompleted(data) {

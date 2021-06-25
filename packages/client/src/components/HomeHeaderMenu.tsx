@@ -25,8 +25,8 @@ import { BookInfoOrder } from '@syuchan1005/book-reader-graphql';
 import { useDeleteUnusedFoldersMutation, useFolderSizesLazyQuery, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { useGlobalStore } from '@client/store/StoreProvider';
-import { useApolloClient } from '@apollo/react-hooks';
 import { workbox } from '@client/registerServiceWorker';
+import { resetStore } from '@client/apollo';
 import ColorTile from './ColorTile';
 
 interface HeaderMenuProps {
@@ -67,7 +67,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
 
   const history = useHistory();
   const { state: store, dispatch } = useGlobalStore();
-  const apolloClient = useApolloClient();
   const theme = useTheme();
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
@@ -97,9 +96,11 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     const isStorage = i === 1 || i === 2;
     const wb = isStorage ? workbox : undefined;
     Promise.all([
-      (isApollo ? apolloClient.resetStore() : Promise.resolve()),
-      (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-      (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+      (isApollo ? resetStore() : Promise.resolve()),
+      Promise.race([
+        (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+        new Promise((r) => setTimeout(r, 1000)), // timeout: 1000ms
+      ]),
     ]).finally(() => window.location.reload());
   }, []);
 

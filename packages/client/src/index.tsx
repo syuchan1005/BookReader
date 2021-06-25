@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { SnackbarProvider } from 'notistack';
 
-import getClient from '@client/apollo/index';
+import apolloClient, { setUpApollo } from '@client/apollo/index';
 import StoreProvider from '@client/store/StoreProvider';
 import App from './App';
 
@@ -21,14 +21,14 @@ if (process.env.NODE_ENV !== 'production') {
 
 (async () => {
   await db.connect();
-  const client = await getClient();
   await workbox?.register();
+  await setUpApollo();
 
   ReactDOM.render(
     (
       <StoreProvider>
         <SnackbarProvider maxSnack={3}>
-          <ApolloProvider client={client}>
+          <ApolloProvider client={apolloClient}>
             <App />
           </ApolloProvider>
         </SnackbarProvider>
