@@ -1,8 +1,13 @@
 import React from 'react';
 import { createStyles, makeStyles } from '@material-ui/core';
 
-type ImageProps = {
-  src?: string;
+interface BookPageImageProps {
+  bookId?: string;
+  pageIndex?: number;
+  bookPageCount?: number;
+  width?: number;
+  height?: number;
+
   alt?: string;
   minWidth?: number;
   minHeight?: number;
@@ -14,15 +19,7 @@ type ImageProps = {
 
   onClick?: () => void;
   onLoad?: (success: boolean) => void;
-};
-
-type BookPageImageProps = {
-  bookId?: string;
-  pageIndex?: number;
-  bookPageCount?: number;
-  width?: number;
-  height?: number;
-} & Omit<ImageProps, 'src'>;
+}
 
 const useStyles = makeStyles(() => createStyles({
   noImg: {
@@ -71,10 +68,14 @@ const minOrNot = (
   minValue: number,
 ): number | undefined => (value === undefined ? undefined : Math.max(value, minValue));
 
-const Image = (props: ImageProps) => {
+const BookPageImage = (props: BookPageImageProps) => {
   const classes = useStyles(props);
   const {
-    src,
+    bookId,
+    pageIndex,
+    bookPageCount,
+    width,
+    height,
     alt,
     minWidth = 150,
     minHeight = 200,
@@ -86,6 +87,23 @@ const Image = (props: ImageProps) => {
     noSave = true,
     onLoad,
   } = props;
+
+  const src = React.useMemo(
+    () => {
+      if ([bookId, pageIndex, bookPageCount]
+        .findIndex((a) => a === null || a === undefined) !== -1) {
+        return undefined;
+      }
+      return createBookPageUrl(
+        bookId,
+        pageIndex,
+        bookPageCount,
+        minOrNot(width, minWidth),
+        minOrNot(height, minHeight),
+      );
+    },
+    [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight],
+  );
 
   // [beforeLoading, rendered, failed]
   const [_state, setState] = React.useState(0);
@@ -145,37 +163,6 @@ const Image = (props: ImageProps) => {
       ) : null}
     </div>
   );
-};
-
-const BookPageImage = (props: BookPageImageProps) => {
-  const {
-    bookId,
-    pageIndex,
-    bookPageCount,
-    width,
-    height,
-    minWidth = 150,
-    minHeight = 200,
-  } = props;
-
-  const src = React.useMemo(
-    () => {
-      if ([bookId, pageIndex, bookPageCount]
-        .findIndex((a) => a === null || a === undefined) !== -1) {
-        return undefined;
-      }
-      return createBookPageUrl(
-        bookId,
-        pageIndex,
-        bookPageCount,
-        minOrNot(width, minWidth),
-        minOrNot(height, minHeight),
-      );
-    },
-    [bookId, pageIndex, bookPageCount, width, height, minWidth, minHeight],
-  );
-
-  return (<Image {...props} src={src} />);
 };
 
 export default React.memo(BookPageImage);
