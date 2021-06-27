@@ -74,9 +74,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
   },
   pageImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
     paddingTop: commonTheme.safeArea.top,
     '-webkit-touch-callout': 'none',
     'user-select': 'none',
@@ -295,7 +292,7 @@ const Book = (props: BookProps) => {
 
   const clickPage = React.useCallback((event) => {
     if (openEditDialog) return;
-    const percentX = event.nativeEvent.x / event.target.offsetWidth;
+    const percentX = event.nativeEvent.x / document.body.offsetWidth;
     switch (store.readOrder) {
       case 0:
         if (percentX <= 0.2) {
@@ -521,13 +518,14 @@ const Book = (props: BookProps) => {
                 >
                   {(Math.abs(i - debouncePage) <= 1 && imageSize && isPageSet) ? (
                     <BookPageImage
-                      imgStyle={effectBackGround}
+                      style={effectBackGround}
                       bookId={params.id}
                       pageIndex={i}
                       bookPageCount={data.book.pages}
                       {...imageSize}
                       alt={(i + 1).toString(10)}
                       className={classes.pageImage}
+                      loading="eager"
                     />
                   ) : null}
                 </SwiperSlide>

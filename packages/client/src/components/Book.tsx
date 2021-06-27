@@ -27,7 +27,7 @@ import useDebounceValue from '../hooks/useDebounceValue';
 const DownloadDialog = loadable(() => import('./dialogs/DownloadBookDialog'));
 
 interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
-  thumbnailSize?: number;
+  thumbnailSize: number;
   thumbnailNoSave?: boolean;
   name: string;
   updatedAt?: string;
@@ -42,11 +42,6 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
-  thumbnail: {
-    width: '100%',
-    minHeight: '100%',
-    objectFit: 'contain',
-  },
   card: {
     width: '100%',
     margin: 'auto',
@@ -96,7 +91,7 @@ const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 const Book = (props: BookProps) => {
   const classes = useStyles(props);
   const {
-    thumbnailSize = 200,
+    thumbnailSize,
     thumbnailNoSave,
     thumbnail,
     number,
@@ -204,7 +199,7 @@ const Book = (props: BookProps) => {
           pageIndex={thumbnail}
           bookPageCount={pages}
           width={thumbnailSize * window.devicePixelRatio}
-          className={classes.thumbnail}
+          height={(thumbnailSize / 20) * 27 * window.devicePixelRatio}
           noSave={thumbnailNoSave}
         />
         <CardContent className={classes.cardContent}>

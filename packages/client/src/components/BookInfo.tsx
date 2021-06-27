@@ -28,7 +28,7 @@ const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadBookI
 
 interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
   style?: React.CSSProperties;
-  thumbnailSize?: number;
+  thumbnailSize: number;
   showName?: boolean;
   updatedAt?: string;
 
@@ -38,11 +38,6 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
-  thumbnail: {
-    width: '100%',
-    minHeight: '100%',
-    objectFit: 'contain',
-  },
   card: {
     width: '100%',
     margin: 'auto',
@@ -129,7 +124,7 @@ const BookInfo = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const {
     style,
-    thumbnailSize = 200,
+    thumbnailSize,
     id: infoId,
     thumbnail,
     name,
@@ -236,8 +231,8 @@ const BookInfo = (props: BookInfoProps) => {
           pageIndex={thumbnail?.pageIndex}
           bookPageCount={thumbnail?.bookPageCount}
           alt={name}
-          width={thumbnailSize * window.devicePixelRatio}
-          className={classes.thumbnail}
+          width={thumbnailSize}
+          height={(thumbnailSize / 20) * 27}
           noSave={false}
         />
         {showName ? (

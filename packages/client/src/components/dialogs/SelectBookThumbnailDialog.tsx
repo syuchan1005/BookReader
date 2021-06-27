@@ -34,11 +34,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
   },
-  thumbnail: {
-    width: '100%',
-    minHeight: '100%',
-    objectFit: 'contain',
-  },
 }));
 
 const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
@@ -106,13 +101,11 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
                     })}
                   >
                     <BookPageImage
-                      className={classes.thumbnail}
                       bookId={bookId}
                       pageIndex={i}
                       bookPageCount={data.book.pages}
                       width={125 * window.devicePixelRatio}
-                      minWidth={125}
-                      minHeight={150}
+                      height={(125 / 20) * 27 * window.devicePixelRatio}
                     />
                   </CardActionArea>
                 </Card>
