@@ -20,6 +20,8 @@ import { useDeleteBookMutation, useEditBookMutation } from '@syuchan1005/book-re
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
+import useBooleanState from '@client/hooks/useBooleanState';
+import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
@@ -106,15 +108,21 @@ const Book = (props: BookProps) => {
     children,
   } = props;
 
-  const [menuAnchor, setMenuAnchor] = React.useState(null);
-  const [askDelete, setAskDelete] = React.useState(false);
-  const [editDialog, setEditDialog] = React.useState(false);
+  const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
+  const [isShownDeleteDialog, showDeleteDialog,
+    hideDeleteDialog, , setShowDeleteDialog] = useBooleanState(false);
+  const [isShownEditDialog, showEditDialog,
+    hideEditDialog, , setShowEditDialog] = useBooleanState(false);
   const [editContent, setEditContent] = React.useState({
     number,
   });
   const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
-  const [openDownloadDialog, setOpenDownloadDialog] = React.useState(false);
-  const debounceOpenDownloadDialog = useDebounceValue(openDownloadDialog, 400);
+  const hideSelectDialog = React.useCallback(() => {
+    setSelectDialog(undefined);
+  }, []);
+  const [isShownDownloadDialog, showDownloadDialog,
+    hideDownloadDialog] = useBooleanState(false);
+  const debounceIsShownDownloadDialog = useDebounceValue(isShownDownloadDialog, 400);
 
   const [deleteBook, { loading: delLoading }] = useDeleteBookMutation({
     variables: {
@@ -122,7 +130,7 @@ const Book = (props: BookProps) => {
     },
     onCompleted(d) {
       if (!d) return;
-      setAskDelete(!d.del.success);
+      setShowDeleteDialog(!d.del.success);
       if (d.del.success && onDeleted) onDeleted();
     },
   });
@@ -134,30 +142,40 @@ const Book = (props: BookProps) => {
     },
     onCompleted(d) {
       if (!d) return;
-      setEditDialog(!d.edit.success);
+      setShowEditDialog(!d.edit.success);
       if (d.edit.success && onEdit) onEdit();
     },
   });
 
   const clickEditBook = React.useCallback(() => {
-    setMenuAnchor(null);
-    setEditDialog(true);
-  }, []);
+    resetMenuAnchor();
+    showEditDialog();
+  }, [resetMenuAnchor, showEditDialog]);
 
   const clickDeleteBook = React.useCallback(() => {
-    setMenuAnchor(null);
-    setAskDelete(true);
-  }, []);
+    resetMenuAnchor();
+    showDeleteDialog();
+  }, [resetMenuAnchor, showDeleteDialog]);
 
   const clickSelectThumbnailBook = React.useCallback(() => {
-    setMenuAnchor(null);
+    resetMenuAnchor();
     setSelectDialog(bookId);
-  }, [bookId]);
+  }, [bookId, resetMenuAnchor]);
 
   const clickDownloadBook = React.useCallback(() => {
-    setMenuAnchor(null);
-    setOpenDownloadDialog(true);
-  }, []);
+    resetMenuAnchor();
+    showDownloadDialog();
+  }, [resetMenuAnchor, showDownloadDialog]);
+
+  const handleEditContentChange = React.useCallback((k, e) => setEditContent((c) => ({
+    ...c,
+    [k]: e,
+  })), []);
+
+  const resetEditContentNumber = React.useCallback(() => setEditContent((c) => ({
+    ...c,
+    number,
+  })), [number]);
 
   return (
     <Card className={classes.card}>
@@ -171,7 +189,7 @@ const Book = (props: BookProps) => {
       ) : (
         <CardActions className={classes.headerMenu}>
           <IconButton
-            onClick={(event) => setMenuAnchor(event.currentTarget)}
+            onClick={setMenuAnchor}
             aria-label="menu"
           >
             <Icon>more_vert</Icon>
@@ -184,7 +202,7 @@ const Book = (props: BookProps) => {
             }}
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
+            onClose={resetMenuAnchor}
           >
             <MenuItem onClick={clickSelectThumbnailBook}>Select Thumbnail</MenuItem>
             <MenuItem onClick={clickEditBook}>Edit</MenuItem>
@@ -216,40 +234,34 @@ const Book = (props: BookProps) => {
       </CardActionArea>
 
       <DeleteDialog
-        open={askDelete}
+        open={isShownDeleteDialog}
         loading={delLoading}
         book={number}
-        onClose={() => setAskDelete(false)}
-        onClickDelete={() => deleteBook()}
+        onClose={hideDeleteDialog}
+        onClickDelete={deleteBook}
       />
 
       <EditDialog
-        open={editDialog}
+        open={isShownEditDialog}
         loading={editLoading}
         fieldValue={editContent.number}
-        onChange={(k, e) => setEditContent({
-          ...editContent,
-          [k]: e,
-        })}
-        onClose={() => setEditDialog(false)}
-        onClickRestore={() => setEditContent({
-          ...editContent,
-          number,
-        })}
-        onClickEdit={() => editBook()}
+        onChange={handleEditContentChange}
+        onClose={hideEditDialog}
+        onClickRestore={resetEditContentNumber}
+        onClickEdit={editBook}
       />
 
       <SelectBookThumbnailDialog
         open={!!selectDialog}
         bookId={selectDialog}
-        onClose={() => setSelectDialog(undefined)}
+        onClose={hideSelectDialog}
         onEdit={onEdit}
       />
 
-      {(openDownloadDialog || debounceOpenDownloadDialog) && (
+      {(isShownDownloadDialog || debounceIsShownDownloadDialog) && (
         <DownloadDialog
-          open={openDownloadDialog}
-          onClose={() => setOpenDownloadDialog(false)}
+          open={isShownDownloadDialog}
+          onClose={hideDownloadDialog}
           number={number}
           pages={pages}
           bookId={bookId}
