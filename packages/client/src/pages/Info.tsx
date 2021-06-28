@@ -13,7 +13,7 @@ import { common } from '@material-ui/core/colors';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-import { BookOrder } from '@syuchan1005/book-reader-graphql';
+import { Book as BookType, BookOrder } from '@syuchan1005/book-reader-graphql';
 import { useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
@@ -27,6 +27,8 @@ import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import SelectBookHeader from '@client/components/SelectBookHeader';
 import { workbox } from '@client/registerServiceWorker';
 import useMediaQuery from '@client/hooks/useMediaQuery';
+import useMenuAnchor from '@client/hooks/useMenuAnchor';
+import useBooleanState from '@client/hooks/useBooleanState';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -82,20 +84,30 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
+enum ScreenMode {
+  NORMAL,
+  SELECT,
+}
+
 const Info = (props: InfoProps) => {
-  const { state: store, dispatch } = useGlobalStore();
+  const {
+    state: store,
+    dispatch,
+  } = useGlobalStore();
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
   const params = useParams<{ id: string }>();
 
   const [readId, setReadId] = React.useState('');
-  const [open, setOpen] = React.useState(false);
-  const [mode, setMode] = React.useState(0); // 0:normal, 1:select
+  const [isShownAddDialog, showAddDialog, hideAddDialog] = useBooleanState(false);
+  const [mode, setMode] = React.useState<ScreenMode>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
 
   const [title, setTitle] = React.useState(document.title);
-  React.useEffect(() => { document.title = title; }, [title]);
+  React.useEffect(() => {
+    document.title = title;
+  }, [title]);
 
   const {
     refetch,
@@ -115,32 +127,34 @@ const Info = (props: InfoProps) => {
 
   React.useEffect(() => {
     let unMounted = false;
-    db.infoReads.get(params.id).then((read) => {
-      if (read && !unMounted) {
-        setReadId(read.bookId);
-      }
-    });
+    db.infoReads.get(params.id)
+      .then((read) => {
+        if (read && !unMounted) {
+          setReadId(read.bookId);
+        }
+      });
     return () => {
       unMounted = true;
     };
-  }, []);
+  }, [params.id]);
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const clickBook = React.useCallback((book) => {
+  const clickBook = React.useCallback((bookId) => {
     db.infoReads.put({
       infoId: params.id,
-      bookId: book.id,
-    }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
-    history.push(`/book/${book.id}`);
-  }, [params, history]);
+      bookId,
+    })
+      .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
+    history.push(`/book/${bookId}`);
+  }, [params.id, history, enqueueSnackbar]);
 
   const bookList: typeof data.bookInfo.books = React.useMemo(
     () => (data ? data.bookInfo.books : []),
     [data],
   );
 
-  const onDeletedBook = React.useCallback(({ id: bookId, pages }) => {
+  const onDeletedBook = React.useCallback((bookId: string, pages: number) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch();
     // noinspection JSIgnoredPromiseFromCall
@@ -154,12 +168,39 @@ const Info = (props: InfoProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const toggleSelect = React.useCallback((id) => {
-    if (selectIds.includes(id)) setSelectIds(selectIds.filter((i) => i !== id));
-    else setSelectIds([...selectIds, id]);
+  const toggleSelect = React.useCallback((id: string) => {
+    if (selectIds.includes(id)) {
+      setSelectIds(selectIds.filter((i) => i !== id));
+    } else {
+      setSelectIds([...selectIds, id]);
+    }
   }, [selectIds]);
 
-  const [sortEl, setSortEl] = React.useState(undefined);
+  const [sortEl, setSortEl, resetSortEl] = useMenuAnchor();
+
+  const handleBookClick = React.useCallback((bookId: string) => {
+    if (mode === ScreenMode.NORMAL) {
+      clickBook(bookId);
+    } else {
+      toggleSelect(bookId);
+    }
+  }, [clickBook, mode, toggleSelect]);
+
+  const setSelectScreenMode = React.useCallback(() => {
+    setMode(ScreenMode.SELECT);
+  }, []);
+
+  const handleHeaderClose = React.useCallback(() => {
+    setMode(ScreenMode.NORMAL);
+    if (selectIds.length > 0) {
+      setSelectIds([]);
+    }
+  }, [selectIds]);
+
+  const handleDeleteBooks = React.useCallback(() => {
+    setMode(ScreenMode.NORMAL);
+    refetch();
+  }, [refetch]);
 
   return (
     <>
@@ -170,13 +211,13 @@ const Info = (props: InfoProps) => {
         >
           <IconButton
             style={{ color: common.white }}
-            onClick={() => setMode(1)}
+            onClick={setSelectScreenMode}
           >
             <Icon>check_box</Icon>
           </IconButton>
           <IconButton
             style={{ color: common.white }}
-            onClick={(event) => setSortEl(event.currentTarget)}
+            onClick={setSortEl}
           >
             <Icon>sort</Icon>
           </IconButton>
@@ -188,40 +229,36 @@ const Info = (props: InfoProps) => {
             }}
             anchorEl={sortEl}
             open={!!sortEl}
-            onClose={() => setSortEl(undefined)}
+            onClose={resetSortEl}
           >
-            {Object.keys(BookOrder).map((order: BookOrder) => (
-              <MenuItem
-                key={order}
-                onClick={() => {
-                  dispatch({ sortBookOrder: BookOrder[order] });
-                  setSortEl(undefined);
-                }}
-              >
-                {BookOrder[order]}
-              </MenuItem>
-            ))}
+            {Object.keys(BookOrder)
+              .map((order: BookOrder) => (
+                <MenuItem
+                  key={order}
+                  onClick={() => {
+                    dispatch({ sortBookOrder: BookOrder[order] });
+                    resetSortEl();
+                  }}
+                >
+                  {BookOrder[order]}
+                </MenuItem>
+              ))}
           </Menu>
         </TitleAndBackHeader>
       ) : (
         <SelectBookHeader
           infoId={params.id}
           selectIds={selectIds}
-          onClose={() => {
-            setMode(0);
-            setSelectIds([]);
-          }}
-          onDeleteBooks={() => {
-            setMode(0);
-            refetch();
-          }}
+          onClose={handleHeaderClose}
+          onDeleteBooks={handleDeleteBooks}
         />
       )}
       <main className={classes.info}>
         {(loading || error) ? (
           <div className={classes.loading}>
             {loading && 'Loading'}
-            {error && `${error.toString().replace(/:\s*/g, '\n')}`}
+            {error && `${error.toString()
+              .replace(/:\s*/g, '\n')}`}
           </div>
         ) : (
           <>
@@ -235,12 +272,9 @@ const Info = (props: InfoProps) => {
                       name={data.bookInfo.name}
                       reading={readId === book.id}
                       key={book.id}
-                      onClick={() => {
-                        if (mode === 0) clickBook(book);
-                        else toggleSelect(book.id);
-                      }}
-                      onDeleted={() => onDeletedBook(book)}
-                      onEdit={() => refetch()}
+                      onClick={handleBookClick}
+                      onDeleted={onDeletedBook}
+                      onEdit={refetch}
                       thumbnailSize={downXs ? 150 : 200}
                       thumbnailNoSave={false}
                     >
@@ -256,7 +290,7 @@ const Info = (props: InfoProps) => {
             </div>
             <Fab
               className={classes.addButton}
-              onClick={() => setOpen(true)}
+              onClick={showAddDialog}
               aria-label="add"
             >
               <Icon>add</Icon>
@@ -273,10 +307,10 @@ const Info = (props: InfoProps) => {
         </Fab>
 
         <AddBookDialog
-          open={open}
+          open={isShownAddDialog}
           infoId={params.id}
           onAdded={refetch}
-          onClose={() => setOpen(false)}
+          onClose={hideAddDialog}
         />
       </main>
     </>

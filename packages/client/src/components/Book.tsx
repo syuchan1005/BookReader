@@ -34,9 +34,9 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
   name: string;
   updatedAt?: string;
   reading?: boolean;
-  onClick?: Function;
-  onDeleted?: Function;
-  onEdit?: () => {};
+  onClick?: (bookId: string) => void;
+  onDeleted?: (bookId: string, pages: number) => void;
+  onEdit?: () => void;
 
   simple?: boolean;
 
@@ -131,7 +131,7 @@ const Book = (props: BookProps) => {
     onCompleted(d) {
       if (!d) return;
       setShowDeleteDialog(!d.del.success);
-      if (d.del.success && onDeleted) onDeleted();
+      if (d.del.success && onDeleted) onDeleted(bookId, pages);
     },
   });
 
@@ -177,6 +177,12 @@ const Book = (props: BookProps) => {
     number,
   })), [number]);
 
+  const handleBookClicked = React.useCallback(() => {
+    if (onClick) {
+      onClick(bookId);
+    }
+  }, [onClick, bookId]);
+
   return (
     <Card className={classes.card}>
       {/* eslint-disable-next-line no-nested-ternary */}
@@ -211,7 +217,7 @@ const Book = (props: BookProps) => {
           </Menu>
         </CardActions>
       )}
-      <CardActionArea onClick={(e) => onClick && onClick(e)}>
+      <CardActionArea onClick={handleBookClicked}>
         <BookPageImage
           bookId={bookId}
           pageIndex={thumbnail}
