@@ -5,7 +5,8 @@ import {
   Fab,
   Icon,
   makeStyles,
-  Theme, useMediaQuery, useTheme,
+  Theme,
+  useTheme,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
@@ -26,6 +27,7 @@ import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useStateWithReset from '@client/hooks/useStateWithReset';
+import useMediaQuery from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
 import db from '../Database';
 

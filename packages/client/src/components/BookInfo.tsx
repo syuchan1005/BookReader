@@ -20,7 +20,7 @@ import { useDeleteBookInfoMutation, useEditBookInfoMutation } from '@syuchan1005
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import BookPageImage from './BookPageImage';
+import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
 
@@ -232,7 +232,7 @@ const BookInfo = (props: BookInfoProps) => {
           bookPageCount={thumbnail?.bookPageCount}
           alt={name}
           width={thumbnailSize}
-          height={(thumbnailSize / 20) * 27}
+          height={pageAspectRatio(thumbnailSize)}
           noSave={false}
         />
         {showName ? (

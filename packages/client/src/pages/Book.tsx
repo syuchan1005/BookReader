@@ -179,7 +179,7 @@ const Book = (props: BookProps) => {
   }, [params.id]);
 
   const windowSize = useWindowSize();
-  const { width, height } = useDebounceValue(windowSize, 800);
+  const debounceWindowSize = useDebounceValue(windowSize, 800);
 
   const setPage = React.useCallback((s, time = 150) => {
     if (swiper && !rebuildSwiper) {
@@ -292,7 +292,7 @@ const Book = (props: BookProps) => {
 
   const clickPage = React.useCallback((event) => {
     if (openEditDialog) return;
-    const percentX = event.nativeEvent.x / document.body.offsetWidth;
+    const percentX = event.nativeEvent.x / windowSize.width;
     switch (store.readOrder) {
       case 0:
         if (percentX <= 0.2) {
@@ -315,7 +315,7 @@ const Book = (props: BookProps) => {
       default:
         toggleAppBar();
     }
-  }, [store.readOrder, increment, decrement, openEditDialog, toggleAppBar]);
+  }, [store.readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -330,11 +330,11 @@ const Book = (props: BookProps) => {
   }, [prevBook, nextBook, data, history, enqueueSnackbar]);
 
   const imageSize = React.useMemo(() => {
-    if (store.showOriginalImage) return { width: undefined, height: undefined };
-    const sizes = [width * window.devicePixelRatio, height * window.devicePixelRatio];
-    sizes[sizes[0] > sizes[1] ? 0 : 1] = undefined;
-    return { width: sizes[0], height: sizes[1] };
-  }, [width, height, store]);
+    if (store.showOriginalImage) {
+      return { width: undefined, height: undefined };
+    }
+    return debounceWindowSize;
+  }, [debounceWindowSize, store]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);

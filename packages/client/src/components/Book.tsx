@@ -20,7 +20,7 @@ import { useDeleteBookMutation, useEditBookMutation } from '@syuchan1005/book-re
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import BookPageImage from './BookPageImage';
+import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
 
@@ -198,8 +198,8 @@ const Book = (props: BookProps) => {
           bookId={bookId}
           pageIndex={thumbnail}
           bookPageCount={pages}
-          width={thumbnailSize * window.devicePixelRatio}
-          height={(thumbnailSize / 20) * 27 * window.devicePixelRatio}
+          width={thumbnailSize}
+          height={pageAspectRatio(thumbnailSize)}
           noSave={thumbnailNoSave}
         />
         <CardContent className={classes.cardContent}>

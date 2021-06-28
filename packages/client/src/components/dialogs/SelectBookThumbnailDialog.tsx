@@ -13,7 +13,7 @@ import {
 
 import { useBookPagesQuery, useEditBookThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-import BookPageImage from '@client/components/BookPageImage';
+import BookPageImage, { pageAspectRatio } from '@client/components/BookPageImage';
 import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
@@ -104,8 +104,8 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
                       bookId={bookId}
                       pageIndex={i}
                       bookPageCount={data.book.pages}
-                      width={125 * window.devicePixelRatio}
-                      height={(125 / 20) * 27 * window.devicePixelRatio}
+                      width={125}
+                      height={pageAspectRatio(125)}
                     />
                   </CardActionArea>
                 </Card>

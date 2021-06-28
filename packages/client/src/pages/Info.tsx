@@ -6,7 +6,7 @@ import {
   Icon,
   Theme,
   useTheme,
-  useMediaQuery, IconButton,
+  IconButton,
   Checkbox, Menu, MenuItem,
 } from '@material-ui/core';
 import { common } from '@material-ui/core/colors';
@@ -26,6 +26,7 @@ import Book from '@client/components/Book';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import SelectBookHeader from '@client/components/SelectBookHeader';
 import { workbox } from '@client/registerServiceWorker';
+import useMediaQuery from '@client/hooks/useMediaQuery';
 
 interface InfoProps {
   children?: React.ReactElement;

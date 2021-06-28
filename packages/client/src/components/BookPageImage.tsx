@@ -41,6 +41,9 @@ export const createBookPageUrl = (
   return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
 };
 
+// B6判
+export const pageAspectRatio = (width: number) => Math.ceil((width / 128) * 182);
+
 enum ImageState {
   LOADING,
   LOADED,
