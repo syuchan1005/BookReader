@@ -1,5 +1,6 @@
 import React from 'react';
 import { createStyles, makeStyles } from '@material-ui/core';
+import { Skeleton } from '@material-ui/lab';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -19,6 +20,9 @@ const useStyles = makeStyles(() => createStyles({
     display: 'block', // If the image not found, keep the height of alt text.
     objectFit: 'contain',
   },
+  skeleton: {
+    position: 'absolute',
+  },
 }));
 
 const createSizeUrlSuffix = (width?: number, height?: number) => ((!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`);
@@ -37,6 +41,12 @@ export const createBookPageUrl = (
   return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
 };
 
+enum ImageState {
+  LOADING,
+  LOADED,
+  ERROR,
+}
+
 const BookPageImage = (props: BookPageImageProps) => {
   const classes = useStyles(props);
   const {
@@ -51,6 +61,8 @@ const BookPageImage = (props: BookPageImageProps) => {
     style,
     noSave = true,
   } = props;
+
+  const [state, setState] = React.useState(ImageState.LOADING);
 
   const src = React.useMemo(
     () => {
@@ -68,9 +80,30 @@ const BookPageImage = (props: BookPageImageProps) => {
     },
     [bookId, pageIndex, bookPageCount, width, height],
   );
+  React.useEffect(() => {
+    setState(ImageState.LOADING);
+  }, [src]);
+
+  const handleError = React.useCallback(() => {
+    setState(ImageState.ERROR);
+  }, []);
+
+  const handleLoad = React.useCallback(() => {
+    setState(ImageState.LOADED);
+  }, []);
 
   return (
     <picture>
+      {(state === ImageState.LOADING || state === ImageState.ERROR) && (
+        <Skeleton
+          className={classes.skeleton}
+          variant="rect"
+          animation={state === ImageState.LOADING ? undefined : false}
+          style={{ position: 'absolute' }}
+          width={width}
+          height={height}
+        />
+      )}
       <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
       <img
         loading={loading}
@@ -80,6 +113,8 @@ const BookPageImage = (props: BookPageImageProps) => {
         alt={alt}
         width={width}
         height={height}
+        onError={handleError}
+        onLoad={handleLoad}
       />
     </picture>
   );
