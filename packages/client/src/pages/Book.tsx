@@ -334,7 +334,7 @@ const Book = (props: BookProps) => {
       return { width: undefined, height: undefined };
     }
     return debounceWindowSize;
-  }, [debounceWindowSize, store]);
+  }, [debounceWindowSize, store.showOriginalImage]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -346,6 +346,10 @@ const Book = (props: BookProps) => {
   React.useEffect(() => {
     dispatch({ showOriginalImage: networkType === 'ethernet' });
   }, [networkType, dispatch]);
+
+  const toggleOriginalImage = React.useCallback(() => {
+    dispatch({ showOriginalImage: !store.showOriginalImage });
+  }, [dispatch, store.showOriginalImage]);
 
   if (loading || error) {
     return (
@@ -443,7 +447,7 @@ const Book = (props: BookProps) => {
                       Edit pages
                     </MenuItem>
                     <MenuItem
-                      onClick={() => dispatch({ showOriginalImage: !store.showOriginalImage })}
+                      onClick={toggleOriginalImage}
                     >
                       {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
                     </MenuItem>

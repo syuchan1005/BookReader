@@ -16,6 +16,7 @@ interface BookPageImageProps {
 
 const useStyles = makeStyles(() => createStyles({
   img: {
+    width: '100%',
     display: 'block', // If the image not found, keep the height of alt text.
     objectFit: 'contain',
   },
