@@ -101,9 +101,16 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   const [addType, setAddType] = React.useState('file');
   const [nameType, setNameType] = React.useState<'number' | 'filename'>('number');
   const [editContent, setEditContent] = React.useState({});
-  React.useEffect(() => setEditContent({}), [addType]);
+  React.useEffect(() => {
+    if (Object.keys(editContent).length > 0) {
+      setEditContent({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addType]);
   const [title, setTitle, resetTitle] = useStateWithReset(document.title);
-  useEffect(() => { document.title = title; }, [title]);
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
   useEffect(() => {
     if (!addBookProgress) {
       resetTitle();
@@ -111,7 +118,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       const percent = (addBookProgress.loaded / addBookProgress.total) * 100;
       setTitle((initValue) => `${initValue} - Uploading ${percent}%`);
     }
-  }, [addBookProgress]);
+  }, [addBookProgress, resetTitle, setTitle]);
 
   const {
     data,
@@ -141,7 +148,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     setAddType('file');
     setEditContent({});
     resetTitle();
-  }, [onClose, onAdded]);
+  }, [onClose, onAdded, resetTitle]);
 
   const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
     gql(`
@@ -203,7 +210,10 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     [addBookLoading, addCompressBookLoading, addPluginLoading],
   );
 
-  const { data: subscriptionData, loading: subscriptionLoading } = useAddBooksProgressSubscription({
+  const {
+    data: subscriptionData,
+    loading: subscriptionLoading,
+  } = useAddBooksProgressSubscription({
     fetchPolicy: 'no-cache',
     skip: !subscriptionId,
     variables: {
@@ -214,7 +224,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   useEffect(() => {
     if (!subscriptionData) return;
     setTitle((initValue) => `${initValue} - ${subscriptionData.addBooks}`);
-  }, [subscriptionData]);
+  }, [setTitle, subscriptionData]);
 
   const closeDialog = () => {
     if (!loading) {
@@ -235,7 +245,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         }
         let nums = f.name.match(/\d+/g);
         if (nums) {
-          nums = Number(nums[nums.length - 1]).toString(10);
+          nums = Number(nums[nums.length - 1])
+            .toString(10);
         } else {
           nums = `${addBooks.length + i + 1}`;
         }
@@ -310,7 +321,9 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         },
       });
     }
-  }, [editContent, selectedPlugin, infoId, addType, addBooks]);
+  },
+  [selectedPlugin, infoId, subscriptionLoading, addType,
+    addCompressBook, addBooks, addBook, addPlugin, editContent]);
 
   return (
     <Dialog open={open} onClose={closeDialog}>
@@ -333,7 +346,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         }
         if (
           (subscriptionData && (!addBookProgress
-            || (addBookProgress.loaded / addBookProgress.total) < 97)
+              || (addBookProgress.loaded / addBookProgress.total) < 97)
           ) || (selectedPlugin && addPluginLoading)) {
           return (
             <DialogContent className={classes.addBookSubscription}>
@@ -351,8 +364,18 @@ const AddBookDialog = (props: AddBookDialogProps) => {
               value={addType}
               onChange={(e) => setAddType(e.target.value)}
             >
-              <FormControlLabel disabled={loading} control={<Radio classes={{ root: classes.addTypeRadioRoot }} />} label="File" value="file" />
-              <FormControlLabel disabled={loading} control={<Radio classes={{ root: classes.addTypeRadioRoot }} />} label="Compress File" value="file_compressed" />
+              <FormControlLabel
+                disabled={loading}
+                control={<Radio classes={{ root: classes.addTypeRadioRoot }} />}
+                label="File"
+                value="file"
+              />
+              <FormControlLabel
+                disabled={loading}
+                control={<Radio classes={{ root: classes.addTypeRadioRoot }} />}
+                label="Compress File"
+                value="file_compressed"
+              />
               {data && data.plugins.map((plugin) => (
                 <FormControlLabel
                   key={plugin.info.name}
@@ -370,7 +393,11 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                   {(addType === 'file_compressed'
                     ? [addBooks[0]].filter((a) => a)
                     : addBooks
-                  ).map(({ number, file, path }, i) => (
+                  ).map(({
+                    number,
+                    file,
+                    path,
+                  }, i) => (
                     <div key={`${path !== undefined ? i : file.name}`} className={classes.listItem}>
                       {path !== undefined ? (
                         <TextField
@@ -424,7 +451,11 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                     <DropZone onChange={dropFiles} />
                     <Button
                       startIcon={<Icon>add</Icon>}
-                      onClick={() => setAddBooks([...addBooks, { number: '', path: '', file: undefined }])}
+                      onClick={() => setAddBooks([...addBooks, {
+                        number: '',
+                        path: '',
+                        file: undefined,
+                      }])}
                     >
                       Add local
                     </Button>
@@ -442,7 +473,10 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                       disabled={loading}
                       label={label}
                       value={editContent[label] || ''}
-                      onChange={(e) => setEditContent({ ...editContent, [label]: e.target.value })}
+                      onChange={(e) => setEditContent({
+                        ...editContent,
+                        [label]: e.target.value,
+                      })}
                     />
                   ))}
               </div>

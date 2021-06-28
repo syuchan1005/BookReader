@@ -1,12 +1,15 @@
 import { useCallback, useState } from 'react';
 
-const useStateWithReset = <T>(initValue: T): [T, (t: T) => void, () => void] => {
+type Creator<T> = ((i: T, p: T) => T) | T;
+
+const useStateWithReset = <T>(initValue: T): [T, (c: Creator<T>) => void, () => void] => {
   const [state, setState] = useState(initValue);
   const reset = useCallback(() => {
     setState(initValue);
-  }, [setState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const setValue = useCallback((creator: ((i: T, p: T) => T) | T) => {
+  const setValue = useCallback((creator: Creator<T>) => {
     setState((prevValue: T) => {
       if (typeof creator === 'function') {
         // @ts-ignore
@@ -14,7 +17,8 @@ const useStateWithReset = <T>(initValue: T): [T, (t: T) => void, () => void] => 
       }
       return creator;
     });
-  }, [setState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return [state, setValue, reset];
 };
