@@ -179,7 +179,6 @@ const Book = (props: BookProps) => {
   }, [params.id]);
 
   const windowSize = useWindowSize();
-  const debounceWindowSize = useDebounceValue(windowSize, 800);
 
   const setPage = React.useCallback((s, time = 150) => {
     if (swiper && !rebuildSwiper) {
@@ -333,8 +332,8 @@ const Book = (props: BookProps) => {
     if (store.showOriginalImage) {
       return { width: undefined, height: undefined };
     }
-    return debounceWindowSize;
-  }, [debounceWindowSize, store.showOriginalImage]);
+    return windowSize;
+  }, [windowSize, store.showOriginalImage]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -530,6 +529,7 @@ const Book = (props: BookProps) => {
                       alt={(i + 1).toString(10)}
                       className={classes.pageImage}
                       loading="eager"
+                      sizeDebounceDelay={600}
                     />
                   ) : null}
                 </SwiperSlide>

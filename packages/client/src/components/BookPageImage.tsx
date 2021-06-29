@@ -1,5 +1,6 @@
 import React from 'react';
 import { createStyles, makeStyles } from '@material-ui/core';
+import useDebounceValue from '@client/hooks/useDebounceValue';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -12,6 +13,8 @@ interface BookPageImageProps {
   className?: any;
   style?: any;
   noSave?: boolean;
+
+  sizeDebounceDelay?: number;
 }
 
 const useStyles = makeStyles(() => createStyles({
@@ -55,14 +58,18 @@ const BookPageImage = (props: BookPageImageProps) => {
     bookId,
     pageIndex,
     bookPageCount,
-    width,
-    height,
+    width: imgWidth,
+    height: imgHeight,
     loading = 'lazy',
     alt,
     className,
     style,
     noSave = true,
+    sizeDebounceDelay = 0,
   } = props;
+
+  const width = useDebounceValue(imgWidth, sizeDebounceDelay);
+  const height = useDebounceValue(imgHeight, sizeDebounceDelay);
 
   const imageSourceSet = React.useMemo<SourceSet>(
     () => {
@@ -122,8 +129,8 @@ const BookPageImage = (props: BookPageImageProps) => {
         style={style}
         src={imageSourceSet.imgSrc}
         alt={alt}
-        width={width}
-        height={height}
+        width={imgWidth}
+        height={imgHeight}
       />
     </picture>
   );
