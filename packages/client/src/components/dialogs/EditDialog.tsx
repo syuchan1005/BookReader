@@ -39,6 +39,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
+const defaultGenres = [];
+
 const EditDialog = (props: EditDialogProps) => {
   const {
     open,
@@ -53,14 +55,26 @@ const EditDialog = (props: EditDialogProps) => {
   } = props;
   const classes = useStyles(props);
 
+  const handleChangeGenres = React.useCallback((g) => {
+    if (onChange) {
+      onChange('genres', g);
+    }
+  }, [onChange]);
+
+  const handleTextChange = React.useCallback((event) => {
+    if (onChange) {
+      onChange(info ? 'name' : 'number', event.target.value);
+    }
+  }, [info, onChange]);
+
   return (
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
       <DialogContent className={classes.content}>
         {(info) && (
           <GenresSelect
-            value={genres ?? []}
-            onChange={(g) => (onChange && onChange('genres', g))}
+            value={genres ?? defaultGenres}
+            onChange={handleChangeGenres}
           />
         )}
         <TextField
@@ -68,8 +82,7 @@ const EditDialog = (props: EditDialogProps) => {
           autoFocus
           label={info ? 'Book info name' : 'Book number'}
           value={fieldValue}
-          // @ts-ignore
-          onChange={(event) => (onChange && onChange(info ? 'name' : 'number', event.target.value))}
+          onChange={handleTextChange}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
