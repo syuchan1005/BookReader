@@ -100,7 +100,8 @@ const Home = (props: HomeProps) => {
 
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
-  const [openAddBook, setOpenAddBook] = React.useState<string | undefined>(undefined);
+  const [openAddBook, setOpenAddBook,
+    resetOpenAddBook] = useStateWithReset<string | undefined>(undefined);
   const [searchText, setSearchText] = useQueryParam('search', StringParam);
   const debounceSearch = useDebounceValue(searchText, 800);
   const handleSearchText = React.useCallback((text?: string) => {
@@ -141,14 +142,14 @@ const Home = (props: HomeProps) => {
   const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
 
   const infos = React.useMemo(() => (data ? data.bookInfos.infos : []), [data]);
-  const onDeletedBookInfo = React.useCallback((info, books) => {
+  const handleDeletedBookInfo = React.useCallback((infoId: string, books) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch({
       offset: 0,
       limit: infos.length,
     });
     // noinspection JSIgnoredPromiseFromCall
-    db.infoReads.delete(info.id);
+    db.infoReads.delete(infoId);
     // noinspection JSIgnoredPromiseFromCall
     db.bookReads.bulkDelete(books.map((b) => b.id));
     if (workbox) {
@@ -191,6 +192,14 @@ const Home = (props: HomeProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
+  const handleBookInfoClick = React.useCallback((infoId, isHistory) => {
+    if (isHistory) {
+      setOpenAddBook(infoId);
+    } else {
+      history.push(`/info/${infoId}`);
+    }
+  }, [history, setOpenAddBook]);
+
   return (
     <>
       <SearchAndMenuHeader
@@ -213,8 +222,8 @@ const Home = (props: HomeProps) => {
                 <BookInfo
                   key={info.id}
                   {...info}
-                  onClick={() => (info.history ? setOpenAddBook(info.id) : history.push(`/info/${info.id}`))}
-                  onDeleted={(books) => onDeletedBookInfo(info, books)}
+                  onClick={handleBookInfoClick}
+                  onDeleted={handleDeletedBookInfo}
                   onEdit={refetchAll}
                   thumbnailSize={downXs ? 150 : 200}
                   showName={store.showBookInfoName}
@@ -257,7 +266,7 @@ const Home = (props: HomeProps) => {
         <AddBookDialog
           open={!!openAddBook}
           infoId={openAddBook}
-          onClose={() => setOpenAddBook(undefined)}
+          onClose={resetOpenAddBook}
           onAdded={refetchAll}
         />
       </main>

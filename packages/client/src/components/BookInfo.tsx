@@ -37,8 +37,8 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   showName?: boolean;
   updatedAt?: string;
 
-  onClick?: Function;
-  onDeleted?: Function;
+  onClick?: (infoId: string, isHistory: boolean) => void;
+  onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
   onEdit?: () => void;
 }
 
@@ -167,7 +167,9 @@ const BookInfo = (props: BookInfoProps) => {
     onCompleted(d) {
       if (!d) return;
       setShowDeleteDialog(!d.del.success);
-      if (d.del.success && onDeleted) onDeleted(d.del.books);
+      if (d.del.success && onDeleted) {
+        onDeleted(infoId, d.del.books);
+      }
     },
   });
 
@@ -218,6 +220,12 @@ const BookInfo = (props: BookInfoProps) => {
     }));
   }, [name]);
 
+  const handleCardClick = React.useCallback(() => {
+    if (onClick) {
+      onClick(infoId, history);
+    }
+  }, [history, infoId, onClick]);
+
   return (
     <Card className={classes.card} style={style}>
       <CardActions className={classes.headerMenu}>
@@ -243,7 +251,7 @@ const BookInfo = (props: BookInfoProps) => {
           {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
         </Menu>
       </CardActions>
-      <CardActionArea onClick={(e) => onClick && onClick(e)}>
+      <CardActionArea onClick={handleCardClick}>
         <BookPageImage
           bookId={thumbnail?.bookId}
           pageIndex={thumbnail?.pageIndex}
