@@ -41,6 +41,14 @@ export const createBookPageUrl = (
 // B6判
 export const pageAspectRatio = (width: number) => Math.ceil((width / 128) * 182);
 
+interface SourceSet {
+  imgSrc: string | undefined;
+  sources: {
+    type: string;
+    srcSet: string;
+  }[];
+}
+
 const BookPageImage = (props: BookPageImageProps) => {
   const classes = useStyles(props);
   const {
@@ -56,31 +64,63 @@ const BookPageImage = (props: BookPageImageProps) => {
     noSave = true,
   } = props;
 
-  const src = React.useMemo(
+  const imageSourceSet = React.useMemo<SourceSet>(
     () => {
       if ([bookId, pageIndex, bookPageCount]
         .findIndex((a) => a === null || a === undefined) !== -1) {
-        return undefined;
+        return { imgSrc: undefined, sources: [] };
       }
-      return createBookPageUrl(
+      const src = createBookPageUrl(
         bookId,
         pageIndex,
         bookPageCount,
         width < height ? width : undefined,
         width < height ? undefined : height,
       );
+      const src2 = createBookPageUrl(
+        bookId,
+        pageIndex,
+        bookPageCount,
+        width < height ? width * 2 : undefined,
+        width < height ? undefined : height * 2,
+      );
+      const src3 = createBookPageUrl(
+        bookId,
+        pageIndex,
+        bookPageCount,
+        width < height ? width * 3 : undefined,
+        width < height ? undefined : height * 3,
+      );
+      const suffix = noSave ? '?nosave' : '';
+
+      return {
+        imgSrc: `${src}${suffix}`,
+        sources: [
+          {
+            type: 'image/webp',
+            srcSet: `${src}.webp${suffix} 1x, ${src2}.webp${suffix} 2x, ${src3}.webp${suffix} 3x`,
+          },
+        ],
+      };
     },
-    [bookId, pageIndex, bookPageCount, width, height],
+    [bookId, pageIndex, bookPageCount, width, height, noSave],
+  );
+
+  const imgClassName = React.useMemo(
+    () => (className ? `${classes.img} ${className}` : classes.img),
+    [className, classes.img],
   );
 
   return (
     <picture>
-      <source type="image/webp" srcSet={`${src}.webp${noSave ? '?nosave' : ''}`} />
+      {imageSourceSet.sources.map(({ type, srcSet }) => (
+        <source key={type} type={type} srcSet={srcSet} />
+      ))}
       <img
         loading={loading}
-        className={`${classes.img} ${className ?? ''}`}
+        className={imgClassName}
         style={style}
-        src={`${src}${noSave ? '?nosave' : ''}`}
+        src={imageSourceSet.imgSrc}
         alt={alt}
         width={width}
         height={height}
