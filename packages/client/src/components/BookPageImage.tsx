@@ -18,6 +18,9 @@ interface BookPageImageProps {
 }
 
 const useStyles = makeStyles(() => createStyles({
+  picture: {
+    width: '100%',
+  },
   img: {
     width: '100%',
     display: 'block', // If the image not found, keep the height of alt text.
@@ -77,6 +80,7 @@ const BookPageImage = (props: BookPageImageProps) => {
         .findIndex((a) => a === null || a === undefined) !== -1) {
         return { imgSrc: undefined, sources: [] };
       }
+      const suffix = noSave ? '?nosave' : '';
       const src = createBookPageUrl(
         bookId,
         pageIndex,
@@ -84,6 +88,18 @@ const BookPageImage = (props: BookPageImageProps) => {
         width < height ? width : undefined,
         width < height ? undefined : height,
       );
+      const sizeSuffix = createSizeUrlSuffix(width, height);
+      if (sizeSuffix === '') {
+        return {
+          imgSrc: `${src}${suffix}`,
+          sources: [
+            {
+              type: 'image/webp',
+              srcSet: `${src}.webp${suffix}`,
+            },
+          ],
+        };
+      }
       const src2 = createBookPageUrl(
         bookId,
         pageIndex,
@@ -98,7 +114,6 @@ const BookPageImage = (props: BookPageImageProps) => {
         width < height ? width * 3 : undefined,
         width < height ? undefined : height * 3,
       );
-      const suffix = noSave ? '?nosave' : '';
 
       return {
         imgSrc: `${src}${suffix}`,
@@ -119,7 +134,7 @@ const BookPageImage = (props: BookPageImageProps) => {
   );
 
   return (
-    <picture>
+    <picture className={classes.picture}>
       {imageSourceSet.sources.map(({ type, srcSet }) => (
         <source key={type} type={type} srcSet={srcSet} />
       ))}
