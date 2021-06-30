@@ -34,7 +34,6 @@ import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import db from '../Database';
 import BookPageImage from '../components/BookPageImage';
-import useNetworkType from '../hooks/useNetworkType';
 import TitleAndBackHeader from '../components/TitleAndBackHeader';
 import { Remount } from '../components/Remount';
 
@@ -339,12 +338,6 @@ const Book = (props: BookProps) => {
     setEffect(eff);
     setEffectMenuAnchor(null);
   }, []);
-
-  const networkType = useNetworkType();
-
-  React.useEffect(() => {
-    dispatch({ showOriginalImage: networkType === 'ethernet' });
-  }, [networkType, dispatch]);
 
   const toggleOriginalImage = React.useCallback(() => {
     dispatch({ showOriginalImage: !store.showOriginalImage });
