@@ -3,7 +3,6 @@ const path = require('path');
 module.exports = {
   extends: [
     'airbnb',
-    'airbnb/hooks',
   ],
   plugins: [
     '@typescript-eslint',
@@ -57,6 +56,12 @@ module.exports = {
       jsx: 'never',
       mjs: 'never',
     }],
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': [
+      'warn', {
+        additionalHooks: 'useRecoilCallback',
+      },
+    ],
   },
   settings: {
     'import/resolver': {

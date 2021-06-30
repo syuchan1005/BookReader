@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 
 import { ApolloProvider } from '@apollo/react-hooks';
 import { SnackbarProvider } from 'notistack';
+import { RecoilRoot } from 'recoil';
 
 import apolloClient, { setUpApollo } from '@client/apollo/index';
-import StoreProvider from '@client/store/StoreProvider';
 import App from './App';
 
 import db from './Database';
@@ -29,13 +29,13 @@ if (process.env.NODE_ENV !== 'production') {
 
   ReactDOM.render(
     (
-      <StoreProvider>
+      <RecoilRoot>
         <SnackbarProvider maxSnack={3}>
           <ApolloProvider client={apolloClient}>
             <App />
           </ApolloProvider>
         </SnackbarProvider>
-      </StoreProvider>
+      </RecoilRoot>
     ),
     document.getElementById('app'),
   );

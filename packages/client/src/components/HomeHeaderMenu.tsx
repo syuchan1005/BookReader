@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import {
   Button,
   Chip,
@@ -20,14 +20,25 @@ import {
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors';
 import { useHistory } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
 
-import { BookInfoOrder } from '@syuchan1005/book-reader-graphql';
-import { useDeleteUnusedFoldersMutation, useFolderSizesLazyQuery, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  BookInfoOrder,
+  useDeleteUnusedFoldersMutation,
+  useFolderSizesLazyQuery,
+  useGenresQuery,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-import { useGlobalStore } from '@client/store/StoreProvider';
 import { workbox } from '@client/registerServiceWorker';
 import { resetStore } from '@client/apollo';
-import ColorTile from './ColorTile';
+import ColorTile from '@client/components/ColorTile';
+import {
+  bookHistoryState,
+  genresState,
+  primaryColorState,
+  secondaryColorState, showBookInfoNameState,
+  sortOrderState,
+} from '@client/store/atoms';
 
 interface HeaderMenuProps {
   anchorEl: Element;
@@ -66,7 +77,12 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const classes = useStyles(props);
 
   const history = useHistory();
-  const { state: store, dispatch } = useGlobalStore();
+  const [genres, setGenres] = useRecoilState(genresState);
+  const [primaryColor, setPrimaryColor] = useRecoilState(primaryColorState);
+  const [secondaryColor, setSecondaryColor] = useRecoilState(secondaryColorState);
+  const [bookHistory, setBookHistory] = useRecoilState(bookHistoryState);
+  const [sortOrder, setSortOrder] = useRecoilState(sortOrderState);
+  const [showBookInfoName, setShowBookInfoName] = useRecoilState(showBookInfoNameState);
   const theme = useTheme();
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
@@ -119,6 +135,10 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     }
   }, [vConsole]);
 
+  const handleGenresChange = React.useCallback((event: ChangeEvent<{ value: string[] }>) => {
+    setGenres(event.target.value);
+  }, [setGenres]);
+
   return (
     <>
       <Menu
@@ -137,8 +157,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             <Select
               multiple
               input={<Input />}
-              value={store.genres}
-              onChange={(e) => dispatch({ genres: e.target.value as string[] })}
+              value={genres}
+              onChange={handleGenresChange}
               renderValue={(selected) => (
                 <div className={classes.chips}>
                   {(selected as string[]).map((value) => (
@@ -162,10 +182,10 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         <MenuItem onClick={(e) => setHistoryAnchorEl(e.currentTarget)}>
           History:
           {' '}
-          {store.history}
+          {bookHistory}
         </MenuItem>
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
-          {`Sort: ${store.sortOrder}`}
+          {`Sort: ${sortOrder}`}
         </MenuItem>
         <MenuItem
           onClick={(e) => {
@@ -174,7 +194,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           }}
         >
           <span>Primary:</span>
-          <ColorTile marginLeft color={store.primary} />
+          <ColorTile marginLeft color={primaryColor} />
         </MenuItem>
         <MenuItem
           onClick={(e) => {
@@ -183,10 +203,10 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           }}
         >
           <span>Secondary:</span>
-          <ColorTile marginLeft color={store.secondary} />
+          <ColorTile marginLeft color={secondaryColor} />
         </MenuItem>
-        <MenuItem onClick={() => dispatch({ showBookInfoName: !store.showBookInfoName })}>
-          <span>{`${store.showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
+        <MenuItem onClick={() => setShowBookInfoName((v) => !v)}>
+          <span>{`${showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
         </MenuItem>
         <MenuItem onClick={() => history.push('/setting')}>
           <ListItemIcon><Icon>settings</Icon></ListItemIcon>
@@ -276,7 +296,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           <MenuItem
             key={order}
             onClick={() => {
-              dispatch({ sortOrder: BookInfoOrder[order] });
+              setSortOrder(BookInfoOrder[order]);
               setSortAnchorEl(null);
             }}
           >
@@ -299,7 +319,11 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           <MenuItem
             key={c}
             onClick={() => {
-              dispatch({ [colorType]: c });
+              if (colorType === 'primary') {
+                setPrimaryColor(c);
+              } else {
+                setSecondaryColor(c);
+              }
               setColorType(undefined);
               setColorAnchorEl(null);
             }}
@@ -324,7 +348,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             key={s}
             onClick={() => {
               setHistoryAnchorEl(null);
-              dispatch({ history: s });
+              setBookHistory(s);
             }}
           >
             {s}

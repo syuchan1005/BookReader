@@ -13,9 +13,10 @@ import loadable from '@loadable/component';
 import { useApolloClient } from '@apollo/react-hooks';
 import { QueryParamProvider } from 'use-query-params';
 
-import { useGlobalStore } from '@client/store/StoreProvider';
 import useMatchMedia from '@client/hooks/useMatchMedia';
 import { workbox } from '@client/registerServiceWorker';
+import { useRecoilValue } from 'recoil';
+import { primaryColorState, secondaryColorState } from '@client/store/atoms';
 
 const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
 const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
@@ -69,19 +70,14 @@ export const commonTheme = {
 const history = createBrowserHistory();
 
 const App = () => {
-  const { state: store, dispatch } = useGlobalStore();
+  const primaryColor = useRecoilValue(primaryColorState);
+  const secondaryColor = useRecoilValue(secondaryColorState);
 
   const theme = useMatchMedia(
     ['(prefers-color-scheme: dark)', '(prefers-color-scheme: light)'],
     ['dark', 'light'],
     'light',
   );
-
-  React.useEffect(() => {
-    if (store.theme !== theme) {
-      dispatch({ theme });
-    }
-  }, [dispatch, theme, store.theme]);
 
   const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
@@ -108,12 +104,12 @@ const App = () => {
   const provideTheme = React.useMemo(
     () => createMuiTheme({
       palette: {
-        type: store.theme,
-        primary: colors[store.primary],
-        secondary: colors[store.secondary],
+        type: theme,
+        primary: colors[primaryColor],
+        secondary: colors[secondaryColor],
       },
     }),
-    [store.theme, store.primary, store.secondary],
+    [theme, primaryColor, secondaryColor],
   );
 
   return (

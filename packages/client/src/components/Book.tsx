@@ -202,10 +202,6 @@ const Book = (props: BookProps) => {
           </IconButton>
           <Menu
             getContentAnchorEl={null}
-            anchorOrigin={{
-              horizontal: 'center',
-              vertical: 'bottom',
-            }}
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
             onClose={resetMenuAnchor}

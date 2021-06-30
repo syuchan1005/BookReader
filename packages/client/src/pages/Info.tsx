@@ -1,23 +1,24 @@
 import React from 'react';
 import {
-  makeStyles,
+  Checkbox,
   createStyles,
   Fab,
   Icon,
+  IconButton,
+  makeStyles,
+  Menu,
+  MenuItem,
   Theme,
   useTheme,
-  IconButton,
-  Checkbox, Menu, MenuItem,
 } from '@material-ui/core';
 import { common } from '@material-ui/core/colors';
-import { useParams, useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { useRecoilState } from 'recoil';
 
-import { Book as BookType, BookOrder } from '@syuchan1005/book-reader-graphql';
-import { useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
-import { useGlobalStore } from '@client/store/StoreProvider';
 
 import db from '@client/Database';
 
@@ -29,6 +30,7 @@ import { workbox } from '@client/registerServiceWorker';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useBooleanState from '@client/hooks/useBooleanState';
+import { sortBookOrderState } from '@client/store/atoms';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -90,10 +92,7 @@ enum ScreenMode {
 }
 
 const Info = (props: InfoProps) => {
-  const {
-    state: store,
-    dispatch,
-  } = useGlobalStore();
+  const [sortBookOrder, setSortBookOrder] = useRecoilState(sortBookOrderState);
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
@@ -117,7 +116,7 @@ const Info = (props: InfoProps) => {
   } = useBookInfoQuery({
     variables: {
       id: params.id,
-      order: store.sortBookOrder,
+      order: sortBookOrder,
     },
     onCompleted: (d) => {
       const bookName = d?.bookInfo?.name;
@@ -223,10 +222,6 @@ const Info = (props: InfoProps) => {
           </IconButton>
           <Menu
             getContentAnchorEl={null}
-            anchorOrigin={{
-              horizontal: 'center',
-              vertical: 'bottom',
-            }}
             anchorEl={sortEl}
             open={!!sortEl}
             onClose={resetSortEl}
@@ -236,7 +231,7 @@ const Info = (props: InfoProps) => {
                 <MenuItem
                   key={order}
                   onClick={() => {
-                    dispatch({ sortBookOrder: BookOrder[order] });
+                    setSortBookOrder(BookOrder[order]);
                     resetSortEl();
                   }}
                 >

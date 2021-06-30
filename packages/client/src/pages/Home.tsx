@@ -11,6 +11,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
 import { useQueryParam, StringParam } from 'use-query-params';
+import { useRecoilValue } from 'recoil';
 
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
@@ -19,7 +20,6 @@ import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import useLoadMore from '@client/hooks/useLoadMore';
-import { useGlobalStore } from '@client/store/StoreProvider';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
@@ -29,6 +29,12 @@ import useBooleanState from '@client/hooks/useBooleanState';
 import useStateWithReset from '@client/hooks/useStateWithReset';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
+import {
+  genresState,
+  bookHistoryState,
+  sortOrderState,
+  showBookInfoNameState,
+} from '@client/store/atoms';
 import db from '../Database';
 
 interface HomeProps {
@@ -93,7 +99,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const defaultLoadBookInfoCount = 20;
 
 const Home = (props: HomeProps) => {
-  const { state: store } = useGlobalStore();
+  const genres = useRecoilValue(genresState);
+  const bookHistory = useRecoilValue(bookHistoryState);
+  const sortOrder = useRecoilValue(sortOrderState);
+  const showBookInfoName = useRecoilValue(showBookInfoNameState);
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
@@ -129,13 +138,13 @@ const Home = (props: HomeProps) => {
       offset: 0,
       limit: defaultLoadBookInfoCount,
       search: debounceSearch || '',
-      order: store.sortOrder,
+      order: sortOrder,
       history: {
         SHOW: true,
         HIDE: false,
         ALL: undefined,
-      }[store.history],
-      genres: store.genres,
+      }[bookHistory],
+      genres,
     },
   });
 
@@ -226,7 +235,7 @@ const Home = (props: HomeProps) => {
                   onDeleted={handleDeletedBookInfo}
                   onEdit={refetchAll}
                   thumbnailSize={downXs ? 150 : 200}
-                  showName={store.showBookInfoName}
+                  showName={showBookInfoName}
                 />
               ))}
               {(isLoadingMore) && (

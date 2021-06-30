@@ -54,6 +54,7 @@
       "react-router-dom": "^5.2.0",
       "react-use": "^17.2.4",
       "react-waypoint": "^10.1.0",
+      "recoil": "^0.3.1",
       "swiper": "^6.7.0",
       "use-query-params": "^1.2.2",
       "vconsole": "^3.7.0"

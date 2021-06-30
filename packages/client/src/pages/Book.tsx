@@ -1,41 +1,42 @@
 import React from 'react';
 import {
-  createStyles,
-  makeStyles,
-  Theme,
-  MuiThemeProvider,
-  Slider,
   Button,
-  useTheme,
   createMuiTheme,
-  Menu,
-  MenuItem,
+  createStyles,
   Icon,
   IconButton,
+  makeStyles,
+  Menu,
+  MenuItem,
+  MuiThemeProvider,
+  Slider,
+  Theme,
+  useTheme,
 } from '@material-ui/core';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.min.css';
 
-import { useParams, useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
 import { orange } from '@material-ui/core/colors';
+import { useRecoilState } from 'recoil';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
-import { useGlobalStore } from '@client/store/StoreProvider';
 import { commonTheme } from '@client/App';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
-import db from '../Database';
-import BookPageImage from '../components/BookPageImage';
-import TitleAndBackHeader from '../components/TitleAndBackHeader';
-import { Remount } from '../components/Remount';
+import BookPageImage from '@client/components/BookPageImage';
+import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import { Remount } from '@client/components/Remount';
+import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
+import db from '@client/Database';
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -149,7 +150,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Book = (props: BookProps) => {
-  const { state: store, dispatch } = useGlobalStore();
+  const [readOrder, setReadOrder] = useRecoilState(readOrderState);
+  const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
   const classes = useStyles(props);
   const history = useHistory();
   const params = useParams<{ id: string }>();
@@ -230,8 +232,8 @@ const Book = (props: BookProps) => {
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
     ...theme,
-    direction: store.readOrder === 1 ? 'rtl' : 'ltr',
-  }), [theme, store.readOrder]);
+    direction: readOrder === ReadOrder.RTL ? 'rtl' : 'ltr',
+  }), [theme, readOrder]);
 
   const effectTheme = React.useMemo(() => createMuiTheme({
     ...theme,
@@ -285,14 +287,14 @@ const Book = (props: BookProps) => {
     }
   }, [isPageSet, page, enqueueSnackbar, params.id]);
 
-  useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
-  useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][store.readOrder](), undefined, [increment, decrement, store.readOrder, openEditDialog]);
+  useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
+  useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
 
   const clickPage = React.useCallback((event) => {
     if (openEditDialog) return;
     const percentX = event.nativeEvent.x / windowSize.width;
-    switch (store.readOrder) {
-      case 0:
+    switch (readOrder) {
+      case ReadOrder.LTR:
         if (percentX <= 0.2) {
           decrement();
         } else if (percentX >= 0.8) {
@@ -301,7 +303,7 @@ const Book = (props: BookProps) => {
           toggleAppBar();
         }
         break;
-      case 1:
+      case ReadOrder.RTL:
         if (percentX <= 0.2) {
           increment();
         } else if (percentX >= 0.8) {
@@ -313,7 +315,7 @@ const Book = (props: BookProps) => {
       default:
         toggleAppBar();
     }
-  }, [store.readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
+  }, [readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
@@ -328,11 +330,11 @@ const Book = (props: BookProps) => {
   }, [prevBook, nextBook, data, history, enqueueSnackbar]);
 
   const imageSize = React.useMemo(() => {
-    if (store.showOriginalImage) {
+    if (showOriginalImage) {
       return { width: undefined, height: undefined };
     }
     return windowSize;
-  }, [windowSize, store.showOriginalImage]);
+  }, [windowSize, showOriginalImage]);
 
   const clickEffect = React.useCallback((eff) => {
     setEffect(eff);
@@ -340,8 +342,8 @@ const Book = (props: BookProps) => {
   }, []);
 
   const toggleOriginalImage = React.useCallback(() => {
-    dispatch({ showOriginalImage: !store.showOriginalImage });
-  }, [dispatch, store.showOriginalImage]);
+    setShowOriginalImage((v) => !v);
+  }, [setShowOriginalImage]);
 
   if (loading || error) {
     return (
@@ -441,18 +443,22 @@ const Book = (props: BookProps) => {
                     <MenuItem
                       onClick={toggleOriginalImage}
                     >
-                      {`Show ${store.showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                      {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
                     </MenuItem>
                   </Menu>
                   <Button
                     variant="outlined"
                     style={{ color: 'white', borderColor: 'white', margin: '0 auto' }}
                     onClick={() => {
-                      dispatch({ readOrder: (store.readOrder + 1) % 2 });
+                      if (readOrder === ReadOrder.RTL) {
+                        setReadOrder(ReadOrder.LTR);
+                      } else {
+                        setReadOrder(ReadOrder.RTL);
+                      }
                       setReBuildSwiper(true);
                     }}
                   >
-                    {['L > R', 'L < R'][store.readOrder]}
+                    {['L > R', 'L < R'][readOrder]}
                   </Button>
                   <Button
                     aria-controls="effect menu"
@@ -504,7 +510,7 @@ const Book = (props: BookProps) => {
           <Remount remount={rebuildSwiper}>
             <Swiper
               onSwiper={updateSwiper}
-              dir={store.readOrder === 0 ? 'ltr' : 'rtl'}
+              dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
               className={classes.pageContainer}
             >
               {[...new Array(data.book.pages).keys()].map((i) => (
@@ -530,7 +536,7 @@ const Book = (props: BookProps) => {
             </Swiper>
           </Remount>
 
-          <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][store.readOrder]}` }}>
+          <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][readOrder]}` }}>
             <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
           </div>
         </div>
