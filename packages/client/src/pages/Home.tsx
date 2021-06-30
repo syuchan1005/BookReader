@@ -90,7 +90,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const defaultLoadBookInfoCount = 50;
+const defaultLoadBookInfoCount = 20;
 
 const Home = (props: HomeProps) => {
   const { state: store } = useGlobalStore();
