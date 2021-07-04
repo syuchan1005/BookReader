@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 
 import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   open: boolean;
@@ -56,8 +57,9 @@ const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
       let num = 0;
       // eslint-disable-next-line no-await-in-loop
       await Promise.all([...Array(book.pages).keys()].map((index) => {
+        const url = createBookPageUrl(book.id, index, book.pages);
         const nameA = index.toString(10).padStart(book.pages.toString(10).length, '0');
-        return fetch(`/book/${book.id}/${nameA}.jpg`)
+        return fetch(url)
           .then((res) => {
             num += 1;
             setDownloadImages(num);

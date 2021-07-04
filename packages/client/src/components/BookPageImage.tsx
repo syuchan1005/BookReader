@@ -36,12 +36,13 @@ export const createBookPageUrl = (
   bookPageCount: number,
   width?: number,
   height?: number,
+  extension: 'jpg' | 'webp' = 'jpg',
 ) => {
   const pageFileName = pageIndex.toString(10)
     .padStart(bookPageCount.toString(10).length, '0');
   const sizeString = createSizeUrlSuffix(width, height);
 
-  return `/book/${bookId}/${pageFileName}${sizeString}.jpg`;
+  return `/book/${bookId}/${pageFileName}${sizeString}.${extension}`;
 };
 
 // B6判
@@ -71,56 +72,69 @@ const BookPageImage = (props: BookPageImageProps) => {
     sizeDebounceDelay = 0,
   } = props;
 
-  const width = useDebounceValue(imgWidth, sizeDebounceDelay);
-  const height = useDebounceValue(imgHeight, sizeDebounceDelay);
+  const argDebounceWidth = useDebounceValue(imgWidth, sizeDebounceDelay);
+  const argDebounceHeight = useDebounceValue(imgHeight, sizeDebounceDelay);
+
+  const width = React.useMemo(
+    () => (argDebounceWidth < argDebounceHeight ? argDebounceWidth : undefined),
+    [argDebounceWidth, argDebounceHeight],
+  );
+  const height = React.useMemo(
+    () => (argDebounceWidth < argDebounceHeight ? undefined : argDebounceHeight),
+    [argDebounceWidth, argDebounceHeight],
+  );
 
   const imageSourceSet = React.useMemo<SourceSet>(
     () => {
       if ([bookId, pageIndex, bookPageCount]
         .findIndex((a) => a === null || a === undefined) !== -1) {
-        return { imgSrc: undefined, sources: [] };
-      }
-      const suffix = noSave ? '?nosave' : '';
-      const src = createBookPageUrl(
-        bookId,
-        pageIndex,
-        bookPageCount,
-        width < height ? width : undefined,
-        width < height ? undefined : height,
-      );
-      const sizeSuffix = createSizeUrlSuffix(width, height);
-      if (sizeSuffix === '') {
         return {
-          imgSrc: `${src}${suffix}`,
-          sources: [
-            {
-              type: 'image/webp',
-              srcSet: `${src}.webp${suffix}`,
-            },
-          ],
+          imgSrc: undefined,
+          sources: [],
         };
       }
-      const src2 = createBookPageUrl(
+      const suffix = noSave ? '?nosave' : '';
+      const jpgSrc = createBookPageUrl(
         bookId,
         pageIndex,
         bookPageCount,
-        width < height ? width * 2 : undefined,
-        width < height ? undefined : height * 2,
-      );
-      const src3 = createBookPageUrl(
-        bookId,
-        pageIndex,
-        bookPageCount,
-        width < height ? width * 3 : undefined,
-        width < height ? undefined : height * 3,
+        width,
+        height,
+        'jpg',
       );
 
+      let webpSrcSet;
+      if (width === undefined && height === undefined) {
+        const webpSrc = createBookPageUrl(
+          bookId,
+          pageIndex,
+          bookPageCount,
+          width,
+          height,
+          'webp',
+        );
+        webpSrcSet = `${webpSrc}${suffix}`;
+      } else {
+        const sizeRatio = [1, 2, 3];
+        webpSrcSet = sizeRatio.map((ratio) => {
+          const src = createBookPageUrl(
+            bookId,
+            pageIndex,
+            bookPageCount,
+            width !== undefined ? width * ratio : undefined,
+            height !== undefined ? height * ratio : undefined,
+            'webp',
+          );
+          return `${src}${suffix} ${ratio}x`;
+        })
+          .join(',');
+      }
       return {
-        imgSrc: `${src}${suffix}`,
+        imgSrc: `${jpgSrc}${suffix}`,
         sources: [
           {
             type: 'image/webp',
-            srcSet: `${src}.webp${suffix} 1x, ${src2}.webp${suffix} 2x, ${src3}.webp${suffix} 3x`,
+            srcSet: webpSrcSet,
           },
         ],
       };
@@ -135,7 +149,10 @@ const BookPageImage = (props: BookPageImageProps) => {
 
   return (
     <picture className={classes.picture}>
-      {imageSourceSet.sources.map(({ type, srcSet }) => (
+      {imageSourceSet.sources.map(({
+        type,
+        srcSet,
+      }) => (
         <source key={type} type={type} srcSet={srcSet} />
       ))}
       <img
@@ -144,7 +161,7 @@ const BookPageImage = (props: BookPageImageProps) => {
         style={style}
         src={imageSourceSet.imgSrc}
         alt={alt}
-        width={imgWidth}
+        width={imgWidth} // これ両方undefinedだったらどうなるんだ？
         height={imgHeight}
       />
     </picture>

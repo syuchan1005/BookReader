@@ -9,6 +9,7 @@ import {
 } from '@material-ui/core';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface DownloadBookDialogProps {
   open: boolean;
@@ -35,22 +36,28 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
     const zip = new JSZip();
 
     let num = 0;
-    Promise.all([...Array(pages).keys()].map((i) => {
-      const name = i.toString(10).padStart(pages.toString(10).length, '0');
-      return fetch(`/book/${bookId}/${name}.jpg`)
+    Promise.all([...Array(pages)
+      .keys()].map((i) => {
+      const url = createBookPageUrl(bookId, i, pages);
+      const name = i.toString(10)
+        .padStart(pages.toString(10).length, '0');
+      return fetch(url)
         .then((res) => {
           num += 1;
           setDownloadImages(num);
           zip.file(`${name}.jpg`, res.blob());
         });
     }))
-      .then(() => zip.generateAsync({ type: 'blob' }, ({ percent }) => setCompressPercent(percent)))
+      .then(() => zip.generateAsync(
+        { type: 'blob' },
+        ({ percent }) => setCompressPercent(percent),
+      ))
       .then((content) => {
         saveAs(content, `book-${number}.zip`);
         setCompressPercent(undefined);
         setDownloadImages(false);
       });
-  }, []);
+  }, [bookId, number, pages]);
 
   return (
     <Dialog open={open} onClose={downloadImages !== false ? undefined : onClose}>
@@ -67,7 +74,11 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
             />
             <div style={{ textAlign: 'center' }}>{`${downloadImages} / ${pages}`}</div>
             {(compressPercent) && (
-              <div style={{ textAlign: 'center' }}>{`Compressing: ${Math.round(compressPercent)}%`}</div>
+              <div
+                style={{ textAlign: 'center' }}
+              >
+                {`Compressing: ${Math.round(compressPercent)}%`}
+              </div>
             )}
           </>
         )}
