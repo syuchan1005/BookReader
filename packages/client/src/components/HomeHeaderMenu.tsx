@@ -333,6 +333,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         ) : null))}
       </Menu>
       <Menu
+        getContentAnchorEl={null}
         anchorEl={historyAnchorEl}
         anchorOrigin={{
           horizontal: 'center',
