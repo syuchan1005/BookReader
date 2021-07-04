@@ -13,7 +13,6 @@ import {
   Theme,
 } from '@material-ui/core';
 import { orange as color } from '@material-ui/core/colors';
-import loadable from '@loadable/component';
 
 import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
 import {
@@ -23,13 +22,12 @@ import {
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
+import DownloadDialog from '@client/components/dialogs/DownloadBookInfoDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
-
-const DownloadDialog = loadable(() => import(/* webpackChunkName: 'DownloadBookInfoDialog' */ './dialogs/DownloadBookInfoDialog'));
 
 interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
   style?: React.CSSProperties;

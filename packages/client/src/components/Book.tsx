@@ -13,20 +13,18 @@ import {
   Menu,
   MenuItem,
 } from '@material-ui/core';
-import loadable from '@loadable/component';
 
 import { Book as BookType } from '@syuchan1005/book-reader-graphql';
 import { useDeleteBookMutation, useEditBookMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
+import DownloadDialog from '@client/components/dialogs/DownloadBookDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
-
-const DownloadDialog = loadable(() => import('./dialogs/DownloadBookDialog'));
 
 interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
   thumbnailSize: number;
