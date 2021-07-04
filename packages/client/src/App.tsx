@@ -1,4 +1,6 @@
-import React from 'react';
+import React, {
+  useEffect, useMemo, lazy, Suspense,
+} from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
 import {
   createMuiTheme,
@@ -9,7 +11,6 @@ import {
 import * as colors from '@material-ui/core/colors';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
-import loadable from '@loadable/component';
 import { useApolloClient } from '@apollo/react-hooks';
 import { QueryParamProvider } from 'use-query-params';
 
@@ -17,12 +18,13 @@ import useMatchMedia from '@client/hooks/useMatchMedia';
 import { workbox } from '@client/registerServiceWorker';
 import { useRecoilValue } from 'recoil';
 import { primaryColorState, secondaryColorState } from '@client/store/atoms';
+import LoadingFullscreen from '@client/components/LoadingFullscreen';
 
-const Home = loadable(() => import(/* webpackChunkName: 'Home' */ './pages/Home'));
-const Info = loadable(() => import(/* webpackChunkName: 'Info' */ './pages/Info'));
-const Book = loadable(() => import(/* webpackChunkName: 'Book' */ './pages/Book'));
-const Setting = loadable(() => import(/* webpackChunkName: 'Setting' */ './pages/Setting'));
-const Error = loadable(() => import(/* webpackChunkName: 'Error' */ './pages/Error'));
+const Home = lazy(() => import('@client/pages/Home'));
+const Info = lazy(() => import('@client/pages/Info'));
+const Book = lazy(() => import('@client/pages/Book'));
+const Setting = lazy(() => import('@client/pages/Setting'));
+const Error = lazy(() => import('@client/pages/Error'));
 
 export const commonTheme = {
   safeArea: {
@@ -82,7 +84,7 @@ const App = () => {
   const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
 
-  React.useEffect(() => {
+  useEffect(() => {
     // @ts-ignore
     apolloClient.snackbar = enqueueSnackbar;
 
@@ -101,7 +103,7 @@ const App = () => {
     };
   }, [apolloClient, enqueueSnackbar]);
 
-  const provideTheme = React.useMemo(
+  const provideTheme = useMemo(
     () => createMuiTheme({
       palette: {
         type: theme,
@@ -117,13 +119,15 @@ const App = () => {
       <CssBaseline />
       <Router history={history}>
         <QueryParamProvider ReactRouterRoute={Route}>
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/info/:id" component={Info} />
-            <Route exact path="/book/:id" component={Book} />
-            <Route exact path="/setting" component={Setting} />
-            <Route component={Error} />
-          </Switch>
+          <Suspense fallback={<LoadingFullscreen open />}>
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <Route exact path="/info/:id" component={Info} />
+              <Route exact path="/book/:id" component={Book} />
+              <Route exact path="/setting" component={Setting} />
+              <Route component={Error} />
+            </Switch>
+          </Suspense>
         </QueryParamProvider>
       </Router>
     </MuiThemeProvider>
