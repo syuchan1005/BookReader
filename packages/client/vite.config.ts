@@ -7,7 +7,7 @@ import graphqlPlugin from '@rollup/plugin-graphql';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const serviceWorkerFileName = 'service-worker.ts';
-const RemoveObsolateServiceWorkerPlugin = (): Plugin => {
+const RemoveObsoleteServiceWorkerPlugin = (): Plugin => {
   let outDir;
   return {
     name: 'remove service-worker.ts',
@@ -20,7 +20,7 @@ const RemoveObsolateServiceWorkerPlugin = (): Plugin => {
         try {
           fs.unlinkSync(`${outDir}/${serviceWorkerFileName}`);
           console.log(`Remove: ${outDir}/${serviceWorkerFileName}`);
-        } catch (ignored) {}
+        } catch (ignored) { /* ignored */ }
       }
     },
   };
@@ -45,7 +45,7 @@ export default defineConfig({
       injectRegister: false,
       manifest: false,
     }),
-    RemoveObsolateServiceWorkerPlugin(),
+    RemoveObsoleteServiceWorkerPlugin(),
   ],
   server: {
     port: 8080,
