@@ -11,13 +11,14 @@ import Database from './sequelize/models';
 const toInt = (value: string | string[]): number | undefined => {
   let numStr;
   if (Array.isArray(value)) {
+    // eslint-disable-next-line prefer-destructuring
     numStr = value[0];
   } else {
     numStr = value;
   }
   const num = Number(numStr);
-  const intNum = parseInt(numStr);
-  if (num !== intNum || !isFinite(intNum)) {
+  const intNum = parseInt(numStr, 10);
+  if (num !== intNum || !Number.isFinite(intNum)) {
     return undefined;
   }
   return intNum;
@@ -29,6 +30,7 @@ const toInt = (value: string | string[]): number | undefined => {
   const app = new Koa();
   const graphql = new GraphQL();
 
+  /* image serve with options in headers */
   app.use(async (ctx, next) => {
     const { url, headers } = ctx.req;
     const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)\.([a-z]+)$/);
@@ -37,7 +39,7 @@ const toInt = (value: string | string[]): number | undefined => {
       return;
     }
 
-    const [full, bookId, pageNum, ext] = match;
+    const [_full, bookId, pageNum, ext] = match;
     if (!['jpg', 'webp'].includes(ext)) {
       ctx.code = 400;
       return;
@@ -69,15 +71,21 @@ const toInt = (value: string | string[]): number | undefined => {
 
   app.use(Serve(cacheFolderPath));
 
+  /* image serve with options in image name */
   app.use(async (ctx, next) => {
     const { url } = ctx.req;
-    const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp)(\?nosave)?$/);
+    const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
     if (!match) {
       await next();
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [full, bookId, pageNum, sizeExists, width, height, ext, isNotSave] = match;
+    const [_full, bookId, pageNum, sizeExists, width, height, ext, isNotSave] = match;
+    let extension;
+    if (ext === 'jpg') {
+      extension = 'jpg';
+    } else {
+      extension = 'webp';
+    }
 
     if (ext === 'jpg' && !sizeExists) {
       await next();
@@ -88,8 +96,7 @@ const toInt = (value: string | string[]): number | undefined => {
       bookId,
       pageNum,
       {
-        // @ts-ignore
-        ext: ext as unknown as 'jpg' | 'jpg.webp',
+        ext: extension,
         // @ts-ignore
         size: sizeExists ? { width: Number(width), height: Number(height) } : undefined,
       },

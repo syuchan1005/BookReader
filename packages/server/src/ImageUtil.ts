@@ -14,7 +14,7 @@ const jpegQuality = 85;
 export const obsoleteConvertImage = async (
   bookId: string,
   pageNum: string,
-  info: { ext: 'jpg', size: { width: number, height: number } } | { ext: 'jpg.webp', size?: { width: number, height: number } },
+  info: { ext: 'jpg', size: { width: number, height: number } } | { ext: 'webp', size?: { width: number, height: number } },
   isSave: boolean,
 ): Promise<{
   success: true,
@@ -66,7 +66,7 @@ export const obsoleteConvertImage = async (
     case 'jpg':
       sharpInstance = sharpInstance.jpeg({ progressive: true, quality: jpegQuality });
       break;
-    case 'jpg.webp':
+    case 'webp':
       sharpInstance = sharpInstance.webp();
       break;
     default:
