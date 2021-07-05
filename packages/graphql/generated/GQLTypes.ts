@@ -48,6 +48,12 @@ export type BookInfoBooksArgs = {
   order?: Maybe<BookOrder>;
 };
 
+export type BookInfoEdge = {
+  __typename?: 'BookInfoEdge';
+  cursor: Scalars['String'];
+  node: BookInfo;
+};
+
 export type BookInfoHistory = {
   name: Scalars['String'];
   count: Scalars['Int'];
@@ -68,6 +74,12 @@ export enum BookInfoOrder {
   NameDesc = 'Name_Desc'
 }
 
+export type BookInfoPartialList = {
+  __typename?: 'BookInfoPartialList';
+  pageInfo: PageInfo;
+  edges: Array<BookInfoEdge>;
+};
+
 export type BookInfoResult = {
   __typename?: 'BookInfoResult';
   success: Scalars['Boolean'];
@@ -81,6 +93,13 @@ export type BookInfoThumbnail = {
   bookId: Scalars['ID'];
   pageIndex: Scalars['Int'];
   bookPageCount: Scalars['Int'];
+};
+
+export type BookInfosOption = {
+  search?: Maybe<Scalars['String']>;
+  genres?: Maybe<Array<Scalars['String']>>;
+  history?: Maybe<HistoryType>;
+  order?: Maybe<BookInfoOrder>;
 };
 
 export enum BookOrder {
@@ -142,6 +161,12 @@ export type Genre = {
   name: Scalars['String'];
   invisible: Scalars['Boolean'];
 };
+
+export enum HistoryType {
+  All = 'ALL',
+  HisotryOnly = 'HISOTRY_ONLY',
+  NormalOnly = 'NORMAL_ONLY'
+}
 
 export type InputBook = {
   number: Scalars['String'];
@@ -287,6 +312,14 @@ export type MutationEditGenreArgs = {
   invisible?: Maybe<Scalars['Boolean']>;
 };
 
+export type PageInfo = {
+  __typename?: 'PageInfo';
+  hasNextPage: Scalars['Boolean'];
+  hasPreviousPage: Scalars['Boolean'];
+  startCursor: Scalars['String'];
+  endCursor: Scalars['String'];
+};
+
 export type Plugin = {
   __typename?: 'Plugin';
   info: PluginInfo;
@@ -308,6 +341,7 @@ export type Query = {
   __typename?: 'Query';
   bookInfos: BookInfoList;
   bookInfo?: Maybe<BookInfo>;
+  relayBookInfos: BookInfoPartialList;
   book?: Maybe<Book>;
   debug_folderSize: Debug_FolderSizes;
   plugins: Array<Plugin>;
@@ -327,6 +361,15 @@ export type QueryBookInfosArgs = {
 
 export type QueryBookInfoArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryRelayBookInfosArgs = {
+  first?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
+  option?: Maybe<BookInfosOption>;
 };
 
 
@@ -849,11 +892,14 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']>;
   BookInfo: ResolverTypeWrapper<BookInfo>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  BookInfoEdge: ResolverTypeWrapper<BookInfoEdge>;
   BookInfoHistory: BookInfoHistory;
   BookInfoList: ResolverTypeWrapper<BookInfoList>;
   BookInfoOrder: BookInfoOrder;
+  BookInfoPartialList: ResolverTypeWrapper<BookInfoPartialList>;
   BookInfoResult: ResolverTypeWrapper<BookInfoResult>;
   BookInfoThumbnail: ResolverTypeWrapper<BookInfoThumbnail>;
+  BookInfosOption: BookInfosOption;
   BookOrder: BookOrder;
   CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>;
   CropEditAction: CropEditAction;
@@ -862,9 +908,11 @@ export type ResolversTypes = {
   EditAction: EditAction;
   EditType: EditType;
   Genre: ResolverTypeWrapper<Genre>;
+  HistoryType: HistoryType;
   InputBook: InputBook;
   IntRange: ResolverTypeWrapper<Scalars['IntRange']>;
   Mutation: ResolverTypeWrapper<{}>;
+  PageInfo: ResolverTypeWrapper<PageInfo>;
   Plugin: ResolverTypeWrapper<Plugin>;
   PluginInfo: ResolverTypeWrapper<PluginInfo>;
   PluginQueries: ResolverTypeWrapper<PluginQueries>;
@@ -888,10 +936,13 @@ export type ResolversParentTypes = {
   String: Scalars['String'];
   BookInfo: BookInfo;
   Boolean: Scalars['Boolean'];
+  BookInfoEdge: BookInfoEdge;
   BookInfoHistory: BookInfoHistory;
   BookInfoList: BookInfoList;
+  BookInfoPartialList: BookInfoPartialList;
   BookInfoResult: BookInfoResult;
   BookInfoThumbnail: BookInfoThumbnail;
+  BookInfosOption: BookInfosOption;
   CommonPluginQuery: CommonPluginQuery;
   CropEditAction: CropEditAction;
   Debug_FolderSizes: Debug_FolderSizes;
@@ -901,6 +952,7 @@ export type ResolversParentTypes = {
   InputBook: InputBook;
   IntRange: Scalars['IntRange'];
   Mutation: {};
+  PageInfo: PageInfo;
   Plugin: Plugin;
   PluginInfo: PluginInfo;
   PluginQueries: PluginQueries;
@@ -940,9 +992,21 @@ export type BookInfoResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type BookInfoEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoEdge'] = ResolversParentTypes['BookInfoEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['BookInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type BookInfoListResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoList'] = ResolversParentTypes['BookInfoList']> = {
   hasNext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   infos?: Resolver<Array<ResolversTypes['BookInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type BookInfoPartialListResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoPartialList'] = ResolversParentTypes['BookInfoPartialList']> = {
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['BookInfoEdge']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1011,6 +1075,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>;
 };
 
+export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  startCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type PluginResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plugin'] = ResolversParentTypes['Plugin']> = {
   info?: Resolver<ResolversTypes['PluginInfo'], ParentType, ContextType>;
   queries?: Resolver<ResolversTypes['PluginQueries'], ParentType, ContextType>;
@@ -1031,6 +1103,7 @@ export type PluginQueriesResolvers<ContextType = any, ParentType extends Resolve
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   bookInfos?: Resolver<ResolversTypes['BookInfoList'], ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'length' | 'offset' | 'genres' | 'order'>>;
   bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
+  relayBookInfos?: Resolver<ResolversTypes['BookInfoPartialList'], ParentType, ContextType, RequireFields<QueryRelayBookInfosArgs, never>>;
   book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
   debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>;
   plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
@@ -1073,7 +1146,9 @@ export type Resolvers<ContextType = any> = {
   BigInt?: GraphQLScalarType;
   Book?: BookResolvers<ContextType>;
   BookInfo?: BookInfoResolvers<ContextType>;
+  BookInfoEdge?: BookInfoEdgeResolvers<ContextType>;
   BookInfoList?: BookInfoListResolvers<ContextType>;
+  BookInfoPartialList?: BookInfoPartialListResolvers<ContextType>;
   BookInfoResult?: BookInfoResultResolvers<ContextType>;
   BookInfoThumbnail?: BookInfoThumbnailResolvers<ContextType>;
   CommonPluginQuery?: CommonPluginQueryResolvers<ContextType>;
@@ -1081,6 +1156,7 @@ export type Resolvers<ContextType = any> = {
   Genre?: GenreResolvers<ContextType>;
   IntRange?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
+  PageInfo?: PageInfoResolvers<ContextType>;
   Plugin?: PluginResolvers<ContextType>;
   PluginInfo?: PluginInfoResolvers<ContextType>;
   PluginQueries?: PluginQueriesResolvers<ContextType>;

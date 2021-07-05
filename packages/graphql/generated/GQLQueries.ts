@@ -49,6 +49,12 @@ export type BookInfoBooksArgs = {
   order?: Maybe<BookOrder>;
 };
 
+export type BookInfoEdge = {
+  __typename?: 'BookInfoEdge';
+  cursor: Scalars['String'];
+  node: BookInfo;
+};
+
 export type BookInfoHistory = {
   name: Scalars['String'];
   count: Scalars['Int'];
@@ -69,6 +75,12 @@ export enum BookInfoOrder {
   NameDesc = 'Name_Desc'
 }
 
+export type BookInfoPartialList = {
+  __typename?: 'BookInfoPartialList';
+  pageInfo: PageInfo;
+  edges: Array<BookInfoEdge>;
+};
+
 export type BookInfoResult = {
   __typename?: 'BookInfoResult';
   success: Scalars['Boolean'];
@@ -82,6 +94,13 @@ export type BookInfoThumbnail = {
   bookId: Scalars['ID'];
   pageIndex: Scalars['Int'];
   bookPageCount: Scalars['Int'];
+};
+
+export type BookInfosOption = {
+  search?: Maybe<Scalars['String']>;
+  genres?: Maybe<Array<Scalars['String']>>;
+  history?: Maybe<HistoryType>;
+  order?: Maybe<BookInfoOrder>;
 };
 
 export enum BookOrder {
@@ -143,6 +162,12 @@ export type Genre = {
   name: Scalars['String'];
   invisible: Scalars['Boolean'];
 };
+
+export enum HistoryType {
+  All = 'ALL',
+  HisotryOnly = 'HISOTRY_ONLY',
+  NormalOnly = 'NORMAL_ONLY'
+}
 
 export type InputBook = {
   number: Scalars['String'];
@@ -288,6 +313,14 @@ export type MutationEditGenreArgs = {
   invisible?: Maybe<Scalars['Boolean']>;
 };
 
+export type PageInfo = {
+  __typename?: 'PageInfo';
+  hasNextPage: Scalars['Boolean'];
+  hasPreviousPage: Scalars['Boolean'];
+  startCursor: Scalars['String'];
+  endCursor: Scalars['String'];
+};
+
 export type Plugin = {
   __typename?: 'Plugin';
   info: PluginInfo;
@@ -309,6 +342,7 @@ export type Query = {
   __typename?: 'Query';
   bookInfos: BookInfoList;
   bookInfo?: Maybe<BookInfo>;
+  relayBookInfos: BookInfoPartialList;
   book?: Maybe<Book>;
   debug_folderSize: Debug_FolderSizes;
   plugins: Array<Plugin>;
@@ -328,6 +362,15 @@ export type QueryBookInfosArgs = {
 
 export type QueryBookInfoArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryRelayBookInfosArgs = {
+  first?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
+  option?: Maybe<BookInfosOption>;
 };
 
 

@@ -3,6 +3,7 @@ import BookInfo from './BookInfo';
 import Debug from './Debug';
 import Genre from './Genre';
 import Page from './Page';
+import RelayBookInfo from './RelayBookInfo';
 
 export default {
   Book: new Book(),
@@ -10,4 +11,5 @@ export default {
   Debug: new Debug(),
   Genre: new Genre(),
   Page: new Page(),
+  RelayBookInfo: new RelayBookInfo(),
 };

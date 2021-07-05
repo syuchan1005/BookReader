@@ -14,6 +14,14 @@ type Query {
     ): BookInfoList!
     bookInfo(id: ID!): BookInfo
 
+    relayBookInfos(
+        first: Int
+        after: String
+        last: Int
+        before: String
+        option: BookInfosOption # If it's null, process with default values.
+    ): BookInfoPartialList!
+
     ## Book
     book(id: ID!): Book
 
@@ -85,6 +93,36 @@ enum BookOrder {
 enum SplitType {
     VERTICAL
     HORIZONTAL
+}
+
+enum HistoryType {
+    ALL
+    HISOTRY_ONLY
+    NORMAL_ONLY
+}
+
+input BookInfosOption {
+    search: String
+    genres: [String!] = []
+    history: HistoryType = ALL
+    order: BookInfoOrder = Update_Newest
+}
+
+type BookInfoPartialList {
+    pageInfo: PageInfo!
+    edges: [BookInfoEdge!]!
+}
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String!
+    endCursor: String!
+}
+
+type BookInfoEdge {
+    cursor: String!
+    node: BookInfo!
 }
 
 type BookInfo {
