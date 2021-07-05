@@ -678,38 +678,6 @@ export type BookInfosQuery = (
   ) }
 );
 
-export type RelayBookInfosQueryVariables = Exact<{
-  first?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-  option: BookInfosOption;
-}>;
-
-
-export type RelayBookInfosQuery = (
-  { __typename?: 'Query' }
-  & { bookInfos: (
-    { __typename?: 'BookInfoPartialList' }
-    & { edges: Array<(
-      { __typename?: 'BookInfoEdge' }
-      & Pick<BookInfoEdge, 'cursor'>
-      & { node: (
-        { __typename?: 'BookInfo' }
-        & Pick<BookInfo, 'id' | 'name' | 'count' | 'history' | 'updatedAt'>
-        & { thumbnail?: Maybe<(
-          { __typename?: 'BookInfoThumbnail' }
-          & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
-        )>, genres: Array<(
-          { __typename?: 'Genre' }
-          & Pick<Genre, 'id' | 'name' | 'invisible'>
-        )> }
-      ) }
-    )>, pageInfo: (
-      { __typename?: 'PageInfo' }
-      & Pick<PageInfo, 'hasNextPage' | 'hasPreviousPage' | 'startCursor' | 'endCursor'>
-    ) }
-  ) }
-);
-
 export type DeleteGenreMutationVariables = Exact<{
   name: Scalars['String'];
 }>;
@@ -1450,68 +1418,6 @@ export function useBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type BookInfosQueryHookResult = ReturnType<typeof useBookInfosQuery>;
 export type BookInfosLazyQueryHookResult = ReturnType<typeof useBookInfosLazyQuery>;
 export type BookInfosQueryResult = Apollo.QueryResult<BookInfosQuery, BookInfosQueryVariables>;
-export const RelayBookInfosDocument = gql`
-    query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!) {
-  bookInfos: relayBookInfos(first: $first, after: $after, option: $option) @connection(key: "relayBookInfos", filter: ["option"]) {
-    edges {
-      cursor
-      node {
-        id
-        name
-        count
-        thumbnail {
-          bookId
-          pageIndex
-          bookPageCount
-        }
-        history
-        genres {
-          id
-          name
-          invisible
-        }
-        updatedAt
-      }
-    }
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
-    }
-  }
-}
-    `;
-
-/**
- * __useRelayBookInfosQuery__
- *
- * To run a query within a React component, call `useRelayBookInfosQuery` and pass it any options that fit your needs.
- * When your component renders, `useRelayBookInfosQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useRelayBookInfosQuery({
- *   variables: {
- *      first: // value for 'first'
- *      after: // value for 'after'
- *      option: // value for 'option'
- *   },
- * });
- */
-export function useRelayBookInfosQuery(baseOptions: Apollo.QueryHookOptions<RelayBookInfosQuery, RelayBookInfosQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<RelayBookInfosQuery, RelayBookInfosQueryVariables>(RelayBookInfosDocument, options);
-      }
-export function useRelayBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RelayBookInfosQuery, RelayBookInfosQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<RelayBookInfosQuery, RelayBookInfosQueryVariables>(RelayBookInfosDocument, options);
-        }
-export type RelayBookInfosQueryHookResult = ReturnType<typeof useRelayBookInfosQuery>;
-export type RelayBookInfosLazyQueryHookResult = ReturnType<typeof useRelayBookInfosLazyQuery>;
-export type RelayBookInfosQueryResult = Apollo.QueryResult<RelayBookInfosQuery, RelayBookInfosQueryVariables>;
 export const DeleteGenreDocument = gql`
     mutation DeleteGenre($name: String!) {
   deleteGenre(genre: $name) {
