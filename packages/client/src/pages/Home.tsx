@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  CircularProgress,
   createStyles,
   Fab,
   Icon,
@@ -8,18 +7,20 @@ import {
   Theme,
   useTheme,
 } from '@material-ui/core';
+import { Skeleton } from '@material-ui/lab';
 import { useHistory } from 'react-router-dom';
-import { Waypoint } from 'react-waypoint';
 import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilValue } from 'recoil';
 
-import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  HistoryType,
+  useRelayBookInfosQuery,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import useDebounceValue from '@client/hooks/useDebounceValue';
-import useLoadMore from '@client/hooks/useLoadMore';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
@@ -35,6 +36,10 @@ import {
   sortOrderState,
   showBookInfoNameState,
 } from '@client/store/atoms';
+import { pageAspectRatio } from '@client/components/BookPageImage';
+import InfiniteGrid from '@client/components/InfiniteGrid';
+import useToolbarHeight from '@client/hooks/useToolbarHeight';
+import { useWindowSize } from 'react-use';
 import db from '../Database';
 
 interface HomeProps {
@@ -42,6 +47,11 @@ interface HomeProps {
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
+  '@global': {
+    body: {
+      overflowY: 'hidden',
+    },
+  },
   home: {
     height: '100%',
     ...commonTheme.appbar(theme, 'paddingTop'),
@@ -133,30 +143,29 @@ const Home = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useBookInfosQuery({
+  } = useRelayBookInfosQuery({
     variables: {
-      offset: 0,
-      limit: defaultLoadBookInfoCount,
-      search: debounceSearch || '',
-      order: sortOrder,
-      history: {
-        SHOW: true,
-        HIDE: false,
-        ALL: undefined,
-      }[bookHistory],
-      genres,
+      first: defaultLoadBookInfoCount,
+      option: {
+        search: debounceSearch || undefined,
+        genres,
+        history: {
+          SHOW: HistoryType.HisotryOnly,
+          HIDE: HistoryType.NormalOnly,
+          ALL: HistoryType.All,
+        }[bookHistory],
+        order: sortOrder,
+      },
     },
   });
 
-  const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
-
-  const infos = React.useMemo(() => (data ? data.bookInfos.infos : []), [data]);
+  const infos = React.useMemo(
+    () => (data ? data.bookInfos.edges.map((e) => e.node) : []),
+    [data],
+  );
   const handleDeletedBookInfo = React.useCallback((infoId: string, books) => {
     // noinspection JSIgnoredPromiseFromCall
-    refetch({
-      offset: 0,
-      limit: infos.length,
-    });
+    refetch({ first: infos.length });
     // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(infoId);
     // noinspection JSIgnoredPromiseFromCall
@@ -173,31 +182,19 @@ const Home = (props: HomeProps) => {
     }
   }, [refetch, infos]);
 
-  const clickLoadMore = React.useCallback(() => {
-    // @ts-ignore
-    loadMore({
+  const handleLoadMore = React.useCallback(
+    (startIndex: number, stopIndex: number) => fetchMore({
       variables: {
-        offset: infos.length,
+        after: data.bookInfos.edges[startIndex].cursor,
+        first: stopIndex - startIndex,
       },
-      updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
-        return {
-          bookInfos: {
-            ...fetchMoreResult.bookInfos,
-            infos: [...prev.bookInfos.infos, ...fetchMoreResult.bookInfos.infos],
-          },
-        };
-      },
-    });
-  }, [loadMore, infos]);
+    }),
+    [data, fetchMore],
+  );
 
-  const refetchAll = React.useCallback(() => {
-    // noinspection JSIgnoredPromiseFromCall
-    refetch({
-      offset: 0,
-      limit: infos.length || defaultLoadBookInfoCount,
-    });
-  }, [refetch, infos]);
+  const refetchAll = React.useCallback(() => refetch({
+    first: infos.length || defaultLoadBookInfoCount,
+  }), [refetch, infos]);
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
@@ -208,6 +205,12 @@ const Home = (props: HomeProps) => {
       history.push(`/info/${infoId}`);
     }
   }, [history, setOpenAddBook]);
+
+  const {
+    width,
+    height,
+  } = useWindowSize();
+  const toolbarHeight = useToolbarHeight();
 
   return (
     <>
@@ -226,27 +229,55 @@ const Home = (props: HomeProps) => {
           </div>
         ) : (
           <>
-            <div className={classes.homeGrid}>
-              {infos.map((info) => (
-                <BookInfo
-                  key={info.id}
-                  {...info}
-                  onClick={handleBookInfoClick}
-                  onDeleted={handleDeletedBookInfo}
-                  onEdit={refetchAll}
-                  thumbnailSize={downXs ? 150 : 200}
-                  showName={showBookInfoName}
-                />
-              ))}
-              {(isLoadingMore) && (
-                <div className={classes.loadMoreProgress}>
-                  <CircularProgress color="secondary" />
-                </div>
-              )}
-              {(!isLoadingMore && data.bookInfos.hasNext) && (
-                <Waypoint onEnter={clickLoadMore} />
-              )}
-            </div>
+            <InfiniteGrid
+              gridWidth={width}
+              gridHeight={height - toolbarHeight}
+              itemWidth={downXs ? 150 : 200}
+              itemHeight={pageAspectRatio(downXs ? 150 : 200)}
+              isItemLoaded={(index) => infos.length < index}
+              loadMoreItems={handleLoadMore}
+              itemCount={infos.length + (data.bookInfos.pageInfo.hasNextPage ? 1 : 0)}
+              gridPadding={theme.spacing(1)}
+              gridGap={theme.spacing(2)}
+            >
+              {({
+                columnIndex,
+                rowIndex,
+                columnCount,
+                style,
+                gridProps: { itemWidth },
+              }) => {
+                const index = columnIndex + rowIndex * columnCount;
+                if (infos.length > index) {
+                  const info = infos[index];
+                  return (
+                    <BookInfo
+                      style={style}
+                      key={info.id}
+                      {...info}
+                      onClick={handleBookInfoClick}
+                      onDeleted={handleDeletedBookInfo}
+                      onEdit={refetchAll}
+                      thumbnailSize={itemWidth}
+                      showName={showBookInfoName}
+                    />
+                  );
+                }
+                if (data.bookInfos.pageInfo.hasNextPage) {
+                  return (
+                    <Skeleton
+                      variant="rect"
+                      component="div"
+                      style={{
+                        ...style,
+                        borderRadius: theme.shape.borderRadius,
+                      }}
+                    />
+                  );
+                }
+                return null;
+              }}
+            </InfiniteGrid>
             <Fab
               className={classes.addButton}
               onClick={setOpen}

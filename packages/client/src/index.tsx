@@ -12,7 +12,7 @@ import db from './Database';
 
 import { workbox } from './registerServiceWorker';
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && !!0) {
   import('@welldone-software/why-did-you-render')
     .then(({ default: whyDidYouRender }) => whyDidYouRender(React, {
       trackAllPureComponents: true,

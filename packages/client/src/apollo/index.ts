@@ -4,6 +4,7 @@ import { createUploadLink } from 'apollo-upload-client';
 import { getMainDefinition } from 'apollo-utilities';
 import createCustomFetcher from '@client/CustomFetcher';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
+import { offsetLimitPagination, relayStylePagination } from '@apollo/client/utilities';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 const schemaVersion = '1.3.1';
@@ -11,6 +12,12 @@ const schemaVersionKey = 'apollo-cache-schema-version';
 
 const cache = new InMemoryCache({
   typePolicies: {
+    Query: {
+      fields: {
+        bookInfos: offsetLimitPagination(['search', 'order', 'history', 'genres']),
+        relayBookInfos: relayStylePagination(['option']),
+      },
+    },
     BookInfo: {
       fields: {
         books: {
