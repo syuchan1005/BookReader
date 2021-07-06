@@ -13,13 +13,15 @@ import { Waypoint } from 'react-waypoint';
 import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilValue } from 'recoil';
 
-import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  HistoryType,
+  useRelayBookInfosQuery,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import useDebounceValue from '@client/hooks/useDebounceValue';
-import useLoadMore from '@client/hooks/useLoadMore';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
@@ -133,30 +135,29 @@ const Home = (props: HomeProps) => {
     error,
     data,
     fetchMore,
-  } = useBookInfosQuery({
+  } = useRelayBookInfosQuery({
     variables: {
-      offset: 0,
-      limit: defaultLoadBookInfoCount,
-      search: debounceSearch || '',
-      order: sortOrder,
-      history: {
-        SHOW: true,
-        HIDE: false,
-        ALL: undefined,
-      }[bookHistory],
-      genres,
+      first: defaultLoadBookInfoCount,
+      option: {
+        search: debounceSearch || undefined,
+        genres,
+        history: {
+          SHOW: HistoryType.HisotryOnly,
+          HIDE: HistoryType.NormalOnly,
+          ALL: HistoryType.All,
+        }[bookHistory],
+        order: sortOrder,
+      },
     },
   });
 
-  const [isLoadingMore, loadMore] = useLoadMore(fetchMore);
-
-  const infos = React.useMemo(() => (data ? data.bookInfos.infos : []), [data]);
+  const infos = React.useMemo(
+    () => (data ? data.bookInfos.edges.map((e) => e.node) : []),
+    [data],
+  );
   const handleDeletedBookInfo = React.useCallback((infoId: string, books) => {
     // noinspection JSIgnoredPromiseFromCall
-    refetch({
-      offset: 0,
-      limit: infos.length,
-    });
+    refetch({ first: infos.length });
     // noinspection JSIgnoredPromiseFromCall
     db.infoReads.delete(infoId);
     // noinspection JSIgnoredPromiseFromCall
@@ -173,31 +174,18 @@ const Home = (props: HomeProps) => {
     }
   }, [refetch, infos]);
 
-  const clickLoadMore = React.useCallback(() => {
-    // @ts-ignore
-    loadMore({
+  const handleLoadMore = React.useCallback(
+    () => fetchMore({
       variables: {
-        offset: infos.length,
+        after: data.bookInfos.edges[data.bookInfos.edges.length - 1].cursor,
       },
-      updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
-        return {
-          bookInfos: {
-            ...fetchMoreResult.bookInfos,
-            infos: [...prev.bookInfos.infos, ...fetchMoreResult.bookInfos.infos],
-          },
-        };
-      },
-    });
-  }, [loadMore, infos]);
+    }),
+    [data, fetchMore],
+  );
 
-  const refetchAll = React.useCallback(() => {
-    // noinspection JSIgnoredPromiseFromCall
-    refetch({
-      offset: 0,
-      limit: infos.length || defaultLoadBookInfoCount,
-    });
-  }, [refetch, infos]);
+  const refetchAll = React.useCallback(() => refetch({
+    first: infos.length || defaultLoadBookInfoCount,
+  }), [refetch, infos]);
 
   const downXs = useMediaQuery(theme.breakpoints.down('xs'));
 
@@ -238,13 +226,13 @@ const Home = (props: HomeProps) => {
                   showName={showBookInfoName}
                 />
               ))}
-              {(isLoadingMore) && (
+              {(loading) && (
                 <div className={classes.loadMoreProgress}>
                   <CircularProgress color="secondary" />
                 </div>
               )}
-              {(!isLoadingMore && data.bookInfos.hasNext) && (
-                <Waypoint onEnter={clickLoadMore} />
+              {(!loading && data.bookInfos.pageInfo.hasNextPage) && (
+                <Waypoint onEnter={handleLoadMore} />
               )}
             </div>
             <Fab

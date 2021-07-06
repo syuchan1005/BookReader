@@ -677,6 +677,38 @@ export type BookInfosQuery = (
   ) }
 );
 
+export type RelayBookInfosQueryVariables = Exact<{
+  first?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  option: BookInfosOption;
+}>;
+
+
+export type RelayBookInfosQuery = (
+  { __typename?: 'Query' }
+  & { bookInfos: (
+    { __typename?: 'BookInfoPartialList' }
+    & { edges: Array<(
+      { __typename?: 'BookInfoEdge' }
+      & Pick<BookInfoEdge, 'cursor'>
+      & { node: (
+        { __typename?: 'BookInfo' }
+        & Pick<BookInfo, 'id' | 'name' | 'count' | 'history' | 'updatedAt'>
+        & { thumbnail?: Maybe<(
+          { __typename?: 'BookInfoThumbnail' }
+          & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
+        )>, genres: Array<(
+          { __typename?: 'Genre' }
+          & Pick<Genre, 'id' | 'name' | 'invisible'>
+        )> }
+      ) }
+    )>, pageInfo: (
+      { __typename?: 'PageInfo' }
+      & Pick<PageInfo, 'hasNextPage' | 'hasPreviousPage' | 'startCursor' | 'endCursor'>
+    ) }
+  ) }
+);
+
 export type DeleteGenreMutationVariables = Exact<{
   name: Scalars['String'];
 }>;
