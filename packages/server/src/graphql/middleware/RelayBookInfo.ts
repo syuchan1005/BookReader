@@ -193,8 +193,8 @@ class RelayBookInfo extends GQLMiddleware {
           pageInfo: {
             hasNextPage: bookInfos.length > first,
             hasPreviousPage: false, // TODO: actual value
-            startCursor: edges[0][cursorKey],
-            endCursor: edges[edges.length - 1][cursorKey],
+            startCursor: edges[0]?.[cursorKey] ?? '',
+            endCursor: edges[edges.length - 1]?.[cursorKey] ?? '',
           },
         };
       },
