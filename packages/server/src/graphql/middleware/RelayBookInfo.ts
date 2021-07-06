@@ -168,14 +168,20 @@ class RelayBookInfo extends GQLMiddleware {
         });
 
         let edges = bookInfos;
+        if (first !== undefined) {
+          if (first < 0) {
+            throw new Error('first less than 0');
+          }
+          if (edges.length >= first) {
+            edges = edges.slice(0, first);
+          }
+        }
         if (last !== undefined) {
           if (last < 0) {
             throw new Error('last less than 0');
           }
           if (edges.length >= last) {
-            const padding = first !== undefined && edges.length > first ? 1 : 0;
-            edges = edges
-              .slice(edges.length - last - padding, edges.length - padding);
+            edges = edges.slice(edges.length - last, edges.length);
           }
         }
 
