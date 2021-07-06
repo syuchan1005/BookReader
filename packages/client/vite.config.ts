@@ -3,7 +3,6 @@ import fs from 'fs';
 
 import { defineConfig, Plugin } from 'vite';
 import reactRefresh from '@vitejs/plugin-react-refresh';
-import graphqlPlugin from '@rollup/plugin-graphql';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const serviceWorkerFileName = 'service-worker.ts';
@@ -38,7 +37,6 @@ export default defineConfig({
   },
   plugins: [
     reactRefresh(),
-    graphqlPlugin(),
     VitePWA({
       strategies: 'injectManifest',
       filename: serviceWorkerFileName,

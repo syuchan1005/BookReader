@@ -2,11 +2,9 @@ import React from 'react';
 import { useApolloClient } from '@apollo/react-hooks';
 
 import {
-  BookInfoQuery as BookInfoQueryType,
-  BookInfoQueryVariables,
   BookOrder,
-} from '@syuchan1005/book-reader-graphql';
-import BookInfoQuery from '@syuchan1005/book-reader-graphql/queries/common/BookInfoQuery.gql';
+  BookInfoDocument, BookInfoQuery, BookInfoQueryVariables,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 const usePrevNextBook = (infoId, bookId) => {
   const client = useApolloClient();
@@ -18,20 +16,19 @@ const usePrevNextBook = (infoId, bookId) => {
       setBookInfo(undefined);
     } else {
       try {
-        const readQuery = client.cache.readQuery<BookInfoQueryType, BookInfoQueryVariables>({
-          query: BookInfoQuery,
+        const readQuery = client.cache.readQuery<BookInfoQuery, BookInfoQueryVariables>({
+          query: BookInfoDocument,
           variables: {
             id: infoId,
             order: BookOrder.NumberAsc,
           },
         });
-        // @ts-ignore
         setBookInfo(readQuery.bookInfo);
       } catch (e) {
         setBookInfo(undefined);
       }
     }
-  }, [infoId]);
+  }, [client, infoId]);
 
   React.useEffect(() => {
     if (!bookId || !bookInfo) {
