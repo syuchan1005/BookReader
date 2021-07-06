@@ -14,11 +14,11 @@ import { useSnackbar } from 'notistack';
 import { useApolloClient } from '@apollo/react-hooks';
 import { QueryParamProvider } from 'use-query-params';
 
-import useMatchMedia from '@client/hooks/useMatchMedia';
 import { workbox } from '@client/registerServiceWorker';
 import { useRecoilValue } from 'recoil';
 import { primaryColorState, secondaryColorState } from '@client/store/atoms';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
+import useMediaQuery from '@client/hooks/useMediaQuery';
 
 const Home = lazy(() => import('@client/pages/Home'));
 const Info = lazy(() => import('@client/pages/Info'));
@@ -75,11 +75,7 @@ const App = () => {
   const primaryColor = useRecoilValue(primaryColorState);
   const secondaryColor = useRecoilValue(secondaryColorState);
 
-  const theme = useMatchMedia(
-    ['(prefers-color-scheme: dark)', '(prefers-color-scheme: light)'],
-    ['dark', 'light'],
-    'light',
-  );
+  const isSystemDarkTheme = useMediaQuery('@media (prefers-color-scheme: dark)');
 
   const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
@@ -106,12 +102,12 @@ const App = () => {
   const provideTheme = useMemo(
     () => createMuiTheme({
       palette: {
-        type: theme,
+        type: isSystemDarkTheme ? 'dark' : 'light',
         primary: colors[primaryColor],
         secondary: colors[secondaryColor],
       },
     }),
-    [theme, primaryColor, secondaryColor],
+    [isSystemDarkTheme, primaryColor, secondaryColor],
   );
 
   return (
