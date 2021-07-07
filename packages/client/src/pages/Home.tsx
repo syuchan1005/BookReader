@@ -256,6 +256,7 @@ const Home = (props: HomeProps) => {
 
         <AddBookInfoDialog
           open={open}
+          name={infos.length === 0 ? searchText : undefined}
           onAdded={refetchAll}
           onClose={setClose}
         />

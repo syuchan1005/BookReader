@@ -21,8 +21,9 @@ import GenresSelect from '../GenresSelect';
 
 interface AddBookInfoDialogProps {
   open: boolean;
-  onAdded?: Function;
-  onClose?: Function;
+  name?: string;
+  onAdded?: () => void;
+  onClose?: () => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -60,26 +61,46 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
   const classes = useStyles(props);
-  const { onAdded, onClose, open } = props;
+  const {
+    onAdded,
+    onClose,
+    open,
+    name: argName,
+  } = props;
   const [name, setName] = React.useState('');
   const [showAddHistory, setShowAddHistory] = React.useState(false);
   const [addHistories, setAddHistories] = React.useState([]);
   const historyBulkRef = React.useRef(null);
   const [selectGenres, setSelectGenres] = React.useState<string[]>([]);
 
-  const changeAddHistories = (index, field, value) => {
-    const a = [...addHistories];
-    a[index][field] = value;
-    setAddHistories(a);
-  };
+  React.useEffect(() => {
+    if (open && argName) {
+      setName(argName);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-  const closeDialog = () => {
+  const changeAddHistories = React.useCallback((index, field, value) => {
+    setAddHistories((histories) => {
+      const a = [...histories];
+      a[index][field] = value;
+      return a;
+    });
+  }, []);
+
+  const closeDialog = React.useCallback(() => {
     if (onClose) onClose();
-    setName('');
     setShowAddHistory(false);
-    setAddHistories([]);
-    setSelectGenres([]);
-  };
+    if (name !== '') {
+      setName('');
+    }
+    if (addHistories.length !== 0) {
+      setAddHistories([]);
+    }
+    if (selectGenres.length !== 0) {
+      setSelectGenres([]);
+    }
+  }, [addHistories, name, onClose, selectGenres]);
 
   const [addBookInfo, { loading: addLoading }] = useAddBookInfoMutation({
     variables: {
