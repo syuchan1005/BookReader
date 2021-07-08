@@ -17,12 +17,13 @@ interface BookPageImageProps {
   sizeDebounceDelay?: number;
 }
 
-const useStyles = makeStyles(() => createStyles({
+const useStyles = makeStyles((theme) => createStyles({
   picture: {
     width: '100%',
     height: '100%',
   },
   img: {
+    ...theme.typography.h5,
     width: '100%',
     height: '100%',
     display: 'block', // If the image not found, keep the height of alt text.
@@ -58,6 +59,13 @@ interface SourceSet {
   }[];
 }
 
+enum ImageState {
+  LOADING,
+  LOADED,
+  ERROR,
+  UNSET,
+}
+
 const BookPageImage = (props: BookPageImageProps) => {
   const classes = useStyles(props);
   const {
@@ -67,7 +75,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     width: imgWidth,
     height: imgHeight,
     loading = 'lazy',
-    alt,
+    alt: argAlt,
     className,
     style,
     noSave = true,
@@ -149,6 +157,28 @@ const BookPageImage = (props: BookPageImageProps) => {
     [className, classes.img],
   );
 
+  const [imageState, setImageState] = React.useState(ImageState.LOADING);
+  React.useEffect(() => {
+    if (!imageSourceSet.imgSrc && imageState !== ImageState.UNSET) {
+      setImageState(ImageState.UNSET);
+    } else if (imageState !== ImageState.LOADING) {
+      setImageState(ImageState.LOADING);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageSourceSet]);
+  const alt = React.useMemo(() => {
+    switch (imageState) {
+      case ImageState.LOADING:
+        return `Loading ${argAlt}`;
+      case ImageState.ERROR:
+        return `Error ${argAlt}`;
+      default:
+      case ImageState.UNSET:
+      case ImageState.LOADED:
+        return argAlt;
+    }
+  }, [argAlt, imageState]);
+
   return (
     <picture className={classes.picture}>
       {imageSourceSet.sources.map(({
@@ -163,8 +193,10 @@ const BookPageImage = (props: BookPageImageProps) => {
         style={style}
         src={imageSourceSet.imgSrc}
         alt={alt}
-        width={imgWidth} // これ両方undefinedだったらどうなるんだ？
+        width={imgWidth}
         height={imgHeight}
+        onLoad={() => setImageState(ImageState.LOADED)}
+        onError={() => setImageState(ImageState.ERROR)}
       />
     </picture>
   );
