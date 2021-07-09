@@ -125,8 +125,10 @@ const Home = (props: HomeProps) => {
     }
   }, [searchText, setSearchText]);
 
+  const [isSkipQuery, setSkipQuery] = React.useState(true);
   React.useEffect(() => {
     document.title = defaultTitle;
+    setSkipQuery(false);
   }, []);
 
   const {
@@ -136,6 +138,7 @@ const Home = (props: HomeProps) => {
     data,
     fetchMore,
   } = useRelayBookInfosQuery({
+    skip: isSkipQuery,
     variables: {
       first: defaultLoadBookInfoCount,
       option: {
@@ -231,7 +234,7 @@ const Home = (props: HomeProps) => {
                   <CircularProgress color="secondary" />
                 </div>
               )}
-              {(!loading && data.bookInfos.pageInfo.hasNextPage) && (
+              {(!loading && data && data.bookInfos.pageInfo.hasNextPage) && (
                 <Waypoint onEnter={handleLoadMore} />
               )}
             </div>
