@@ -154,7 +154,7 @@ const Book = (props: BookProps) => {
   const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
   const classes = useStyles(props);
   const history = useHistory();
-  const params = useParams<{ id: string }>();
+  const { id: bookId } = useParams<{ id: string }>();
 
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
@@ -164,7 +164,6 @@ const Book = (props: BookProps) => {
   const [isPageSet, setPageSet] = React.useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
-  const [rebuildSwiper, setReBuildSwiper] = React.useState(false);
   const [openEditDialog, setOpenEditDialog, setCloseEditDialog] = useBooleanState(false);
   const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
 
@@ -176,21 +175,19 @@ const Book = (props: BookProps) => {
     updatePage(0);
     setSwiper(null);
     setPageSet(false);
-    setReBuildSwiper(true);
-  }, [params.id]);
+  }, [bookId]);
 
   const windowSize = useWindowSize();
 
   const setPage = React.useCallback((s, time = 150) => {
-    if (swiper && !rebuildSwiper) {
+    if (swiper) {
       swiper.slideTo(s, time, false);
       updatePage(s);
     }
-  }, [swiper, rebuildSwiper]);
+  }, [swiper]);
 
   const updateSwiper = React.useCallback((s) => {
     if (!s) return;
-    setReBuildSwiper(false);
     s.on('slideChange', () => updatePage(s.realIndex));
     setSwiper(s);
   }, []);
@@ -201,7 +198,7 @@ const Book = (props: BookProps) => {
     data,
   } = useBookQuery({
     variables: {
-      id: params.id,
+      id: bookId,
     },
     onCompleted(d) {
       if (!d) return;
@@ -216,7 +213,7 @@ const Book = (props: BookProps) => {
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
-    params.id,
+    bookId,
   );
 
   const increment = React.useCallback(() => {
@@ -261,7 +258,7 @@ const Book = (props: BookProps) => {
 
   React.useEffect(() => {
     if (!swiper) return;
-    db.bookReads.get(params.id).then((read) => {
+    db.bookReads.get(bookId).then((read) => {
       if (read && read.page !== 0) {
         let p = read.page;
         if (data && p >= data.book.pages) p = data.book.pages - 1;
@@ -274,18 +271,18 @@ const Book = (props: BookProps) => {
         setPageSet(true);
       }
     });
-  }, [swiper, data, params.id, setPage]);
+  }, [swiper, data, bookId, setPage]);
 
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
     if (isPageSet) {
       db.bookReads.put({
-        bookId: params.id,
+        bookId,
         page,
       }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     }
-  }, [isPageSet, page, enqueueSnackbar, params.id]);
+  }, [isPageSet, page, enqueueSnackbar, bookId]);
 
   useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
   useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
@@ -319,14 +316,14 @@ const Book = (props: BookProps) => {
 
   const clickRouteButton = React.useCallback((e, i) => {
     e.stopPropagation();
-    const bookId = [prevBook, nextBook][i];
-    if (!bookId) return;
+    const jumpBookId = [prevBook, nextBook][i];
+    if (!jumpBookId) return;
     db.infoReads.put({
       infoId: data.book.info.id,
-      bookId,
+      bookId: jumpBookId,
     }).catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
     // history.push('/dummy');
-    history.push(`/book/${bookId}`);
+    history.push(`/book/${jumpBookId}`);
   }, [prevBook, nextBook, data, history, enqueueSnackbar]);
 
   const imageSize = React.useMemo(() => {
@@ -377,7 +374,7 @@ const Book = (props: BookProps) => {
             open={openEditDialog}
             onClose={setCloseEditDialog}
             maxPage={data ? data.book.pages : 0}
-            bookId={params.id}
+            bookId={bookId}
           />
 
           {/* eslint-disable-next-line */}
@@ -455,7 +452,7 @@ const Book = (props: BookProps) => {
                       } else {
                         setReadOrder(ReadOrder.RTL);
                       }
-                      setReBuildSwiper(true);
+                      setSwiper(null);
                     }}
                   >
                     {['L > R', 'L < R'][readOrder]}
@@ -507,7 +504,7 @@ const Book = (props: BookProps) => {
             )}
           </div>
 
-          <Remount remount={rebuildSwiper}>
+          <Remount remount={!swiper}>
             <Swiper
               onSwiper={updateSwiper}
               dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
@@ -521,7 +518,7 @@ const Book = (props: BookProps) => {
                   {(Math.abs(i - debouncePage) <= 1 && imageSize && isPageSet) ? (
                     <BookPageImage
                       style={effectBackGround}
-                      bookId={params.id}
+                      bookId={bookId}
                       pageIndex={i}
                       bookPageCount={data.book.pages}
                       {...imageSize}
