@@ -10,17 +10,17 @@ type RemountProps = {
   children?: ReactNode;
 };
 
-const RemountInner = (props: RemountProps) => {
-  const [remount, setRemount] = useState(false);
+const RemountInner = ({ remount: shouldRemount, children }: RemountProps) => {
+  const [shouldUnmount, setShouldUnmount] = useState(false);
   useEffect(() => {
-    if (!props.remount) return;
-    setRemount(true);
-    setTimeout(() => {
-      setRemount(false);
-    }, 1);
-  }, [props.remount]);
+    if (!shouldRemount) return;
+    setShouldUnmount(true);
+    requestAnimationFrame(() => {
+      setShouldUnmount(false);
+    });
+  }, [shouldRemount]);
 
-  return remount ? null : props.children;
+  return shouldUnmount ? null : children;
 };
 
 // @ts-ignore
