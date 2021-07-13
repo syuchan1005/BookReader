@@ -103,10 +103,14 @@ const Info = (props: InfoProps) => {
   const [mode, setMode] = React.useState<ScreenMode>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
 
-  const [title, setTitle] = React.useState(document.title);
-  React.useEffect(() => {
+  const setTitle = React.useCallback((title) => {
     document.title = title;
-  }, [title]);
+  }, []);
+
+  const [isSkipQuery, setSkipQuery] = React.useState(true);
+  React.useEffect(() => {
+    setSkipQuery(false);
+  }, []);
 
   const {
     refetch,
@@ -114,6 +118,7 @@ const Info = (props: InfoProps) => {
     error,
     data,
   } = useBookInfoQuery({
+    skip: isSkipQuery,
     variables: {
       id: params.id,
       order: sortBookOrder,
