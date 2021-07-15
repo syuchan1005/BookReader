@@ -14,6 +14,7 @@ import {
   useTheme,
 } from '@material-ui/core';
 
+import SwiperCore, { Virtual } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.min.css';
 
@@ -38,6 +39,8 @@ import { Remount } from '@client/components/Remount';
 import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
 import db from '@client/Database';
 import { NumberParam, useQueryParam } from 'use-query-params';
+
+SwiperCore.use([Virtual]);
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -561,11 +564,14 @@ const Book = (props: BookProps) => {
               onSwiper={updateSwiper}
               dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
               className={classes.pageContainer}
+              slidesPerView={1}
+              centeredSlides
+              virtual
             >
-              {[...new Array(data.book.pages).keys()].map((i) => (
+              {[...new Array(data.book.pages).keys()].map((i, index) => (
                 <SwiperSlide
                   key={`${i}_${imageSize[0]}_${imageSize[1]}`}
-                  className={classes.page}
+                  virtualIndex={index}
                 >
                   {(Math.abs(i - debouncePage) <= 1 && imageSize && isPageSet) ? (
                     <BookPageImage
