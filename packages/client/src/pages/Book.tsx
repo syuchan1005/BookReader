@@ -37,6 +37,7 @@ import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { Remount } from '@client/components/Remount';
 import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
 import db from '@client/Database';
+import { NumberParam, useQueryParam } from 'use-query-params';
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -204,6 +205,7 @@ const Book = (props: BookProps) => {
 
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
+  const [queryPage, setQueryPage] = useQueryParam('page', NumberParam);
   const [dbLoading, dbPage, setDbPage] = useDatabasePage(bookId);
   const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
@@ -211,20 +213,24 @@ const Book = (props: BookProps) => {
       return;
     }
 
-    if (page !== dbPage) {
+    if (queryPage !== undefined && queryPage !== page) {
+      setPage(queryPage, 0);
+    } else if (page !== dbPage) {
       setPage(dbPage, 0);
-      setTimeout(() => {
-        setPageSet(true);
-      }, 210);
     } else {
       setPageSet(true);
+      return;
     }
+    setTimeout(() => {
+      setPageSet(true);
+    }, 210);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbLoading]);
 
   React.useEffect(() => {
     if (isPageSet) {
       setDbPage(page).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
+      setQueryPage(page, 'replace');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
@@ -248,13 +254,6 @@ const Book = (props: BookProps) => {
   }, [bookId]);
 
   const windowSize = useWindowSize();
-
-  const setPage = React.useCallback((s, time = 150) => {
-    if (swiper) {
-      swiper.slideTo(s, time, false);
-      updatePage(s);
-    }
-  }, [swiper]);
 
   const updateSwiper = React.useCallback((s) => {
     if (!s) return;
@@ -280,6 +279,17 @@ const Book = (props: BookProps) => {
       setShowAppBar();
     },
   });
+
+  const setPage = React.useCallback((s, time = 150) => {
+    let validatedPage = Math.max(s, 0);
+    if (data) {
+      validatedPage = Math.min(validatedPage, data.book.pages - 1);
+    }
+    if (swiper) {
+      swiper.slideTo(validatedPage, time, false);
+    }
+    updatePage(validatedPage);
+  }, [data, swiper]);
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
