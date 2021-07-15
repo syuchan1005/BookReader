@@ -35,7 +35,6 @@ import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
-import { Remount } from '@client/components/Remount';
 import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
 import db from '@client/Database';
 import { NumberParam, useQueryParam } from 'use-query-params';
@@ -76,6 +75,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     '& > .swiper-wrapper': {
       zIndex: 'inherit',
     },
+    '& .start': {
+      display: 'flex',
+      justifyContent: 'flex-start',
+    },
+    '& .end': {
+      display: 'flex',
+      justifyContent: 'flex-end',
+    },
   },
   pageImage: {
     paddingTop: commonTheme.safeArea.top,
@@ -112,6 +119,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     '&.bottom': {
       width: '80%',
       gridTemplateRows: 'auto auto',
+      gridTemplateColumns: '1fr 1fr 1fr 1fr',
       bottom: theme.spacing(2),
     },
     '&.center': {
@@ -127,7 +135,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
   },
   bottomSlider: {
-    gridColumn: '1 / span 3',
+    gridColumn: '1 / span 4',
     margin: theme.spacing(0, 2),
   },
   loading: {
@@ -198,6 +206,37 @@ const useDatabasePage = (
   ];
 };
 
+type PageStyles = keyof typeof PageStyle;
+
+const PageStyle = {
+  SinglePage: {
+    slidesPerView: 1,
+    pageClass: (_index: number) => undefined,
+    normalizeCount: (i: number) => i,
+    icon: {
+      name: 'crop_portrait',
+      style: undefined,
+    },
+  },
+  FullSpread: {
+    slidesPerView: 2,
+    pageClass: (index: number) => (index % 2 === 0 ? 'end' : 'start'),
+    normalizeCount: (i: number) => Math.floor(i / 2) * 2,
+    icon: {
+      name: 'splitscreen',
+      style: {
+        transform: 'rotate(90deg)',
+      },
+    },
+  },
+};
+
+// @ts-ignore
+const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
+  SinglePage: 'FullSpread',
+  FullSpread: 'SinglePage',
+};
+
 const Book = (props: BookProps) => {
   const [readOrder, setReadOrder] = useRecoilState(readOrderState);
   const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
@@ -245,6 +284,13 @@ const Book = (props: BookProps) => {
   const [swiper, setSwiper] = React.useState(null);
   const [openEditDialog, setOpenEditDialog, setCloseEditDialog] = useBooleanState(false);
   const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
+  const [pageStyleKey, setPageStyle] = React.useState<PageStyles>('SinglePage');
+  const {
+    slidesPerView,
+    pageClass,
+    normalizeCount,
+    icon: pageStyleIcon,
+  } = PageStyle[pageStyleKey];
 
   React.useEffect(() => {
     document.title = defaultTitle;
@@ -252,7 +298,6 @@ const Book = (props: BookProps) => {
 
   React.useEffect(() => {
     updatePage(0);
-    setSwiper(null);
     setPageSet(false);
   }, [bookId]);
 
@@ -261,8 +306,9 @@ const Book = (props: BookProps) => {
   const updateSwiper = React.useCallback((s) => {
     if (!s) return;
     s.on('slideChange', () => updatePage(s.realIndex));
+    s.slideTo(page, 0, false);
     setSwiper(s);
-  }, []);
+  }, [page]);
 
   const {
     loading,
@@ -286,13 +332,14 @@ const Book = (props: BookProps) => {
   const setPage = React.useCallback((s, time = 150) => {
     let validatedPage = Math.max(s, 0);
     if (data) {
-      validatedPage = Math.min(validatedPage, data.book.pages - 1);
+      validatedPage = Math.min(validatedPage, normalizeCount(data.book.pages - 1));
     }
+    validatedPage = normalizeCount(validatedPage);
     if (swiper) {
       swiper.slideTo(validatedPage, time, false);
     }
     updatePage(validatedPage);
-  }, [data, swiper]);
+  }, [data, swiper, normalizeCount]);
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
@@ -300,14 +347,14 @@ const Book = (props: BookProps) => {
   );
 
   const increment = React.useCallback(() => {
-    setPage(Math.min(page + 1, data.book.pages - 1));
+    setPage(page + slidesPerView);
     setHideAppBar();
-  }, [page, data, setPage, setHideAppBar]);
+  }, [page, setPage, setHideAppBar, slidesPerView]);
 
   const decrement = React.useCallback(() => {
-    setPage(Math.max(page - 1, 0));
+    setPage(page - slidesPerView);
     setHideAppBar();
-  }, [page, setHideAppBar, setPage]);
+  }, [page, setHideAppBar, setPage, slidesPerView]);
 
   const theme = useTheme();
   const sliderTheme = React.useMemo(() => createMuiTheme({
@@ -397,6 +444,13 @@ const Book = (props: BookProps) => {
     setShowOriginalImage((v) => !v);
   }, [setShowOriginalImage]);
 
+  const canImageVisible = React.useCallback((i: number) => imageSize
+    && isPageSet
+    && (i < debouncePage
+      ? debouncePage - i <= slidesPerView
+      : i - debouncePage <= (slidesPerView * 2 - 1)),
+  [debouncePage, imageSize, isPageSet, slidesPerView]);
+
   if (loading || error) {
     return (
       <>
@@ -456,7 +510,7 @@ const Book = (props: BookProps) => {
                       to Prev book
                     </Button>
                   )}
-                  {(nextBook && data && page === data.book.pages - 1) && (
+                  {(nextBook && data && Math.abs(data.book.pages - page) <= slidesPerView) && (
                     <Button variant="contained" color="secondary" onClick={(e) => clickRouteButton(e, 1)}>
                       to Next book
                     </Button>
@@ -472,6 +526,15 @@ const Book = (props: BookProps) => {
                       onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
                     >
                       <Icon>settings</Icon>
+                    </IconButton>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <IconButton
+                      size="small"
+                      style={{ color: 'white' }}
+                      onClick={() => setPageStyle((p) => NextPageStyleMap[p])}
+                    >
+                      <Icon style={pageStyleIcon.style}>{pageStyleIcon.name}</Icon>
                     </IconButton>
                   </div>
                   <Menu
@@ -507,7 +570,6 @@ const Book = (props: BookProps) => {
                       } else {
                         setReadOrder(ReadOrder.RTL);
                       }
-                      setSwiper(null);
                     }}
                   >
                     {['L > R', 'L < R'][readOrder]}
@@ -536,6 +598,7 @@ const Book = (props: BookProps) => {
                         valueLabelDisplay="auto"
                         max={data.book.pages}
                         min={1}
+                        step={slidesPerView}
                         value={page + 1}
                         onChange={(e, v: number) => setPage(v - 1, 0)}
                       />
@@ -559,37 +622,38 @@ const Book = (props: BookProps) => {
             )}
           </div>
 
-          <Remount remount={!swiper}>
-            <Swiper
-              onSwiper={updateSwiper}
-              dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
-              className={classes.pageContainer}
-              slidesPerView={1}
-              centeredSlides
-              virtual
-            >
-              {[...new Array(data.book.pages).keys()].map((i, index) => (
-                <SwiperSlide
-                  key={`${i}_${imageSize[0]}_${imageSize[1]}`}
-                  virtualIndex={index}
-                >
-                  {(Math.abs(i - debouncePage) <= 1 && imageSize && isPageSet) ? (
-                    <BookPageImage
-                      style={effectBackGround}
-                      bookId={bookId}
-                      pageIndex={i}
-                      bookPageCount={data.book.pages}
-                      {...imageSize}
-                      alt={(i + 1).toString(10)}
-                      className={classes.pageImage}
-                      loading="eager"
-                      sizeDebounceDelay={600}
-                    />
-                  ) : null}
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </Remount>
+          <Swiper
+            key={readOrder}
+            onSwiper={updateSwiper}
+            dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
+            className={classes.pageContainer}
+            slidesPerView={slidesPerView}
+            slidesPerGroup={slidesPerView}
+            virtual
+          >
+            {[...new Array(data.book.pages).keys()].map((i, index) => (
+              <SwiperSlide
+                key={`${i}_${imageSize[0]}_${imageSize[1]}`}
+                virtualIndex={index}
+                className={pageClass(index)}
+              >
+                {canImageVisible(i) && (
+                  <BookPageImage
+                    style={effectBackGround}
+                    bookId={bookId}
+                    pageIndex={i}
+                    bookPageCount={data.book.pages}
+                    {...imageSize}
+                    alt={(i + 1).toString(10)}
+                    className={classes.pageImage}
+                    loading="eager"
+                    sizeDebounceDelay={600}
+                    removeWidthAttr
+                  />
+                )}
+              </SwiperSlide>
+            ))}
+          </Swiper>
 
           <div className={classes.pageProgress} style={{ justifyContent: `flex-${['start', 'end'][readOrder]}` }}>
             <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />

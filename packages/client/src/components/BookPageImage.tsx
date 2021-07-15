@@ -15,11 +15,15 @@ interface BookPageImageProps {
   noSave?: boolean;
 
   sizeDebounceDelay?: number;
+  removeWidthAttr?: boolean
 }
 
 const useStyles = makeStyles((theme) => createStyles({
-  picture: {
+  pictureFull: {
     width: '100%',
+    height: '100%',
+  },
+  pictureFullHeight: {
     height: '100%',
   },
   img: {
@@ -80,6 +84,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     style,
     noSave = true,
     sizeDebounceDelay = 0,
+    removeWidthAttr = false,
   } = props;
 
   const argDebounceWidth = useDebounceValue(imgWidth, sizeDebounceDelay);
@@ -180,7 +185,7 @@ const BookPageImage = (props: BookPageImageProps) => {
   }, [argAlt, imageState]);
 
   return (
-    <picture className={classes.picture}>
+    <picture className={removeWidthAttr ? classes.pictureFullHeight : classes.pictureFull}>
       {imageSourceSet.sources.map(({
         type,
         srcSet,
@@ -193,7 +198,7 @@ const BookPageImage = (props: BookPageImageProps) => {
         style={style}
         src={imageSourceSet.imgSrc}
         alt={alt}
-        width={imgWidth}
+        width={removeWidthAttr ? undefined : imgWidth}
         height={imgHeight}
         onLoad={() => setImageState(ImageState.LOADED)}
         onError={() => setImageState(ImageState.ERROR)}
