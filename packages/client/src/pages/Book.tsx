@@ -149,19 +149,89 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
+const useDatabasePage = (
+  bookId: string,
+  defaultPage: number = 0,
+): [
+  loading: boolean,
+  page: number,
+  setPage: (
+    page: number,
+  ) => Promise<void>,
+] => {
+  const [loading, setLoading] = React.useState(true);
+  const [page, updatePageState] = React.useState(defaultPage);
+
+  React.useEffect(() => {
+    setLoading(true);
+    db.bookReads.get(bookId).then((read) => {
+      if (read) {
+        updatePageState(read.page);
+      } else {
+        updatePageState(defaultPage);
+      }
+      setLoading(false);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookId]);
+
+  const setPage = React.useCallback((p: number): Promise<void> => {
+    if (loading) {
+      return Promise.reject();
+    }
+
+    // @ts-ignore
+    return db.bookReads.put({
+      bookId,
+      page: p,
+    });
+  }, [bookId, loading]);
+
+  return [
+    loading,
+    page,
+    setPage,
+  ];
+};
+
 const Book = (props: BookProps) => {
   const [readOrder, setReadOrder] = useRecoilState(readOrderState);
   const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
   const classes = useStyles(props);
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const { id: bookId } = useParams<{ id: string }>();
 
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
+  const [dbLoading, dbPage, setDbPage] = useDatabasePage(bookId);
+  const [isPageSet, setPageSet] = React.useState(false);
+  React.useEffect(() => {
+    if (dbLoading) {
+      return;
+    }
+
+    if (page !== dbPage) {
+      setPage(dbPage, 0);
+      setTimeout(() => {
+        setPageSet(true);
+      }, 210);
+    } else {
+      setPageSet(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dbLoading]);
+
+  React.useEffect(() => {
+    if (isPageSet) {
+      setDbPage(page).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
   const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
   const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
   const [effectPercentage, setEffectPercentage] = React.useState(0);
-  const [isPageSet, setPageSet] = React.useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
   const [openEditDialog, setOpenEditDialog, setCloseEditDialog] = useBooleanState(false);
@@ -255,34 +325,6 @@ const Book = (props: BookProps) => {
         return undefined;
     }
   }, [effect, effectPercentage]);
-
-  React.useEffect(() => {
-    if (!swiper) return;
-    db.bookReads.get(bookId).then((read) => {
-      if (read && read.page !== 0) {
-        let p = read.page;
-        if (data && p >= data.book.pages) p = data.book.pages - 1;
-        setPage(Math.max(p, 0), 0);
-        setTimeout(() => {
-          setPageSet(true);
-        }, 210);
-      } else {
-        setPage(0, 0);
-        setPageSet(true);
-      }
-    });
-  }, [swiper, data, bookId, setPage]);
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  React.useEffect(() => {
-    if (isPageSet) {
-      db.bookReads.put({
-        bookId,
-        page,
-      }).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
-    }
-  }, [isPageSet, page, enqueueSnackbar, bookId]);
 
   useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
   useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
