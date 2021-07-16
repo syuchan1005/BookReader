@@ -219,6 +219,7 @@ const PageStyle = {
       name: 'crop_portrait',
       style: undefined,
     },
+    prefixPage: 0,
   },
   FullSpread: {
     slidesPerView: 2,
@@ -230,13 +231,27 @@ const PageStyle = {
         transform: 'rotate(90deg)',
       },
     },
+    prefixPage: 0,
+  },
+  FullSpreadPlusOne: {
+    slidesPerView: 2,
+    pageClass: (index: number) => ((index + 1) % 2 === 0 ? 'end' : 'start'),
+    normalizeCount: (i: number) => Math.floor(i / 2) * 2 + 1,
+    icon: {
+      name: 'horizontal_split',
+      style: {
+        transform: 'rotate(-90deg) scaleX(0.9) scaleY(1.4)',
+      },
+    },
+    prefixPage: 1,
   },
 };
 
 // @ts-ignore
 const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
   SinglePage: 'FullSpread',
-  FullSpread: 'SinglePage',
+  FullSpread: 'FullSpreadPlusOne',
+  FullSpreadPlusOne: 'SinglePage',
 };
 
 const Book = (props: BookProps) => {
@@ -292,6 +307,7 @@ const Book = (props: BookProps) => {
     pageClass,
     normalizeCount,
     icon: pageStyleIcon,
+    prefixPage,
   } = PageStyle[pageStyleKey];
 
   React.useEffect(() => {
@@ -625,7 +641,7 @@ const Book = (props: BookProps) => {
           </div>
 
           <Swiper
-            key={readOrder}
+            key={`${bookId}:${pageStyleKey}:${readOrder}`}
             onSwiper={updateSwiper}
             dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
             className={classes.pageContainer}
@@ -633,10 +649,13 @@ const Book = (props: BookProps) => {
             slidesPerGroup={slidesPerView}
             virtual
           >
+            {[...new Array(prefixPage).keys()].map((i) => (
+              <SwiperSlide key={`virtual-${i}`} virtualIndex={i} className="test" />
+            ))}
             {[...new Array(data.book.pages).keys()].map((i, index) => (
               <SwiperSlide
                 key={`${i}_${imageSize[0]}_${imageSize[1]}`}
-                virtualIndex={index}
+                virtualIndex={index + prefixPage}
                 className={pageClass(index)}
               >
                 {canImageVisible(i) && (
