@@ -75,12 +75,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     '& > .swiper-wrapper': {
       zIndex: 'inherit',
     },
-    '& .start': {
+    '& .swiper-slide > *': {
       display: 'flex',
+      justifyContent: 'center',
+    },
+    '& .swiper-slide.start > *': {
       justifyContent: 'flex-start',
     },
-    '& .end': {
-      display: 'flex',
+    '& .swiper-slide.end > *': {
       justifyContent: 'flex-end',
     },
   },
@@ -647,8 +649,7 @@ const Book = (props: BookProps) => {
                     alt={(i + 1).toString(10)}
                     className={classes.pageImage}
                     loading="eager"
-                    sizeDebounceDelay={600}
-                    removeWidthAttr
+                    sizeDebounceDelay={300}
                   />
                 )}
               </SwiperSlide>

@@ -254,6 +254,7 @@ const BookInfo = (props: BookInfoProps) => {
           width={thumbnailSize}
           height={pageAspectRatio(thumbnailSize)}
           noSave={false}
+          forceUsePropSize
         />
         {showName ? (
           <CardContent className={classes.cardContent}>

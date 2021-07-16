@@ -15,7 +15,7 @@ interface BookPageImageProps {
   noSave?: boolean;
 
   sizeDebounceDelay?: number;
-  removeWidthAttr?: boolean
+  forceUsePropSize?: boolean;
 }
 
 const useStyles = makeStyles((theme) => createStyles({
@@ -23,14 +23,13 @@ const useStyles = makeStyles((theme) => createStyles({
     width: '100%',
     height: '100%',
   },
-  pictureFullHeight: {
+  imageFull: {
+    width: '100%',
     height: '100%',
+    display: 'block',
   },
   img: {
     ...theme.typography.h5,
-    width: '100%',
-    height: '100%',
-    display: 'block', // If the image not found, keep the height of alt text.
     objectFit: 'contain',
   },
 }));
@@ -76,19 +75,19 @@ const BookPageImage = (props: BookPageImageProps) => {
     bookId,
     pageIndex,
     bookPageCount,
-    width: imgWidth,
-    height: imgHeight,
+    width: argWidth,
+    height: argHeight,
     loading = 'lazy',
     alt: argAlt,
     className,
     style,
     noSave = true,
     sizeDebounceDelay = 0,
-    removeWidthAttr = false,
+    forceUsePropSize = false,
   } = props;
 
-  const argDebounceWidth = useDebounceValue(imgWidth, sizeDebounceDelay);
-  const argDebounceHeight = useDebounceValue(imgHeight, sizeDebounceDelay);
+  const argDebounceWidth = useDebounceValue(argWidth, sizeDebounceDelay);
+  const argDebounceHeight = useDebounceValue(argHeight, sizeDebounceDelay);
 
   const width = React.useMemo(
     () => (argDebounceWidth < argDebounceHeight ? argDebounceWidth : undefined),
@@ -184,8 +183,22 @@ const BookPageImage = (props: BookPageImageProps) => {
     }
   }, [argAlt, imageState]);
 
+  const imgWidth = React.useMemo(() => {
+    if (forceUsePropSize) {
+      return argWidth;
+    }
+    return width !== undefined ? '100%' : undefined;
+  }, [argWidth, forceUsePropSize, width]);
+
+  const imgHeight = React.useMemo(() => {
+    if (forceUsePropSize) {
+      return argHeight;
+    }
+    return height !== undefined ? '100%' : undefined;
+  }, [argHeight, forceUsePropSize, height]);
+
   return (
-    <picture className={removeWidthAttr ? classes.pictureFullHeight : classes.pictureFull}>
+    <picture className={classes.pictureFull}>
       {imageSourceSet.sources.map(({
         type,
         srcSet,
@@ -194,11 +207,11 @@ const BookPageImage = (props: BookPageImageProps) => {
       ))}
       <img
         loading={loading}
-        className={imgClassName}
+        className={`${imgClassName} ${forceUsePropSize ? classes.imageFull : ''}`}
         style={style}
         src={imageSourceSet.imgSrc}
         alt={alt}
-        width={removeWidthAttr ? undefined : imgWidth}
+        width={imgWidth}
         height={imgHeight}
         onLoad={() => setImageState(ImageState.LOADED)}
         onError={() => setImageState(ImageState.ERROR)}

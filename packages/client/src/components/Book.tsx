@@ -219,6 +219,7 @@ const Book = (props: BookProps) => {
           width={thumbnailSize}
           height={pageAspectRatio(thumbnailSize)}
           noSave={thumbnailNoSave}
+          forceUsePropSize
         />
         <CardContent className={classes.cardContent}>
           <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
