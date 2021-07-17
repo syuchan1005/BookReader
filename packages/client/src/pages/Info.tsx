@@ -105,7 +105,7 @@ const Info = (props: InfoProps) => {
   const [selectIds, setSelectIds] = React.useState([]);
 
   const setTitle = React.useCallback((title) => {
-    document.title = title;
+    document.title = typeof title === 'function' ? title() : title;
   }, []);
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
