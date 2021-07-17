@@ -129,14 +129,14 @@ const BookPageImage = (props: BookPageImageProps) => {
         );
         webpSrcSet = `${webpSrc}${suffix}`;
       } else {
-        const sizeRatio = [1, 2, 3];
+        const sizeRatio = [1, 1.5, 2, 3];
         webpSrcSet = sizeRatio.map((ratio) => {
           const src = createBookPageUrl(
             bookId,
             pageIndex,
             bookPageCount,
-            width !== undefined ? width * ratio : undefined,
-            height !== undefined ? height * ratio : undefined,
+            width !== undefined ? Math.ceil(width * ratio) : undefined,
+            height !== undefined ? Math.ceil(height * ratio) : undefined,
             'webp',
           );
           return `${src}${suffix} ${ratio}x`;
