@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Card,
   CardActionArea,
@@ -25,6 +25,7 @@ import EditDialog from '@client/components/dialogs/EditDialog';
 import DownloadDialog from '@client/components/dialogs/DownloadBookInfoDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
+import useVisible from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
@@ -125,6 +126,8 @@ const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const BookInfo = (props: BookInfoProps) => {
   const classes = useStyles(props);
+  const ref = useRef();
+  const isVisible = useVisible(ref);
   const {
     style,
     thumbnailSize,
@@ -225,97 +228,99 @@ const BookInfo = (props: BookInfoProps) => {
   }, [history, infoId, onClick]);
 
   return (
-    <Card className={classes.card} style={style}>
-      <CardActions className={classes.headerMenu}>
-        <IconButton
-          onClick={setMenuAnchor}
-          aria-label="menu"
-        >
-          <Icon>more_vert</Icon>
-        </IconButton>
-        <Menu
-          getContentAnchorEl={null}
-          anchorEl={menuAnchor}
-          open={Boolean(menuAnchor)}
-          onClose={resetMenuAnchor}
-        >
-          <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
-          <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
-          <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
-          {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
-        </Menu>
-      </CardActions>
-      <CardActionArea onClick={handleCardClick}>
-        <BookPageImage
-          bookId={thumbnail?.bookId}
-          pageIndex={thumbnail?.pageIndex}
-          bookPageCount={thumbnail?.bookPageCount}
-          alt={name}
-          width={thumbnailSize}
-          height={pageAspectRatio(thumbnailSize)}
-          noSave={false}
-          forceUsePropSize
-        />
-        {showName ? (
-          <CardContent className={classes.cardContent}>
-            <div>{`${name} (${count}${genres.some((g) => g.name === 'Completed') ? ', Completed' : ''})`}</div>
-          </CardContent>
-        ) : (
-          <CardContent className={classes.countLabel}>
-            <div>{count}</div>
-          </CardContent>
-        )}
-        {(history) ? (
-          <div className={classes.historyLabel}>History</div>
-        ) : null}
-        {(genres.some((g) => g.name === 'Completed') && !showName) ? (
-          <div className={classes.completedLabel}>Completed</div>
-        ) : null}
-        {(genres.some((g) => g.invisible)) ? (
-          <Icon className={classes.invisibleLabel}>visibility_off</Icon>
-        ) : null}
-        {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
-          <Icon className={classes.newLabel}>tips_and_updates</Icon>
-        )}
-      </CardActionArea>
+    <div ref={ref} style={{ width: thumbnailSize, height: pageAspectRatio(thumbnailSize) }}>
+      {isVisible && (
+        <Card className={classes.card} style={style}>
+          <CardActions className={classes.headerMenu}>
+            <IconButton
+              onClick={setMenuAnchor}
+              aria-label="menu"
+            >
+              <Icon>more_vert</Icon>
+            </IconButton>
+            <Menu
+              getContentAnchorEl={null}
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={resetMenuAnchor}
+            >
+              <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
+              <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
+              <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
+              {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
+            </Menu>
+          </CardActions>
+          <CardActionArea onClick={handleCardClick}>
+            <BookPageImage
+              bookId={thumbnail?.bookId}
+              pageIndex={thumbnail?.pageIndex}
+              bookPageCount={thumbnail?.bookPageCount}
+              alt={name}
+              width={thumbnailSize}
+              height={pageAspectRatio(thumbnailSize)}
+              noSave={false}
+              forceUsePropSize
+            />
+            {showName ? (
+              <CardContent className={classes.cardContent}>
+                <div>{`${name} (${count}${genres.some((g) => g.name === 'Completed') ? ', Completed' : ''})`}</div>
+              </CardContent>
+            ) : (
+              <CardContent className={classes.countLabel}>
+                <div>{count}</div>
+              </CardContent>
+            )}
+            {(history) ? (
+              <div className={classes.historyLabel}>History</div>
+            ) : null}
+            {(genres.some((g) => g.name === 'Completed') && !showName) ? (
+              <div className={classes.completedLabel}>Completed</div>
+            ) : null}
+            {(genres.some((g) => g.invisible)) ? (
+              <Icon className={classes.invisibleLabel}>visibility_off</Icon>
+            ) : null}
+            {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
+              <Icon className={classes.newLabel}>tips_and_updates</Icon>
+            )}
+          </CardActionArea>
 
-      <DeleteDialog
-        open={isShownDeleteDialog}
-        loading={delLoading}
-        bookInfo={name}
-        onClose={hideDeleteDialog}
-        onClickDelete={deleteBookInfo}
-      />
+          <DeleteDialog
+            open={isShownDeleteDialog}
+            loading={delLoading}
+            bookInfo={name}
+            onClose={hideDeleteDialog}
+            onClickDelete={deleteBookInfo}
+          />
 
-      <EditDialog
-        info
-        open={isShownEditDialog}
-        loading={editLoading}
-        fieldValue={editContent.name}
-        genres={editContent.genres}
-        onChange={onChangeEvent}
-        onClose={hideEditDialog}
-        onClickRestore={resetEditContentName}
-        onClickEdit={editBookInfo}
-      />
+          <EditDialog
+            info
+            open={isShownEditDialog}
+            loading={editLoading}
+            fieldValue={editContent.name}
+            genres={editContent.genres}
+            onChange={onChangeEvent}
+            onClose={hideEditDialog}
+            onClickRestore={resetEditContentName}
+            onClickEdit={editBookInfo}
+          />
 
-      <SelectBookInfoThumbnailDialog
-        open={!!selectDialog}
-        infoId={selectDialog}
-        onClose={hideSelectDialog}
-        onEdit={onEdit}
-      />
+          <SelectBookInfoThumbnailDialog
+            open={!!selectDialog}
+            infoId={selectDialog}
+            onClose={hideSelectDialog}
+            onEdit={onEdit}
+          />
 
-      {(isShownDownloadDialog || debounceIsShownDownloadDialog) && (
-        <DownloadDialog
-          open={isShownDownloadDialog}
-          onClose={hideDownloadDialog}
-          id={infoId}
-          name={name}
-          count={count}
-        />
+          {(isShownDownloadDialog || debounceIsShownDownloadDialog) && (
+            <DownloadDialog
+              open={isShownDownloadDialog}
+              onClose={hideDownloadDialog}
+              id={infoId}
+            />
+          )}
+        </Card>
       )}
-    </Card>
+    </div>
   );
 };
 
