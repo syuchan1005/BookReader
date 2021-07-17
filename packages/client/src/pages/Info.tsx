@@ -31,6 +31,7 @@ import useMediaQuery from '@client/hooks/useMediaQuery';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useBooleanState from '@client/hooks/useBooleanState';
 import { sortBookOrderState } from '@client/store/atoms';
+import { pageAspectRatio } from '@client/components/BookPageImage';
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -46,12 +47,12 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'grid',
     justifyContent: 'center',
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
-  },
-  [theme.breakpoints.down('xs')]: {
-    infoGrid: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px)',
+    [theme.breakpoints.down('xs')]: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
     },
   },
   loading: {

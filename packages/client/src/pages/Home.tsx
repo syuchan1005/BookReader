@@ -27,6 +27,7 @@ import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
+import { pageAspectRatio } from '@client/components/BookPageImage';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useStateWithReset from '@client/hooks/useStateWithReset';
 import useMediaQuery from '@client/hooks/useMediaQuery';
@@ -52,9 +53,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: theme.spacing(1),
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
     justifyContent: 'center',
     columnGap: `${theme.spacing(2)}px`,
     rowGap: `${theme.spacing(2)}px`,
+    [theme.breakpoints.down('xs')]: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+    },
   },
   loading: {
     width: '100%',
@@ -84,11 +90,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     zIndex: 2,
     fallbacks: {
       bottom: theme.spacing(11),
-    },
-  },
-  [theme.breakpoints.down('xs')]: {
-    homeGrid: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
     },
   },
   loadMoreProgress: {
