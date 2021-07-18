@@ -1,5 +1,6 @@
 import { promises as fs, createWriteStream as fsCreateWriteStream, rmSync as fsRmSync } from 'fs';
 import path from 'path';
+import { pipeline } from 'stream/promises';
 
 import { v4 as uuidv4 } from 'uuid';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
@@ -226,21 +227,24 @@ const GQLUtil = {
     } else if (file) {
       const awaitFile = await file;
       archiveFilePath = createDownloadFilePath(uuidv4());
-      await GQLUtil.writeFile(archiveFilePath, awaitFile.createReadStream());
+      try {
+        await GQLUtil.writeFile(archiveFilePath, awaitFile.createReadStream());
+      } catch (e) {
+        return {
+          success: false,
+          code: 'QL0006',
+          message: Errors.QL0006,
+        };
+      }
     }
 
     return { success: true, archiveFilePath };
   },
-  async writeFile(filePath: string, readableStream: NodeJS.ReadableStream): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const writableStream = fsCreateWriteStream(filePath);
-      readableStream.pipe(writableStream);
-      readableStream.on('error', (err) => {
-        writableStream.destroy(err);
-        reject();
-      });
-      readableStream.on('end', resolve);
-    });
+  writeFile(filePath: string, readableStream: NodeJS.ReadableStream): Promise<void> {
+    return pipeline(
+      readableStream,
+      fsCreateWriteStream(filePath),
+    );
   },
   async searchBookFolders(tempPath: string) {
     let booksFolderPath = '/';
