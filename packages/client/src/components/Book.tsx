@@ -19,13 +19,14 @@ import { useDeleteBookMutation, useEditBookMutation } from '@syuchan1005/book-re
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import DownloadDialog from '@client/components/dialogs/DownloadBookDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
+
+const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookDialog'));
 
 interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
   thumbnailSize: number;

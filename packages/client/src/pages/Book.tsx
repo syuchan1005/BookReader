@@ -31,7 +31,6 @@ import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import { commonTheme } from '@client/App';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
-import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
@@ -39,6 +38,7 @@ import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store
 import db from '@client/Database';
 import { NumberParam, useQueryParam } from 'use-query-params';
 
+const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 SwiperCore.use([Virtual]);
 
 interface BookProps {
@@ -497,12 +497,14 @@ const Book = (props: BookProps) => {
       <main>
         {/* eslint-disable-next-line */}
         <div className={classes.book} onClick={clickPage}>
-          <EditPagesDialog
-            open={openEditDialog}
-            onClose={setCloseEditDialog}
-            maxPage={data ? data.book.pages : 0}
-            bookId={bookId}
-          />
+          {(openEditDialog) && (
+            <EditPagesDialog
+              open={openEditDialog}
+              onClose={setCloseEditDialog}
+              maxPage={data ? data.book.pages : 0}
+              bookId={bookId}
+            />
+          )}
 
           {/* eslint-disable-next-line */}
           <div

@@ -22,13 +22,14 @@ import {
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import DownloadDialog from '@client/components/dialogs/DownloadBookInfoDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import useDebounceValue from '../hooks/useDebounceValue';
+
+const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookInfoDialog'));
 
 interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
   style?: React.CSSProperties;

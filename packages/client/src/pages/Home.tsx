@@ -19,7 +19,6 @@ import {
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
-import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 
 import { defaultTitle } from '@syuchan1005/book-reader-common';
@@ -38,6 +37,8 @@ import {
   showBookInfoNameState,
 } from '@client/store/atoms';
 import db from '../Database';
+
+const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
 interface HomeProps {
   children?: React.ReactElement;
@@ -270,12 +271,14 @@ const Home = (props: HomeProps) => {
           onClose={setClose}
         />
 
-        <AddBookDialog
-          open={!!openAddBook}
-          infoId={openAddBook}
-          onClose={resetOpenAddBook}
-          onAdded={refetchAll}
-        />
+        {(!!openAddBook) && (
+          <AddBookDialog
+            open={!!openAddBook}
+            infoId={openAddBook}
+            onClose={resetOpenAddBook}
+            onAdded={refetchAll}
+          />
+        )}
       </main>
     </>
   );

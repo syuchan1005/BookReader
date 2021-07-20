@@ -35,6 +35,13 @@ export default defineConfig({
   },
   build: {
     brotliSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          mui: ['@material-ui/core'],
+        },
+      },
+    },
   },
   plugins: [
     reactRefresh(),

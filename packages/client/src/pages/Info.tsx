@@ -22,7 +22,6 @@ import { commonTheme } from '@client/App';
 
 import db from '@client/Database';
 
-import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 import Book from '@client/components/Book';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import SelectBookHeader from '@client/components/SelectBookHeader';
@@ -32,6 +31,8 @@ import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useBooleanState from '@client/hooks/useBooleanState';
 import { sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
+
+const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
 interface InfoProps {
   children?: React.ReactElement;
@@ -310,12 +311,14 @@ const Info = (props: InfoProps) => {
           <Icon style={{ color: 'white' }}>refresh</Icon>
         </Fab>
 
-        <AddBookDialog
-          open={isShownAddDialog}
-          infoId={params.id}
-          onAdded={refetch}
-          onClose={hideAddDialog}
-        />
+        {(isShownAddDialog) && (
+          <AddBookDialog
+            open={isShownAddDialog}
+            infoId={params.id}
+            onAdded={refetch}
+            onClose={hideAddDialog}
+          />
+        )}
       </main>
     </>
   );
