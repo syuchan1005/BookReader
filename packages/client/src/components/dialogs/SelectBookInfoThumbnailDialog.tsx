@@ -12,7 +12,6 @@ import {
 
 import { useBookInfoQuery, useEditBookInfoThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import Book from '@client/components/Book';
-import { Waypoint } from 'react-waypoint';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -76,8 +75,8 @@ const SelectBookInfoThumbnailDialog = (
 
   const theme = useTheme();
   const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const [count, setCount] = React.useState(5);
+  const visibleMargin = React
+    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
 
   return (
     <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
@@ -92,7 +91,7 @@ const SelectBookInfoThumbnailDialog = (
         ) : null}
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
-            {data.bookInfo.books.slice(0, count).map((book) => (
+            {data.bookInfo.books.map((book) => (
               // @ts-ignore
               <Book
                 key={book.id}
@@ -109,13 +108,9 @@ const SelectBookInfoThumbnailDialog = (
                 }}
                 thumbnailNoSave
                 thumbnailSize={125}
+                visibleMargin={visibleMargin}
               />
             ))}
-            {(count < data.bookInfo.books.length) && (
-              <Waypoint
-                onEnter={() => setCount(Math.min(count + 5, data.bookInfo.books.length))}
-              />
-            )}
           </div>
         ) : null}
       </DialogContent>

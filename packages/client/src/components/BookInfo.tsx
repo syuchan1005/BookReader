@@ -39,6 +39,8 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   onClick?: (infoId: string, isHistory: boolean) => void;
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
   onEdit?: () => void;
+  onVisible?: () => void;
+  visibleMargin?: string;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -127,7 +129,6 @@ const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 const BookInfo = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const ref = useRef();
-  const isVisible = useVisible(ref);
   const {
     style,
     thumbnailSize,
@@ -142,7 +143,10 @@ const BookInfo = (props: BookInfoProps) => {
     onClick,
     onDeleted,
     onEdit,
+    onVisible,
+    visibleMargin,
   } = props;
+  const isVisible = useVisible(ref, true, visibleMargin);
 
   const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
   const [isShownDeleteDialog, showDeleteDialog,
@@ -160,6 +164,12 @@ const BookInfo = (props: BookInfoProps) => {
   const [isShownDownloadDialog, showDownloadDialog,
     hideDownloadDialog] = useBooleanState(false);
   const debounceIsShownDownloadDialog = useDebounceValue(isShownDownloadDialog, 400);
+
+  React.useEffect(() => {
+    if (isVisible && onVisible) {
+      onVisible();
+    }
+  }, [onVisible, isVisible]);
 
   const [deleteBookInfo, { loading: delLoading }] = useDeleteBookInfoMutation({
     variables: {

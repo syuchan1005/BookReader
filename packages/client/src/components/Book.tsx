@@ -39,6 +39,9 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
 
   simple?: boolean;
 
+  visibleMargin?: string;
+  onVisible?: () => void;
+
   children?: ReactNode;
 }
 
@@ -92,7 +95,6 @@ const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 const Book = (props: BookProps) => {
   const classes = useStyles(props);
   const ref = useRef();
-  const isVisible = useVisible(ref);
   const {
     thumbnailSize,
     thumbnailNoSave,
@@ -107,7 +109,15 @@ const Book = (props: BookProps) => {
     onEdit,
     simple,
     children,
+    visibleMargin,
+    onVisible,
   } = props;
+  const isVisible = useVisible(ref, true, visibleMargin);
+  React.useEffect(() => {
+    if (isVisible && onVisible) {
+      onVisible();
+    }
+  }, [onVisible, isVisible]);
 
   const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
   const [isShownDeleteDialog, showDeleteDialog,

@@ -99,6 +99,8 @@ const Info = (props: InfoProps) => {
   const history = useHistory();
   const params = useParams<{ id: string }>();
 
+  const visibleMargin = React
+    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
   const [readId, setReadId] = React.useState('');
   const [isShownAddDialog, showAddDialog, hideAddDialog] = useBooleanState(false);
   const [mode, setMode] = React.useState<ScreenMode>(ScreenMode.NORMAL);
@@ -278,6 +280,7 @@ const Info = (props: InfoProps) => {
                       onEdit={refetch}
                       thumbnailSize={downXs ? 150 : 200}
                       thumbnailNoSave={false}
+                      visibleMargin={visibleMargin}
                     >
                       <Checkbox
                         style={{ color: 'white' }}

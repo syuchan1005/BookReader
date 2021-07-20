@@ -9,7 +9,6 @@ import {
   useTheme,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
-import { Waypoint } from 'react-waypoint';
 import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilValue } from 'recoil';
 
@@ -110,6 +109,8 @@ const Home = (props: HomeProps) => {
   const theme = useTheme();
   const history = useHistory();
 
+  const visibleMargin = React
+    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
   const [openAddBook, setOpenAddBook,
@@ -219,7 +220,7 @@ const Home = (props: HomeProps) => {
         ) : (
           <>
             <div className={classes.homeGrid}>
-              {infos.map((info) => (
+              {infos.map((info, i, arr) => (
                 <BookInfo
                   key={info.id}
                   {...info}
@@ -228,15 +229,19 @@ const Home = (props: HomeProps) => {
                   onEdit={refetchAll}
                   thumbnailSize={downXs ? 150 : 200}
                   showName={showBookInfoName}
+                  visibleMargin={visibleMargin}
+                  onVisible={() => {
+                    const isLast = i === arr.length - 1;
+                    if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+                      handleLoadMore();
+                    }
+                  }}
                 />
               ))}
               {(loading) && (
                 <div className={classes.loadMoreProgress}>
                   <CircularProgress color="secondary" />
                 </div>
-              )}
-              {(!loading && data && data.bookInfos.pageInfo.hasNextPage) && (
-                <Waypoint onEnter={handleLoadMore} />
               )}
             </div>
             <Fab

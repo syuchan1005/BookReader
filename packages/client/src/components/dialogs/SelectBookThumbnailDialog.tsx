@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Button,
   Card, CardActionArea,
@@ -14,7 +14,40 @@ import {
 import { useBookPagesQuery, useEditBookThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import BookPageImage, { pageAspectRatio } from '@client/components/BookPageImage';
-import { Waypoint } from 'react-waypoint';
+import useVisible from '@client/hooks/useVisible';
+
+const pageStyle = { width: 125, height: pageAspectRatio(125) };
+const BookPageCard = ({
+  onClick,
+  bookId,
+  page,
+  maxPage,
+}: { onClick: () => void, bookId: string, page: number, maxPage: number }) => {
+  const theme = useTheme();
+  const visibleMargin = React
+    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
+  const ref = useRef();
+  const isVisible = useVisible(ref, true, visibleMargin);
+  return (
+    <div style={pageStyle} ref={ref}>
+      {(isVisible) && (
+        <Card>
+          <CardActionArea
+            onClick={onClick}
+          >
+            <BookPageImage
+              bookId={bookId}
+              pageIndex={page}
+              bookPageCount={maxPage}
+              width={pageStyle.width}
+              height={pageStyle.height}
+            />
+          </CardActionArea>
+        </Card>
+      )}
+    </div>
+  );
+};
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -74,8 +107,6 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
   const theme = useTheme();
   const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [count, setCount] = React.useState(5);
-
   return (
     <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
@@ -89,32 +120,21 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
         ) : null}
         {(!loading && !error && data) ? (
           <div className={classes.selectGrid}>
-            {[...Array(count).keys()]
+            {[...Array(data.book.pages).keys()]
               .map((i) => (
-                <Card key={`${bookId}_${i}`}>
-                  <CardActionArea
-                    onClick={() => changeThumbnail({
-                      variables: {
-                        id: bookId,
-                        th: i,
-                      },
-                    })}
-                  >
-                    <BookPageImage
-                      bookId={bookId}
-                      pageIndex={i}
-                      bookPageCount={data.book.pages}
-                      width={125}
-                      height={pageAspectRatio(125)}
-                    />
-                  </CardActionArea>
-                </Card>
+                <BookPageCard
+                  key={`${bookId}_${i}`}
+                  onClick={() => changeThumbnail({
+                    variables: {
+                      id: bookId,
+                      th: i,
+                    },
+                  })}
+                  bookId={bookId}
+                  page={i}
+                  maxPage={data.book.pages}
+                />
               ))}
-            {(count < data.book.pages) && (
-              <Waypoint
-                onEnter={() => setCount(Math.min(count + 5, data.book.pages))}
-              />
-            )}
           </div>
         ) : null}
       </DialogContent>
