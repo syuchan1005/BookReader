@@ -24,7 +24,7 @@ import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
-import useDebounceValue from '../hooks/useDebounceValue';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 
 const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookDialog'));
 
@@ -132,9 +132,8 @@ const Book = (props: BookProps) => {
   const hideSelectDialog = React.useCallback(() => {
     setSelectDialog(undefined);
   }, []);
-  const [isShownDownloadDialog, showDownloadDialog,
-    hideDownloadDialog] = useBooleanState(false);
-  const debounceIsShownDownloadDialog = useDebounceValue(isShownDownloadDialog, 400);
+  const [isShownDownloadDialog, canMountDownloadDialog, showDownloadDialog,
+    hideDownloadDialog] = useLazyDialog(false);
 
   const [deleteBook, { loading: delLoading }] = useDeleteBookMutation({
     variables: {
@@ -275,7 +274,7 @@ const Book = (props: BookProps) => {
             onEdit={onEdit}
           />
 
-          {(isShownDownloadDialog || debounceIsShownDownloadDialog) && (
+          {(canMountDownloadDialog) && (
             <DownloadDialog
               open={isShownDownloadDialog}
               onClose={hideDownloadDialog}

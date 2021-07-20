@@ -116,6 +116,7 @@ const Home = (props: HomeProps) => {
   const [open, setOpen, setClose] = useBooleanState(false);
   const [openAddBook, setOpenAddBook,
     resetOpenAddBook] = useStateWithReset<string | undefined>(undefined);
+  const canMountAddBook = useDebounceValue(openAddBook, theme.transitions.duration.leavingScreen);
   const [searchText, setSearchText] = useQueryParam('search', StringParam);
   const debounceSearch = useDebounceValue(searchText, 800);
   const handleSearchText = React.useCallback((text?: string) => {
@@ -271,7 +272,7 @@ const Home = (props: HomeProps) => {
           onClose={setClose}
         />
 
-        {(!!openAddBook) && (
+        {(!!openAddBook || !!canMountAddBook) && (
           <AddBookDialog
             open={!!openAddBook}
             infoId={openAddBook}

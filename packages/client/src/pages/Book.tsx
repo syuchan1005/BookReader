@@ -37,6 +37,7 @@ import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
 import db from '@client/Database';
 import { NumberParam, useQueryParam } from 'use-query-params';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 SwiperCore.use([Virtual]);
@@ -299,7 +300,7 @@ const Book = (props: BookProps) => {
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
-  const [openEditDialog, setOpenEditDialog, setCloseEditDialog] = useBooleanState(false);
+  const [openEditDialog, canMountEditDialog, setOpenEditDialog, setCloseEditDialog] = useLazyDialog(false);
   const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
   const [pageStyleKey, setPageStyle] = React.useState<PageStyles>('SinglePage');
   const {
@@ -497,7 +498,7 @@ const Book = (props: BookProps) => {
       <main>
         {/* eslint-disable-next-line */}
         <div className={classes.book} onClick={clickPage}>
-          {(openEditDialog) && (
+          {(canMountEditDialog) && (
             <EditPagesDialog
               open={openEditDialog}
               onClose={setCloseEditDialog}

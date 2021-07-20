@@ -28,9 +28,9 @@ import SelectBookHeader from '@client/components/SelectBookHeader';
 import { workbox } from '@client/registerServiceWorker';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import useBooleanState from '@client/hooks/useBooleanState';
 import { sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 
 const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
@@ -103,7 +103,7 @@ const Info = (props: InfoProps) => {
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
   const [readId, setReadId] = React.useState('');
-  const [isShownAddDialog, showAddDialog, hideAddDialog] = useBooleanState(false);
+  const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] = useLazyDialog(false);
   const [mode, setMode] = React.useState<ScreenMode>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
 
@@ -311,7 +311,7 @@ const Info = (props: InfoProps) => {
           <Icon style={{ color: 'white' }}>refresh</Icon>
         </Fab>
 
-        {(isShownAddDialog) && (
+        {(canMountAddDialog) && (
           <AddBookDialog
             open={isShownAddDialog}
             infoId={params.id}
