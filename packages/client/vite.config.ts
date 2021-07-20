@@ -4,9 +4,10 @@ import fs from 'fs';
 import { defineConfig, Plugin } from 'vite';
 import reactRefresh from '@vitejs/plugin-react-refresh';
 import { VitePWA } from 'vite-plugin-pwa';
+import bundleVisualizer from "rollup-plugin-visualizer";
 
 const serviceWorkerFileName = 'service-worker.ts';
-const RemoveObsoleteServiceWorkerPlugin = (): Plugin => {
+const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
   let outDir;
   return {
     name: 'remove service-worker.ts',
@@ -43,7 +44,12 @@ export default defineConfig({
       injectRegister: false,
       manifest: false,
     }),
-    RemoveObsoleteServiceWorkerPlugin(),
+    RemoveServiceWorkerTsFilePlugin(),
+    bundleVisualizer({
+      template: 'treemap',
+      gzipSize: true,
+      filename: 'dist/stats.html',
+    }),
   ],
   server: {
     port: 8080,
