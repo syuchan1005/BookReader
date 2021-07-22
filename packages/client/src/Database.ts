@@ -68,7 +68,7 @@ export class StoreWrapper<T> {
 export class Database {
   public readonly dbName: string;
 
-  private request: IDBOpenDBRequest;
+  private _db: IDBDatabase;
 
   private _infoReads: StoreWrapper<InfoRead>;
   private _bookReads: StoreWrapper<BookRead>;
@@ -81,22 +81,25 @@ export class Database {
   get bookReads() { return this._bookReads; }
 
   connect(): Promise<IDBDatabase> {
+    if (this._db) {
+      return Promise.resolve(this._db);
+    }
     return new Promise((resolve, reject) => {
-      this.request = window.indexedDB.open(this.dbName);
-      this.request.onupgradeneeded = () => {
-        const db = this.request.result;
-        db.createObjectStore('infoReads', { keyPath: 'infoId' });
-        db.createObjectStore('bookReads', { keyPath: 'bookId' });
+      const request = window.indexedDB.open(this.dbName);
+      request.onupgradeneeded = () => {
+        this._db.createObjectStore('infoReads', { keyPath: 'infoId' });
+        this._db.createObjectStore('bookReads', { keyPath: 'bookId' });
       };
-      this.request.onerror = (event) => {
+      request.onerror = (event) => {
         reject(event);
       };
-      this.request.onsuccess = () => {
-        const db = this.request.result;
-        this._infoReads = new StoreWrapper<InfoRead>('infoReads', db);
-        this._bookReads = new StoreWrapper<BookRead>('bookReads', db);
+      request.onsuccess = (event) => {
+        // @ts-ignore
+        this._db = event.target.result;
+        this._infoReads = new StoreWrapper<InfoRead>('infoReads', this._db);
+        this._bookReads = new StoreWrapper<BookRead>('bookReads', this._db);
 
-        resolve(this.request.result);
+        resolve(this._db);
       };
     });
   }
