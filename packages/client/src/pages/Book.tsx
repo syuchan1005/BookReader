@@ -653,7 +653,7 @@ const Book = (props: BookProps) => {
             virtual
           >
             {[...new Array(prefixPage).keys()].map((i) => (
-              <SwiperSlide key={`virtual-${i}`} virtualIndex={i} className="test" />
+              <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
             ))}
             {[...new Array(data.book.pages).keys()].map((i, index) => (
               <SwiperSlide
@@ -675,6 +675,9 @@ const Book = (props: BookProps) => {
                   />
                 )}
               </SwiperSlide>
+            ))}
+            {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
+              <SwiperSlide virtualIndex={data.book.pages + prefixPage + i} />
             ))}
           </Swiper>
 
