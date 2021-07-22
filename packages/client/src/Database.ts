@@ -86,7 +86,9 @@ export class Database {
     }
     return new Promise((resolve, reject) => {
       const request = window.indexedDB.open(this.dbName);
-      request.onupgradeneeded = () => {
+      request.onupgradeneeded = (event) => {
+        // @ts-ignore
+        this._db = event.target.result;
         this._db.createObjectStore('infoReads', { keyPath: 'infoId' });
         this._db.createObjectStore('bookReads', { keyPath: 'bookId' });
       };
