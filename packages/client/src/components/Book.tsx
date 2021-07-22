@@ -49,6 +49,7 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
 const useStyles = makeStyles((theme: Theme) => createStyles({
   card: {
     width: '100%',
+    height: '100%',
     margin: 'auto',
     display: 'flex',
     justifyContent: 'flex-end',
