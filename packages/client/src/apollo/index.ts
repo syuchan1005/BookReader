@@ -130,6 +130,11 @@ export const apolloClient = new ApolloClient({
     }
     if (networkError) log(`[Network error]: ${networkError}`);
   }),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'cache-and-network',
+    },
+  },
   cache,
   connectToDevTools: process.env.NODE_ENV !== 'production',
 });

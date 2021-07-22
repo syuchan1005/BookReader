@@ -160,7 +160,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       }
     `),
     {
-      fetchPolicy: 'no-cache',
       onCompleted(d) {
         if (!d) return;
         mutateCloseDialog(d.plugin.success);
@@ -169,7 +168,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   );
 
   const [addBook, { loading: addBookLoading }] = useAddBooksMutation({
-    fetchPolicy: 'no-cache',
     variables: {
       id: infoId,
       books: addBooks,
@@ -188,7 +186,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   const [addCompressBook, {
     loading: addCompressBookLoading,
   }] = useAddCompressBookMutation({
-    fetchPolicy: 'no-cache',
     variables: {
       id: infoId,
       file: (addBooks[0] || {}).file,
@@ -214,7 +211,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     data: subscriptionData,
     loading: subscriptionLoading,
   } = useAddBooksProgressSubscription({
-    fetchPolicy: 'no-cache',
     skip: !subscriptionId,
     variables: {
       id: subscriptionId,
