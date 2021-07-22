@@ -18,6 +18,7 @@
     <script async src="https://cdn.jsdelivr.net/npm/pwacompat" crossorigin="anonymous"></script>
 
     <link rel="apple-touch-icon" sizes="192x192" href="/icons/x192.png" />
+    <script>/* Workaround to have indexedDB call on success / onerror in iOS Safari. https://developer.apple.com/forums/thread/681201 */window.indexedDB;</script>
   </head>
   <body>
     <noscript>

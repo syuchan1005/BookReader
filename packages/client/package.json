@@ -3,7 +3,7 @@
    "scripts": {
       "serve": "vite --host",
       "build": "vite build",
-      "serve:prod": "vite preview",
+      "serve:prod": "vite preview --host",
       "test": "jest"
    },
    "devDependencies": {
