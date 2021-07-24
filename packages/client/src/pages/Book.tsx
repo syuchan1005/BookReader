@@ -263,6 +263,9 @@ const Book = (props: BookProps) => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { id: bookId } = useParams<{ id: string }>();
+  const setTitle = React.useCallback((title) => {
+    document.title = typeof title === 'function' ? title(defaultTitle) : title;
+  }, []);
 
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 200);
@@ -351,6 +354,11 @@ const Book = (props: BookProps) => {
       setShowAppBar();
     },
   });
+  React.useEffect(() => {
+    if (data) {
+      setTitle((t) => `${data.book.info.name} No.${data.book.number} - ${t}`);
+    }
+  }, [data, setTitle]);
 
   const setPage = React.useCallback((s, time = 150) => {
     let validatedPage = Math.max(s, 0);

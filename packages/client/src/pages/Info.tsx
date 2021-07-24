@@ -31,6 +31,7 @@ import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import { sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useLazyDialog from '@client/hooks/useLazyDialog';
+import { defaultTitle } from '../../../common';
 
 const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
@@ -108,7 +109,7 @@ const Info = (props: InfoProps) => {
   const [selectIds, setSelectIds] = React.useState([]);
 
   const setTitle = React.useCallback((title) => {
-    document.title = typeof title === 'function' ? title() : title;
+    document.title = typeof title === 'function' ? title(defaultTitle) : title;
   }, []);
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
@@ -127,11 +128,12 @@ const Info = (props: InfoProps) => {
       id: params.id,
       order: sortBookOrder,
     },
-    onCompleted: (d) => {
-      const bookName = d?.bookInfo?.name;
-      setTitle((t) => `${bookName} - ${t}`);
-    },
   });
+
+  const bookName = React.useMemo(() => data?.bookInfo?.name ?? '', [data]);
+  React.useEffect(() => {
+    setTitle((t) => `${bookName} - ${t}`);
+  }, [bookName, setTitle]);
 
   React.useEffect(() => {
     let unMounted = false;
@@ -215,7 +217,7 @@ const Info = (props: InfoProps) => {
       {(mode === 0) ? (
         <TitleAndBackHeader
           backRoute="/"
-          title={data && data.bookInfo.name}
+          title={bookName}
         >
           <IconButton
             style={{ color: common.white }}
@@ -273,7 +275,7 @@ const Info = (props: InfoProps) => {
                     <Book
                       simple={mode === 1}
                       {...book}
-                      name={data.bookInfo.name}
+                      name={bookName}
                       reading={readId === book.id}
                       key={book.id}
                       onClick={handleBookClick}
