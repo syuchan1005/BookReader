@@ -6,10 +6,10 @@ import {
   BookInfoDocument, BookInfoQuery, BookInfoQueryVariables,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-const usePrevNextBook = (infoId, bookId) => {
+const usePrevNextBook = (infoId, bookId): [prev: string | undefined, next: string | undefined] => {
   const client = useApolloClient();
   const [bookInfo, setBookInfo] = React.useState(undefined);
-  const [books, setBooks] = React.useState([undefined, undefined]);
+  const [books, setBooks] = React.useState<[string, string]>([undefined, undefined]);
 
   React.useEffect(() => {
     if (!infoId) {

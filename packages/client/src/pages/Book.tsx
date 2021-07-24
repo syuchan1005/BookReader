@@ -1,18 +1,5 @@
 import React from 'react';
-import {
-  Button,
-  createMuiTheme,
-  createStyles,
-  Icon,
-  IconButton,
-  makeStyles,
-  Menu,
-  MenuItem,
-  MuiThemeProvider,
-  Slider,
-  Theme,
-  useTheme,
-} from '@material-ui/core';
+import { createStyles, makeStyles, Theme, } from '@material-ui/core';
 
 import SwiperCore, { Virtual } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -21,23 +8,22 @@ import 'swiper/swiper-bundle.min.css';
 import { useHistory, useParams } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useSnackbar } from 'notistack';
-import { orange } from '@material-ui/core/colors';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
+import { NumberParam, useQueryParam } from 'use-query-params';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { defaultTitle } from '@syuchan1005/book-reader-common';
 
+import db from '@client/Database';
+import { commonTheme } from '@client/App';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
-import { commonTheme } from '@client/App';
-
-import { defaultTitle } from '@syuchan1005/book-reader-common';
 import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
-import db from '@client/Database';
-import { NumberParam, useQueryParam } from 'use-query-params';
 import useLazyDialog from '@client/hooks/useLazyDialog';
+import BookPageOverlay from '@client/components/BookPageOverlay';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 SwiperCore.use([Virtual]);
@@ -92,55 +78,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     '-webkit-touch-callout': 'none',
     'user-select': 'none',
     maxWidth: '100%',
-  },
-  overlay: {
-    zIndex: 2,
-    top: '0',
-    position: 'fixed',
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    userSelect: 'none',
-  },
-  overlayContent: {
-    userSelect: 'none',
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    display: 'grid',
-    gridTemplateRows: '1fr',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    '& > div': {
-      textAlign: 'center',
-    },
-    padding: theme.spacing(1),
-    borderRadius: theme.spacing(1),
-    position: 'absolute',
-    '&.top': {
-      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}px`),
-      whiteSpace: 'nowrap',
-    },
-    '&.bottom': {
-      width: '80%',
-      gridTemplateRows: 'auto auto',
-      gridTemplateColumns: '1fr 1fr 1fr 1fr',
-      bottom: theme.spacing(2),
-    },
-    '&.center': {
-      background: 'inherit',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-      '& > button + button': {
-        marginTop: theme.spacing(1),
-      },
-    },
-  },
-  bottomSlider: {
-    gridColumn: '1 / span 4',
-    margin: theme.spacing(0, 2),
   },
   loading: {
     width: '100%',
@@ -213,7 +150,18 @@ const useDatabasePage = (
 
 type PageStyles = keyof typeof PageStyle;
 
-const PageStyle = {
+export type PageStyleType = {
+  slidesPerView: number,
+  pageClass: (_index: number) => string,
+  normalizeCount: (i: number) => number,
+  icon: {
+    name: string,
+    style: Object,
+  },
+  prefixPage: number,
+};
+
+const PageStyle: { [key: string]: PageStyleType } = {
   SinglePage: {
     slidesPerView: 1,
     pageClass: (_index: number) => undefined,
@@ -257,9 +205,11 @@ const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
   FullSpreadPlusOne: 'SinglePage',
 };
 
+export type PageEffect = 'paper' | 'dark';
+
 const Book = (props: BookProps) => {
-  const [readOrder, setReadOrder] = useRecoilState(readOrderState);
-  const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
+  const readOrder = useRecoilValue(readOrderState);
+  const showOriginalImage = useRecoilValue(showOriginalImageState);
   const classes = useStyles(props);
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
@@ -294,7 +244,9 @@ const Book = (props: BookProps) => {
 
   React.useEffect(() => {
     if (page >= data.book.pages) {
-      clickRouteButton(1);
+      if (nextBook) {
+        openBook(nextBook);
+      }
     } else if (isPageSet) {
       setDbPage(page)
         .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
@@ -303,10 +255,8 @@ const Book = (props: BookProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  const [effect, setEffect] = React.useState<undefined | 'paper' | 'dark'>(undefined);
-  const [effectMenuAnchor, setEffectMenuAnchor] = React.useState(null);
+  const [effect, setEffect] = React.useState<PageEffect | undefined>(undefined);
   const [effectPercentage, setEffectPercentage] = React.useState(0);
-  const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
   const [openEditDialog, canMountEditDialog,
     setOpenEditDialog, setCloseEditDialog] = useLazyDialog(false);
@@ -316,7 +266,6 @@ const Book = (props: BookProps) => {
     slidesPerView,
     pageClass,
     normalizeCount,
-    icon: pageStyleIcon,
     prefixPage,
   } = PageStyle[pageStyleKey];
 
@@ -389,21 +338,6 @@ const Book = (props: BookProps) => {
     setHideAppBar();
   }, [page, setHideAppBar, setPage, slidesPerView]);
 
-  const theme = useTheme();
-  const sliderTheme = React.useMemo(() => createMuiTheme({
-    ...theme,
-    direction: readOrder === ReadOrder.RTL ? 'rtl' : 'ltr',
-  }), [theme, readOrder]);
-
-  const effectTheme = React.useMemo(() => createMuiTheme({
-    ...theme,
-    palette: {
-      primary: {
-        main: orange['700'],
-      },
-    },
-  }), [theme]);
-
   const effectBackGround = React.useMemo(() => {
     switch (effect) {
       case 'dark':
@@ -449,17 +383,14 @@ const Book = (props: BookProps) => {
     }
   }, [readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
 
-  const clickRouteButton = React.useCallback((i) => {
-    const jumpBookId = [prevBook, nextBook][i];
-    if (!jumpBookId) return;
+  const openBook = React.useCallback((targetBookId: string) => {
     db.infoReads.put({
       infoId: data.book.info.id,
-      bookId: jumpBookId,
+      bookId: targetBookId,
     })
       .catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
-    // history.push('/dummy');
-    history.push(`/book/${jumpBookId}`);
-  }, [prevBook, nextBook, data, history, enqueueSnackbar]);
+    history.push(`/book/${targetBookId}`);
+  }, [data, enqueueSnackbar, history]);
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {
@@ -471,21 +402,25 @@ const Book = (props: BookProps) => {
     return windowSize;
   }, [windowSize, showOriginalImage]);
 
-  const clickEffect = React.useCallback((eff) => {
-    setEffect(eff);
-    setEffectMenuAnchor(null);
-  }, []);
-
-  const toggleOriginalImage = React.useCallback(() => {
-    setShowOriginalImage((v) => !v);
-  }, [setShowOriginalImage]);
-
   const canImageVisible = React.useCallback((i: number) => imageSize
     && isPageSet
     && (i < debouncePage
       ? debouncePage - i <= slidesPerView
       : i - debouncePage <= (slidesPerView * 2 - 1)),
   [debouncePage, imageSize, isPageSet, slidesPerView]);
+
+  const goNextBook = React.useCallback(
+    () => (nextBook ? () => openBook(nextBook) : undefined), [openBook, nextBook],
+  );
+
+  const goPreviousBook = React.useCallback(
+    () => (prevBook ? () => openBook(prevBook) : undefined), [openBook, prevBook],
+  );
+
+  const setNextPageStyle = React
+    .useCallback(() => setPageStyle((p) => NextPageStyleMap[p]), []);
+
+  const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
 
   if (loading || error) {
     return (
@@ -525,152 +460,21 @@ const Book = (props: BookProps) => {
           />
         )}
         {showAppBar && (
-          // eslint-disable-next-line
-          <div
-            className={classes.overlay}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (e.target === e.currentTarget) {
-                setHideAppBar();
-              }
-            }}
-          >
-            {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} top`}>
-              <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
-            </div>
-            {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} center`}>
-              {(prevBook && page === 0) && (
-                <Button variant="contained" color="secondary" onClick={() => clickRouteButton(0)}>
-                  to Prev book
-                </Button>
-              )}
-              {(nextBook && data && Math.abs(data.book.pages - page) <= slidesPerView) && (
-                <Button variant="contained" color="secondary" onClick={() => clickRouteButton(1)}>
-                  to Next book
-                </Button>
-              )}
-            </div>
-            {/* eslint-disable-next-line */}
-            <div className={`${classes.overlayContent} bottom`}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <IconButton
-                  size="small"
-                  style={{ color: 'white' }}
-                  aria-label="settings"
-                  onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
-                >
-                  <Icon>settings</Icon>
-                </IconButton>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <IconButton
-                  size="small"
-                  style={{ color: 'white' }}
-                  onClick={() => setPageStyle((p) => NextPageStyleMap[p])}
-                >
-                  <Icon style={pageStyleIcon.style}>{pageStyleIcon.name}</Icon>
-                </IconButton>
-              </div>
-              <Menu
-                anchorEl={settingsMenuAnchor}
-                open={Boolean(settingsMenuAnchor)}
-                onClose={() => setSettingsMenuAnchor(null)}
-                getContentAnchorEl={null}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-              >
-                <MenuItem
-                  onClick={() => {
-                    setSettingsMenuAnchor(null);
-                    setOpenEditDialog();
-                  }}
-                >
-                  Edit pages
-                </MenuItem>
-                <MenuItem
-                  onClick={toggleOriginalImage}
-                >
-                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
-                </MenuItem>
-              </Menu>
-              <Button
-                variant="outlined"
-                style={{
-                  color: 'white',
-                  borderColor: 'white',
-                  margin: '0 auto',
-                }}
-                onClick={() => {
-                  if (readOrder === ReadOrder.RTL) {
-                    setReadOrder(ReadOrder.LTR);
-                  } else {
-                    setReadOrder(ReadOrder.RTL);
-                  }
-                }}
-              >
-                {['L > R', 'L < R'][readOrder]}
-              </Button>
-              <Button
-                aria-controls="effect menu"
-                aria-haspopup
-                onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
-                style={{ color: 'white' }}
-              >
-                {effect || 'normal'}
-              </Button>
-              <Menu
-                anchorEl={effectMenuAnchor}
-                open={Boolean(effectMenuAnchor)}
-                onClose={() => setEffectMenuAnchor(null)}
-              >
-                <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
-                <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
-                <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
-              </Menu>
-              <div className={classes.bottomSlider}>
-                <MuiThemeProvider theme={sliderTheme}>
-                  <Slider
-                    color="secondary"
-                    valueLabelDisplay="auto"
-                    max={data.book.pages}
-                    min={1}
-                    step={slidesPerView}
-                    value={page + 1}
-                    onChange={(e, v: number) => setPage(v - 1, 0)}
-                  />
-                </MuiThemeProvider>
-              </div>
-              {(effect) && (
-                <div className={classes.bottomSlider}>
-                  <MuiThemeProvider theme={effectTheme}>
-                    <Slider
-                      valueLabelDisplay="auto"
-                      max={100}
-                      min={0}
-                      value={effectPercentage}
-                      onChange={(e, v: number) => setEffectPercentage(v)}
-                    />
-                  </MuiThemeProvider>
-                </div>
-              )}
-            </div>
-          </div>
+          <BookPageOverlay
+            currentPage={page}
+            onPageSliderChanged={onPageSliderChanged}
+            maxPages={data.book.pages}
+            pageStyle={PageStyle[pageStyleKey]}
+            onPageStyleClick={setNextPageStyle}
+            pageEffect={effect}
+            onPageEffectChanged={setEffect}
+            pageEffectPercentage={effectPercentage}
+            onPageEffectPercentage={setEffectPercentage}
+            setHideAppBar={setHideAppBar}
+            goNextBook={goNextBook}
+            goPreviousBook={goPreviousBook}
+            onEditClick={setOpenEditDialog}
+          />
         )}
 
         <Swiper
