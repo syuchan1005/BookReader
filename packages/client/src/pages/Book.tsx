@@ -410,12 +410,12 @@ const Book = (props: BookProps) => {
       : i - debouncePage <= (slidesPerView * 2 - 1)),
   [debouncePage, imageSize, isPageSet, slidesPerView]);
 
-  const goNextBook = React.useCallback(
-    () => (nextBook && openBook(nextBook)), [openBook, nextBook],
+  const goNextBook = React.useMemo(
+    () => (nextBook ? () => openBook(nextBook) : undefined), [openBook, nextBook],
   );
 
   const goPreviousBook = React.useCallback(
-    () => (prevBook && openBook(prevBook)), [openBook, prevBook],
+    () => (prevBook ? () => openBook(prevBook) : undefined), [openBook, prevBook],
   );
 
   const setNextPageStyle = React
