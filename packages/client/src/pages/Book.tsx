@@ -513,220 +513,219 @@ const Book = (props: BookProps) => {
           subTitle={data && `No.${data.book.number}`}
         />
       )}
-      <main>
-        {/* eslint-disable-next-line */}
-        <div className={classes.book} onClick={clickPage}>
-          {(canMountEditDialog) && (
-            <EditPagesDialog
-              open={openEditDialog}
-              onClose={setCloseEditDialog}
-              maxPage={data ? data.book.pages : 0}
-              bookId={bookId}
-            />
-          )}
-          {showAppBar && (
-            // eslint-disable-next-line
-            <div
-              className={classes.overlay}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (e.target === e.currentTarget) {
-                  setHideAppBar();
-                }
-              }}
-            >
-              {/* eslint-disable-next-line */}
-              <div className={`${classes.overlayContent} top`}>
-                <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
-              </div>
-              {/* eslint-disable-next-line */}
-              <div className={`${classes.overlayContent} center`}>
-                {(prevBook && page === 0) && (
-                  <Button variant="contained" color="secondary" onClick={() => clickRouteButton(0)}>
-                    to Prev book
-                  </Button>
-                )}
-                {(nextBook && data && Math.abs(data.book.pages - page) <= slidesPerView) && (
-                  <Button variant="contained" color="secondary" onClick={() => clickRouteButton(1)}>
-                    to Next book
-                  </Button>
-                )}
-              </div>
-              {/* eslint-disable-next-line */}
-              <div className={`${classes.overlayContent} bottom`}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <IconButton
-                    size="small"
-                    style={{ color: 'white' }}
-                    aria-label="settings"
-                    onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
-                  >
-                    <Icon>settings</Icon>
-                  </IconButton>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <IconButton
-                    size="small"
-                    style={{ color: 'white' }}
-                    onClick={() => setPageStyle((p) => NextPageStyleMap[p])}
-                  >
-                    <Icon style={pageStyleIcon.style}>{pageStyleIcon.name}</Icon>
-                  </IconButton>
-                </div>
-                <Menu
-                  anchorEl={settingsMenuAnchor}
-                  open={Boolean(settingsMenuAnchor)}
-                  onClose={() => setSettingsMenuAnchor(null)}
-                  getContentAnchorEl={null}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      setSettingsMenuAnchor(null);
-                      setOpenEditDialog();
-                    }}
-                  >
-                    Edit pages
-                  </MenuItem>
-                  <MenuItem
-                    onClick={toggleOriginalImage}
-                  >
-                    {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
-                  </MenuItem>
-                </Menu>
-                <Button
-                  variant="outlined"
-                  style={{
-                    color: 'white',
-                    borderColor: 'white',
-                    margin: '0 auto',
-                  }}
-                  onClick={() => {
-                    if (readOrder === ReadOrder.RTL) {
-                      setReadOrder(ReadOrder.LTR);
-                    } else {
-                      setReadOrder(ReadOrder.RTL);
-                    }
-                  }}
-                >
-                  {['L > R', 'L < R'][readOrder]}
+
+      {/* eslint-disable-next-line */}
+      <main className={classes.book} onClick={clickPage}>
+        {(canMountEditDialog) && (
+          <EditPagesDialog
+            open={openEditDialog}
+            onClose={setCloseEditDialog}
+            maxPage={data ? data.book.pages : 0}
+            bookId={bookId}
+          />
+        )}
+        {showAppBar && (
+          // eslint-disable-next-line
+          <div
+            className={classes.overlay}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (e.target === e.currentTarget) {
+                setHideAppBar();
+              }
+            }}
+          >
+            {/* eslint-disable-next-line */}
+            <div className={`${classes.overlayContent} top`}>
+              <div style={{ gridColumn: '1 / span 3' }}>{`${page + 1} / ${data.book.pages}`}</div>
+            </div>
+            {/* eslint-disable-next-line */}
+            <div className={`${classes.overlayContent} center`}>
+              {(prevBook && page === 0) && (
+                <Button variant="contained" color="secondary" onClick={() => clickRouteButton(0)}>
+                  to Prev book
                 </Button>
-                <Button
-                  aria-controls="effect menu"
-                  aria-haspopup
-                  onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
+              )}
+              {(nextBook && data && Math.abs(data.book.pages - page) <= slidesPerView) && (
+                <Button variant="contained" color="secondary" onClick={() => clickRouteButton(1)}>
+                  to Next book
+                </Button>
+              )}
+            </div>
+            {/* eslint-disable-next-line */}
+            <div className={`${classes.overlayContent} bottom`}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <IconButton
+                  size="small"
                   style={{ color: 'white' }}
+                  aria-label="settings"
+                  onClick={(e) => setSettingsMenuAnchor(e.currentTarget)}
                 >
-                  {effect || 'normal'}
-                </Button>
-                <Menu
-                  anchorEl={effectMenuAnchor}
-                  open={Boolean(effectMenuAnchor)}
-                  onClose={() => setEffectMenuAnchor(null)}
+                  <Icon>settings</Icon>
+                </IconButton>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <IconButton
+                  size="small"
+                  style={{ color: 'white' }}
+                  onClick={() => setPageStyle((p) => NextPageStyleMap[p])}
                 >
-                  <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
-                  <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
-                  <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
-                </Menu>
+                  <Icon style={pageStyleIcon.style}>{pageStyleIcon.name}</Icon>
+                </IconButton>
+              </div>
+              <Menu
+                anchorEl={settingsMenuAnchor}
+                open={Boolean(settingsMenuAnchor)}
+                onClose={() => setSettingsMenuAnchor(null)}
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    setSettingsMenuAnchor(null);
+                    setOpenEditDialog();
+                  }}
+                >
+                  Edit pages
+                </MenuItem>
+                <MenuItem
+                  onClick={toggleOriginalImage}
+                >
+                  {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
+                </MenuItem>
+              </Menu>
+              <Button
+                variant="outlined"
+                style={{
+                  color: 'white',
+                  borderColor: 'white',
+                  margin: '0 auto',
+                }}
+                onClick={() => {
+                  if (readOrder === ReadOrder.RTL) {
+                    setReadOrder(ReadOrder.LTR);
+                  } else {
+                    setReadOrder(ReadOrder.RTL);
+                  }
+                }}
+              >
+                {['L > R', 'L < R'][readOrder]}
+              </Button>
+              <Button
+                aria-controls="effect menu"
+                aria-haspopup
+                onClick={(e) => setEffectMenuAnchor(e.currentTarget)}
+                style={{ color: 'white' }}
+              >
+                {effect || 'normal'}
+              </Button>
+              <Menu
+                anchorEl={effectMenuAnchor}
+                open={Boolean(effectMenuAnchor)}
+                onClose={() => setEffectMenuAnchor(null)}
+              >
+                <MenuItem onClick={() => clickEffect(undefined)}>Normal</MenuItem>
+                <MenuItem onClick={() => clickEffect('paper')}>Paper</MenuItem>
+                <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
+              </Menu>
+              <div className={classes.bottomSlider}>
+                <MuiThemeProvider theme={sliderTheme}>
+                  <Slider
+                    color="secondary"
+                    valueLabelDisplay="auto"
+                    max={data.book.pages}
+                    min={1}
+                    step={slidesPerView}
+                    value={page + 1}
+                    onChange={(e, v: number) => setPage(v - 1, 0)}
+                  />
+                </MuiThemeProvider>
+              </div>
+              {(effect) && (
                 <div className={classes.bottomSlider}>
-                  <MuiThemeProvider theme={sliderTheme}>
+                  <MuiThemeProvider theme={effectTheme}>
                     <Slider
-                      color="secondary"
                       valueLabelDisplay="auto"
-                      max={data.book.pages}
-                      min={1}
-                      step={slidesPerView}
-                      value={page + 1}
-                      onChange={(e, v: number) => setPage(v - 1, 0)}
+                      max={100}
+                      min={0}
+                      value={effectPercentage}
+                      onChange={(e, v: number) => setEffectPercentage(v)}
                     />
                   </MuiThemeProvider>
                 </div>
-                {(effect) && (
-                  <div className={classes.bottomSlider}>
-                    <MuiThemeProvider theme={effectTheme}>
-                      <Slider
-                        valueLabelDisplay="auto"
-                        max={100}
-                        min={0}
-                        value={effectPercentage}
-                        onChange={(e, v: number) => setEffectPercentage(v)}
-                      />
-                    </MuiThemeProvider>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
-          )}
-
-          <Swiper
-            key={`${bookId}:${pageStyleKey}:${readOrder}`}
-            onSwiper={updateSwiper}
-            dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
-            className={classes.pageContainer}
-            slidesPerView={slidesPerView}
-            slidesPerGroup={slidesPerView}
-            virtual
-          >
-            {[...new Array(prefixPage).keys()].map((i) => (
-              <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
-            ))}
-            {[...new Array(data.book.pages).keys()].map((i, index) => (
-              <SwiperSlide
-                key={`${i}_${imageSize[0]}_${imageSize[1]}`}
-                virtualIndex={index + prefixPage}
-                className={pageClass(index)}
-              >
-                {canImageVisible(i) && (
-                  <BookPageImage
-                    style={effectBackGround}
-                    bookId={bookId}
-                    pageIndex={i}
-                    bookPageCount={data.book.pages}
-                    {...imageSize}
-                    alt={(i + 1).toString(10)}
-                    className={classes.pageImage}
-                    loading="eager"
-                    sizeDebounceDelay={300}
-                  />
-                )}
-              </SwiperSlide>
-            ))}
-            {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
-              <SwiperSlide
-                key={`virtual-${data.book.pages + prefixPage + i}`}
-                virtualIndex={data.book.pages + prefixPage + i}
-              />
-            ))}
-            {(nextBook) && [...new Array(slidesPerView).keys()].map((i) => (
-              <SwiperSlide
-                key={`virtual-${data.book.pages + prefixPage + ((data.book.pages + prefixPage) % slidesPerView) + i}`}
-                virtualIndex={data.book.pages + prefixPage
-                + ((data.book.pages + prefixPage) % slidesPerView) + i}
-              />
-            ))}
-          </Swiper>
-
-          <div
-            className={classes.pageProgress}
-            style={{ justifyContent: `flex-${['start', 'end'][readOrder]}` }}
-          >
-            <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
           </div>
+        )}
+
+        <Swiper
+          key={`${bookId}:${pageStyleKey}:${readOrder}`}
+          onSwiper={updateSwiper}
+          dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
+          className={classes.pageContainer}
+          slidesPerView={slidesPerView}
+          slidesPerGroup={slidesPerView}
+          virtual
+        >
+          {[...new Array(prefixPage).keys()].map((i) => (
+            <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
+          ))}
+          {[...new Array(data.book.pages).keys()].map((i, index) => (
+            <SwiperSlide
+              key={`${i}_${imageSize[0]}_${imageSize[1]}`}
+              virtualIndex={index + prefixPage}
+              className={pageClass(index)}
+            >
+              {canImageVisible(i) && (
+                <BookPageImage
+                  style={effectBackGround}
+                  bookId={bookId}
+                  pageIndex={i}
+                  bookPageCount={data.book.pages}
+                  {...imageSize}
+                  alt={(i + 1).toString(10)}
+                  className={classes.pageImage}
+                  loading="eager"
+                  sizeDebounceDelay={300}
+                />
+              )}
+            </SwiperSlide>
+          ))}
+          {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
+            <SwiperSlide
+              key={`virtual-${data.book.pages + prefixPage + i}`}
+              virtualIndex={data.book.pages + prefixPage + i}
+            />
+          ))}
+          {(nextBook) && [...new Array(slidesPerView).keys()].map((i) => (
+            <SwiperSlide
+              key={`virtual-${data.book.pages + prefixPage + ((data.book.pages + prefixPage) % slidesPerView) + i}`}
+              virtualIndex={data.book.pages + prefixPage
+              + ((data.book.pages + prefixPage) % slidesPerView) + i}
+            />
+          ))}
+        </Swiper>
+
+        <div
+          className={classes.pageProgress}
+          style={{ justifyContent: `flex-${['start', 'end'][readOrder]}` }}
+        >
+          <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
         </div>
       </main>
     </>
