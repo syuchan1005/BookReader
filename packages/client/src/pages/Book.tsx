@@ -24,6 +24,7 @@ import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageOverlay from '@client/components/BookPageOverlay';
+import { Remount } from '@client/components/Remount';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 SwiperCore.use([Virtual]);
@@ -477,53 +478,54 @@ const Book = (props: BookProps) => {
           />
         )}
 
-        <Swiper
-          key={`${bookId}:${pageStyleKey}:${readOrder}`}
-          onSwiper={updateSwiper}
-          dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
-          className={classes.pageContainer}
-          slidesPerView={slidesPerView}
-          slidesPerGroup={slidesPerView}
-          virtual
-        >
-          {[...new Array(prefixPage).keys()].map((i) => (
-            <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
-          ))}
-          {[...new Array(data.book.pages).keys()].map((i, index) => (
-            <SwiperSlide
-              key={`${i}_${imageSize[0]}_${imageSize[1]}`}
-              virtualIndex={index + prefixPage}
-              className={pageClass(index)}
-            >
-              {canImageVisible(i) && (
-                <BookPageImage
-                  style={effectBackGround}
-                  bookId={bookId}
-                  pageIndex={i}
-                  bookPageCount={data.book.pages}
-                  {...imageSize}
-                  alt={(i + 1).toString(10)}
-                  className={classes.pageImage}
-                  loading="eager"
-                  sizeDebounceDelay={300}
-                />
-              )}
-            </SwiperSlide>
-          ))}
-          {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
-            <SwiperSlide
-              key={`virtual-${data.book.pages + prefixPage + i}`}
-              virtualIndex={data.book.pages + prefixPage + i}
-            />
-          ))}
-          {(nextBook) && [...new Array(slidesPerView).keys()].map((i) => (
-            <SwiperSlide
-              key={`virtual-${data.book.pages + prefixPage + ((data.book.pages + prefixPage) % slidesPerView) + i}`}
-              virtualIndex={data.book.pages + prefixPage
-              + ((data.book.pages + prefixPage) % slidesPerView) + i}
-            />
-          ))}
-        </Swiper>
+        <Remount remountKey={`${bookId}:${pageStyleKey}:${readOrder}`}>
+          <Swiper
+            onSwiper={updateSwiper}
+            dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
+            className={classes.pageContainer}
+            slidesPerView={slidesPerView}
+            slidesPerGroup={slidesPerView}
+            virtual
+          >
+            {[...new Array(prefixPage).keys()].map((i) => (
+              <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
+            ))}
+            {[...new Array(data.book.pages).keys()].map((i, index) => (
+              <SwiperSlide
+                key={`${i}_${imageSize[0]}_${imageSize[1]}`}
+                virtualIndex={index + prefixPage}
+                className={pageClass(index)}
+              >
+                {canImageVisible(i) && (
+                  <BookPageImage
+                    style={effectBackGround}
+                    bookId={bookId}
+                    pageIndex={i}
+                    bookPageCount={data.book.pages}
+                    {...imageSize}
+                    alt={(i + 1).toString(10)}
+                    className={classes.pageImage}
+                    loading="eager"
+                    sizeDebounceDelay={300}
+                  />
+                )}
+              </SwiperSlide>
+            ))}
+            {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
+              <SwiperSlide
+                key={`virtual-${data.book.pages + prefixPage + i}`}
+                virtualIndex={data.book.pages + prefixPage + i}
+              />
+            ))}
+            {(nextBook) && [...new Array(slidesPerView).keys()].map((i) => (
+              <SwiperSlide
+                key={`virtual-${data.book.pages + prefixPage + ((data.book.pages + prefixPage) % slidesPerView) + i}`}
+                virtualIndex={data.book.pages + prefixPage
+                + ((data.book.pages + prefixPage) % slidesPerView) + i}
+              />
+            ))}
+          </Swiper>
+        </Remount>
 
         <div
           className={classes.pageProgress}
