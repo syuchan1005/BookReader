@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStyles, makeStyles, Theme, } from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from '@material-ui/core';
 
 import SwiperCore, { Virtual } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -301,8 +301,8 @@ const Book = (props: BookProps) => {
   const maxPage = React.useMemo(() => (data ? data.book.pages : 0), [data]);
   React.useEffect(() => {
     if (page >= maxPage) {
-      if (nextBook) {
-        openBook(nextBook);
+      if (nextBook && data) {
+        openBook(data.book.info.id, nextBook);
       }
     } else if (isPageSet) {
       setDbPage(page)
@@ -384,14 +384,14 @@ const Book = (props: BookProps) => {
     }
   }, [readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
 
-  const openBook = React.useCallback((targetBookId: string) => {
+  const openBook = React.useCallback((infoId: string, targetBookId: string) => {
     db.infoReads.put({
-      infoId: data.book.info.id,
+      infoId,
       bookId: targetBookId,
     })
       .catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
     history.push(`/book/${targetBookId}`);
-  }, [data, enqueueSnackbar, history]);
+  }, [enqueueSnackbar, history]);
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {
@@ -410,13 +410,19 @@ const Book = (props: BookProps) => {
       : i - debouncePage <= (slidesPerView * 2 - 1)),
   [debouncePage, imageSize, isPageSet, slidesPerView]);
 
-  const goNextBook = React.useMemo(
-    () => (nextBook ? () => openBook(nextBook) : undefined), [openBook, nextBook],
-  );
+  const goNextBook = React.useMemo(() => {
+    if (nextBook && data) {
+      return () => openBook(data.book.info.id, nextBook);
+    }
+    return undefined;
+  }, [data, openBook, nextBook]);
 
-  const goPreviousBook = React.useMemo(
-    () => (prevBook ? () => openBook(prevBook) : undefined), [openBook, prevBook],
-  );
+  const goPreviousBook = React.useMemo(() => {
+    if (prevBook && data) {
+      return () => openBook(data.book.info.id, prevBook);
+    }
+    return undefined;
+  }, [data, openBook, prevBook]);
 
   const setNextPageStyle = React
     .useCallback(() => setPageStyle((p) => NextPageStyleMap[p]), []);
