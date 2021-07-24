@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import {
   Button,
   createStyles,
@@ -86,6 +86,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
+const stopPropagationListener: MouseEventHandler<any> = (e) => {
+  e.stopPropagation();
+};
+
 const BookPageOverlay = (props: BookPageOverlayProps) => {
   const classes = useStyles(props);
   const {
@@ -106,7 +110,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
 
   const [readOrder, setReadOrder] = useRecoilState(readOrderState);
   const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
-  const [settingsMenuAnchor, setSettingsMenuAnchor] = useMenuAnchor();
+  const [settingsMenuAnchor, setSettingsMenuAnchor, resetSettingMenuAnchor] = useMenuAnchor();
   const [effectMenuAnchor, setEffectMenuAnchor, resetEffectMenuAnchor] = useMenuAnchor();
 
   const toggleOriginalImage = React.useCallback(() => {
@@ -118,37 +122,46 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     resetEffectMenuAnchor();
   }, [onPageEffectChanged, resetEffectMenuAnchor]);
 
+  const clickJumpPrevBook = React.useCallback((e) => {
+    e.stopPropagation();
+    if (goPreviousBook) {
+      goPreviousBook();
+    }
+  }, [goPreviousBook]);
+
+  const clickJumpNextBook = React.useCallback((e) => {
+    e.stopPropagation();
+    if (goNextBook) {
+      goNextBook();
+    }
+  }, [goNextBook]);
+
   return (
     // eslint-disable-next-line
     <div
       className={classes.overlay}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (e.target === e.currentTarget) {
-          setHideAppBar();
-        }
-      }}
+      onClick={setHideAppBar}
     >
       {/* eslint-disable-next-line */}
-      <div className={`${classes.overlayContent} top`}>
-        <div style={{ gridColumn: '1 / span 3' }}>{`${currentPage + 1} / ${maxPages}`}</div>
-      </div>
-      {/* eslint-disable-next-line */}
-      <div className={`${classes.overlayContent} center`} onClick={setHideAppBar}>
+      <div className={`${classes.overlayContent} center`}>
         {(goPreviousBook && currentPage === 0) && (
-          <Button variant="contained" color="secondary" onClick={goPreviousBook}>
+          <Button variant="contained" color="secondary" onClick={clickJumpPrevBook}>
             to Prev book
           </Button>
         )}
         {(goNextBook && maxPages
           && Math.abs(maxPages - currentPage) <= pageStyle.slidesPerView) && (
-          <Button variant="contained" color="secondary" onClick={goNextBook}>
+          <Button variant="contained" color="secondary" onClick={clickJumpNextBook}>
             to Next book
           </Button>
         )}
       </div>
       {/* eslint-disable-next-line */}
-      <div className={`${classes.overlayContent} bottom`}>
+      <div className={`${classes.overlayContent} top`} onClick={stopPropagationListener}>
+        <div style={{ gridColumn: '1 / span 3' }}>{`${currentPage + 1} / ${maxPages}`}</div>
+      </div>
+      {/* eslint-disable-next-line */}
+      <div className={`${classes.overlayContent} bottom`} onClick={stopPropagationListener}>
         <div
           style={{
             display: 'flex',
@@ -183,7 +196,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
         <Menu
           anchorEl={settingsMenuAnchor}
           open={Boolean(settingsMenuAnchor)}
-          onClose={() => setSettingsMenuAnchor(null)}
+          onClose={resetSettingMenuAnchor}
           getContentAnchorEl={null}
           anchorOrigin={{
             vertical: 'top',
@@ -192,7 +205,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
         >
           <MenuItem
             onClick={() => {
-              setSettingsMenuAnchor(null);
+              resetSettingMenuAnchor();
               onEditClick();
             }}
           >
@@ -258,13 +271,16 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
         {(pageEffect) && (
           <div className={classes.bottomSlider}>
             <MuiThemeProvider
-              theme={{
+              theme={(outerTheme) => ({
+                ...outerTheme,
                 palette: {
+                  // @ts-ignore
+                  ...outerTheme.palette,
                   primary: {
                     main: orange['700'],
                   },
                 },
-              }}
+              })}
             >
               <Slider
                 valueLabelDisplay="auto"
