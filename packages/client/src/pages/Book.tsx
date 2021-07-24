@@ -315,7 +315,8 @@ const Book = (props: BookProps) => {
   const setPage = React.useCallback((s, time = 150) => {
     let validatedPage = Math.max(s, 0);
     if (maxPage > 0) {
-      validatedPage = Math.min(validatedPage, normalizeCount(maxPage - 1));
+      const maxPageCount = maxPage - (nextBook ? 0 : 1);
+      validatedPage = Math.min(validatedPage, normalizeCount(maxPageCount));
     }
     validatedPage = normalizeCount(validatedPage);
     if (swiper) {
