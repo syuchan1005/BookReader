@@ -414,7 +414,7 @@ const Book = (props: BookProps) => {
     () => (nextBook ? () => openBook(nextBook) : undefined), [openBook, nextBook],
   );
 
-  const goPreviousBook = React.useCallback(
+  const goPreviousBook = React.useMemo(
     () => (prevBook ? () => openBook(prevBook) : undefined), [openBook, prevBook],
   );
 
