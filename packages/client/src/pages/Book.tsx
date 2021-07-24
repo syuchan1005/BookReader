@@ -243,19 +243,6 @@ const Book = (props: BookProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbLoading]);
 
-  React.useEffect(() => {
-    if (page >= data.book.pages) {
-      if (nextBook) {
-        openBook(nextBook);
-      }
-    } else if (isPageSet) {
-      setDbPage(page)
-        .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
-      setQueryPage(page, 'replace');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
-
   const [effect, setEffect] = React.useState<PageEffect | undefined>(undefined);
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [swiper, setSwiper] = React.useState(null);
@@ -311,18 +298,31 @@ const Book = (props: BookProps) => {
       setTitle((t) => `${data.book.info.name} No.${data.book.number} - ${t}`);
     }
   }, [data, setTitle]);
+  const maxPage = React.useMemo(() => (data ? data.book.pages : 0), [data]);
+  React.useEffect(() => {
+    if (page >= maxPage) {
+      if (nextBook) {
+        openBook(nextBook);
+      }
+    } else if (isPageSet) {
+      setDbPage(page)
+        .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
+      setQueryPage(page, 'replace');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   const setPage = React.useCallback((s, time = 150) => {
     let validatedPage = Math.max(s, 0);
-    if (data) {
-      validatedPage = Math.min(validatedPage, normalizeCount(data.book.pages - 1));
+    if (maxPage > 0) {
+      validatedPage = Math.min(validatedPage, normalizeCount(maxPage - 1));
     }
     validatedPage = normalizeCount(validatedPage);
     if (swiper) {
       swiper.slideTo(validatedPage, time, false);
     }
     updatePage(validatedPage);
-  }, [data, swiper, normalizeCount]);
+  }, [maxPage, swiper, normalizeCount]);
 
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
@@ -456,7 +456,7 @@ const Book = (props: BookProps) => {
           <EditPagesDialog
             open={openEditDialog}
             onClose={setCloseEditDialog}
-            maxPage={data ? data.book.pages : 0}
+            maxPage={maxPage}
             bookId={bookId}
           />
         )}
@@ -464,7 +464,7 @@ const Book = (props: BookProps) => {
           <BookPageOverlay
             currentPage={page}
             onPageSliderChanged={onPageSliderChanged}
-            maxPages={data ? data.book.pages : 0}
+            maxPages={maxPage}
             pageStyle={PageStyle[pageStyleKey]}
             onPageStyleClick={setNextPageStyle}
             pageEffect={effect}
@@ -490,7 +490,7 @@ const Book = (props: BookProps) => {
             {[...new Array(prefixPage).keys()].map((i) => (
               <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
             ))}
-            {[...new Array(data.book.pages).keys()].map((i, index) => (
+            {[...new Array(maxPage).keys()].map((i, index) => (
               <SwiperSlide
                 key={`${i}_${imageSize[0]}_${imageSize[1]}`}
                 virtualIndex={index + prefixPage}
@@ -501,7 +501,7 @@ const Book = (props: BookProps) => {
                     style={effectBackGround}
                     bookId={bookId}
                     pageIndex={i}
-                    bookPageCount={data.book.pages}
+                    bookPageCount={maxPage}
                     {...imageSize}
                     alt={(i + 1).toString(10)}
                     className={classes.pageImage}
@@ -511,17 +511,17 @@ const Book = (props: BookProps) => {
                 )}
               </SwiperSlide>
             ))}
-            {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
+            {[...new Array(((maxPage + prefixPage) % slidesPerView)).keys()].map((i) => (
               <SwiperSlide
-                key={`virtual-${data.book.pages + prefixPage + i}`}
-                virtualIndex={data.book.pages + prefixPage + i}
+                key={`virtual-${maxPage + prefixPage + i}`}
+                virtualIndex={maxPage + prefixPage + i}
               />
             ))}
             {(nextBook) && [...new Array(slidesPerView).keys()].map((i) => (
               <SwiperSlide
-                key={`virtual-${data.book.pages + prefixPage + ((data.book.pages + prefixPage) % slidesPerView) + i}`}
-                virtualIndex={data.book.pages + prefixPage
-                + ((data.book.pages + prefixPage) % slidesPerView) + i}
+                key={`virtual-${maxPage + prefixPage + ((maxPage + prefixPage) % slidesPerView) + i}`}
+                virtualIndex={maxPage + prefixPage
+                + ((maxPage + prefixPage) % slidesPerView) + i}
               />
             ))}
           </Swiper>
