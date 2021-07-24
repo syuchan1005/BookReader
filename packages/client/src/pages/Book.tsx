@@ -289,7 +289,9 @@ const Book = (props: BookProps) => {
   }, [dbLoading]);
 
   React.useEffect(() => {
-    if (isPageSet) {
+    if (page >= data.book.pages) {
+      clickRouteButton(undefined, 1);
+    } else if (isPageSet) {
       setDbPage(page).catch((e) => enqueueSnackbar(e, { variant: 'error' }));
       setQueryPage(page, 'replace');
     }
@@ -301,7 +303,8 @@ const Book = (props: BookProps) => {
   const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = React.useState(undefined);
   const [swiper, setSwiper] = React.useState(null);
-  const [openEditDialog, canMountEditDialog, setOpenEditDialog, setCloseEditDialog] = useLazyDialog(false);
+  const [openEditDialog, canMountEditDialog,
+    setOpenEditDialog, setCloseEditDialog] = useLazyDialog(false);
   const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
   const [pageStyleKey, setPageStyle] = React.useState<PageStyles>('SinglePage');
   const {
@@ -437,7 +440,7 @@ const Book = (props: BookProps) => {
   }, [readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
 
   const clickRouteButton = React.useCallback((e, i) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     const jumpBookId = [prevBook, nextBook][i];
     if (!jumpBookId) return;
     db.infoReads.put({
@@ -678,7 +681,17 @@ const Book = (props: BookProps) => {
               </SwiperSlide>
             ))}
             {[...new Array(((data.book.pages + prefixPage) % slidesPerView)).keys()].map((i) => (
-              <SwiperSlide virtualIndex={data.book.pages + prefixPage + i} />
+              <SwiperSlide
+                key={`virtual-${data.book.pages + prefixPage + i}`}
+                virtualIndex={data.book.pages + prefixPage + i}
+              />
+            ))}
+            {(nextBook) && [...new Array(slidesPerView).keys()].map((i) => (
+              <SwiperSlide
+                key={`virtual-${data.book.pages + prefixPage + ((data.book.pages + prefixPage) % slidesPerView) + i}`}
+                virtualIndex={data.book.pages + prefixPage
+                  + ((data.book.pages + prefixPage) % slidesPerView) + i}
+              />
             ))}
           </Swiper>
 
