@@ -464,7 +464,7 @@ const Book = (props: BookProps) => {
           <BookPageOverlay
             currentPage={page}
             onPageSliderChanged={onPageSliderChanged}
-            maxPages={data.book.pages}
+            maxPages={data ? data.book.pages : 0}
             pageStyle={PageStyle[pageStyleKey]}
             onPageStyleClick={setNextPageStyle}
             pageEffect={effect}
