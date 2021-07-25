@@ -522,6 +522,7 @@ class Page extends GQLMiddleware {
           strictEditActions,
           [...Array(book.pages).keys()].map(createImageEditAction),
         ).filter(({ willDelete }) => !willDelete);
+
         return withPageEditFolder(id, async (folderPath, replaceNewFiles) => {
           const result = await executeEditActions(editActions, folderPath, id, book.pages);
           if (!result.success) {
@@ -537,11 +538,11 @@ class Page extends GQLMiddleware {
                 transaction,
               },
             );
+            await removeBookCache(id).catch(() => { /* ignored */ });
             await replaceNewFiles();
             await transaction.commit();
           } catch (e) {
             await transaction.rollback();
-            console.log(e);
             return {
               success: false,
               code: 'QL0013',
