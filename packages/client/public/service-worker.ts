@@ -36,37 +36,37 @@ registerRoute(
   }),
 );
 
-const BookImageCacheName = 'bookReader-images';
+const cacheNames = {
+  thumbnail: 'bookReader-images',
+  image: 'bookReader-thumbnails',
+};
 registerRoute(
-  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?$/,
+  ({ request }) => request.destination === 'image' && request.url.includes('nosave'),
   new StaleWhileRevalidate({
-    cacheName: BookImageCacheName,
+    cacheName: cacheNames.image,
     plugins: [
       new CacheableResponsePlugin({
-        statuses: [200],
-      }),
-    ],
-  }),
-  'GET',
-);
-/*
-registerRoute(
-  /\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.jpg(\.webp)?\?nosave/,
-  new StaleWhileRevalidate({
-    cacheName: `${BookImageCacheName}-expires`,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [200],
+        statuses: [0, 200],
       }),
       new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
+        maxEntries: 60,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
       }),
     ],
   }),
-  'GET',
 );
-*/
+
+registerRoute(
+  ({ request }) => request.destination === 'image' && !request.url.includes('nosave'),
+  new StaleWhileRevalidate({
+    cacheName: cacheNames.thumbnail,
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+    ],
+  }),
+);
 
 addEventListener('message', (event) => {
   // When no response, client cannot resolve Promise.
@@ -77,29 +77,30 @@ addEventListener('message', (event) => {
   }
 
   const onMessage = async () => {
-    let cb: (cache: Cache, urls: string[]) => Promise<any>;
     switch (event.data.type) {
+      default:
       case 'SKIP_WAITING':
         skipWaiting();
         break;
-      case 'PURGE_CACHE':
+      case 'PURGE_CACHE': {
         const ks = await caches.keys();
         await Promise.all(ks.map((k) => caches.delete(k)));
         break;
-      case 'BOOK_CACHE':
-        cb = (cache, urls) => cache.addAll(urls);
+      }
+      case 'REMOVE_BOOK_CACHE': {
+        const imageFolderPath = new RegExp(`/book/${event.data.bookId}`);
+        const deleteCaches = Object.values(cacheNames).map(async (cacheName) => {
+          const cache = await caches.open(cacheName);
+          const cacheRequests = await cache.keys();
+          const deleteRequests = cacheRequests
+            .filter(({ url }) => url.match(imageFolderPath));
+          return Promise.all(deleteRequests.map((request) => cache.delete(request)));
+        });
+        await Promise.all(deleteCaches);
         break;
-      case 'BOOK_REMOVE':
-        cb = (cache, urls) => Promise.all(urls.map((k) => cache.delete(k)));
-        break;
+      }
     }
-    if (cb) {
-      const pad = event.data.pages.toString(10).length;
-      const urls = [...Array(event.data.pages).keys()]
-        .map((i) => `/book/${event.data.bookId}/${i.toString(10).padStart(pad, '0')}.jpg`);
-      const cache = await caches.open(BookImageCacheName);
-      await cb(cache, urls);
-    }
+
     postMessage();
   };
 
