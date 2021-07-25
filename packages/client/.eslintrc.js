@@ -28,7 +28,7 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['@client', 'src'],
+          ['@client', `${__dirname}/src`],
         ],
       },
     },

@@ -7,8 +7,8 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['@server', 'src'],
-          ['natural-orderby', 'src/sort'],
+          ['@server', `${__dirname}/src`],
+          ['natural-orderby', `${__dirname}/src/sort`],
         ],
       },
     },
