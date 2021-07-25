@@ -11,9 +11,30 @@ clientsClaim();
 // @ts-ignore
 precacheAndRoute(self.__WB_MANIFEST);
 
-// https://github.com/GoogleChrome/workbox/issues/1599
-registerRoute(/^https:\/\/fonts\.googleapis\.com/, new StaleWhileRevalidate({ cacheName: 'google-fonts-stylesheets' }));
-registerRoute(/^https:\/\/fonts\.gstatic\.com/, new CacheFirst({ cacheName: 'google-fonts-webfonts', plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })] }));
+// https://developers.google.com/web/tools/workbox/guides/common-recipes
+registerRoute(
+  ({ url }) => url.origin === 'https://fonts.googleapis.com',
+  new StaleWhileRevalidate({
+    cacheName: 'google-fonts-stylesheets',
+  }),
+);
+
+// Cache the underlying font files with a cache-first strategy for 1 year.
+registerRoute(
+  ({ url }) => url.origin === 'https://fonts.gstatic.com',
+  new CacheFirst({
+    cacheName: 'google-fonts-webfonts',
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxAgeSeconds: 60 * 60 * 24 * 365,
+        maxEntries: 30,
+      }),
+    ],
+  }),
+);
 
 const BookImageCacheName = 'bookReader-images';
 registerRoute(
