@@ -37,8 +37,8 @@ registerRoute(
 );
 
 const cacheNames = {
-  thumbnail: 'bookReader-images',
-  image: 'bookReader-thumbnails',
+  thumbnail: 'bookReader-thumbnails',
+  image: 'bookReader-images',
 };
 registerRoute(
   ({ request }) => request.destination === 'image' && request.url.includes('nosave'),
