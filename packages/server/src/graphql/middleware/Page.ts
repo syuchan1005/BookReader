@@ -539,6 +539,7 @@ class Page extends GQLMiddleware {
               },
             );
             await removeBookCache(id).catch(() => { /* ignored */ });
+            purgeImageCache();
             await replaceNewFiles();
             await transaction.commit();
           } catch (e) {
