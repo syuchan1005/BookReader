@@ -117,20 +117,10 @@ const BookPageImage = (props: BookPageImageProps) => {
         'jpg',
       );
 
-      let webpSrcSet;
-      if (width === undefined && height === undefined) {
-        const webpSrc = createBookPageUrl(
-          bookId,
-          pageIndex,
-          bookPageCount,
-          width,
-          height,
-          'webp',
-        );
-        webpSrcSet = `${webpSrc}${suffix}`;
-      } else {
+      const sources = [];
+      if (width !== undefined || height !== undefined) {
         const sizeRatio = [1, 1.5, 2, 3];
-        webpSrcSet = sizeRatio.map((ratio) => {
+        const webpSrcSet = sizeRatio.map((ratio) => {
           const src = createBookPageUrl(
             bookId,
             pageIndex,
@@ -142,15 +132,14 @@ const BookPageImage = (props: BookPageImageProps) => {
           return `${src}${suffix} ${ratio}x`;
         })
           .join(',');
+        sources.push({
+          type: 'image/webp',
+          srcSet: webpSrcSet,
+        });
       }
       return {
         imgSrc: `${jpgSrc}${suffix}`,
-        sources: [
-          {
-            type: 'image/webp',
-            srcSet: webpSrcSet,
-          },
-        ],
+        sources,
       };
     },
     [bookId, pageIndex, bookPageCount, width, height, noSave],
