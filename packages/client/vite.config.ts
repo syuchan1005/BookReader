@@ -4,7 +4,7 @@ import fs from 'fs';
 import { defineConfig, Plugin } from 'vite';
 import reactRefresh from '@vitejs/plugin-react-refresh';
 import { VitePWA } from 'vite-plugin-pwa';
-import bundleVisualizer from "rollup-plugin-visualizer";
+import bundleVisualizer from 'rollup-plugin-visualizer';
 
 const serviceWorkerFileName = 'service-worker.ts';
 const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
