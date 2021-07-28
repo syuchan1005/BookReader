@@ -160,7 +160,7 @@ const Info = (props: InfoProps) => {
   }, [params.id, history, enqueueSnackbar]);
 
   const bookList: typeof data.bookInfo.books = React.useMemo(
-    () => (data ? data.bookInfo.books : []),
+    () => (data?.bookInfo?.books ?? []),
     [data],
   );
 
