@@ -8,7 +8,7 @@ import {
   ListItem,
   ListItemText,
 } from '@material-ui/core';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { List as MovableList, arrayMove } from 'react-movable';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -36,15 +36,6 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     bookId,
   } = props;
   const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>([]);
-
-  const handleOnDragEnd = React.useCallback((result) => {
-    setActions((a) => {
-      const items = Array.from(a);
-      const [reorderedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, reorderedItem);
-      return items;
-    });
-  }, []);
 
   const handleDeleteAction = React.useCallback((index: number) => {
     setActions((a) => {
@@ -93,58 +84,69 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
   return (
     <Dialog open={open} fullWidth>
       <DialogTitle>Edit Pages</DialogTitle>
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="editTypes">
-          {(provided) => (
-            <List {...provided.droppableProps} ref={provided.innerRef}>
-              {(actions.length === 0) ? (
-                <>
-                  <AddTemplateListItem
-                    bookId={bookId}
-                    maxPage={maxPage}
-                    onAdded={setActions}
-                  />
-                  <ListItem>
-                    <ListItemText primary="or" style={{ textAlign: 'center' }} />
-                  </ListItem>
-                </>
-              ) : (
-                <>
-                  {actions.map((ctx, index) => (
-                    <Draggable key={ctx.id} draggableId={ctx.id} index={index}>
-                      {(providedInner) => (
-                        // @ts-ignore
-                        <ActionListItem
-                          ref={providedInner.innerRef}
-                          editType={ctx.editType}
-                          maxPage={maxPage}
-                          bookId={bookId}
-                          content={ctx.content}
-                          setContent={(k, c) => setContentValue(index, k, c)}
-                          onDelete={() => handleDeleteAction(index)}
-                          {...providedInner}
-                        />
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </>
-              )}
-              <AddItemListItem onAdded={(editType) => {
-                setActions([
-                  ...actions,
-                  {
-                    id: uuidv4(),
-                    editType,
-                    content: createInitValue(editType),
-                  },
-                ]);
-              }}
+
+      {(actions.length === 0) ? (
+        <List>
+          <AddTemplateListItem
+            bookId={bookId}
+            maxPage={maxPage}
+            onAdded={setActions}
+          />
+          <ListItem>
+            <ListItemText primary="or" style={{ textAlign: 'center' }} />
+          </ListItem>
+          <AddItemListItem onAdded={(editType) => {
+            setActions([
+              ...actions,
+              {
+                id: uuidv4(),
+                editType,
+                content: createInitValue(editType),
+              },
+            ]);
+          }}
+          />
+        </List>
+      ) : (
+        <>
+          <MovableList
+            transitionDuration={150}
+            values={actions}
+            onChange={({ oldIndex, newIndex }) => setActions(
+              arrayMove(actions, oldIndex, newIndex),
+            )}
+            renderList={({ children, props: listProps }) => (
+              <List {...listProps}>
+                {children}
+              </List>
+            )}
+            renderItem={({ value, index, props: itemProps }) => (
+              <ActionListItem
+                draggableProps={itemProps}
+                dragHandleProps={{ 'data-movable-handle': true }}
+                editType={value.editType}
+                maxPage={maxPage}
+                bookId={bookId}
+                content={value.content}
+                setContent={(k, c) => setContentValue(index, k, c)}
+                onDelete={() => handleDeleteAction(index)}
               />
-            </List>
-          )}
-        </Droppable>
-      </DragDropContext>
+            )}
+          />
+          <AddItemListItem onAdded={(editType) => {
+            setActions([
+              ...actions,
+              {
+                id: uuidv4(),
+                editType,
+                content: createInitValue(editType),
+              },
+            ]);
+          }}
+          />
+        </>
+      )}
+
       <DialogActions>
         <Button
           onClick={() => {

@@ -30,8 +30,8 @@ import CalcImagePaddingDialog, {
 import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface ListItemProps {
-  draggableProps: { [key: string]: unknown };
-  dragHandleProps?: unknown;
+  draggableProps: any;
+  dragHandleProps?: any;
 
   bookId: string;
   content: { [key: string]: any };
@@ -90,6 +90,7 @@ const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
       ref={ref}
       {...draggableProps}
       style={{
+        zIndex: theme.zIndex.modal + 1,
         // @ts-ignore
         ...(draggableProps.style),
         flexWrap: 'wrap',
