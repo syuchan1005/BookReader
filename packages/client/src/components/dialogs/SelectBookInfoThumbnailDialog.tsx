@@ -98,7 +98,7 @@ const SelectBookInfoThumbnailDialog = (
                 simple
                 name={data.bookInfo.name}
                 {...book}
-                infoId={book.info.id}
+                infoId={infoId}
                 onClick={() => {
                   changeThumbnail({
                     variables: {
