@@ -36,6 +36,8 @@ module.exports = {
       jsx: 'never',
       mjs: 'never',
     }],
+    'class-methods-use-this': 'off',
+    'import/prefer-default-export': 'off',
   },
   settings: {
     'import/resolver': {
