@@ -187,11 +187,6 @@ export type Mutation = {
   deleteBook: Result;
   deleteBooks: Result;
   moveBooks: Result;
-  deletePages: Result;
-  splitPages: Result;
-  editPage: Result;
-  putPage: Result;
-  cropPages: Result;
   bulkEditPage: Result;
   debug_deleteUnusedFolders: Result;
   deleteGenre: Result;
@@ -260,41 +255,6 @@ export type MutationMoveBooksArgs = {
 };
 
 
-export type MutationDeletePagesArgs = {
-  id: Scalars['ID'];
-  pages: Scalars['IntRange'];
-};
-
-
-export type MutationSplitPagesArgs = {
-  id: Scalars['ID'];
-  pages: Scalars['IntRange'];
-  type?: Maybe<SplitType>;
-};
-
-
-export type MutationEditPageArgs = {
-  id: Scalars['ID'];
-  page: Scalars['Int'];
-  image: Scalars['Upload'];
-};
-
-
-export type MutationPutPageArgs = {
-  id: Scalars['ID'];
-  beforePage: Scalars['Int'];
-  image: Scalars['Upload'];
-};
-
-
-export type MutationCropPagesArgs = {
-  id: Scalars['ID'];
-  pages: Scalars['IntRange'];
-  left: Scalars['Int'];
-  width: Scalars['Int'];
-};
-
-
 export type MutationBulkEditPageArgs = {
   id: Scalars['ID'];
   actions: Array<EditAction>;
@@ -339,28 +299,12 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
-  bookInfos: BookInfoList;
-  bookInfo?: Maybe<BookInfo>;
   relayBookInfos: BookInfoPartialList;
+  bookInfo?: Maybe<BookInfo>;
   book?: Maybe<Book>;
   debug_folderSize: Debug_FolderSizes;
   plugins: Array<Plugin>;
   genres: Array<Genre>;
-};
-
-
-export type QueryBookInfosArgs = {
-  length?: Maybe<Scalars['Int']>;
-  offset?: Maybe<Scalars['Int']>;
-  search?: Maybe<Scalars['String']>;
-  genres?: Maybe<Array<Scalars['String']>>;
-  history?: Maybe<Scalars['Boolean']>;
-  order?: Maybe<BookInfoOrder>;
-};
-
-
-export type QueryBookInfoArgs = {
-  id: Scalars['ID'];
 };
 
 
@@ -370,6 +314,11 @@ export type QueryRelayBookInfosArgs = {
   last?: Maybe<Scalars['Int']>;
   before?: Maybe<Scalars['String']>;
   option?: Maybe<BookInfosOption>;
+};
+
+
+export type QueryBookInfoArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -413,13 +362,7 @@ export enum SplitType {
 
 export type Subscription = {
   __typename?: 'Subscription';
-  addBookInfo: Scalars['String'];
   addBooks: Scalars['String'];
-};
-
-
-export type SubscriptionAddBookInfoArgs = {
-  name: Scalars['String'];
 };
 
 
@@ -646,35 +589,6 @@ export type BookQuery = (
       & Pick<BookInfo, 'id' | 'name'>
     )> }
   )> }
-);
-
-export type BookInfosQueryVariables = Exact<{
-  limit: Scalars['Int'];
-  offset: Scalars['Int'];
-  search?: Maybe<Scalars['String']>;
-  order?: Maybe<BookInfoOrder>;
-  history?: Maybe<Scalars['Boolean']>;
-  genres: Array<Scalars['String']> | Scalars['String'];
-}>;
-
-
-export type BookInfosQuery = (
-  { __typename?: 'Query' }
-  & { bookInfos: (
-    { __typename?: 'BookInfoList' }
-    & Pick<BookInfoList, 'hasNext'>
-    & { infos: Array<(
-      { __typename?: 'BookInfo' }
-      & Pick<BookInfo, 'id' | 'name' | 'count' | 'history' | 'updatedAt'>
-      & { thumbnail?: Maybe<(
-        { __typename?: 'BookInfoThumbnail' }
-        & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
-      )>, genres: Array<(
-        { __typename?: 'Genre' }
-        & Pick<Genre, 'id' | 'name' | 'invisible'>
-      )> }
-    )> }
-  ) }
 );
 
 export type RelayBookInfosQueryVariables = Exact<{
@@ -1096,11 +1010,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBookArgs, 'id'>>;
   deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBooksArgs, 'infoId' | 'ids'>>;
   moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'infoId' | 'ids'>>;
-  deletePages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeletePagesArgs, 'id' | 'pages'>>;
-  splitPages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationSplitPagesArgs, 'id' | 'pages' | 'type'>>;
-  editPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditPageArgs, 'id' | 'page' | 'image'>>;
-  putPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationPutPageArgs, 'id' | 'beforePage' | 'image'>>;
-  cropPages?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationCropPagesArgs, 'id' | 'pages' | 'left' | 'width'>>;
   bulkEditPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationBulkEditPageArgs, 'id' | 'actions'>>;
   debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
   deleteGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteGenreArgs, 'genre'>>;
@@ -1133,9 +1042,8 @@ export type PluginQueriesResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  bookInfos?: Resolver<ResolversTypes['BookInfoList'], ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'length' | 'offset' | 'genres' | 'order'>>;
-  bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
   relayBookInfos?: Resolver<ResolversTypes['BookInfoPartialList'], ParentType, ContextType, RequireFields<QueryRelayBookInfosArgs, never>>;
+  bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
   book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
   debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>;
   plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
@@ -1166,7 +1074,6 @@ export type ResultWithInfoIdResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  addBookInfo?: SubscriptionResolver<ResolversTypes['String'], "addBookInfo", ParentType, ContextType, RequireFields<SubscriptionAddBookInfoArgs, 'name'>>;
   addBooks?: SubscriptionResolver<ResolversTypes['String'], "addBooks", ParentType, ContextType, RequireFields<SubscriptionAddBooksArgs, 'id'>>;
 };
 

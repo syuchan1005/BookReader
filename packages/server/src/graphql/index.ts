@@ -22,7 +22,6 @@ import { convertAndSaveJpg } from '../ImageUtil';
 import internalMiddlewares from './middleware/index';
 
 export const SubscriptionKeys = {
-  ADD_BOOK_INFO: 'ADD_BOOK_INFO',
   ADD_BOOKS: 'ADD_BOOKS',
 };
 

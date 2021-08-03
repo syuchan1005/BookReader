@@ -188,11 +188,6 @@ export type Mutation = {
   deleteBook: Result;
   deleteBooks: Result;
   moveBooks: Result;
-  deletePages: Result;
-  splitPages: Result;
-  editPage: Result;
-  putPage: Result;
-  cropPages: Result;
   bulkEditPage: Result;
   debug_deleteUnusedFolders: Result;
   deleteGenre: Result;
@@ -261,41 +256,6 @@ export type MutationMoveBooksArgs = {
 };
 
 
-export type MutationDeletePagesArgs = {
-  id: Scalars['ID'];
-  pages: Scalars['IntRange'];
-};
-
-
-export type MutationSplitPagesArgs = {
-  id: Scalars['ID'];
-  pages: Scalars['IntRange'];
-  type?: Maybe<SplitType>;
-};
-
-
-export type MutationEditPageArgs = {
-  id: Scalars['ID'];
-  page: Scalars['Int'];
-  image: Scalars['Upload'];
-};
-
-
-export type MutationPutPageArgs = {
-  id: Scalars['ID'];
-  beforePage: Scalars['Int'];
-  image: Scalars['Upload'];
-};
-
-
-export type MutationCropPagesArgs = {
-  id: Scalars['ID'];
-  pages: Scalars['IntRange'];
-  left: Scalars['Int'];
-  width: Scalars['Int'];
-};
-
-
 export type MutationBulkEditPageArgs = {
   id: Scalars['ID'];
   actions: Array<EditAction>;
@@ -340,28 +300,12 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
-  bookInfos: BookInfoList;
-  bookInfo?: Maybe<BookInfo>;
   relayBookInfos: BookInfoPartialList;
+  bookInfo?: Maybe<BookInfo>;
   book?: Maybe<Book>;
   debug_folderSize: Debug_FolderSizes;
   plugins: Array<Plugin>;
   genres: Array<Genre>;
-};
-
-
-export type QueryBookInfosArgs = {
-  length?: Maybe<Scalars['Int']>;
-  offset?: Maybe<Scalars['Int']>;
-  search?: Maybe<Scalars['String']>;
-  genres?: Maybe<Array<Scalars['String']>>;
-  history?: Maybe<Scalars['Boolean']>;
-  order?: Maybe<BookInfoOrder>;
-};
-
-
-export type QueryBookInfoArgs = {
-  id: Scalars['ID'];
 };
 
 
@@ -371,6 +315,11 @@ export type QueryRelayBookInfosArgs = {
   last?: Maybe<Scalars['Int']>;
   before?: Maybe<Scalars['String']>;
   option?: Maybe<BookInfosOption>;
+};
+
+
+export type QueryBookInfoArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -414,13 +363,7 @@ export enum SplitType {
 
 export type Subscription = {
   __typename?: 'Subscription';
-  addBookInfo: Scalars['String'];
   addBooks: Scalars['String'];
-};
-
-
-export type SubscriptionAddBookInfoArgs = {
-  name: Scalars['String'];
 };
 
 
@@ -647,35 +590,6 @@ export type BookQuery = (
       & Pick<BookInfo, 'id' | 'name'>
     )> }
   )> }
-);
-
-export type BookInfosQueryVariables = Exact<{
-  limit: Scalars['Int'];
-  offset: Scalars['Int'];
-  search?: Maybe<Scalars['String']>;
-  order?: Maybe<BookInfoOrder>;
-  history?: Maybe<Scalars['Boolean']>;
-  genres: Array<Scalars['String']> | Scalars['String'];
-}>;
-
-
-export type BookInfosQuery = (
-  { __typename?: 'Query' }
-  & { bookInfos: (
-    { __typename?: 'BookInfoList' }
-    & Pick<BookInfoList, 'hasNext'>
-    & { infos: Array<(
-      { __typename?: 'BookInfo' }
-      & Pick<BookInfo, 'id' | 'name' | 'count' | 'history' | 'updatedAt'>
-      & { thumbnail?: Maybe<(
-        { __typename?: 'BookInfoThumbnail' }
-        & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
-      )>, genres: Array<(
-        { __typename?: 'Genre' }
-        & Pick<Genre, 'id' | 'name' | 'invisible'>
-      )> }
-    )> }
-  ) }
 );
 
 export type RelayBookInfosQueryVariables = Exact<{
@@ -1386,70 +1300,6 @@ export function useBookLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BookQ
 export type BookQueryHookResult = ReturnType<typeof useBookQuery>;
 export type BookLazyQueryHookResult = ReturnType<typeof useBookLazyQuery>;
 export type BookQueryResult = Apollo.QueryResult<BookQuery, BookQueryVariables>;
-export const BookInfosDocument = gql`
-    query bookInfos($limit: Int!, $offset: Int!, $search: String, $order: BookInfoOrder, $history: Boolean, $genres: [String!]!) {
-  bookInfos(
-    length: $limit
-    offset: $offset
-    search: $search
-    order: $order
-    history: $history
-    genres: $genres
-  ) @connection(key: "bookInfo", filter: ["search", "order", "history", "genres"]) {
-    hasNext
-    infos {
-      id
-      name
-      count
-      thumbnail {
-        bookId
-        pageIndex
-        bookPageCount
-      }
-      history
-      genres {
-        id
-        name
-        invisible
-      }
-      updatedAt
-    }
-  }
-}
-    `;
-
-/**
- * __useBookInfosQuery__
- *
- * To run a query within a React component, call `useBookInfosQuery` and pass it any options that fit your needs.
- * When your component renders, `useBookInfosQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useBookInfosQuery({
- *   variables: {
- *      limit: // value for 'limit'
- *      offset: // value for 'offset'
- *      search: // value for 'search'
- *      order: // value for 'order'
- *      history: // value for 'history'
- *      genres: // value for 'genres'
- *   },
- * });
- */
-export function useBookInfosQuery(baseOptions: Apollo.QueryHookOptions<BookInfosQuery, BookInfosQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
-      }
-export function useBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BookInfosQuery, BookInfosQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
-        }
-export type BookInfosQueryHookResult = ReturnType<typeof useBookInfosQuery>;
-export type BookInfosLazyQueryHookResult = ReturnType<typeof useBookInfosLazyQuery>;
-export type BookInfosQueryResult = Apollo.QueryResult<BookInfosQuery, BookInfosQueryVariables>;
 export const RelayBookInfosDocument = gql`
     query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!) {
   bookInfos: relayBookInfos(first: $first, after: $after, option: $option) @connection(key: "relayBookInfos", filter: ["option"]) {

@@ -3,15 +3,12 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { promises as fs } from 'fs';
 
 import { v4 as uuidv4 } from 'uuid';
-import Sequelize, { Op } from 'sequelize';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
-import { withFilter } from 'graphql-subscriptions';
 
 import {
   BookOrder,
   MutationResolvers,
   QueryResolvers,
-  SubscriptionResolvers,
 } from '@syuchan1005/book-reader-graphql';
 
 import Database from '@server/sequelize/models';
@@ -22,7 +19,6 @@ import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
 import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach } from '@server/Util';
-import { SubscriptionKeys } from '@server/graphql';
 import InfoGenreModel from '@server/sequelize/models/InfoGenre';
 import { purgeImageCache } from '@server/ImageUtil';
 
@@ -30,53 +26,6 @@ class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Query(): QueryResolvers {
     return {
-      bookInfos: async (parent, {
-        offset,
-        length,
-        search,
-        genres,
-        history,
-        order,
-      }) => {
-        const infos = await BookInfoModel.findAll({
-          offset,
-          limit: length + 1,
-          order: [GQLUtil.bookInfoOrderToOrderBy(order)],
-          where: Object.fromEntries(Object.entries({
-            history,
-            id: genres.length === 0
-              ? {
-                [Op.notIn]: Sequelize.literal('('
-                  + 'SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1'
-                  + ')'),
-              }
-              : {
-                [Op.in]: Sequelize.literal('('
-                  // @ts-ignore
-                  + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => `'${g}'`).join(', ')})` // TODO: escape
-                  + ')'),
-              },
-            name: search ? {
-              [Op.like]: `%${search}%`,
-            } : undefined,
-          }).filter((e) => e[1] !== undefined)),
-          include: [
-            {
-              model: GenreModel,
-              as: 'genres',
-            },
-            {
-              model: BookModel,
-              as: 'thumbnailBook',
-            },
-          ],
-        });
-
-        return {
-          hasNext: infos.length === length + 1,
-          infos: infos.slice(0, length).map((info) => ModelUtil.bookInfo(info)),
-        };
-      },
       bookInfo: async (parent, { id: infoId }) => {
         const bookInfo = await BookInfoModel.findOne({
           where: { id: infoId },
@@ -104,7 +53,6 @@ class BookInfo extends GQLMiddleware {
         if (genres && genres.length >= 1) {
           await GQLUtil.linkGenres(infoId, genres);
         }
-        await this.pubsub.publish(SubscriptionKeys.ADD_BOOK_INFO, { name, addBookInfo: 'add to database' });
 
         return {
           success: true,
@@ -232,17 +180,6 @@ class BookInfo extends GQLMiddleware {
         return {
           success: true,
         };
-      },
-    };
-  }
-
-  Subscription(): SubscriptionResolvers {
-    return {
-      addBookInfo: {
-        subscribe: withFilter(
-          () => this.pubsub.asyncIterator([SubscriptionKeys.ADD_BOOK_INFO]),
-          (payload, variables) => payload.name === variables.name,
-        ),
       },
     };
   }

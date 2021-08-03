@@ -4,16 +4,6 @@ scalar IntRange
 
 type Query {
     ## BookInfo
-    bookInfos(
-        length: Int = 10
-        offset: Int = 0
-        search: String
-        genres: [String!] = []
-        history: Boolean
-        order: BookInfoOrder = Update_Newest
-    ): BookInfoList!
-    bookInfo(id: ID!): BookInfo
-
     relayBookInfos(
         first: Int
         after: String
@@ -21,6 +11,7 @@ type Query {
         before: String
         option: BookInfosOption # If it's null, process with default values.
     ): BookInfoPartialList!
+    bookInfo(id: ID!): BookInfo
 
     ## Book
     book(id: ID!): Book
@@ -51,14 +42,6 @@ type Mutation {
     moveBooks(infoId: ID!, ids: [ID!]!): Result!
 
     ## Page
-    deletePages(id: ID! pages: IntRange!): Result!
-    splitPages(id: ID! pages: IntRange! type: SplitType = VERTICAL): Result!
-    editPage(id: ID! page: Int! image: Upload!): Result!
-    # if beforePage 0   -> 0, put, 1
-    # if beforePage -1  -> put, 0, 1
-    # if beforePage 100 -> 100, put, 101
-    putPage(id: ID! beforePage: Int! image: Upload!): Result!
-    cropPages(id: ID!, pages: IntRange!, left: Int!, width: Int!): Result!
     bulkEditPage(id: ID!, actions: [EditAction!]!): Result!
 
     ## Debug
@@ -70,7 +53,6 @@ type Mutation {
 }
 
 type Subscription {
-    addBookInfo(name: String!): String!
     addBooks(id: ID!): String!
 }
 
