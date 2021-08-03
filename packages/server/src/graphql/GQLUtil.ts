@@ -19,11 +19,11 @@ import { asyncForEach, asyncMap, readdirRecursively } from '@server/Util';
 import {
   createDownloadFilePath, createTemporaryFolderPath, renameFile, userDownloadFolderName,
 } from '@server/StorageUtil';
-import Database from '@server/sequelize/models';
-import BookModel from '@server/sequelize/models/Book';
-import InfoGenreModel from '@server/sequelize/models/InfoGenre';
-import BookInfoModel from '@server/sequelize/models/BookInfo';
-import GenreModel from '@server/sequelize/models/Genre';
+import Database from '@server/database/sequelize/models';
+import BookModel from '@server/database/sequelize/models/Book';
+import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
+import BookInfoModel from '@server/database/sequelize/models/BookInfo';
+import GenreModel from '@server/database/sequelize/models/Genre';
 import { OrderItem } from 'sequelize';
 import { convertAndSaveJpg } from '../ImageUtil';
 

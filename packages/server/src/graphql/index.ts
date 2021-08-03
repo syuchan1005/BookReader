@@ -12,7 +12,7 @@ import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-import Database from '@server/sequelize/models';
+import Database from '@server/database/sequelize/models';
 import * as Util from '../Util';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';

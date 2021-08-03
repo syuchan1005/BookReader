@@ -1,5 +1,5 @@
 import { Sequelize, Model, Options } from 'sequelize';
-import * as baseConfig from '../../../sequelize.config';
+import * as baseConfig from '../../../../sequelize.config';
 
 /* models */
 import BookInfo from './BookInfo';
@@ -8,6 +8,7 @@ import Genre from './Genre';
 import InfoGenre from './InfoGenre';
 
 const env = process.env.NODE_ENV || 'development';
+// eslint-disable-next-line camelcase
 const config: Options & { dialect?: string, use_env_variable?: string } = baseConfig[env];
 
 let sequelize;

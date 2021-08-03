@@ -7,8 +7,8 @@ import {
   MutationResolvers, Result, SplitType, EditAction, Scalars, EditType,
 } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
-import Database from '@server/sequelize/models';
-import BookModel from '@server/sequelize/models/Book';
+import Database from '@server/database/sequelize/models';
+import BookModel from '@server/database/sequelize/models/Book';
 import {
   withPageEditFolder,
   createBookFolderPath,

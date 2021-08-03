@@ -1,5 +1,5 @@
 import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
-import { Database } from '@server/sequelize/models';
+import { Database } from '@server/database/sequelize/models';
 import * as Util from '@server/Util';
 import GQLUtil from '@server/graphql/GQLUtil';
 import {

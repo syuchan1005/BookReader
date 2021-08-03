@@ -3,10 +3,10 @@ import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 
 import { ImageHeader } from '@syuchan1005/book-reader-common';
+import { BookDataManager } from '@server/database/BookDataManager';
 import { getCacheOrConvertImage, obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
-import Database from './sequelize/models';
 
 const toInt = (value: string | string[]): number | undefined => {
   let numStr;
@@ -120,7 +120,7 @@ const toInt = (value: string | string[]): number | undefined => {
     app.use(Serve('dist/client'));
   }
 
-  await Database.sync();
+  await BookDataManager.init();
 
   await graphql.middleware(app);
 

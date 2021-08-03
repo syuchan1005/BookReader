@@ -5,10 +5,10 @@ import {
   BookInfoOrder,
   HistoryType,
 } from '@syuchan1005/book-reader-graphql';
-import BookInfoModel from '@server/sequelize/models/BookInfo';
+import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import Sequelize, { Op } from 'sequelize';
-import GenreModel from '@server/sequelize/models/Genre';
-import BookModel from '@server/sequelize/models/Book';
+import GenreModel from '@server/database/sequelize/models/Genre';
+import BookModel from '@server/database/sequelize/models/Book';
 import ModelUtil from '@server/ModelUtil';
 
 const DefaultOptions: BookInfosOption = {

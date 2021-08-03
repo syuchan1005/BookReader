@@ -1,5 +1,5 @@
-import GenreModel from '@server/sequelize/models/Genre';
-import InfoGenreModel from '@server/sequelize/models/InfoGenre';
+import GenreModel from '@server/database/sequelize/models/Genre';
+import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import {
   QueryResolvers,
   MutationResolvers,
@@ -7,7 +7,7 @@ import {
   ResolversTypes,
 } from '@syuchan1005/book-reader-graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-import Database from '@server/sequelize/models';
+import Database from '@server/database/sequelize/models';
 import { createError } from '@server/Errors';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 

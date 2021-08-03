@@ -1,20 +1,19 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { withFilter } from 'graphql-subscriptions';
 import { Op } from 'sequelize';
 
 import {
-  BookOrder, MutationResolvers, QueryResolvers, ResultWithBookResults, SubscriptionResolvers,
+  MutationResolvers, QueryResolvers, ResultWithBookResults, SubscriptionResolvers,
 } from '@syuchan1005/book-reader-graphql';
 
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-import BookModel from '@server/sequelize/models/Book';
-import BookInfoModel from '@server/sequelize/models/BookInfo';
+import BookModel from '@server/database/sequelize/models/Book';
+import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
-import Database from '@server/sequelize/models';
+import Database from '@server/database/sequelize/models';
 import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach, asyncMap } from '@server/Util';

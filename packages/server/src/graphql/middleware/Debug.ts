@@ -1,7 +1,7 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { promises as fs } from 'fs';
-import BookModel from '@server/sequelize/models/Book';
-import BookInfoModel from '@server/sequelize/models/BookInfo';
+import BookModel from '@server/database/sequelize/models/Book';
+import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
 import {

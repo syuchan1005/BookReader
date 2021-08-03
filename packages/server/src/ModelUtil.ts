@@ -1,6 +1,6 @@
 import { BookInfo, Book, Genre } from '@syuchan1005/book-reader-graphql';
-import BookInfoModel from './sequelize/models/BookInfo';
-import BookModel from './sequelize/models/Book';
+import BookInfoModel from './database/sequelize/models/BookInfo';
+import BookModel from './database/sequelize/models/Book';
 
 const util = {
   bookInfo(model: BookInfoModel, convertBook: boolean = true): BookInfo {

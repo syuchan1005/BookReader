@@ -11,15 +11,15 @@ import {
   QueryResolvers,
 } from '@syuchan1005/book-reader-graphql';
 
-import Database from '@server/sequelize/models';
-import BookInfoModel from '@server/sequelize/models/BookInfo';
-import BookModel from '@server/sequelize/models/Book';
-import GenreModel from '@server/sequelize/models/Genre';
+import Database from '@server/database/sequelize/models';
+import BookInfoModel from '@server/database/sequelize/models/BookInfo';
+import BookModel from '@server/database/sequelize/models/Book';
+import GenreModel from '@server/database/sequelize/models/Genre';
 import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
 import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach } from '@server/Util';
-import InfoGenreModel from '@server/sequelize/models/InfoGenre';
+import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { purgeImageCache } from '@server/ImageUtil';
 
 class BookInfo extends GQLMiddleware {
