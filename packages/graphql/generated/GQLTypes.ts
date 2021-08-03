@@ -184,7 +184,6 @@ export type Mutation = {
   addBooks: Array<Result>;
   addCompressBook: ResultWithBookResults;
   editBook: Result;
-  deleteBook: Result;
   deleteBooks: Result;
   moveBooks: Result;
   bulkEditPage: Result;
@@ -235,11 +234,6 @@ export type MutationEditBookArgs = {
   id: Scalars['ID'];
   number?: Maybe<Scalars['String']>;
   thumbnail?: Maybe<Scalars['Int']>;
-};
-
-
-export type MutationDeleteBookArgs = {
-  id: Scalars['ID'];
 };
 
 
@@ -511,19 +505,6 @@ export type EditBookInfoMutationVariables = Exact<{
 export type EditBookInfoMutation = (
   { __typename?: 'Mutation' }
   & { edit: (
-    { __typename?: 'Result' }
-    & Pick<Result, 'success' | 'code'>
-  ) }
-);
-
-export type DeleteBookMutationVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type DeleteBookMutation = (
-  { __typename?: 'Mutation' }
-  & { del: (
     { __typename?: 'Result' }
     & Pick<Result, 'success' | 'code'>
   ) }
@@ -1007,7 +988,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addBooks?: Resolver<Array<ResolversTypes['Result']>, ParentType, ContextType, RequireFields<MutationAddBooksArgs, 'id' | 'books'>>;
   addCompressBook?: Resolver<ResolversTypes['ResultWithBookResults'], ParentType, ContextType, RequireFields<MutationAddCompressBookArgs, 'id'>>;
   editBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookArgs, 'id'>>;
-  deleteBook?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBookArgs, 'id'>>;
   deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBooksArgs, 'infoId' | 'ids'>>;
   moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'infoId' | 'ids'>>;
   bulkEditPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationBulkEditPageArgs, 'id' | 'actions'>>;

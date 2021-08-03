@@ -37,7 +37,6 @@ type Mutation {
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
     addCompressBook(id: ID!, file: Upload, path: String): ResultWithBookResults!
     editBook(id: ID!, number: String, thumbnail: Int): Result!
-    deleteBook(id: ID!): Result!
     deleteBooks(infoId: ID!, ids: [ID!]!): Result!
     moveBooks(infoId: ID!, ids: [ID!]!): Result!
 

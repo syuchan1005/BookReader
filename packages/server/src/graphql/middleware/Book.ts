@@ -197,44 +197,6 @@ class Book extends GQLMiddleware {
           success: true,
         };
       },
-      deleteBook: async (parent, { id: bookId }) => {
-        const book = await BookModel.findOne({
-          where: {
-            id: bookId,
-          },
-        });
-        if (!book) {
-          return {
-            success: false,
-            code: 'QL0004',
-            message: Errors.QL0004,
-          };
-        }
-        await Database.sequelize.transaction(async (transaction) => {
-          await book.destroy({ transaction });
-          await BookInfoModel.update({
-            // @ts-ignore
-            count: Database.sequelize.literal('count - 1'),
-          }, {
-            where: {
-              id: book.infoId,
-            },
-            transaction,
-          });
-        });
-        await fs.rm(`storage/cache/book/${bookId}`, {
-          recursive: true,
-          force: true,
-        });
-        await fs.rm(`storage/book/${bookId}`, {
-          recursive: true,
-          force: true,
-        });
-        purgeImageCache();
-        return {
-          success: true,
-        };
-      },
       deleteBooks: async (parent, {
         infoId,
         ids: bookIds,

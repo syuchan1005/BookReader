@@ -99,7 +99,7 @@ const Info = (props: InfoProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
-  const params = useParams<{ id: string }>();
+  const { id: infoId } = useParams<{ id: string }>();
 
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
@@ -125,7 +125,7 @@ const Info = (props: InfoProps) => {
   } = useBookInfoQuery({
     skip: isSkipQuery,
     variables: {
-      id: params.id,
+      id: infoId,
       order: sortBookOrder,
     },
   });
@@ -137,7 +137,7 @@ const Info = (props: InfoProps) => {
 
   React.useEffect(() => {
     let unMounted = false;
-    db.infoReads.get(params.id)
+    db.infoReads.get(infoId)
       .then((read) => {
         if (read && !unMounted) {
           setReadId(read.bookId);
@@ -146,18 +146,18 @@ const Info = (props: InfoProps) => {
     return () => {
       unMounted = true;
     };
-  }, [params.id]);
+  }, [infoId]);
 
   const { enqueueSnackbar } = useSnackbar();
 
   const clickBook = React.useCallback((bookId) => {
     db.infoReads.put({
-      infoId: params.id,
+      infoId,
       bookId,
     })
       .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
     history.push(`/book/${bookId}`);
-  }, [params.id, history, enqueueSnackbar]);
+  }, [infoId, history, enqueueSnackbar]);
 
   const bookList: typeof data.bookInfo.books = React.useMemo(
     () => (data?.bookInfo?.books ?? []),
@@ -253,7 +253,7 @@ const Info = (props: InfoProps) => {
         </TitleAndBackHeader>
       ) : (
         <SelectBookHeader
-          infoId={params.id}
+          infoId={infoId}
           selectIds={selectIds}
           onClose={handleHeaderClose}
           onDeleteBooks={handleDeleteBooks}
@@ -273,6 +273,7 @@ const Info = (props: InfoProps) => {
                 (bookList && bookList.length > 0) && bookList.map(
                   (book) => (
                     <Book
+                      infoId={infoId}
                       simple={mode === 1}
                       {...book}
                       name={bookName}
@@ -316,7 +317,7 @@ const Info = (props: InfoProps) => {
         {(canMountAddDialog) && (
           <AddBookDialog
             open={isShownAddDialog}
-            infoId={params.id}
+            infoId={infoId}
             onAdded={refetch}
             onClose={hideAddDialog}
           />

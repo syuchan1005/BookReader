@@ -15,20 +15,24 @@ import {
 } from '@material-ui/core';
 
 import { Book as BookType } from '@syuchan1005/book-reader-graphql';
-import { useDeleteBookMutation, useEditBookMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  useDeleteBooksMutation,
+  useEditBookMutation,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
-import useLazyDialog from '@client/hooks/useLazyDialog';
 
 const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookDialog'));
 
 interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'pages'> {
+  infoId: string;
   thumbnailSize: number;
   thumbnailNoSave?: boolean;
   name: string;
@@ -98,6 +102,7 @@ const Book = (props: BookProps) => {
   const classes = useStyles(props);
   const ref = useRef();
   const {
+    infoId,
     thumbnailSize,
     thumbnailNoSave,
     thumbnail,
@@ -136,14 +141,15 @@ const Book = (props: BookProps) => {
   const [isShownDownloadDialog, canMountDownloadDialog, showDownloadDialog,
     hideDownloadDialog] = useLazyDialog(false);
 
-  const [deleteBook, { loading: delLoading }] = useDeleteBookMutation({
+  const [deleteBook, { loading: delLoading }] = useDeleteBooksMutation({
     variables: {
-      id: bookId,
+      infoId,
+      ids: [bookId],
     },
     onCompleted(d) {
       if (!d) return;
-      setShowDeleteDialog(!d.del.success);
-      if (d.del.success && onDeleted) onDeleted(bookId, pages);
+      setShowDeleteDialog(!d.deleteBooks.success);
+      if (d.deleteBooks.success && onDeleted) onDeleted(bookId, pages);
     },
   });
 

@@ -1,6 +1,0 @@
-mutation deleteBook($id: ID!) {
-    del: deleteBook(id: $id) {
-        success
-        code
-    }
-}
