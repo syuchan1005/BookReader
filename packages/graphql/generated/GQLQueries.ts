@@ -165,7 +165,7 @@ export type Genre = {
 
 export enum HistoryType {
   All = 'ALL',
-  HisotryOnly = 'HISOTRY_ONLY',
+  HistoryOnly = 'HISTORY_ONLY',
   NormalOnly = 'NORMAL_ONLY'
 }
 
@@ -189,9 +189,9 @@ export type Mutation = {
   deleteBooks: Result;
   moveBooks: Result;
   bulkEditPage: Result;
-  debug_deleteUnusedFolders: Result;
   deleteGenre: Result;
   editGenre: Result;
+  debug_deleteUnusedFolders: Result;
 };
 
 

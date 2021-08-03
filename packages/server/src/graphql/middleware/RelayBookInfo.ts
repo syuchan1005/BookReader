@@ -104,7 +104,7 @@ class RelayBookInfo extends GQLMiddleware {
           case HistoryType.All:
             whereHistory = undefined;
             break;
-          case HistoryType.HisotryOnly:
+          case HistoryType.HistoryOnly:
             whereHistory = true;
             break;
           case HistoryType.NormalOnly:

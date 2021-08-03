@@ -44,12 +44,12 @@ type Mutation {
     ## Page
     bulkEditPage(id: ID!, actions: [EditAction!]!): Result!
 
-    ## Debug
-    debug_deleteUnusedFolders: Result!
-
     ## Genre
     deleteGenre(genre: String!): Result!
     editGenre(oldName: String! newName: String invisible: Boolean): Result!
+
+    ## Debug
+    debug_deleteUnusedFolders: Result!
 }
 
 type Subscription {
@@ -79,7 +79,7 @@ enum SplitType {
 
 enum HistoryType {
     ALL
-    HISOTRY_ONLY
+    HISTORY_ONLY
     NORMAL_ONLY
 }
 

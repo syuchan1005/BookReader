@@ -149,7 +149,7 @@ const Home = (props: HomeProps) => {
         search: debounceSearch || undefined,
         genres,
         history: {
-          SHOW: HistoryType.HisotryOnly,
+          SHOW: HistoryType.HistoryOnly,
           HIDE: HistoryType.NormalOnly,
           ALL: HistoryType.All,
         }[bookHistory],

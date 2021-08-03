@@ -164,7 +164,7 @@ export type Genre = {
 
 export enum HistoryType {
   All = 'ALL',
-  HisotryOnly = 'HISOTRY_ONLY',
+  HistoryOnly = 'HISTORY_ONLY',
   NormalOnly = 'NORMAL_ONLY'
 }
 
@@ -188,9 +188,9 @@ export type Mutation = {
   deleteBooks: Result;
   moveBooks: Result;
   bulkEditPage: Result;
-  debug_deleteUnusedFolders: Result;
   deleteGenre: Result;
   editGenre: Result;
+  debug_deleteUnusedFolders: Result;
 };
 
 
@@ -1011,9 +1011,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBooksArgs, 'infoId' | 'ids'>>;
   moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'infoId' | 'ids'>>;
   bulkEditPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationBulkEditPageArgs, 'id' | 'actions'>>;
-  debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
   deleteGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteGenreArgs, 'genre'>>;
   editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>;
+  debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
 };
 
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
