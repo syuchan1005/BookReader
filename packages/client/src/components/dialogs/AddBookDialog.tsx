@@ -27,6 +27,7 @@ import {
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
 import useStateWithReset from '@client/hooks/useStateWithReset';
+import { usePluginAddMutation } from '../../../../graphql/GQLQueriesEx';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -129,15 +130,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     return data.plugins.filter(({ info: { name } }) => name === addType)[0];
   }, [addType, data]);
 
-  const pluginMutationArgs = React.useMemo(() => {
-    if (!selectedPlugin) return [];
-    return [
-      selectedPlugin.queries.add.name,
-      `(${selectedPlugin.queries.add.args.map((s) => (s === 'id' ? '$id: ID!' : `$${s}: String!`))})`,
-      `(${selectedPlugin.queries.add.args.map((s) => `${s}: $${s}`)})`,
-    ];
-  }, [selectedPlugin]);
-
   const mutateCloseDialog = React.useCallback((success) => {
     if (onClose && success) onClose();
     if (success && onAdded) onAdded();
@@ -150,15 +142,9 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     resetTitle();
   }, [onClose, onAdded, resetTitle]);
 
-  const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
-    gql(`
-      mutation ${pluginMutationArgs[1] || ''}{
-        plugin: ${pluginMutationArgs[0]}${pluginMutationArgs[2] || ''}{
-            success
-            code
-        }
-      }
-    `),
+  const [addPlugin, { loading: addPluginLoading }] = usePluginAddMutation(
+    selectedPlugin?.queries?.add?.name ?? '',
+    selectedPlugin?.queries?.add?.args ?? [],
     {
       onCompleted(d) {
         if (!d) return;
