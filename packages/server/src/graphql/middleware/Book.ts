@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs, rmSync as fsRmSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { withFilter } from 'graphql-subscriptions';
@@ -39,8 +39,68 @@ class Book extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       addBooks: async (
-        parent, args, context, info,
-      ) => GQLUtil.Mutation.addBooks(this.pubsub, parent, args, context, info, undefined),
+        parent, {
+          id: infoId,
+          books,
+        },
+      ) => asyncMap(books, async (book) => {
+        const bookId = uuidv4();
+        if (!await BookInfoModel.hasId(infoId)) {
+          return {
+            success: false,
+            code: 'QL0001',
+            message: Errors.QL0001,
+          };
+        }
+
+        const archiveFile = await GQLUtil.saveArchiveFile(book.file, book.path);
+        if (archiveFile.success !== true) {
+          return archiveFile;
+        }
+
+        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: `Extract Book (${book.number}) ...`,
+        });
+        // extract
+        const tempPath = createTemporaryFolderPath(bookId);
+        const progressListener = (
+          percent: number,
+        ) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: `Extract Book (${book.number}) ${percent}%`,
+        });
+        await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, progressListener)
+          .catch((err) => {
+            fsRmSync(archiveFile.archiveFilePath, { force: true });
+            fsRmSync(tempPath, {
+              recursive: true,
+              force: true,
+            });
+            return Promise.reject(err);
+          });
+        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          id: infoId,
+          addBooks: `Move Book (${book.number}) ...`,
+        });
+        return GQLUtil.addBookFromLocalPath(
+          tempPath,
+          infoId,
+          bookId,
+          book.number,
+          async (current, total) => {
+            await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+              id: infoId,
+              addBooks: `Move Book (${book.number}) ${current}/${total}`,
+            });
+          },
+          () => fs.rm(tempPath, {
+            recursive: true,
+            force: true,
+          }),
+        )
+          .finally(() => fs.rm(archiveFile.archiveFilePath, { force: true }));
+      }),
       addCompressBook: async (parent, {
         id: infoId,
         file: compressBooks,
@@ -260,7 +320,10 @@ class Book extends GQLMiddleware {
         info: async ({ id }) => {
           const book = await BookModel.findOne({
             where: { id },
-            include: [{ model: BookInfoModel, as: 'info' }],
+            include: [{
+              model: BookInfoModel,
+              as: 'info',
+            }],
           });
           if (book?.info) return ModelUtil.bookInfo(book.info);
           return undefined;

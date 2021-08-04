@@ -1,122 +1,29 @@
-import { promises as fs, createWriteStream as fsCreateWriteStream, rmSync as fsRmSync } from 'fs';
+import { promises as fs, createWriteStream as fsCreateWriteStream } from 'fs';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
 import { v4 as uuidv4 } from 'uuid';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
-import { PubSubEngine } from 'apollo-server-koa';
 import { extractFull } from 'node-7z';
 
 import {
-  BookInfoOrder, InputBook,
-  MutationAddBooksArgs,
-  Result, Scalars,
+  Result,
+  Scalars,
 } from '@syuchan1005/book-reader-graphql';
 
-import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
-import { asyncForEach, asyncMap, readdirRecursively } from '@server/Util';
+import { asyncForEach, readdirRecursively } from '@server/Util';
 import {
-  createDownloadFilePath, createTemporaryFolderPath, renameFile, userDownloadFolderName,
+  createDownloadFilePath, renameFile, userDownloadFolderName,
 } from '@server/StorageUtil';
 import Database from '@server/database/sequelize/models';
 import BookModel from '@server/database/sequelize/models/Book';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
-import { OrderItem } from 'sequelize';
 import { convertAndSaveJpg } from '../ImageUtil';
 
 const GQLUtil = {
-  Mutation: {
-    addBooks: async (
-      pubsub: PubSubEngine,
-      parent,
-      {
-        id: infoId,
-        books,
-      }: MutationAddBooksArgs,
-      context,
-      info,
-      customData,
-    ): Promise<Result[]> => asyncMap(books,
-      (book) => GQLUtil.Mutation.addBook(
-        pubsub,
-        infoId,
-        book,
-        context,
-        info,
-        customData || {
-          pubsub: {
-            key: SubscriptionKeys.ADD_BOOKS,
-            fieldName: 'addBooks',
-            id: infoId,
-          },
-        },
-      )),
-    addBook: async (
-      pubsub: PubSubEngine,
-      infoId: string,
-      book: InputBook,
-      context, info, customData,
-    ): Promise<Result> => {
-      const bookId = uuidv4();
-      if (!await BookInfoModel.hasId(infoId)) {
-        return {
-          success: false,
-          code: 'QL0001',
-          message: Errors.QL0001,
-        };
-      }
-
-      const archiveFile = await GQLUtil.saveArchiveFile(book.file, book.path);
-      if (archiveFile.success !== true) {
-        return archiveFile;
-      }
-
-      if (customData) {
-        await pubsub.publish(customData.pubsub.key, {
-          ...customData.pubsub,
-          [customData.pubsub.fieldName]: `Extract Book (${book.number}) ...`,
-        });
-      }
-      // extract
-      const tempPath = createTemporaryFolderPath(bookId);
-      const progressListener = customData ? async (percent: number) => {
-        await pubsub.publish(customData.pubsub.key, {
-          ...customData.pubsub,
-          [customData.pubsub.fieldName]: `Extract Book (${book.number}) ${percent}%`,
-        });
-      } : () => {};
-      await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, progressListener)
-        .catch((err) => {
-          fsRmSync(archiveFile.archiveFilePath, { force: true });
-          fsRmSync(tempPath, { recursive: true, force: true });
-          return Promise.reject(err);
-        });
-      if (customData) {
-        await pubsub.publish(customData.pubsub.key, {
-          ...customData.pubsub,
-          [customData.pubsub.fieldName]: `Move Book (${book.number}) ...`,
-        });
-      }
-      return GQLUtil.addBookFromLocalPath(
-        tempPath,
-        infoId,
-        bookId,
-        book.number,
-        async (current, total) => {
-          if (customData) {
-            await pubsub.publish(customData.pubsub.key, {
-              ...customData.pubsub,
-              [customData.pubsub.fieldName]: `Move Book (${book.number}) ${current}/${total}`,
-            });
-          }
-        },
-        () => fs.rm(tempPath, { recursive: true, force: true }),
-      ).finally(() => fs.rm(archiveFile.archiveFilePath, { force: true }));
-    },
-  },
   async addBookFromLocalPath(
     tempPath: string,
     infoId: string,
@@ -125,9 +32,10 @@ const GQLUtil = {
     onProgress: (current: number, total: number) => void,
     deleteTempFolder?: () => Promise<void>,
   ): Promise<Result> {
-    let files = await readdirRecursively(tempPath).then((fileList) => fileList.filter(
-      (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
-    ));
+    let files = await readdirRecursively(tempPath)
+      .then((fileList) => fileList.filter(
+        (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
+      ));
     if (files.length <= 0) {
       if (deleteTempFolder) await deleteTempFolder;
       return {
@@ -140,7 +48,8 @@ const GQLUtil = {
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
     await asyncForEach(files, async (f, i) => {
-      const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
+      const fileName = `${i.toString()
+        .padStart(pad, '0')}.jpg`;
       const dist = `storage/book/${bookId}/${fileName}`;
 
       onProgress(i + 1, files.length);
@@ -149,7 +58,8 @@ const GQLUtil = {
       } else {
         await convertAndSaveJpg(f, dist);
       }
-    }).catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
+    })
+      .catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
     if (deleteTempFolder) await deleteTempFolder();
 
     await Database.sequelize.transaction(async (transaction) => {
@@ -195,10 +105,19 @@ const GQLUtil = {
       success: true,
     };
   },
-  extractCompressFile(tempPath: string, archiveFilePath: string, onProgress: (percent: number) => void): Promise<void> {
+  extractCompressFile(
+    tempPath: string,
+    archiveFilePath: string,
+    onProgress: (percent: number) => void,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
-      const extractStream = extractFull(archiveFilePath, tempPath, { recursive: true, $progress: true });
-      extractStream.on('progress', (event) => { onProgress && onProgress(event.percent); });
+      const extractStream = extractFull(archiveFilePath, tempPath, {
+        recursive: true,
+        $progress: true,
+      });
+      extractStream.on('progress', (event) => {
+        onProgress(event.percent);
+      });
       extractStream.on('error', reject);
       extractStream.on('end', resolve);
     });
@@ -216,7 +135,8 @@ const GQLUtil = {
     if (localPath) {
       const downloadPath = userDownloadFolderName;
       const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
-      if (path.relative(downloadPath, normalizeLocalPath).startsWith('../')) {
+      const hasPathTraversal = path.relative(downloadPath, normalizeLocalPath).startsWith('../');
+      if (hasPathTraversal) {
         return {
           success: false,
           code: 'QL0012',
@@ -238,7 +158,10 @@ const GQLUtil = {
       }
     }
 
-    return { success: true, archiveFilePath };
+    return {
+      success: true,
+      archiveFilePath,
+    };
   },
   writeFile(filePath: string, readableStream: NodeJS.ReadableStream): Promise<void> {
     return pipeline(
@@ -262,10 +185,12 @@ const GQLUtil = {
             const min = parseInt(hasMulti[1], 10);
             const max = parseInt(hasMulti[2], 10);
             if (min < max) {
-              const nestNumbers = [...Array(max - min + 1).keys()].map((index) => index + min);
+              const nestNumbers = [...Array(max - min + 1).keys()]
+                .map((index) => index + min);
               const nestFolders = await fs.readdir(
                 path.join(tempBooksFolder, d.name), { withFileTypes: true },
-              ).then((nestDirs) => nestDirs.filter((a) => a.isDirectory()));
+              )
+                .then((nestDirs) => nestDirs.filter((a) => a.isDirectory()));
               const folderNumbers = nestFolders.map((f) => {
                 const inNums = f.name.match(/\d+/g);
                 if (inNums) {
@@ -293,34 +218,6 @@ const GQLUtil = {
       booksFolderPath,
       bookFolders,
     };
-  },
-  async numberingFiles(folderPath: string, pad: number, fileList?: string[], reverse = false) {
-    const files = fileList || naturalOrderBy(await fs.readdir(folderPath));
-    return asyncMap(files, (f, i) => {
-      const dist = `${i.toString(10).padStart(pad, '0')}.jpg`;
-      if (dist !== f) {
-        return renameFile(`${folderPath}/${f}`, `${folderPath}/${dist}`);
-      }
-      return Promise.resolve();
-    }, reverse);
-  },
-  bookInfoOrderToOrderBy(order: BookInfoOrder): OrderItem {
-    switch (order) {
-      case BookInfoOrder.UpdateNewest:
-        return ['updatedAt', 'desc'];
-      case BookInfoOrder.UpdateOldest:
-        return ['updatedAt', 'asc'];
-      case BookInfoOrder.AddNewest:
-        return ['createdAt', 'asc'];
-      case BookInfoOrder.AddOldest:
-        return ['createdAt', 'desc'];
-      case BookInfoOrder.NameAsc:
-        return ['name', 'asc'];
-      case BookInfoOrder.NameDesc:
-        return ['name', 'desc'];
-      default:
-        return undefined;
-    }
   },
   async linkGenres(infoId: string, genreList: string[]) {
     const dbGenres = (await InfoGenreModel.findAll({
