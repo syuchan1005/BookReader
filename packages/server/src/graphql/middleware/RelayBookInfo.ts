@@ -4,6 +4,7 @@ import {
   BookInfosOption,
   BookInfoOrder,
   HistoryType,
+  BookInfo,
 } from '@syuchan1005/book-reader-graphql';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import Sequelize, { Op } from 'sequelize';
@@ -188,7 +189,7 @@ class RelayBookInfo extends GQLMiddleware {
         return {
           edges: edges.map((data) => ({
             cursor: data[cursorKey],
-            node: ModelUtil.bookInfo(data),
+            node: ModelUtil.bookInfo(data) as BookInfo,
           })),
           pageInfo: {
             hasNextPage: bookInfos.length > first,

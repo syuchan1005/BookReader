@@ -28,12 +28,6 @@ class Book extends GQLMiddleware {
       book: async (parent, { id: bookId }) => {
         const book = await BookModel.findOne({
           where: { id: bookId },
-          include: [
-            {
-              model: BookInfoModel,
-              as: 'info',
-            },
-          ],
         });
         if (book) return ModelUtil.book(book);
         return null;
@@ -255,6 +249,22 @@ class Book extends GQLMiddleware {
           () => this.pubsub.asyncIterator([SubscriptionKeys.ADD_BOOKS]),
           (payload, variables) => payload.id === variables.id,
         ),
+      },
+    };
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  Resolver() {
+    return {
+      Book: {
+        info: async ({ id }) => {
+          const book = await BookModel.findOne({
+            where: { id },
+            include: [{ model: BookInfoModel, as: 'info' }],
+          });
+          if (book?.info) return ModelUtil.bookInfo(book.info);
+          return undefined;
+        },
       },
     };
   }

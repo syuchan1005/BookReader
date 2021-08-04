@@ -9,6 +9,7 @@ import {
   BookOrder,
   MutationResolvers,
   QueryResolvers,
+  BookInfo as BookInfoGQLModel,
 } from '@syuchan1005/book-reader-graphql';
 
 import Database from '@server/database/sequelize/models';
@@ -31,7 +32,7 @@ class BookInfo extends GQLMiddleware {
           where: { id: infoId },
         });
         if (bookInfo) {
-          return ModelUtil.bookInfo(bookInfo);
+          return ModelUtil.bookInfo(bookInfo) as BookInfoGQLModel;
         }
         return null;
       },
@@ -164,7 +165,7 @@ class BookInfo extends GQLMiddleware {
 
         return {
           success: true,
-          books: books.map((b) => ModelUtil.book(b, false)),
+          books: books.map((b) => ModelUtil.book(b)),
         };
       },
       addBookInfoHistories: async (parent, { histories }) => {
@@ -203,7 +204,7 @@ class BookInfo extends GQLMiddleware {
             );
             if (order === BookOrder.NumberDesc) books.reverse();
           }
-          return books.map((book) => ModelUtil.book(book, false, id));
+          return books.map((book) => ModelUtil.book(book));
         },
       },
     };
