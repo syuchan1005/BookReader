@@ -6,6 +6,7 @@ import {
   QueryResolvers,
   MutationResolvers,
   SubscriptionResolvers,
+  Resolvers,
 } from '@syuchan1005/book-reader-graphql';
 import { SubscriptionKeys } from './index';
 
@@ -50,7 +51,7 @@ export default class GQLMiddleware {
     middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
-  ): { [key: string]: object } {
+  ): Resolvers {
     return {};
   }
 
