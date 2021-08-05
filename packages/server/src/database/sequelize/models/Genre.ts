@@ -3,7 +3,7 @@ import { defaultGenres } from '@syuchan1005/book-reader-common';
 import BookInfo from './BookInfo';
 
 export default class Genre extends Model {
-  public id!: string;
+  public id!: number;
 
   public invisible!: boolean;
 
@@ -18,8 +18,6 @@ export default class Genre extends Model {
   public static associations: {
     infos: Association<Genre, BookInfo>;
   };
-
-  public readonly dataValues: typeof Genre;
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {

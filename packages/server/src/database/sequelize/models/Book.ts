@@ -4,7 +4,7 @@ import BookInfo from './BookInfo';
 export default class Book extends Model {
   public id!: string;
 
-  public thumbnail: number | null;
+  public thumbnail!: number | null;
 
   public number!: string;
 

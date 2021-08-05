@@ -7,7 +7,7 @@ export default class BookInfo extends Model {
 
   public name!: string;
 
-  public thumbnail: number | null;
+  public thumbnail!: string | null;
 
   public count!: number;
 
