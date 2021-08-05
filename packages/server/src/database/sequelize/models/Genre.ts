@@ -1,8 +1,14 @@
 import { Association, DataTypes, Model } from 'sequelize';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import BookInfo from './BookInfo';
+import { restoreSequelizeAttributesOnClass } from '../ModelHelper';
 
 export default class Genre extends Model {
+  constructor(...args) {
+    super(...args);
+    restoreSequelizeAttributesOnClass(new.target, this);
+  }
+
   public id!: number;
 
   public invisible!: boolean;

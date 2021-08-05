@@ -1,7 +1,13 @@
 import { DataTypes, Association, Model } from 'sequelize';
+import { restoreSequelizeAttributesOnClass } from '../ModelHelper';
 import BookInfo from './BookInfo';
 
 export default class Book extends Model {
+  constructor(...args) {
+    super(...args);
+    restoreSequelizeAttributesOnClass(new.target, this);
+  }
+
   public id!: string;
 
   public thumbnail!: number | null;

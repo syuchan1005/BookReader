@@ -1,8 +1,14 @@
 import { DataTypes, Association, Model } from 'sequelize';
 import GenreModel from './Genre';
 import BookInfoModel from './BookInfo';
+import { restoreSequelizeAttributesOnClass } from '../ModelHelper';
 
 export default class InfoGenre extends Model {
+  constructor(...args) {
+    super(...args);
+    restoreSequelizeAttributesOnClass(new.target, this);
+  }
+
   public id!: number;
 
   public infoId!: string;

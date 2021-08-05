@@ -1,8 +1,14 @@
 import { DataTypes, Association, Model } from 'sequelize';
+import { restoreSequelizeAttributesOnClass } from '../ModelHelper';
 import Book from './Book';
 import Genre from './Genre';
 
 export default class BookInfo extends Model {
+  constructor(...args) {
+    super(...args);
+    restoreSequelizeAttributesOnClass(new.target, this);
+  }
+
   public id!: string;
 
   public name!: string;
@@ -28,17 +34,6 @@ export default class BookInfo extends Model {
     genres: Association<BookInfo, Genre>;
     thumbnail: Association<BookInfo, Book>;
   };
-
-  public static async hasId(infoId: string): Promise<boolean> {
-    const a = await BookInfo.findAll({
-      attributes: ['id'],
-      where: {
-        id: infoId,
-      },
-      limit: 1,
-    });
-    return (a && a.length > 0);
-  }
 
   // noinspection JSUnusedGlobalSymbols
   public static initModel(sequelize) {
