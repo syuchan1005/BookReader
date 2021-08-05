@@ -10,6 +10,7 @@ import {
   MutationResolvers,
   QueryResolvers,
   BookInfo as BookInfoGQLModel,
+  Resolvers,
 } from '@syuchan1005/book-reader-graphql';
 
 import Database from '@server/database/sequelize/models';
@@ -22,6 +23,7 @@ import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach } from '@server/Util';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { purgeImageCache } from '@server/ImageUtil';
+import { BookDataManager } from '@server/database/BookDataManager';
 
 class BookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -186,9 +188,22 @@ class BookInfo extends GQLMiddleware {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  Resolver() {
+  Resolver(): Resolvers {
     return {
       BookInfo: {
+        thumbnail: async ({ id, thumbnail: t }) => {
+          if (t) return t;
+          const thumbnail = await BookDataManager.getBookInfoThumbnail(id);
+          if (!thumbnail) {
+            return undefined;
+          }
+          return {
+            bookId: thumbnail.bookId,
+            pageIndex: thumbnail.thumbnail,
+            bookPageCount: thumbnail.pages,
+          };
+        },
+        genres: ({ id, genres }) => genres || BookDataManager.getBookInfoGenres(id),
         books: async ({ id }, { order }: { order: BookOrder }) => {
           const sortNumber = order.startsWith('Number_');
           let books = await BookModel.findAll({

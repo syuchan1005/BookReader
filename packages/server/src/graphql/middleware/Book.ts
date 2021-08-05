@@ -2,23 +2,24 @@ import { promises as fs, rmSync as fsRmSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { withFilter } from 'graphql-subscriptions';
-import { Op } from 'sequelize';
 
 import {
-  MutationResolvers, QueryResolvers, ResultWithBookResults, SubscriptionResolvers,
+  MutationResolvers,
+  QueryResolvers,
+  Resolvers,
+  ResultWithBookResults,
+  SubscriptionResolvers,
+  BookInfo,
 } from '@syuchan1005/book-reader-graphql';
 
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-import BookModel from '@server/database/sequelize/models/Book';
-import BookInfoModel from '@server/database/sequelize/models/BookInfo';
-import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
-import Database from '@server/database/sequelize/models';
 import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { purgeImageCache } from '@server/ImageUtil';
 import { createTemporaryFolderPath } from '@server/StorageUtil';
+import { BookDataManager } from '@server/database/BookDataManager';
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -26,11 +27,14 @@ class Book extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       book: async (parent, { id: bookId }) => {
-        const book = await BookModel.findOne({
-          where: { id: bookId },
-        });
-        if (book) return ModelUtil.book(book);
-        return null;
+        const book = await BookDataManager.getBook(bookId);
+        if (!book) {
+          return undefined;
+        }
+        return {
+          ...book,
+          updatedAt: `${book.updatedAt.getTime()}`,
+        };
       },
     };
   }
@@ -45,7 +49,8 @@ class Book extends GQLMiddleware {
         },
       ) => asyncMap(books, async (book) => {
         const bookId = uuidv4();
-        if (!await BookInfoModel.hasId(infoId)) {
+        const bookInfo = await BookDataManager.getBookInfo(infoId);
+        if (!bookInfo) {
           return {
             success: false,
             code: 'QL0001',
@@ -215,9 +220,7 @@ class Book extends GQLMiddleware {
             message: Errors.QL0005,
           };
         }
-        const book = await BookModel.findOne({
-          where: { id: bookId },
-        });
+        const book = await BookDataManager.getBook(bookId);
         if (!book) {
           return {
             success: false,
@@ -243,33 +246,14 @@ class Book extends GQLMiddleware {
             message: Errors.QL0005,
           };
         }
-        await BookModel.update(val, {
-          where: { id: bookId },
-        });
-        return {
-          success: true,
-        };
+        await BookDataManager.editBook(bookId, val);
+        return { success: true };
       },
       deleteBooks: async (parent, {
         infoId,
         ids: bookIds,
       }) => {
-        await Database.sequelize.transaction(async (transaction) => {
-          const count = await BookModel.destroy({
-            where: {
-              id: { [Op.in]: bookIds },
-              infoId,
-            },
-            transaction,
-          });
-          await BookInfoModel.update({
-            // @ts-ignore
-            count: Database.sequelize.literal(`count - ${count}`),
-          }, {
-            where: { id: infoId },
-            transaction,
-          });
-        });
+        await BookDataManager.deleteBooks(infoId, bookIds);
         await asyncForEach(bookIds, async (bookId) => {
           await fs.rm(`storage/cache/book/${bookId}`, {
             recursive: true,
@@ -289,11 +273,7 @@ class Book extends GQLMiddleware {
         infoId,
         ids: bookIds,
       }) => {
-        await BookModel.update({ infoId }, {
-          where: {
-            id: { [Op.in]: bookIds },
-          },
-        });
+        await BookDataManager.moveBooks(bookIds, infoId);
         return {
           success: true,
         };
@@ -314,19 +294,16 @@ class Book extends GQLMiddleware {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  Resolver() {
+  Resolver(): Resolvers {
     return {
       Book: {
-        info: async ({ id }) => {
-          const book = await BookModel.findOne({
-            where: { id },
-            include: [{
-              model: BookInfoModel,
-              as: 'info',
-            }],
-          });
-          if (book?.info) return ModelUtil.bookInfo(book.info);
-          return undefined;
+        // @ts-ignore
+        info: async ({ id: bookId }): Omit<BookInfo, 'thumbnail' | 'genres' | 'books'> => {
+          const bookInfo = await BookDataManager.getBookInfoFromBookId(bookId);
+          return {
+            ...bookInfo,
+            updatedAt: `${bookInfo.updatedAt.getTime()}`,
+          };
         },
       },
     };
