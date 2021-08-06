@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Book, BookEditableValue, BookId } from '@server/database/models/Book';
 import {
-  BookInfo,
+  BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
   InfoId,
   InputBookInfo,
@@ -15,6 +15,15 @@ import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { IBookDataManager, RequireAtLeastOne } from '../BookDataManager';
 import Database from './models';
+
+type IsNullable<T, K> = undefined extends T ? K : never;
+type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
+
+function removeNullableEntries<T extends {}>(obj: T): Omit<T, NullableKeys<T>> {
+  const entries = Object.entries(obj)
+    .filter(([_, value]) => value !== undefined && value !== null);
+  return Object.fromEntries(entries) as Omit<T, NullableKeys<T>>;
+}
 
 export class SequelizeBookDataManager implements IBookDataManager {
   async init() {
@@ -28,7 +37,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
   }
 
   async editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void> {
-    await BookModel.update(value, {
+    await BookModel.update(removeNullableEntries(value), {
       where: { id: bookId },
     });
   }
@@ -128,6 +137,27 @@ export class SequelizeBookDataManager implements IBookDataManager {
       await this.#linkGenres(infoId, genres, transaction);
     });
     return infoId;
+  }
+
+  async editBookInfo(
+    infoId: InfoId,
+    {
+      genres,
+      ...bookInfo
+    }: RequireAtLeastOne<BookInfoEditableValue>,
+  ): Promise<void> {
+    const editBookInfo = removeNullableEntries(bookInfo);
+    await Database.sequelize.transaction(async (transaction) => {
+      if (Object.keys(editBookInfo).length !== 0) {
+        await BookInfoModel.update(editBookInfo, {
+          where: { id: infoId },
+          transaction,
+        });
+      }
+      if (genres) {
+        await this.#linkGenres(infoId, genres, transaction);
+      }
+    });
   }
 
   async #linkGenres(

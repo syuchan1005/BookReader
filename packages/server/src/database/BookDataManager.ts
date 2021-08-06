@@ -1,7 +1,7 @@
 import { SequelizeBookDataManager } from './sequelize/index';
 import { Book, BookEditableValue, BookId } from './models/Book';
 import {
-  BookInfo,
+  BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
   InfoId,
   InputBookInfo,
@@ -44,6 +44,8 @@ export interface IBookDataManager {
   getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined>;
 
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
+
+  editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
 }
 
 export const BookDataManager: IBookDataManager = new SequelizeBookDataManager();

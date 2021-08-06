@@ -19,6 +19,10 @@ export type BookInfoThumbnail = {
   thumbnail: number;
 };
 
+export type BookInfoEditableValue = Partial<Pick<BookInfo, 'name' | 'thumbnail'>> & {
+  genres?: Array<InputGenre>;
+};
+
 export type InputBookInfo = Required<Pick<BookInfo, 'name'>> & Partial<Omit<BookInfo, 'name'>> & {
   genres?: Array<InputGenre>;
 };

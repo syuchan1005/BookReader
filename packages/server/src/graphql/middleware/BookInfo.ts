@@ -16,14 +16,12 @@ import {
 import Database from '@server/database/sequelize/models';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import BookModel from '@server/database/sequelize/models/Book';
-import GenreModel from '@server/database/sequelize/models/Genre';
 import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
-import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach } from '@server/Util';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { purgeImageCache } from '@server/ImageUtil';
-import { BookDataManager } from '@server/database/BookDataManager';
+import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 
 export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
 
@@ -62,72 +60,29 @@ class BookInfo extends GQLMiddleware {
       },
       editBookInfo: async (parent, {
         id: infoId,
-        name,
-        thumbnail,
-        genres,
+        ...value
       }) => {
-        if (![name, thumbnail, genres].some((v) => v !== undefined)) {
+        const editValue = maybeRequireAtLeastOne(value);
+        if (!editValue) {
           return {
             success: false,
             code: 'QL0005',
             message: Errors.QL0005,
           };
         }
-        let info = await BookInfoModel.findOne({
-          where: { id: infoId },
-          include: [{
-            model: GenreModel,
-            as: 'genres',
-          }],
-        });
-        if (!info) {
+        const bookInfo = await BookDataManager.getBookInfo(infoId);
+        if (!bookInfo) {
           return {
             success: false,
             code: 'QL0001',
             message: Errors.QL0001,
           };
         }
-        info = {
-          // @ts-ignore
-          ...info.dataValues,
-          genres: info.genres.map((g) => g.name),
-        };
-        const val: { [key: string]: any } = Object.entries({
-          name,
-          thumbnail,
-          genres,
-        }).reduce((o, e) => {
-          if (e[1] !== undefined) {
-            if (Array.isArray(e[1])) {
-              if (e[1].filter((a) => !info[e[0]].includes(a)).length !== 0
-                || info[e[0]].filter((a) => !e[1].includes(a)).length !== 0) {
-                // eslint-disable-next-line no-param-reassign,prefer-destructuring
-                o[e[0]] = e[1];
-              }
-            } else if (info[e[0]] !== e[1]) {
-              // eslint-disable-next-line no-param-reassign,prefer-destructuring
-              o[e[0]] = e[1];
-            }
-          }
-          return o;
-        }, {});
-        if (Object.keys(val).length === 0) {
-          return {
-            success: false,
-            code: 'QL0005',
-            message: Errors.QL0005,
-          };
-        }
-        if (val.genres) {
-          await GQLUtil.linkGenres(infoId, val.genres);
-          delete val.genres;
-        }
-        await BookInfoModel.update(val, {
-          where: { id: infoId },
+        await BookDataManager.editBookInfo(infoId, {
+          ...editValue,
+          genres: editValue.genres?.map((genre) => ({ name: genre })),
         });
-        return {
-          success: true,
-        };
+        return { success: true };
       },
       deleteBookInfo: async (parent, { id: infoId }) => {
         const books = await BookModel.findAll({
