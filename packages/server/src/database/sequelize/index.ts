@@ -153,7 +153,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     await BookInfoModel.bulkCreate(
       bookHistories.map(({
         name,
-        count
+        count,
       }) => ({
         id: uuidv4(),
         history: true,
