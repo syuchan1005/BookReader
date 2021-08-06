@@ -85,42 +85,18 @@ class BookInfo extends GQLMiddleware {
         return { success: true };
       },
       deleteBookInfo: async (parent, { id: infoId }) => {
-        const books = await BookModel.findAll({
-          where: {
-            infoId,
-          },
-        });
+        const books = await BookDataManager.getBookInfoBooks(infoId);
+        await BookDataManager.deleteBookInfo(infoId);
 
-        await Database.sequelize.transaction(async (transaction) => {
-          await BookModel.destroy({
-            where: {
-              infoId,
-            },
-            transaction,
-          });
-          await InfoGenreModel.destroy({
-            where: {
-              infoId,
-            },
-            transaction,
-          });
-          await BookInfoModel.destroy({
-            where: {
-              id: infoId,
-            },
-            transaction,
-          });
-        });
-
-        await asyncForEach(books, async (book) => {
-          await fs.rm(`storage/cache/book/${book.id}`, { recursive: true, force: true });
-          await fs.rm(`storage/book/${book.id}`, { recursive: true, force: true });
-        });
+        await Promise.allSettled(books.map(({ id }) => removeBook(id)));
         purgeImageCache();
 
         return {
           success: true,
-          books: books.map((b) => ModelUtil.book(b)),
+          books: books.map((book) => ({
+            ...book,
+            updatedAt: `${book.updatedAt.getTime()}`,
+          })),
         };
       },
       addBookInfoHistories: async (parent, { histories }) => {

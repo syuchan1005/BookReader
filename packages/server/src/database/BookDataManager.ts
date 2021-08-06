@@ -43,9 +43,13 @@ export interface IBookDataManager {
 
   getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined>;
 
+  getBookInfoBooks(infoId: InfoId): Promise<Array<Book>>;
+
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
 
   editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
+
+  deleteBookInfo(infoId: InfoId): Promise<void>;
 }
 
 export const BookDataManager: IBookDataManager = new SequelizeBookDataManager();

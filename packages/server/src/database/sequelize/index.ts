@@ -123,6 +123,12 @@ export class SequelizeBookDataManager implements IBookDataManager {
     return bookInfo?.genres;
   }
 
+  getBookInfoBooks(infoId: InfoId): Promise<Array<Book>> {
+    return BookModel.findAll({
+      where: { infoId },
+    });
+  }
+
   async addBookInfo({
     id,
     genres = [],
@@ -205,5 +211,28 @@ export class SequelizeBookDataManager implements IBookDataManager {
       infoId,
       genreId: a.id,
     })), { transaction });
+  }
+
+  deleteBookInfo(infoId: InfoId): Promise<void> {
+    return Database.sequelize.transaction(async (transaction) => {
+      await BookModel.destroy({
+        where: {
+          infoId,
+        },
+        transaction,
+      });
+      await InfoGenreModel.destroy({
+        where: {
+          infoId,
+        },
+        transaction,
+      });
+      await BookInfoModel.destroy({
+        where: {
+          id: infoId,
+        },
+        transaction,
+      });
+    });
   }
 }

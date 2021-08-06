@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2019",
-    ],
-    "target": "esnext",
+    "lib": ["es2021"],
     "module": "commonjs",
-    "experimentalDecorators": true,
+    "target": "es2021",
     "moduleResolution": "node",
+    "experimentalDecorators": true,
     "baseUrl": ".",
     "esModuleInterop": true,
     "downlevelIteration": true,

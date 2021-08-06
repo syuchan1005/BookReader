@@ -28,7 +28,17 @@ export const createCacheBookPagePath = (
 };
 export const createBookPagePath = (bookId: string, pageNum: string) => `${bookFolderPath}/${bookId}/${pageNum}.jpg`;
 
-export const removeBookCache = async (bookId?: string, page?: number, pages?: number, recreate: boolean = false): Promise<void> => {
+export const removeBook = async (bookId: string): Promise<void> => {
+  await fs.rm(path.join(cacheBookFolderName, bookId), { recursive: true, force: true });
+  await fs.rm(path.join(bookFolderPath, bookId), { recursive: true, force: true });
+};
+
+export const removeBookCache = async (
+  bookId?: string,
+  page?: number,
+  pages?: number,
+  recreate: boolean = false,
+): Promise<void> => {
   const pageFileName = (bookId && page && pages) ? page.toString(10).padStart(pages.toString(10).length, '0') : undefined;
   const folderPath = path.join(cacheBookFolderName, bookId);
   if (pageFileName) {
