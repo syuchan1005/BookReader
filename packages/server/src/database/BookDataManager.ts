@@ -57,6 +57,11 @@ export interface IBookDataManager {
   editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
 
   deleteBookInfo(infoId: InfoId): Promise<void>;
+
+  Debug: {
+    getBookIds(): Promise<Array<BookId>>;
+    getBookInfoCount(): Promise<number>;
+  };
 }
 
 export const BookDataManager: IBookDataManager = new SequelizeBookDataManager();

@@ -1,25 +1,24 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { promises as fs } from 'fs';
-import BookModel from '@server/database/sequelize/models/Book';
-import BookInfoModel from '@server/database/sequelize/models/BookInfo';
-import { asyncForEach, asyncMap } from '@server/Util';
+import { asyncMap } from '@server/Util';
 import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
 import {
-  bookFolderPath, getBookFolderSize, getCacheFolderSize, getTemporaryFolderSize, removeBookCache,
+  bookFolderPath,
+  getBookFolderSize,
+  getCacheFolderSize,
+  getTemporaryFolderSize,
+  removeBook,
 } from '@server/StorageUtil';
+import { BookDataManager } from '@server/database/BookDataManager';
 
 class Debug extends GQLMiddleware {
-  // eslint-disable-next-line class-methods-use-this
   Query(): QueryResolvers {
-    // noinspection JSUnusedGlobalSymbols
     return {
       debug_folderSize: async () => {
         const tmp = await getTemporaryFolderSize();
         const cache = await getCacheFolderSize();
 
-        const dbBookIds = (await BookModel.findAll({
-          attributes: ['id'],
-        })).map(({ id }) => id);
+        const dbBookIds = await BookDataManager.Debug.getBookIds();
         const fsBookIds = await fs.readdir(bookFolderPath);
         const bookSizes = await asyncMap(fsBookIds, async (b) => ({
           id: b,
@@ -34,7 +33,7 @@ class Debug extends GQLMiddleware {
           book += size;
         });
 
-        const bookInfoCount = await BookInfoModel.count();
+        const bookInfoCount = await BookDataManager.Debug.getBookInfoCount();
 
         return {
           tmp,
@@ -48,23 +47,15 @@ class Debug extends GQLMiddleware {
     };
   }
 
-  // eslint-disable-next-line class-methods-use-this
   Mutation(): MutationResolvers {
-    // noinspection JSUnusedGlobalSymbols
     return {
       debug_deleteUnusedFolders: async () => {
-        removeBookCache(undefined, undefined, undefined, true);
-
-        const dbBookIds = (await BookModel.findAll({
-          attributes: ['id'],
-        })).map(({ id }) => id);
+        const dbBookIds = await BookDataManager.Debug.getBookIds();
         const fsBookIds = await fs.readdir(bookFolderPath);
-        await asyncForEach(fsBookIds, async (id) => {
-          if (!dbBookIds.includes(id)) {
-            return fs.rm(`storage/book/${id}`, { recursive: true, force: true });
-          }
-          return undefined;
-        });
+        const removePromises = fsBookIds
+          .filter((id) => !dbBookIds.includes(id))
+          .map((id) => removeBook(id));
+        await Promise.allSettled(removePromises);
 
         return {
           success: true,
@@ -74,5 +65,4 @@ class Debug extends GQLMiddleware {
   }
 }
 
-// noinspection JSUnusedGlobalSymbols
 export default Debug;

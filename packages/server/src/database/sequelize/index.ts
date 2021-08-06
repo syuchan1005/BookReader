@@ -151,7 +151,10 @@ export class SequelizeBookDataManager implements IBookDataManager {
 
   async addBookHistories(bookHistories: Array<InputBookHistory>): Promise<void> {
     await BookInfoModel.bulkCreate(
-      bookHistories.map(({ name, count }) => ({
+      bookHistories.map(({
+        name,
+        count
+      }) => ({
         id: uuidv4(),
         history: true,
         name,
@@ -249,5 +252,16 @@ export class SequelizeBookDataManager implements IBookDataManager {
         transaction,
       });
     });
+  }
+
+  get Debug() {
+    return {
+      getBookIds: (): Promise<Array<BookId>> => BookModel.findAll({
+        attributes: ['id'],
+      })
+        .then((books) => books.map(({ id }) => id)),
+
+      getBookInfoCount: (): Promise<number> => BookInfoModel.count(),
+    };
   }
 }
