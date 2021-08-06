@@ -5,7 +5,7 @@ import { Book, BookEditableValue, BookId } from '@server/database/models/Book';
 import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
-  InfoId,
+  InfoId, InputBookHistory,
   InputBookInfo,
 } from '@server/database/models/BookInfo';
 import { Genre, InputGenre } from '@server/database/models/Genre';
@@ -143,6 +143,17 @@ export class SequelizeBookDataManager implements IBookDataManager {
       await this.#linkGenres(infoId, genres, transaction);
     });
     return infoId;
+  }
+
+  async addBookHistories(bookHistories: Array<InputBookHistory>): Promise<void> {
+    await BookInfoModel.bulkCreate(
+      bookHistories.map(({ name, count }) => ({
+        id: uuidv4(),
+        history: true,
+        name,
+        count,
+      })),
+    );
   }
 
   async editBookInfo(

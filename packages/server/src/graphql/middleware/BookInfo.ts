@@ -1,8 +1,5 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
-import { promises as fs } from 'fs';
-
-import { v4 as uuidv4 } from 'uuid';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 
 import {
@@ -13,15 +10,12 @@ import {
   Resolvers,
 } from '@syuchan1005/book-reader-graphql';
 
-import Database from '@server/database/sequelize/models';
-import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import BookModel from '@server/database/sequelize/models/Book';
 import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
-import { asyncForEach } from '@server/Util';
-import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
+import { removeBook } from '@server/StorageUtil';
 
 export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
 
@@ -100,15 +94,7 @@ class BookInfo extends GQLMiddleware {
         };
       },
       addBookInfoHistories: async (parent, { histories }) => {
-        await BookInfoModel.bulkCreate(
-          histories.map((h) => ({
-            ...h,
-            id: uuidv4(),
-            history: true,
-          })), {
-            ignoreDuplicates: true,
-          },
-        );
+        await BookDataManager.addBookHistories(histories);
         return {
           success: true,
         };

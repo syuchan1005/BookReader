@@ -3,7 +3,7 @@ import { Book, BookEditableValue, BookId } from './models/Book';
 import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
-  InfoId,
+  InfoId, InputBookHistory,
   InputBookInfo,
 } from './models/BookInfo';
 import { Genre } from './models/Genre';
@@ -46,6 +46,8 @@ export interface IBookDataManager {
   getBookInfoBooks(infoId: InfoId): Promise<Array<Book>>;
 
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
+
+  addBookHistories(bookHistories: Array<InputBookHistory>): Promise<void>;
 
   editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
 
