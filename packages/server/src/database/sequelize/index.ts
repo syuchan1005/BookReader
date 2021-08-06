@@ -13,7 +13,7 @@ import BookModel from '@server/database/sequelize/models/Book';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
-import { IBookDataManager } from '../BookDataManager';
+import { IBookDataManager, RequireAtLeastOne } from '../BookDataManager';
 import Database from './models';
 
 export class SequelizeBookDataManager implements IBookDataManager {
@@ -27,7 +27,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     });
   }
 
-  async editBook(bookId: BookId, value: BookEditableValue): Promise<void> {
+  async editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void> {
     await BookModel.update(value, {
       where: { id: bookId },
     });

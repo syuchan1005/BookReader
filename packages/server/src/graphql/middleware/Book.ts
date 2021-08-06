@@ -19,7 +19,7 @@ import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { purgeImageCache } from '@server/ImageUtil';
 import { createTemporaryFolderPath } from '@server/StorageUtil';
-import { BookDataManager } from '@server/database/BookDataManager';
+import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
 
 class Book extends GQLMiddleware {
@@ -211,10 +211,10 @@ class Book extends GQLMiddleware {
       },
       editBook: async (parent, {
         id: bookId,
-        number,
-        thumbnail,
+        ...value
       }) => {
-        if (number === undefined && thumbnail === undefined) {
+        const editValue = maybeRequireAtLeastOne(value);
+        if (!editValue) {
           return {
             success: false,
             code: 'QL0005',
@@ -229,25 +229,7 @@ class Book extends GQLMiddleware {
             message: Errors.QL0001,
           };
         }
-        const val = Object.entries({
-          number,
-          thumbnail,
-        })
-          .reduce((o, e) => {
-            if (e[1] !== undefined && book[e[0]] !== e[1]) {
-              // eslint-disable-next-line no-param-reassign,prefer-destructuring
-              o[e[0]] = e[1];
-            }
-            return o;
-          }, {});
-        if (Object.keys(val).length === 0) {
-          return {
-            success: false,
-            code: 'QL0005',
-            message: Errors.QL0005,
-          };
-        }
-        await BookDataManager.editBook(bookId, val);
+        await BookDataManager.editBook(bookId, editValue);
         return { success: true };
       },
       deleteBooks: async (parent, {
