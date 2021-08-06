@@ -6,14 +6,14 @@ import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
   InfoId, InputBookHistory,
-  InputBookInfo,
+  InputBookInfo, SortableBookInfoProperties,
 } from '@server/database/models/BookInfo';
 import { Genre, InputGenre } from '@server/database/models/Genre';
 import BookModel from '@server/database/sequelize/models/Book';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
-import { IBookDataManager, RequireAtLeastOne } from '../BookDataManager';
+import { IBookDataManager, RequireAtLeastOne, SortKey } from '../BookDataManager';
 import Database from './models';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
@@ -123,9 +123,13 @@ export class SequelizeBookDataManager implements IBookDataManager {
     return bookInfo?.genres;
   }
 
-  getBookInfoBooks(infoId: InfoId): Promise<Array<Book>> {
+  getBookInfoBooks(
+    infoId: InfoId,
+    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+  ): Promise<Array<Book>> {
     return BookModel.findAll({
       where: { infoId },
+      order: sort,
     });
   }
 

@@ -4,7 +4,7 @@ import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
   InfoId, InputBookHistory,
-  InputBookInfo,
+  InputBookInfo, SortableBookInfoProperties,
 } from './models/BookInfo';
 import { Genre } from './models/Genre';
 
@@ -19,6 +19,8 @@ export function maybeRequireAtLeastOne<T extends {}>(obj: T): RequireAtLeastOne<
   const hasValue = Object.keys(obj).some((key) => obj[key] !== undefined && obj !== null);
   return !hasValue ? undefined : (obj as RequireAtLeastOne<T>);
 }
+
+export type SortKey = 'asc' | 'desc';
 
 export interface IBookDataManager {
   init(): Promise<void>;
@@ -43,7 +45,10 @@ export interface IBookDataManager {
 
   getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined>;
 
-  getBookInfoBooks(infoId: InfoId): Promise<Array<Book>>;
+  getBookInfoBooks(
+    infoId: InfoId,
+    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+  ): Promise<Array<Book>>;
 
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
 

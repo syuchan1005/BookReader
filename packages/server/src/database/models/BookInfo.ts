@@ -13,6 +13,8 @@ export type BookInfo = {
   updatedAt: Date;
 };
 
+export type SortableBookInfoProperties = 'updatedAt';
+
 export type BookInfoThumbnail = {
   bookId: BookId;
   pages: number;

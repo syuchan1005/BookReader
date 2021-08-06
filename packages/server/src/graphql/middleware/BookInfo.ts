@@ -10,8 +10,6 @@ import {
   Resolvers,
 } from '@syuchan1005/book-reader-graphql';
 
-import BookModel from '@server/database/sequelize/models/Book';
-import ModelUtil from '@server/ModelUtil';
 import Errors from '@server/Errors';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
@@ -36,7 +34,6 @@ class BookInfo extends GQLMiddleware {
   }
 
   Mutation(): MutationResolvers {
-    // noinspection JSUnusedGlobalSymbols
     return {
       addBookInfo: async (parent, {
         name,
@@ -102,11 +99,13 @@ class BookInfo extends GQLMiddleware {
     };
   }
 
-  // eslint-disable-next-line class-methods-use-this
   Resolver(): Resolvers {
     return {
       BookInfo: {
-        thumbnail: async ({ id, thumbnail: t }) => {
+        thumbnail: async ({
+          id,
+          thumbnail: t,
+        }) => {
           if (t) return t;
           const thumbnail = await BookDataManager.getBookInfoThumbnail(id);
           if (!thumbnail) {
@@ -118,15 +117,18 @@ class BookInfo extends GQLMiddleware {
             bookPageCount: thumbnail.pages,
           };
         },
-        genres: ({ id, genres }) => genres || BookDataManager.getBookInfoGenres(id),
+        genres: ({
+          id,
+          genres,
+        }) => genres || BookDataManager.getBookInfoGenres(id),
         books: async ({ id }, { order }: { order: BookOrder }) => {
           const sortNumber = order.startsWith('Number_');
-          let books = await BookModel.findAll({
-            where: { infoId: id },
-            order: sortNumber ? undefined : [
+          let books = await BookDataManager.getBookInfoBooks(
+            id,
+            sortNumber ? undefined : [
               ['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc'],
             ],
-          });
+          );
           if (sortNumber) {
             books = naturalOrderBy(
               books || [],
@@ -134,7 +136,10 @@ class BookInfo extends GQLMiddleware {
             );
             if (order === BookOrder.NumberDesc) books.reverse();
           }
-          return books.map((book) => ModelUtil.book(book));
+          return books.map((book) => ({
+            ...book,
+            updatedAt: `${book.updatedAt.getTime()}`,
+          }));
         },
       },
     };
