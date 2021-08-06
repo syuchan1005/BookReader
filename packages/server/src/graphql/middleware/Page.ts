@@ -56,7 +56,7 @@ const createImageEditAction = (pageIndex: number): ImageEditAction => ({
 });
 
 const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefined => {
-  const isVaild = actions.every((action, index, arr) => {
+  const isValid = actions.every((action, index, arr) => {
     const hasPageCountEffect = hasPageCountEffectMap[action.editType];
     if (hasPageCountEffect === undefined) {
       return false;
@@ -74,9 +74,11 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
       case EditType.Replace:
       case EditType.Split:
         return !!action[action.editType.toLowerCase()];
+      default:
+        return false;
     }
   });
-  return isVaild ? actions as StrictEditAction[] : undefined;
+  return isValid ? actions as StrictEditAction[] : undefined;
 };
 
 const calculateEditActions = (
@@ -90,6 +92,7 @@ const calculateEditActions = (
         const pageRange = flatRange(action.crop.pageRange);
         imageEditActions.forEach((imageEditAction, i) => {
           if (pageRange.includes(i)) {
+            // eslint-disable-next-line no-param-reassign
             imageEditAction.cropTransforms = [
               ...(imageEditAction.cropTransforms ?? []),
               (w, h) => ({
@@ -106,6 +109,7 @@ const calculateEditActions = (
       case EditType.Delete: {
         const pageRange = flatRange(action.delete.pageRange);
         imageEditActions.forEach((imageEditAction, i) => {
+          // eslint-disable-next-line no-param-reassign
           imageEditAction.willDelete = imageEditAction.willDelete || pageRange.includes(i);
         });
         break;
@@ -161,6 +165,8 @@ const calculateEditActions = (
                   },
                 ],
               }));
+            default:
+              throw new Error(`Unknown SplitType ${action.split.splitType}`);
           }
         });
         break;
@@ -169,12 +175,19 @@ const calculateEditActions = (
         imageEditActions[action.replace.pageIndex].image = action.replace.image;
         imageEditActions[action.replace.pageIndex].cropTransforms = undefined;
         break;
+      default:
+        // @ts-ignore
+        throw new Error(`Unknown EditType ${action.editType}`);
     }
   });
   return imageEditActions;
 };
 
-const calculateCropTranforms = (transforms: TransformFn[], imageWidth: number, imageHeight: number): CropValue => transforms.reduce((prev, transformFn) => {
+const calculateCropTransforms = (
+  transforms: TransformFn[],
+  imageWidth: number,
+  imageHeight: number,
+): CropValue => transforms.reduce((prev, transformFn) => {
   const w = prev.right - prev.left;
   const h = prev.bottom - prev.top;
   const croppedValue = transformFn(w, h);
@@ -191,7 +204,12 @@ const calculateCropTranforms = (transforms: TransformFn[], imageWidth: number, i
   bottom: imageHeight,
 } as CropValue);
 
-const executeEditActions = async (editActions: ImageEditAction[], editFolderPath: string, bookId: string, bookPages: number): Promise<Result> => {
+const executeEditActions = async (
+  editActions: ImageEditAction[],
+  editFolderPath: string,
+  bookId: string,
+  bookPages: number,
+): Promise<Result> => {
   const bookFolderPath = createBookFolderPath(bookId);
   const promises = editActions
     .filter(({ willDelete }) => !willDelete)
@@ -205,7 +223,7 @@ const executeEditActions = async (editActions: ImageEditAction[], editFolderPath
           await GQLUtil.writeFile(distFilePath, (await image).createReadStream());
         } else if (cropTransforms) {
           const size = await getImageSize(srcFilePath);
-          const cropValue = calculateCropTranforms(cropTransforms, size.width, size.height);
+          const cropValue = calculateCropTransforms(cropTransforms, size.width, size.height);
           await sharp(srcFilePath)
             .extract({
               top: cropValue.top,
