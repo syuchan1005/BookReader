@@ -7,15 +7,13 @@ import {
   MutationResolvers, Result, SplitType, EditAction, Scalars, EditType,
 } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
-import Database from '@server/database/sequelize/models';
-import BookModel from '@server/database/sequelize/models/Book';
 import {
   withPageEditFolder,
   createBookFolderPath,
   removeBookCache,
 } from '@server/StorageUtil';
 import Errors from '@server/Errors';
-
+import { BookDataManager } from '@server/database/BookDataManager';
 import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
 import {
@@ -256,8 +254,8 @@ class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Mutation(): MutationResolvers {
     return {
-      bulkEditPage: async (_, { id, actions }): Promise<Result> => {
-        const book = await BookModel.findOne({ where: { id } });
+      bulkEditPage: async (_, { id: bookId, actions }): Promise<Result> => {
+        const book = await BookDataManager.getBook(bookId);
         if (!book) {
           return {
             success: false,
@@ -278,33 +276,26 @@ class Page extends GQLMiddleware {
           [...Array(book.pages).keys()].map(createImageEditAction),
         ).filter(({ willDelete }) => !willDelete);
 
-        return withPageEditFolder(id, async (folderPath, replaceNewFiles) => {
-          const result = await executeEditActions(editActions, folderPath, id, book.pages);
+        return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
+          const result = await executeEditActions(editActions, folderPath, bookId, book.pages);
           if (!result.success) {
             return result;
           }
 
-          const transaction = await Database.sequelize.transaction();
           try {
-            await BookModel.update(
-              { pages: editActions.length },
-              {
-                where: { id },
-                transaction,
-              },
-            );
-            await removeBookCache(id).catch(() => { /* ignored */ });
+            await removeBookCache(bookId).catch(() => { /* ignored */ });
             purgeImageCache();
             await replaceNewFiles();
-            await transaction.commit();
           } catch (e) {
-            await transaction.rollback();
             return {
               success: false,
               code: 'QL0013',
               message: Errors.QL0013,
             };
           }
+          await BookDataManager.editBook(bookId, {
+            pages: editActions.length,
+          });
           return { success: true };
         });
       },

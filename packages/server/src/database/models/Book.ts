@@ -12,4 +12,4 @@ export type Book = {
   updatedAt: Date
 };
 
-export type BookEditableValue = Partial<Pick<Book, 'thumbnail' | 'number'>>;
+export type BookEditableValue = Partial<Pick<Book, 'thumbnail' | 'number' | 'pages'>>;
