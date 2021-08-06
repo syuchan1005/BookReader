@@ -4,7 +4,7 @@ export type BookId = string;
 
 export type Book = {
   id: BookId;
-  thumbnail: number;
+  thumbnail: number; // default: 0
   number: string;
   pages: number;
   infoId: InfoId;

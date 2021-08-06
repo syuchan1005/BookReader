@@ -25,18 +25,20 @@ import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
 
+export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
+
 class BookInfo extends GQLMiddleware {
-  // eslint-disable-next-line class-methods-use-this
   Query(): QueryResolvers {
     return {
-      bookInfo: async (parent, { id: infoId }) => {
-        const bookInfo = await BookInfoModel.findOne({
-          where: { id: infoId },
-        });
-        if (bookInfo) {
-          return ModelUtil.bookInfo(bookInfo) as BookInfoGQLModel;
-        }
-        return null;
+      // @ts-ignore
+      bookInfo: async (parent, {
+        id: infoId,
+      }): Promise<Omit<BookInfoGQLModel, BookInfoResolveAttrs>> => {
+        const bookInfo = await BookDataManager.getBookInfo(infoId);
+        return {
+          ...bookInfo,
+          updatedAt: `${bookInfo.updatedAt.getTime()}`,
+        };
       },
     };
   }
@@ -48,14 +50,10 @@ class BookInfo extends GQLMiddleware {
         name,
         genres,
       }) => {
-        const infoId = uuidv4();
-        await BookInfoModel.create({
-          id: infoId,
+        const infoId = await BookDataManager.addBookInfo({
           name,
+          genres: genres?.map((genre) => ({ name: genre })),
         });
-        if (genres && genres.length >= 1) {
-          await GQLUtil.linkGenres(infoId, genres);
-        }
 
         return {
           success: true,

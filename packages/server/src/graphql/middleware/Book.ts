@@ -20,6 +20,7 @@ import { asyncForEach, asyncMap } from '@server/Util';
 import { purgeImageCache } from '@server/ImageUtil';
 import { createTemporaryFolderPath } from '@server/StorageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
+import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -298,7 +299,9 @@ class Book extends GQLMiddleware {
     return {
       Book: {
         // @ts-ignore
-        info: async ({ id: bookId }): Omit<BookInfo, 'thumbnail' | 'genres' | 'books'> => {
+        info: async ({
+          id: bookId,
+        }): Promise<Omit<BookInfo, BookInfoResolveAttrs>> => {
           const bookInfo = await BookDataManager.getBookInfoFromBookId(bookId);
           return {
             ...bookInfo,

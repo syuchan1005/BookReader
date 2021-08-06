@@ -1,11 +1,18 @@
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Book, BookEditableValue, BookId } from '@server/database/models/Book';
-import { BookInfo, BookInfoThumbnail, InfoId } from '@server/database/models/BookInfo';
-import { Genre } from '@server/database/models/Genre';
+import {
+  BookInfo,
+  BookInfoThumbnail,
+  InfoId,
+  InputBookInfo,
+} from '@server/database/models/BookInfo';
+import { Genre, InputGenre } from '@server/database/models/Genre';
 import BookModel from '@server/database/sequelize/models/Book';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
+import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { IBookDataManager } from '../BookDataManager';
 import Database from './models';
 
@@ -105,5 +112,68 @@ export class SequelizeBookDataManager implements IBookDataManager {
       ],
     });
     return bookInfo?.genres;
+  }
+
+  async addBookInfo({
+    id,
+    genres = [],
+    ...bookInfo
+  }: InputBookInfo): Promise<InfoId> {
+    const infoId = id || uuidv4();
+    await Database.sequelize.transaction(async (transaction) => {
+      await BookInfoModel.create({
+        id: infoId,
+        ...bookInfo,
+      }, { transaction });
+      await this.#linkGenres(infoId, genres, transaction);
+    });
+    return infoId;
+  }
+
+  async #linkGenres(
+    infoId: string,
+    genres: Array<InputGenre>,
+    transaction?: Transaction,
+  ) {
+    const dbGenres = (await InfoGenreModel.findAll({
+      where: { infoId },
+      include: [{
+        model: GenreModel,
+        as: 'genre',
+      }],
+      transaction,
+    })).map((g) => g.genre);
+
+    const genreNames = genres.map(({ name }) => name);
+    const rmGenres = dbGenres.filter((g) => !genreNames.includes(g.name));
+    const addGenres = genreNames.filter((g) => !dbGenres.find((v) => v.name === g));
+
+    await InfoGenreModel.destroy({
+      where: {
+        infoId,
+        genreId: rmGenres.map((g) => g.id),
+      },
+      transaction,
+    });
+
+    await GenreModel.bulkCreate(addGenres.map((name) => ({
+      name,
+    })), {
+      ignoreDuplicates: true,
+      transaction,
+    });
+
+    const addedGenres = await GenreModel.findAll({
+      attributes: ['id'],
+      where: {
+        name: addGenres,
+      },
+      transaction,
+    });
+
+    await InfoGenreModel.bulkCreate(addedGenres.map((a) => ({
+      infoId,
+      genreId: a.id,
+    })), { transaction });
   }
 }

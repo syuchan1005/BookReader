@@ -1,6 +1,11 @@
 import { SequelizeBookDataManager } from './sequelize/index';
 import { Book, BookEditableValue, BookId } from './models/Book';
-import { BookInfo, BookInfoThumbnail, InfoId } from './models/BookInfo';
+import {
+  BookInfo,
+  BookInfoThumbnail,
+  InfoId,
+  InputBookInfo,
+} from './models/BookInfo';
 import { Genre } from './models/Genre';
 
 export interface IBookDataManager {
@@ -19,6 +24,7 @@ export interface IBookDataManager {
   getBookInfoFromBookId(bookId: BookId): Promise<BookInfo | undefined>
   getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined>
   getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined>
+  addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>
 }
 
 export const BookDataManager: IBookDataManager = new SequelizeBookDataManager();
