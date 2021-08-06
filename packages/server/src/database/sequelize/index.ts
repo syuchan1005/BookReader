@@ -8,13 +8,20 @@ import {
   InfoId, InputBookHistory,
   InputBookInfo, SortableBookInfoProperties,
 } from '@server/database/models/BookInfo';
-import { Genre, InputGenre } from '@server/database/models/Genre';
+import {
+  DeleteGenreError,
+  Genre,
+  GenreEditableValue,
+  InputGenre
+} from '@server/database/models/Genre';
 import BookModel from '@server/database/sequelize/models/Book';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '../BookDataManager';
 import Database from './models';
+import { defaultGenres } from '../../../../common';
+import { createError } from '@server/Errors';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -252,6 +259,51 @@ export class SequelizeBookDataManager implements IBookDataManager {
         transaction,
       });
     });
+  }
+
+  getGenre(genreName: Genre['name']): Promise<Genre | undefined> {
+    return GenreModel.findOne({
+      where: { name: genreName },
+    });
+  }
+
+  getGenres(): Promise<Array<Genre>> {
+    return GenreModel.findAll();
+  }
+
+  async editGenre(
+    genreName: Genre['name'],
+    genre: RequireAtLeastOne<GenreEditableValue>,
+  ): Promise<DeleteGenreError> {
+    if (defaultGenres.includes(genreName)) {
+      return 'DELETE_DEFAULT';
+    }
+    await GenreModel.update(removeNullableEntries(genre), {
+      where: { name: genreName },
+    });
+    return undefined;
+  }
+
+  async deleteGenre(genreName: Genre['name']): Promise<DeleteGenreError | undefined> {
+    if (defaultGenres.includes(genreName)) {
+      return 'DELETE_DEFAULT';
+    }
+    const genreModel = await GenreModel.findOne({
+      where: { name: genreName },
+    });
+    if (genreModel) {
+      await Database.sequelize.transaction(async (transaction) => {
+        await InfoGenreModel.destroy({
+          where: { genreId: genreModel.id },
+          transaction,
+        });
+        await GenreModel.destroy({
+          where: { id: genreModel.id },
+          transaction,
+        });
+      });
+    }
+    return undefined;
   }
 
   get Debug() {

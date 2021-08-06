@@ -6,7 +6,7 @@ import {
   InfoId, InputBookHistory,
   InputBookInfo, SortableBookInfoProperties,
 } from './models/BookInfo';
-import { Genre } from './models/Genre';
+import { DeleteGenreError, Genre, GenreEditableValue } from './models/Genre';
 
 export type RequireAtLeastOne<ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
@@ -16,7 +16,8 @@ export type RequireAtLeastOne<ObjectType,
 }[KeysType] & Pick<ObjectType, Exclude<keyof ObjectType, KeysType>>;
 
 export function maybeRequireAtLeastOne<T extends {}>(obj: T): RequireAtLeastOne<T> | undefined {
-  const hasValue = Object.keys(obj).some((key) => obj[key] !== undefined && obj !== null);
+  const hasValue = Object.keys(obj)
+    .some((key) => obj[key] !== undefined && obj !== null);
   return !hasValue ? undefined : (obj as RequireAtLeastOne<T>);
 }
 
@@ -57,6 +58,17 @@ export interface IBookDataManager {
   editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
 
   deleteBookInfo(infoId: InfoId): Promise<void>;
+
+  getGenre(genreName: Genre['name']): Promise<Genre | undefined>;
+
+  getGenres(): Promise<Array<Genre>>;
+
+  editGenre(
+    genreName: Genre['name'],
+    genre: RequireAtLeastOne<GenreEditableValue>,
+  ): Promise<DeleteGenreError>;
+
+  deleteGenre(genreName: Genre['name']): Promise<DeleteGenreError | undefined>;
 
   Debug: {
     getBookIds(): Promise<Array<BookId>>;
