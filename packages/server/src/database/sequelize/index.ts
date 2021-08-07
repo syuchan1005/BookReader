@@ -21,6 +21,7 @@ import {
   DeleteGenreError,
   Genre,
   GenreEditableValue,
+  GenreName,
   InputGenre,
 } from '@server/database/models/Genre';
 import BookModel from '@server/database/sequelize/models/Book';
@@ -233,7 +234,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     limit?: number,
     filter: {
       infoType?: InfoType,
-      genres?: Array<Genre['name']>,
+      genres?: Array<GenreName>,
       name: {
         include?: string,
         between?: [string | undefined, string | undefined],
@@ -427,7 +428,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     });
   }
 
-  getGenre(genreName: Genre['name']): Promise<Genre | undefined> {
+  getGenre(genreName: GenreName): Promise<Genre | undefined> {
     return GenreModel.findOne({
       where: { name: genreName },
     });
@@ -438,7 +439,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
   }
 
   async editGenre(
-    genreName: Genre['name'],
+    genreName: GenreName,
     genre: RequireAtLeastOne<GenreEditableValue>,
   ): Promise<DeleteGenreError> {
     if (defaultGenres.includes(genreName)) {
@@ -450,7 +451,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     return undefined;
   }
 
-  async deleteGenre(genreName: Genre['name']): Promise<DeleteGenreError | undefined> {
+  async deleteGenre(genreName: GenreName): Promise<DeleteGenreError | undefined> {
     if (defaultGenres.includes(genreName)) {
       return 'DELETE_DEFAULT';
     }

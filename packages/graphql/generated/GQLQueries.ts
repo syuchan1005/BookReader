@@ -158,8 +158,7 @@ export enum EditType {
 
 export type Genre = {
   __typename?: 'Genre';
-  id: Scalars['Int'];
-  name: Scalars['String'];
+  name: Scalars['ID'];
   invisible: Scalars['Boolean'];
 };
 
@@ -595,7 +594,7 @@ export type RelayBookInfosQuery = (
           & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
         )>, genres: Array<(
           { __typename?: 'Genre' }
-          & Pick<Genre, 'id' | 'name' | 'invisible'>
+          & Pick<Genre, 'name' | 'invisible'>
         )> }
       ) }
     )>, pageInfo: (
@@ -731,7 +730,7 @@ export type GenresQuery = (
   { __typename?: 'Query' }
   & { genres: Array<(
     { __typename?: 'Genre' }
-    & Pick<Genre, 'id' | 'name' | 'invisible'>
+    & Pick<Genre, 'name' | 'invisible'>
   )> }
 );
 
@@ -1263,7 +1262,6 @@ export const RelayBookInfosDocument = gql`
         }
         history
         genres {
-          id
           name
           invisible
         }
@@ -1607,7 +1605,6 @@ export type BookInfoQueryResult = Apollo.QueryResult<BookInfoQuery, BookInfoQuer
 export const GenresDocument = gql`
     query genres {
   genres {
-    id
     name
     invisible
   }

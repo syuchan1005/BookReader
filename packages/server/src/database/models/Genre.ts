@@ -1,6 +1,7 @@
+export type GenreName = string;
+
 export type Genre = {
-  id: number;
-  name: string;
+  name: GenreName;
   invisible: boolean;
 };
 

@@ -190,8 +190,7 @@ type CommonPluginQuery {
 }
 
 type Genre {
-    id: Int!
-    name: String!
+    name: ID!
     invisible: Boolean!
 }
 

@@ -157,8 +157,7 @@ export enum EditType {
 
 export type Genre = {
   __typename?: 'Genre';
-  id: Scalars['Int'];
-  name: Scalars['String'];
+  name: Scalars['ID'];
   invisible: Scalars['Boolean'];
 };
 
@@ -594,7 +593,7 @@ export type RelayBookInfosQuery = (
           & Pick<BookInfoThumbnail, 'bookId' | 'pageIndex' | 'bookPageCount'>
         )>, genres: Array<(
           { __typename?: 'Genre' }
-          & Pick<Genre, 'id' | 'name' | 'invisible'>
+          & Pick<Genre, 'name' | 'invisible'>
         )> }
       ) }
     )>, pageInfo: (
@@ -730,7 +729,7 @@ export type GenresQuery = (
   { __typename?: 'Query' }
   & { genres: Array<(
     { __typename?: 'Genre' }
-    & Pick<Genre, 'id' | 'name' | 'invisible'>
+    & Pick<Genre, 'name' | 'invisible'>
   )> }
 );
 
@@ -970,8 +969,7 @@ export type Debug_FolderSizesResolvers<ContextType = any, ParentType extends Res
 };
 
 export type GenreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Genre'] = ResolversParentTypes['Genre']> = {
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   invisible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

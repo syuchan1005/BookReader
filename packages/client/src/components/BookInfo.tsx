@@ -25,9 +25,9 @@ import EditDialog from '@client/components/dialogs/EditDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
-import useLazyDialog from '@client/hooks/useLazyDialog';
 
 const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookInfoDialog'));
 

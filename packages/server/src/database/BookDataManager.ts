@@ -11,7 +11,12 @@ import {
   InfoId, InfoType, InputBookHistory,
   InputBookInfo, SortableBookInfoProperties,
 } from './models/BookInfo';
-import { DeleteGenreError, Genre, GenreEditableValue } from './models/Genre';
+import {
+  Genre,
+  GenreName,
+  DeleteGenreError,
+  GenreEditableValue,
+} from './models/Genre';
 
 export type RequireAtLeastOne<ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
@@ -62,7 +67,7 @@ export interface IBookDataManager {
     limit?: number,
     filter: {
       infoType?: InfoType,
-      genres?: Array<Genre['name']>,
+      genres?: Array<GenreName>,
       name: {
         include?: string,
         between?: [string | undefined, string | undefined],
@@ -81,16 +86,16 @@ export interface IBookDataManager {
 
   deleteBookInfo(infoId: InfoId): Promise<void>;
 
-  getGenre(genreName: Genre['name']): Promise<Genre | undefined>;
+  getGenre(genreName: GenreName): Promise<Genre | undefined>;
 
   getGenres(): Promise<Array<Genre>>;
 
   editGenre(
-    genreName: Genre['name'],
+    genreName: GenreName,
     genre: RequireAtLeastOne<GenreEditableValue>,
   ): Promise<DeleteGenreError>;
 
-  deleteGenre(genreName: Genre['name']): Promise<DeleteGenreError | undefined>;
+  deleteGenre(genreName: GenreName): Promise<DeleteGenreError | undefined>;
 
   Debug: {
     getBookIds(): Promise<Array<BookId>>;

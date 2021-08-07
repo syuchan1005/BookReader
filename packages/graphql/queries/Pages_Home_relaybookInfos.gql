@@ -1,4 +1,4 @@
-query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!){
+query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!) {
     bookInfos: relayBookInfos(first: $first, after: $after, option: $option) @connection(key: "relayBookInfos", filter: ["option"]) {
         edges {
             cursor
@@ -13,7 +13,6 @@ query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!){
                 }
                 history
                 genres {
-                    id
                     name
                     invisible
                 }

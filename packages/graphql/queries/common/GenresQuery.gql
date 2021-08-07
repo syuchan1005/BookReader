@@ -3,7 +3,6 @@
 # Setting.tsx
 query genres {
     genres {
-        id
         name
         invisible
     }

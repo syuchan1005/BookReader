@@ -110,7 +110,7 @@ const Setting = (props) => {
                 <TableBody>
                   {genreData.genres
                     .map((genre) => (
-                      <TableRow key={genre.id}>
+                      <TableRow key={genre.name}>
                         <TableCell>
                           <Switch
                             checked={genre.invisible}
