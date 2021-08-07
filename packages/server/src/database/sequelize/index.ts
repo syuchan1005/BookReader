@@ -257,7 +257,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
       },
       sort,
     } = option;
-    const genreWhere = genres.length === 0
+    const invisibleGenreInfoIdWhere = genres.length === 0
       ? {
         [Op.notIn]: literal('('
           + 'SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1'
@@ -275,7 +275,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     };
     const where = {
       history: infoType ? infoType === 'History' : undefined,
-      id: genreWhere,
+      id: invisibleGenreInfoIdWhere,
       name: (Object.keys(nameWhere).length === 0 ? undefined : nameWhere),
       createdAt: SequelizeBookDataManager.transformOperation(createdAt),
       updatedAt: SequelizeBookDataManager.transformOperation(updatedAt),
@@ -289,7 +289,6 @@ export class SequelizeBookDataManager implements IBookDataManager {
       limit,
       order: sort,
       where,
-      logging: console.log,
     });
   }
 
