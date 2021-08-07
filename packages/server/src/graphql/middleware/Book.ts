@@ -34,6 +34,7 @@ class Book extends GQLMiddleware {
         }
         return {
           ...book,
+          pages: book.pageCount,
           updatedAt: `${book.updatedAt.getTime()}`,
         };
       },
@@ -211,9 +212,13 @@ class Book extends GQLMiddleware {
       },
       editBook: async (parent, {
         id: bookId,
-        ...value
+        number,
+        thumbnail,
       }) => {
-        const editValue = maybeRequireAtLeastOne(value);
+        const editValue = maybeRequireAtLeastOne({
+          number,
+          thumbnailPage: thumbnail,
+        });
         if (!editValue) {
           return {
             success: false,
@@ -287,6 +292,8 @@ class Book extends GQLMiddleware {
           const bookInfo = await BookDataManager.getBookInfoFromBookId(bookId);
           return {
             ...bookInfo,
+            count: bookInfo.bookCount,
+            history: bookInfo.isHistory,
             updatedAt: `${bookInfo.updatedAt.getTime()}`,
           };
         },

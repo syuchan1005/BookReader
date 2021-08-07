@@ -2,18 +2,17 @@ export type GenreName = string;
 
 export type Genre = {
   name: GenreName;
-  invisible: boolean;
+  isInvisible: boolean;
 };
 
 export type InputGenre = {
-  id?: number;
   name: string;
-  invisible?: boolean; // default: false
+  isInvisible?: boolean; // default: false
 };
 
 export type GenreEditableValue = {
   name?: string;
-  invisible?: boolean;
+  isInvisible?: boolean;
 };
 
 export type DeleteGenreError = 'DELETE_DEFAULT';

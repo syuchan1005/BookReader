@@ -27,6 +27,8 @@ class BookInfo extends GQLMiddleware {
         const bookInfo = await BookDataManager.getBookInfo(infoId);
         return {
           ...bookInfo,
+          count: bookInfo.bookCount,
+          history: bookInfo.isHistory,
           updatedAt: `${bookInfo.updatedAt.getTime()}`,
         };
       },
@@ -86,12 +88,16 @@ class BookInfo extends GQLMiddleware {
           success: true,
           books: books.map((book) => ({
             ...book,
+            pages: book.thumbnailPage,
             updatedAt: `${book.updatedAt.getTime()}`,
           })),
         };
       },
       addBookInfoHistories: async (parent, { histories }) => {
-        await BookDataManager.addBookHistories(histories);
+        await BookDataManager.addBookHistories(histories.map((history) => ({
+          name: history.name,
+          bookCount: history.count,
+        })));
         return {
           success: true,
         };
@@ -115,14 +121,18 @@ class BookInfo extends GQLMiddleware {
           }
           return {
             bookId: thumbnail.bookId,
-            pageIndex: thumbnail.thumbnail,
-            bookPageCount: thumbnail.pages,
+            pageIndex: thumbnail.thumbnailPage,
+            bookPageCount: thumbnail.pageCount,
           };
         },
         genres: ({
           id,
-          genres,
-        }) => genres || BookDataManager.getBookInfoGenres(id),
+          genres: argGenres,
+        }) => argGenres || BookDataManager.getBookInfoGenres(id)
+          .then((genres) => genres?.map((genre) => ({
+            name: genre.name,
+            invisible: genre.isInvisible,
+          })) ?? []),
         books: async ({ id }, { order }: { order: BookOrder }) => {
           const sortNumber = order.startsWith('Number_');
           let books = await BookDataManager.getBookInfoBooks(
@@ -140,6 +150,8 @@ class BookInfo extends GQLMiddleware {
           }
           return books.map((book) => ({
             ...book,
+            pages: book.pageCount,
+            thumbnail: book.thumbnailPage,
             updatedAt: `${book.updatedAt.getTime()}`,
           }));
         },

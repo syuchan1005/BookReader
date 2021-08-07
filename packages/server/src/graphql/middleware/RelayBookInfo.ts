@@ -4,10 +4,11 @@ import {
   BookInfosOption,
   BookInfoOrder,
   HistoryType,
-  BookInfo,
+  BookInfo, BookInfo as BookInfoGQLModel,
 } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager, SortKey } from '@server/database/BookDataManager';
 import { InfoType } from '@server/database/models/BookInfo';
+import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
 
 const DefaultOptions: BookInfosOption = {
   search: undefined,
@@ -81,6 +82,7 @@ class RelayBookInfo extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Query(): QueryResolvers {
     return {
+      // @ts-ignore
       relayBookInfos: async (_parent, {
         first,
         after: argAfter,
@@ -162,8 +164,11 @@ class RelayBookInfo extends GQLMiddleware {
         return {
           edges: edges.map((bookInfo) => ({
             cursor: bookInfo[cursorKey],
-            // @ts-ignore thumbnail, genres, books are not resolved
-            node: bookInfo as BookInfo,
+            node: {
+              ...bookInfo,
+              count: bookInfo.bookCount,
+              history: bookInfo.isHistory,
+            } as Omit<BookInfoGQLModel, BookInfoResolveAttrs>,
           })),
           pageInfo: {
             hasNextPage: bookInfos.length > first,

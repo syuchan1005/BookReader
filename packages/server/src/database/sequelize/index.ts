@@ -85,7 +85,18 @@ export class SequelizeBookDataManager implements IBookDataManager {
   async getBook(bookId: BookId): Promise<Book | undefined> {
     return BookModel.findOne({
       where: { id: bookId },
-    });
+    }).then(SequelizeBookDataManager.createBook);
+  }
+
+  private static createBook(bookModel?: BookModel): Book | undefined {
+    if (!bookModel) {
+      return undefined;
+    }
+    return {
+      ...bookModel,
+      thumbnailPage: bookModel.thumbnail,
+      pageCount: bookModel.pages,
+    };
   }
 
   async addBook({
@@ -96,9 +107,11 @@ export class SequelizeBookDataManager implements IBookDataManager {
     const bookId = id || uuidv4();
     await this.sequelize.transaction(async (transaction) => {
       await BookModel.create({
+        ...book,
         id: bookId,
         infoId,
-        ...book,
+        pages: book.pageCount,
+        thumbnail: book.thumbnailPage,
       }, {
         transaction,
       });
@@ -133,8 +146,15 @@ export class SequelizeBookDataManager implements IBookDataManager {
     return bookId;
   }
 
-  async editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void> {
-    await BookModel.update(removeNullableEntries(value), {
+  async editBook(
+    bookId: BookId,
+    { number, thumbnailPage, pageCount }: RequireAtLeastOne<BookEditableValue>,
+  ): Promise<void> {
+    await BookModel.update(removeNullableEntries({
+      number,
+      thumbnail: thumbnailPage,
+      count: pageCount,
+    }), {
       where: { id: bookId },
     });
   }
@@ -171,7 +191,18 @@ export class SequelizeBookDataManager implements IBookDataManager {
   async getBookInfo(infoId: InfoId): Promise<BookInfo | undefined> {
     return BookInfoModel.findOne({
       where: { id: infoId },
-    });
+    }).then(SequelizeBookDataManager.createBookInfo);
+  }
+
+  private static createBookInfo(bookInfoModel?: BookInfoModel): BookInfo | undefined {
+    if (!bookInfoModel) {
+      return undefined;
+    }
+    return {
+      ...bookInfoModel,
+      bookCount: bookInfoModel.count,
+      isHistory: bookInfoModel.history,
+    };
   }
 
   async getBookInfoFromBookId(bookId: BookId): Promise<BookInfo | undefined> {
@@ -182,7 +213,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
         as: 'info',
       }],
     });
-    return book?.info;
+    return SequelizeBookDataManager.createBookInfo(book?.info);
   }
 
   async getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined> {
@@ -201,8 +232,8 @@ export class SequelizeBookDataManager implements IBookDataManager {
     }
     return {
       bookId: thumbnail.id,
-      pages: thumbnail.pages,
-      thumbnail: thumbnail.thumbnail,
+      pageCount: thumbnail.pages,
+      thumbnailPage: thumbnail.thumbnail,
     };
   }
 
@@ -216,7 +247,17 @@ export class SequelizeBookDataManager implements IBookDataManager {
         },
       ],
     });
-    return bookInfo?.genres;
+    return bookInfo?.genres?.map(SequelizeBookDataManager.createGenre);
+  }
+
+  private static createGenre(genreModel?: GenreModel): Genre | undefined {
+    if (!genreModel) {
+      return undefined;
+    }
+    return {
+      name: genreModel.name,
+      isInvisible: genreModel.invisible,
+    };
   }
 
   getBookInfoBooks(
@@ -226,7 +267,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     return BookModel.findAll({
       where: { infoId },
       order: sort,
-    });
+    }).then((books) => books.map(SequelizeBookDataManager.createBook));
   }
 
   getBookInfos(option: {
@@ -289,7 +330,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
       limit,
       order: sort,
       where,
-    });
+    }).then((bookInfos) => bookInfos.map(SequelizeBookDataManager.createBookInfo));
   }
 
   private static transformOperation<T>(value?: [T | undefined, T | undefined]) {
@@ -314,8 +355,11 @@ export class SequelizeBookDataManager implements IBookDataManager {
     const infoId = id || uuidv4();
     await this.sequelize.transaction(async (transaction) => {
       await BookInfoModel.create({
-        id: infoId,
         ...bookInfo,
+        id: infoId,
+        count: bookInfo.bookCount,
+        history: bookInfo.isHistory,
+        thumbnail: bookInfo.thumbnail,
       }, { transaction });
       await SequelizeBookDataManager.linkGenres(infoId, genres, transaction);
     });
@@ -326,12 +370,12 @@ export class SequelizeBookDataManager implements IBookDataManager {
     await BookInfoModel.bulkCreate(
       bookHistories.map(({
         name,
-        count,
+        bookCount,
       }) => ({
         id: uuidv4(),
         history: true,
         name,
-        count,
+        count: bookCount,
       })),
     );
   }
@@ -430,11 +474,12 @@ export class SequelizeBookDataManager implements IBookDataManager {
   getGenre(genreName: GenreName): Promise<Genre | undefined> {
     return GenreModel.findOne({
       where: { name: genreName },
-    });
+    }).then(SequelizeBookDataManager.createGenre);
   }
 
   getGenres(): Promise<Array<Genre>> {
-    return GenreModel.findAll();
+    return GenreModel.findAll()
+      .then((genres) => genres.map(SequelizeBookDataManager.createGenre));
   }
 
   async editGenre(
@@ -444,7 +489,10 @@ export class SequelizeBookDataManager implements IBookDataManager {
     if (defaultGenres.includes(genreName)) {
       return 'DELETE_DEFAULT';
     }
-    await GenreModel.update(removeNullableEntries(genre), {
+    await GenreModel.update(removeNullableEntries({
+      name: genre.name,
+      invisible: genre.isInvisible,
+    }), {
       where: { name: genreName },
     });
     return undefined;

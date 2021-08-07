@@ -59,9 +59,9 @@ const GQLUtil = {
 
     await BookDataManager.addBook({
       id: bookId,
-      thumbnail: 0,
+      thumbnailPage: 0,
       number,
-      pages: files.length,
+      pageCount: files.length,
       infoId,
     });
     return {

@@ -10,7 +10,11 @@ import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDa
 class Genre extends GQLMiddleware {
   Query(): QueryResolvers {
     return {
-      genres: () => BookDataManager.getGenres(),
+      genres: () => BookDataManager.getGenres()
+        .then((genres) => genres.map((genre) => ({
+          name: genre.name,
+          invisible: genre.isInvisible,
+        }))),
     };
   }
 
@@ -23,7 +27,7 @@ class Genre extends GQLMiddleware {
       }) => {
         const editGenre = maybeRequireAtLeastOne({
           name: newName,
-          invisible,
+          isInvisible: invisible,
         });
         if (!editGenre) {
           return createError('QL0005');

@@ -272,11 +272,11 @@ class Page extends GQLMiddleware {
         }
         const editActions = calculateEditActions(
           strictEditActions,
-          [...Array(book.pages).keys()].map(createImageEditAction),
+          [...Array(book.pageCount).keys()].map(createImageEditAction),
         ).filter(({ willDelete }) => !willDelete);
 
         return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
-          const result = await executeEditActions(editActions, folderPath, bookId, book.pages);
+          const result = await executeEditActions(editActions, folderPath, bookId, book.pageCount);
           if (!result.success) {
             return result;
           }
@@ -293,7 +293,7 @@ class Page extends GQLMiddleware {
             };
           }
           await BookDataManager.editBook(bookId, {
-            pages: editActions.length,
+            pageCount: editActions.length,
           });
           return { success: true };
         });
