@@ -1,5 +1,4 @@
 import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
-import { Database } from '@server/database/sequelize/models';
 import * as Util from '@server/Util';
 import GQLUtil from '@server/graphql/GQLUtil';
 import {
@@ -8,6 +7,7 @@ import {
   SubscriptionResolvers,
   Resolvers,
 } from '@syuchan1005/book-reader-graphql';
+import { IBookDataManager } from '@server/database/BookDataManager';
 import { SubscriptionKeys } from './index';
 
 export default class GQLMiddleware {
@@ -20,7 +20,7 @@ export default class GQLMiddleware {
   /* eslint-disable class-methods-use-this,@typescript-eslint/no-unused-vars */
 
   Query(
-    db: Database,
+    bookDataManager: IBookDataManager,
     middleware: Pick<GQLMiddleware, 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
@@ -29,7 +29,7 @@ export default class GQLMiddleware {
   }
 
   Mutation(
-    db: Database,
+    bookDataManager: IBookDataManager,
     middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
@@ -38,7 +38,7 @@ export default class GQLMiddleware {
   }
 
   Subscription(
-    db: Database,
+    bookDataManager: IBookDataManager,
     middleware: Pick<GQLMiddleware, 'server' | 'pubsub'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
@@ -47,7 +47,7 @@ export default class GQLMiddleware {
   }
 
   Resolver(
-    db: Database,
+    bookDataManager: IBookDataManager,
     middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,

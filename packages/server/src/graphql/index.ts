@@ -12,7 +12,7 @@ import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-import Database from '@server/database/sequelize/models';
+import { BookDataManager } from '@server/database/BookDataManager';
 import * as Util from '../Util';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
@@ -54,7 +54,7 @@ export default class GraphQL {
     const middlewareOps = (key) => Object.keys(this.middlewares)
       .map((k) => {
         const fun = this.middlewares[k][key];
-        return fun ? fun.bind(this)(Database, this, SubscriptionKeys, util) : {};
+        return fun ? fun.bind(this)(BookDataManager, this, SubscriptionKeys, util) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
     // eslint-disable-next-line no-underscore-dangle
