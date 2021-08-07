@@ -106,7 +106,9 @@ class BookInfo extends GQLMiddleware {
           id,
           thumbnail: t,
         }) => {
-          if (t) return t;
+          if (t && typeof t === 'object') {
+            return t;
+          }
           const thumbnail = await BookDataManager.getBookInfoThumbnail(id);
           if (!thumbnail) {
             return undefined;
