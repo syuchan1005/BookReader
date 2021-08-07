@@ -1,7 +1,7 @@
 {
     "name": "@syuchan1005/book-reader-server",
     "scripts": {
-        "serve": "nodemon --watch src --ext .js,.ts --exec \"npm run build -- development && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node dist\"",
+        "serve": "nodemon --watch src --ext .js,.ts --exec \"npm run build -- development && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node --stack_trace_limit=200 dist\"",
         "build": "node scripts/build.js",
         "db-migrate": "node scripts/db-migrate.js",
         "test": "jest",

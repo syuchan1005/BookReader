@@ -6,11 +6,8 @@ import {
   HistoryType,
   BookInfo,
 } from '@syuchan1005/book-reader-graphql';
-import BookInfoModel from '@server/database/sequelize/models/BookInfo';
-import Sequelize, { Op } from 'sequelize';
-import GenreModel from '@server/database/sequelize/models/Genre';
-import BookModel from '@server/database/sequelize/models/Book';
-import ModelUtil from '@server/ModelUtil';
+import { BookDataManager, SortKey } from '@server/database/BookDataManager';
+import { InfoType } from '@server/database/models/BookInfo';
 
 const DefaultOptions: BookInfosOption = {
   search: undefined,
@@ -19,18 +16,20 @@ const DefaultOptions: BookInfosOption = {
   order: BookInfoOrder.UpdateNewest,
 };
 
-type WhereValue = string | number | undefined;
-type SQLOrder = 'asc' | 'desc';
-
 const getCursor = (
   order: BookInfoOrder,
   before?: string,
   after?: string,
 ): [
-  cursorKey: keyof BookInfoModel,
-  sqlOrder: SQLOrder,
-  beforeValue: WhereValue,
-  afterValue: WhereValue,
+  cursorKey: 'name',
+  sqlOrder: SortKey,
+  beforeValue?: string,
+  afterValue?: string,
+] | [
+  cursorKey: 'createdAt' | 'updatedAt',
+  sqlOrder: SortKey,
+  beforeValue?: number,
+  afterValue?: number,
 ] => {
   let cursor;
   switch (order) {
@@ -42,12 +41,10 @@ const getCursor = (
     case BookInfoOrder.AddOldest:
       cursor = 'createdAt';
       break;
+    default:
     case BookInfoOrder.NameAsc:
     case BookInfoOrder.NameDesc:
       cursor = 'name';
-      break;
-    default:
-      cursor = 'id';
       break;
   }
   let sqlOrder;
@@ -64,22 +61,20 @@ const getCursor = (
       sqlOrder = 'desc';
       break;
   }
-  let convertedBefore: WhereValue = before;
-  let convertedAfter: WhereValue = after;
   switch (order) {
     case BookInfoOrder.UpdateOldest:
     case BookInfoOrder.UpdateNewest:
     case BookInfoOrder.AddNewest:
-    case BookInfoOrder.AddOldest:
-      convertedBefore = before ? parseInt(before, 10) : undefined;
-      convertedAfter = after ? parseInt(after, 10) : undefined;
-      break;
+    case BookInfoOrder.AddOldest: {
+      const convertedBefore = before ? parseInt(before, 10) : undefined;
+      const convertedAfter = after ? parseInt(after, 10) : undefined;
+      return [cursor, sqlOrder, convertedBefore, convertedAfter];
+    }
     default:
     case BookInfoOrder.NameAsc:
     case BookInfoOrder.NameDesc:
-      break; // string
+      return [cursor, sqlOrder, before, after];
   }
-  return [cursor, sqlOrder, convertedBefore, convertedAfter];
 };
 
 class RelayBookInfo extends GQLMiddleware {
@@ -99,74 +94,52 @@ class RelayBookInfo extends GQLMiddleware {
           history,
           order: bookInfoOrder,
         } = option;
-        let whereHistory: boolean | undefined;
+
+        let infoType: InfoType;
         switch (history) {
           default:
           case HistoryType.All:
-            whereHistory = undefined;
+            infoType = undefined;
             break;
           case HistoryType.HistoryOnly:
-            whereHistory = true;
+            infoType = 'History';
             break;
           case HistoryType.NormalOnly:
-            whereHistory = false;
+            infoType = 'Normal';
             break;
         }
-        const whereId = genres.length === 0
-          ? {
-            [Op.notIn]: Sequelize.literal('('
-              + 'SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1'
-              + ')'),
-          }
-          : {
-            [Op.in]: Sequelize.literal('('
-              // @ts-ignore
-              + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => `'${g}'`).join(', ')})` // TODO: escape
-              + ')'),
-          };
-        const whereName = search ? {
-          [Op.like]: `%${search}%`,
-        } : undefined;
         const [cursorKey, sqlOrder, before, after] = getCursor(bookInfoOrder, argBefore, argAfter);
-        const paginationWhere = {};
-        if (after !== undefined && before !== undefined) {
-          const start = sqlOrder === 'asc' ? after : before;
-          const end = sqlOrder === 'asc' ? before : after;
-          paginationWhere[cursorKey] = {
-            [Op.between]: [start, end],
-          };
-        } else if (after !== undefined) {
-          const order = sqlOrder === 'asc' ? Op.gte : Op.lte;
-          paginationWhere[cursorKey] = {
-            [order]: after,
-          };
-        } else if (before !== undefined) {
-          const order = sqlOrder === 'asc' ? Op.lte : Op.gte;
-          paginationWhere[cursorKey] = {
-            [order]: before,
-          };
+        let paginationWhere;
+        if (after === undefined && before === undefined) {
+          paginationWhere = undefined;
+        } else if (after !== undefined && before !== undefined) {
+          paginationWhere = [after, before];
+        } else {
+          paginationWhere = [after, before];
+          if (sqlOrder === 'desc') {
+            paginationWhere = paginationWhere.reverse();
+          }
         }
 
-        const bookInfos = await BookInfoModel.findAll({
+        const bookInfos = (await BookDataManager.getBookInfos({
           limit: first !== undefined ? first + 1 : undefined,
-          order: [[cursorKey, sqlOrder]],
-          where: Object.fromEntries(Object.entries({
-            ...paginationWhere,
-            history: whereHistory,
-            id: whereId,
-            name: whereName,
-          }).filter((e) => e[1] !== undefined)),
-          include: [
-            {
-              model: GenreModel,
-              as: 'genres',
+          filter: {
+            infoType,
+            genres,
+            name: {
+              include: search,
+              between: (cursorKey === 'name') ? paginationWhere : undefined,
             },
-            {
-              model: BookModel,
-              as: 'thumbnailBook',
-            },
-          ],
-        });
+            ...(cursorKey !== 'name' ? {
+              [cursorKey]: paginationWhere,
+            } : undefined),
+          },
+          sort: [[cursorKey, sqlOrder]],
+        })).map((bookInfo) => ({
+          ...bookInfo,
+          createdAt: `${bookInfo.createdAt.getTime()}`,
+          updatedAt: `${bookInfo.updatedAt.getTime()}`,
+        }));
 
         let edges = bookInfos;
         if (first !== undefined) {
@@ -187,9 +160,10 @@ class RelayBookInfo extends GQLMiddleware {
         }
 
         return {
-          edges: edges.map((data) => ({
-            cursor: data[cursorKey],
-            node: ModelUtil.bookInfo(data) as BookInfo,
+          edges: edges.map((bookInfo) => ({
+            cursor: bookInfo[cursorKey],
+            // @ts-ignore thumbnail, genres, books are not resolved
+            node: bookInfo as BookInfo,
           })),
           pageInfo: {
             hasNextPage: bookInfos.length > first,

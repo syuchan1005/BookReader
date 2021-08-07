@@ -3,7 +3,7 @@ import { Book, BookEditableValue, BookId } from './models/Book';
 import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
-  InfoId, InputBookHistory,
+  InfoId, InfoType, InputBookHistory,
   InputBookInfo, SortableBookInfoProperties,
 } from './models/BookInfo';
 import { DeleteGenreError, Genre, GenreEditableValue } from './models/Genre';
@@ -50,6 +50,21 @@ export interface IBookDataManager {
     infoId: InfoId,
     sort?: Array<[SortableBookInfoProperties, SortKey]>,
   ): Promise<Array<Book>>;
+
+  getBookInfos(option: {
+    limit?: number,
+    filter: {
+      infoType?: InfoType,
+      genres?: Array<Genre['name']>,
+      name: {
+        include?: string,
+        between?: [string | undefined, string | undefined],
+      },
+      createdAt?: [number | undefined, number | undefined],
+      updatedAt?: [number | undefined, number | undefined],
+    },
+    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+  }): Promise<Array<BookInfo>>;
 
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
 

@@ -13,7 +13,7 @@ export type BookInfo = {
   updatedAt: Date;
 };
 
-export type SortableBookInfoProperties = 'updatedAt';
+export type SortableBookInfoProperties = 'name' | 'createdAt' | 'updatedAt';
 
 export type BookInfoThumbnail = {
   bookId: BookId;
@@ -30,3 +30,5 @@ export type InputBookInfo = Required<Pick<BookInfo, 'name'>> & Partial<Omit<Book
 };
 
 export type InputBookHistory = Required<Pick<BookInfo, 'name' | 'count'>>;
+
+export type InfoType = 'Normal' | 'History';

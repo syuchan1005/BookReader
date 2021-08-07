@@ -1,18 +1,19 @@
-import { Op, Transaction } from 'sequelize';
+import { Op, Transaction, literal } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 import { Book, BookEditableValue, BookId } from '@server/database/models/Book';
 import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
-  InfoId, InputBookHistory,
+  InfoId, InfoType, InputBookHistory,
   InputBookInfo, SortableBookInfoProperties,
 } from '@server/database/models/BookInfo';
 import {
   DeleteGenreError,
   Genre,
   GenreEditableValue,
-  InputGenre
+  InputGenre,
 } from '@server/database/models/Genre';
 import BookModel from '@server/database/sequelize/models/Book';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
@@ -20,8 +21,6 @@ import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '../BookDataManager';
 import Database from './models';
-import { defaultGenres } from '../../../../common';
-import { createError } from '@server/Errors';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -140,6 +139,81 @@ export class SequelizeBookDataManager implements IBookDataManager {
     });
   }
 
+  getBookInfos(option: {
+    limit?: number,
+    filter: {
+      infoType?: InfoType,
+      genres?: Array<Genre['name']>,
+      name: {
+        include?: string,
+        between?: [string | undefined, string | undefined],
+      },
+      createdAt?: [number | undefined, number | undefined],
+      updatedAt?: [number | undefined, number | undefined],
+    },
+    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+  }): Promise<Array<BookInfo>> {
+    const {
+      limit,
+      filter: {
+        infoType,
+        genres,
+        name: {
+          include,
+          between,
+        },
+        createdAt,
+        updatedAt,
+      },
+      sort,
+    } = option;
+    const genreWhere = genres.length === 0
+      ? {
+        [Op.notIn]: literal('('
+          + 'SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE invisible == 1'
+          + ')'),
+      }
+      : {
+        [Op.in]: literal('('
+          // @ts-ignore
+          + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => `'${g}'`).join(', ')})` // TODO: escape
+          + ')'),
+      };
+    const where = {
+      history: infoType ? infoType === 'History' : undefined,
+      ...genreWhere,
+      name: {
+        ...(include ? { [Op.like]: `%${include}%` } : undefined),
+        ...SequelizeBookDataManager.#transformOperation(between),
+      },
+      createdAt: SequelizeBookDataManager.#transformOperation(createdAt),
+      updatedAt: SequelizeBookDataManager.#transformOperation(updatedAt),
+    };
+    return BookInfoModel.findAll({
+      limit,
+      order: sort,
+      where: Object.fromEntries(
+        Object.entries(where)
+          .filter((e) => e[1] !== undefined
+            && (typeof e[1] === 'object' && Object.keys(e[1]).length > 0)),
+      ),
+    });
+  }
+
+  static #transformOperation<T>(value?: [T | undefined, T | undefined]) {
+    const [a, b] = value || [];
+    if (a !== undefined && b !== undefined) {
+      return { [Op.between]: [a, b] };
+    }
+    if (a !== undefined) {
+      return { [Op.gte]: a };
+    }
+    if (b !== undefined) {
+      return { [Op.lte]: b };
+    }
+    return undefined;
+  }
+
   async addBookInfo({
     id,
     genres = [],
@@ -151,7 +225,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
         id: infoId,
         ...bookInfo,
       }, { transaction });
-      await this.#linkGenres(infoId, genres, transaction);
+      await SequelizeBookDataManager.#linkGenres(infoId, genres, transaction);
     });
     return infoId;
   }
@@ -186,12 +260,12 @@ export class SequelizeBookDataManager implements IBookDataManager {
         });
       }
       if (genres) {
-        await this.#linkGenres(infoId, genres, transaction);
+        await SequelizeBookDataManager.#linkGenres(infoId, genres, transaction);
       }
     });
   }
 
-  async #linkGenres(
+  static async #linkGenres(
     infoId: string,
     genres: Array<InputGenre>,
     transaction?: Transaction,
