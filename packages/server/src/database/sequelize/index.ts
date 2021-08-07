@@ -47,8 +47,6 @@ export class SequelizeBookDataManager implements IBookDataManager {
   async init() {
     this.sequelize = SequelizeBookDataManager.createSequelize();
     await this.initModels();
-
-    await this.sequelize.sync();
   }
 
   private static createSequelize() {
@@ -76,6 +74,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
       // @ts-ignore
       if (module.associate) module.associate();
     });
+    await this.sequelize.sync();
     await modelList.reduce(
       // @ts-ignore
       (promise, model) => promise.then(() => (model.seed ? model.seed() : Promise.resolve())),
