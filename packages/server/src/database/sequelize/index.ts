@@ -1,4 +1,10 @@
-import { Op, Transaction, literal } from 'sequelize';
+import {
+  Op,
+  Transaction,
+  literal,
+  Sequelize,
+  Options,
+} from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { defaultGenres } from '@syuchan1005/book-reader-common';
@@ -22,7 +28,8 @@ import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '../BookDataManager';
-import Database from './models';
+
+import * as baseConfig from '../../../sequelize.config';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -34,8 +41,45 @@ function removeNullableEntries<T extends {}>(obj: T): Omit<T, NullableKeys<T>> {
 }
 
 export class SequelizeBookDataManager implements IBookDataManager {
+  private sequelize: Sequelize;
+
   async init() {
-    await Database.sync();
+    this.sequelize = SequelizeBookDataManager.createSequelize();
+    await this.initModels();
+
+    await this.sequelize.sync();
+  }
+
+  private static createSequelize() {
+    const env = process.env.NODE_ENV || 'development';
+    // eslint-disable-next-line camelcase
+    const config: Options & { dialect?: string, use_env_variable?: string } = baseConfig[env];
+
+    let sequelize;
+    if (config.dialect === 'sqlite') {
+      sequelize = new Sequelize(config);
+    } else if (config.use_env_variable) {
+      sequelize = new Sequelize(process.env[config.use_env_variable], config);
+    } else {
+      sequelize = new Sequelize(config.database, config.username, config.password, config);
+    }
+    return sequelize;
+  }
+
+  private async initModels() {
+    const modelList = [BookModel, BookInfoModel, GenreModel, InfoGenreModel];
+    modelList.forEach((module) => {
+      module.initModel(this.sequelize);
+    });
+    modelList.forEach((module) => {
+      // @ts-ignore
+      if (module.associate) module.associate();
+    });
+    await modelList.reduce(
+      // @ts-ignore
+      (promise, model) => promise.then(() => (model.seed ? model.seed() : Promise.resolve())),
+      Promise.resolve(),
+    );
   }
 
   async getBook(bookId: BookId): Promise<Book | undefined> {
@@ -50,7 +94,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     ...book
   }: InputBook): Promise<BookId> {
     const bookId = id || uuidv4();
-    await Database.sequelize.transaction(async (transaction) => {
+    await this.sequelize.transaction(async (transaction) => {
       await BookModel.create({
         id: bookId,
         infoId,
@@ -59,8 +103,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
         transaction,
       });
       await BookInfoModel.update({
-        // @ts-ignore
-        count: Database.sequelize.literal('count + 1'),
+        count: literal('count + 1'),
       }, {
         where: {
           id: infoId,
@@ -97,7 +140,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
   }
 
   deleteBooks(infoId: InfoId, bookIds: Array<BookId>): Promise<void> {
-    return Database.sequelize.transaction(async (transaction) => {
+    return this.sequelize.transaction(async (transaction) => {
       const deleteCount = await BookModel.destroy({
         where: {
           id: { [Op.in]: bookIds },
@@ -109,8 +152,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
         throw new Error();
       }
       await BookInfoModel.update({
-        // @ts-ignore
-        count: Database.sequelize.literal(`count - ${deleteCount}`),
+        count: literal(`count - ${deleteCount}`),
       }, {
         where: { id: infoId },
         transaction,
@@ -268,7 +310,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     ...bookInfo
   }: InputBookInfo): Promise<InfoId> {
     const infoId = id || uuidv4();
-    await Database.sequelize.transaction(async (transaction) => {
+    await this.sequelize.transaction(async (transaction) => {
       await BookInfoModel.create({
         id: infoId,
         ...bookInfo,
@@ -300,7 +342,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     }: RequireAtLeastOne<BookInfoEditableValue>,
   ): Promise<void> {
     const editBookInfo = removeNullableEntries(bookInfo);
-    await Database.sequelize.transaction(async (transaction) => {
+    await this.sequelize.transaction(async (transaction) => {
       if (Object.keys(editBookInfo).length !== 0) {
         await BookInfoModel.update(editBookInfo, {
           where: { id: infoId },
@@ -361,7 +403,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
   }
 
   deleteBookInfo(infoId: InfoId): Promise<void> {
-    return Database.sequelize.transaction(async (transaction) => {
+    return this.sequelize.transaction(async (transaction) => {
       await BookModel.destroy({
         where: {
           infoId,
@@ -414,7 +456,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
       where: { name: genreName },
     });
     if (genreModel) {
-      await Database.sequelize.transaction(async (transaction) => {
+      await this.sequelize.transaction(async (transaction) => {
         await InfoGenreModel.destroy({
           where: { genreId: genreModel.id },
           transaction,
