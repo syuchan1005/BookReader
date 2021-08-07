@@ -274,10 +274,10 @@ export class SequelizeBookDataManager implements IBookDataManager {
       ...genreWhere,
       name: {
         ...(include ? { [Op.like]: `%${include}%` } : undefined),
-        ...SequelizeBookDataManager.$transformOperation(between),
+        ...SequelizeBookDataManager.transformOperation(between),
       },
-      createdAt: SequelizeBookDataManager.$transformOperation(createdAt),
-      updatedAt: SequelizeBookDataManager.$transformOperation(updatedAt),
+      createdAt: SequelizeBookDataManager.transformOperation(createdAt),
+      updatedAt: SequelizeBookDataManager.transformOperation(updatedAt),
     };
     return BookInfoModel.findAll({
       limit,
@@ -290,7 +290,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     });
   }
 
-  static $transformOperation<T>(value?: [T | undefined, T | undefined]) {
+  private static transformOperation<T>(value?: [T | undefined, T | undefined]) {
     const [a, b] = value || [];
     if (a !== undefined && b !== undefined) {
       return { [Op.between]: [a, b] };
@@ -315,7 +315,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
         id: infoId,
         ...bookInfo,
       }, { transaction });
-      await SequelizeBookDataManager.$linkGenres(infoId, genres, transaction);
+      await SequelizeBookDataManager.linkGenres(infoId, genres, transaction);
     });
     return infoId;
   }
@@ -350,12 +350,12 @@ export class SequelizeBookDataManager implements IBookDataManager {
         });
       }
       if (genres) {
-        await SequelizeBookDataManager.$linkGenres(infoId, genres, transaction);
+        await SequelizeBookDataManager.linkGenres(infoId, genres, transaction);
       }
     });
   }
 
-  static async $linkGenres(
+  private static async linkGenres(
     infoId: string,
     genres: Array<InputGenre>,
     transaction?: Transaction,
