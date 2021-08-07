@@ -269,24 +269,27 @@ export class SequelizeBookDataManager implements IBookDataManager {
           + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => `'${g}'`).join(', ')})` // TODO: escape
           + ')'),
       };
+    const nameWhere = {
+      ...(include ? { [Op.like]: `%${include}%` } : undefined),
+      ...SequelizeBookDataManager.transformOperation(between),
+    };
     const where = {
       history: infoType ? infoType === 'History' : undefined,
-      ...genreWhere,
-      name: {
-        ...(include ? { [Op.like]: `%${include}%` } : undefined),
-        ...SequelizeBookDataManager.transformOperation(between),
-      },
+      id: genreWhere,
+      name: (Object.keys(nameWhere).length === 0 ? undefined : nameWhere),
       createdAt: SequelizeBookDataManager.transformOperation(createdAt),
       updatedAt: SequelizeBookDataManager.transformOperation(updatedAt),
     };
+    Object.keys(where).forEach((k) => {
+      if (where[k] === undefined) {
+        delete where[k];
+      }
+    });
     return BookInfoModel.findAll({
       limit,
       order: sort,
-      where: Object.fromEntries(
-        Object.entries(where)
-          .filter((e) => e[1] !== undefined
-            && (typeof e[1] === 'object' && Object.keys(e[1]).length > 0)),
-      ),
+      where,
+      logging: console.log,
     });
   }
 
