@@ -13,3 +13,6 @@ export type Book = {
 };
 
 export type BookEditableValue = Partial<Pick<Book, 'thumbnail' | 'number' | 'pages'>>;
+
+type BookRequiredProps = 'number' | 'pages' | 'infoId';
+export type InputBook = Pick<Book, BookRequiredProps> & Partial<Omit<Book, BookRequiredProps>>;

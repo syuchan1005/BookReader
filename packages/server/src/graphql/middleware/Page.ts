@@ -14,7 +14,6 @@ import {
 } from '@server/StorageUtil';
 import Errors from '@server/Errors';
 import { BookDataManager } from '@server/database/BookDataManager';
-import GQLUtil from '../GQLUtil';
 import { flatRange } from '../scalar/IntRange';
 import {
   purgeImageCache,
@@ -218,7 +217,7 @@ const executeEditActions = async (
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
         if (image) {
-          await GQLUtil.writeFile(distFilePath, (await image).createReadStream());
+          await fs.writeFile(distFilePath, (await image).createReadStream());
         } else if (cropTransforms) {
           const size = await getImageSize(srcFilePath);
           const cropValue = calculateCropTransforms(cropTransforms, size.width, size.height);

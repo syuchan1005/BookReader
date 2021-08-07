@@ -1,6 +1,5 @@
-import { promises as fs, createWriteStream as fsCreateWriteStream } from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
-import { pipeline } from 'stream/promises';
 
 import { v4 as uuidv4 } from 'uuid';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
@@ -16,11 +15,7 @@ import { asyncForEach, readdirRecursively } from '@server/Util';
 import {
   createDownloadFilePath, renameFile, userDownloadFolderName,
 } from '@server/StorageUtil';
-import Database from '@server/database/sequelize/models';
-import BookModel from '@server/database/sequelize/models/Book';
-import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
-import BookInfoModel from '@server/database/sequelize/models/BookInfo';
-import GenreModel from '@server/database/sequelize/models/Genre';
+import { BookDataManager } from '@server/database/BookDataManager';
 import { convertAndSaveJpg } from '../ImageUtil';
 
 const GQLUtil = {
@@ -62,44 +57,12 @@ const GQLUtil = {
       .catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
     if (deleteTempFolder) await deleteTempFolder();
 
-    await Database.sequelize.transaction(async (transaction) => {
-      await BookModel.create({
-        id: bookId,
-        thumbnail: 0,
-        number,
-        pages: files.length,
-        infoId,
-      }, {
-        transaction,
-      });
-      await BookInfoModel.update({
-        // @ts-ignore
-        count: Database.sequelize.literal('count + 1'),
-      }, {
-        where: {
-          id: infoId,
-        },
-        transaction,
-      });
-      await BookInfoModel.update({
-        history: false,
-        count: 1,
-      }, {
-        where: {
-          id: infoId,
-          history: true,
-        },
-        transaction,
-      });
-      await BookInfoModel.update({
-        thumbnail: bookId,
-      }, {
-        where: {
-          id: infoId,
-          thumbnail: null,
-        },
-        transaction,
-      });
+    await BookDataManager.addBook({
+      id: bookId,
+      thumbnail: 0,
+      number,
+      pages: files.length,
+      infoId,
     });
     return {
       success: true,
@@ -135,7 +98,8 @@ const GQLUtil = {
     if (localPath) {
       const downloadPath = userDownloadFolderName;
       const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
-      const hasPathTraversal = path.relative(downloadPath, normalizeLocalPath).startsWith('../');
+      const hasPathTraversal = path.relative(downloadPath, normalizeLocalPath)
+        .startsWith('../');
       if (hasPathTraversal) {
         return {
           success: false,
@@ -148,7 +112,7 @@ const GQLUtil = {
       const awaitFile = await file;
       archiveFilePath = createDownloadFilePath(uuidv4());
       try {
-        await GQLUtil.writeFile(archiveFilePath, awaitFile.createReadStream());
+        await fs.writeFile(archiveFilePath, awaitFile.createReadStream());
       } catch (e) {
         return {
           success: false,
@@ -162,12 +126,6 @@ const GQLUtil = {
       success: true,
       archiveFilePath,
     };
-  },
-  writeFile(filePath: string, readableStream: NodeJS.ReadableStream): Promise<void> {
-    return pipeline(
-      readableStream,
-      fsCreateWriteStream(filePath),
-    );
   },
   async searchBookFolders(tempPath: string) {
     let booksFolderPath = '/';
@@ -185,7 +143,8 @@ const GQLUtil = {
             const min = parseInt(hasMulti[1], 10);
             const max = parseInt(hasMulti[2], 10);
             if (min < max) {
-              const nestNumbers = [...Array(max - min + 1).keys()]
+              const nestNumbers = [...Array(max - min + 1)
+                .keys()]
                 .map((index) => index + min);
               const nestFolders = await fs.readdir(
                 path.join(tempBooksFolder, d.name), { withFileTypes: true },

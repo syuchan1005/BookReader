@@ -2,7 +2,9 @@ import { Op, Transaction, literal } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { defaultGenres } from '@syuchan1005/book-reader-common';
-import { Book, BookEditableValue, BookId } from '@server/database/models/Book';
+import {
+  Book, BookEditableValue, BookId, InputBook,
+} from '@server/database/models/Book';
 import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
@@ -40,6 +42,52 @@ export class SequelizeBookDataManager implements IBookDataManager {
     return BookModel.findOne({
       where: { id: bookId },
     });
+  }
+
+  async addBook({
+    id,
+    infoId,
+    ...book
+  }: InputBook): Promise<BookId> {
+    const bookId = id || uuidv4();
+    await Database.sequelize.transaction(async (transaction) => {
+      await BookModel.create({
+        id: bookId,
+        infoId,
+        ...book,
+      }, {
+        transaction,
+      });
+      await BookInfoModel.update({
+        // @ts-ignore
+        count: Database.sequelize.literal('count + 1'),
+      }, {
+        where: {
+          id: infoId,
+        },
+        transaction,
+      });
+      await BookInfoModel.update({
+        history: false,
+        count: 1,
+      }, {
+        where: {
+          id: infoId,
+          history: true,
+        },
+        transaction,
+      });
+      await BookInfoModel.update({
+        thumbnail: bookId,
+      }, {
+        where: {
+          id: infoId,
+          thumbnail: null,
+        },
+        transaction,
+      });
+    });
+    return bookId;
   }
 
   async editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void> {
