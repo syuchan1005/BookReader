@@ -6,6 +6,7 @@ storage
 downloads
 *.iml
 *.sqlite
+*.sqlite-journal
 .DS_Store
 book-reader-*
 !book-reader-test-plugin

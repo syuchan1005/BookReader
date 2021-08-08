@@ -4,7 +4,7 @@
         "jsx": "react",
         "target": "es6",
         "module": "commonjs",
-        "lib": ["ESNext", "webworker", "dom"],
+        "lib": ["es2020", "webworker", "dom"],
         "moduleResolution": "node",
         "esModuleInterop": true,
         "skipLibCheck": true,

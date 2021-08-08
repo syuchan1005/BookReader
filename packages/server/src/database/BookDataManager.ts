@@ -42,10 +42,6 @@ export interface IBookDataManager {
 
   editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void>;
 
-  /**
-   * Deletes book specified with {bookIds}.
-   * If {bookIds} contains a book that it's not related to {infoId}, an error will occur.
-   */
   deleteBooks(infoId: InfoId, bookIds: Array<BookId>): Promise<void>;
 
   moveBooks(bookIds: Array<BookId>, destinationInfoId: InfoId): Promise<void>;

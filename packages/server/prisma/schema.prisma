@@ -1,0 +1,66 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialActions"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DB_FILE")
+}
+
+model BookInfo {
+  /// uuidv4
+  id        String  @id // @db.VarChar(36)
+  name      String
+  bookCount Int     @default(0)
+  isHistory Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  thumbnailBook Book?               @relation(name: "ThumbnailBook")
+  books         Book[]              @relation(name: "Books")
+  genres        BookInfosToGenres[]
+
+  @@unique([name], name: "BookInfo_name_unique")
+}
+
+model Book {
+  /// uuidv4
+  id            String  @id // @db.VarChar(36)
+  /// uuidv4
+  infoId        String // @db.VarChar(36)
+  /// zero-indexed page count
+  thumbnailPage Int?
+  number        String
+  pageCount     Int
+  /// uuidv4
+  thumbnailById String? // @db.VarChar(36)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookInfo    BookInfo  @relation("Books", fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  thumbnailBy BookInfo? @relation("ThumbnailBook", fields: [thumbnailById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([infoId, number], name: "Book_infoId_number_unique")
+  @@unique([thumbnailById], name: "Book_thumbnailById_unique")
+}
+
+model Genre {
+  name        String  @id
+  isInvisible Boolean @default(false)
+
+  bookInfos BookInfosToGenres[]
+}
+
+model BookInfosToGenres {
+  /// uuidv4
+  infoId    String // @db.VarChar(36)
+  genreName String
+
+  bookInfo BookInfo @relation(fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  genre    Genre    @relation(fields: [genreName], references: [name], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([infoId, genreName])
+}
