@@ -11,7 +11,7 @@ import { createTheme } from '@material-ui/core/styles';
 import * as colors from '@material-ui/core/colors';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient } from '@apollo/react-hooks';
 import { QueryParamProvider } from 'use-query-params';
 
 import { workbox } from '@client/registerServiceWorker';
