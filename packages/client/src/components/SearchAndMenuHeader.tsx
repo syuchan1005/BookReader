@@ -119,7 +119,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
         </div>
 
         <IconButton
-          size="small"
           className={classes.sortIcon}
           onClick={(event) => (onClickMenuIcon && onClickMenuIcon(event.currentTarget))}
           aria-label="sort"
