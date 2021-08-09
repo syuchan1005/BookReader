@@ -1,12 +1,10 @@
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { execute, GraphQLSchema, subscribe } from 'graphql';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLUpload, graphqlUploadKoa } from 'graphql-upload';
+import { PubSub } from 'graphql-subscriptions';
 
-import {
-  ApolloServer,
-  makeExecutableSchema,
-  PubSub,
-  PubSubEngine,
-  gql,
-} from 'apollo-server-koa';
+import { ApolloServer, gql } from 'apollo-server-koa';
 import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 
 // @ts-ignore
@@ -26,17 +24,17 @@ export const SubscriptionKeys = {
 };
 
 export default class GraphQL {
-  private readonly middlewares: { [key: string]: GQLMiddleware };
-
   public readonly util = { saveImage: convertAndSaveJpg };
 
-  public readonly pubsub: PubSubEngine;
+  public readonly apolloServer: ApolloServer;
 
-  public readonly server: ApolloServer;
+  public readonly pubsub: PubSub;
 
-  private readonly gqlKoaMiddleware; // : (ctx: any, next: Promise<any>) => any;
+  private readonly schema: GraphQLSchema;
 
   private readonly plugins: InternalGQLPlugin[];
+
+  private readonly middlewares: { [key: string]: GQLMiddleware };
 
   constructor() {
     this.pubsub = new PubSub();
@@ -57,44 +55,45 @@ export default class GraphQL {
         return fun ? fun.bind(this)(BookDataManager, this, SubscriptionKeys, util) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
-    // eslint-disable-next-line no-underscore-dangle
-    this.server = new ApolloServer({
-      uploads: false,
-      schema: makeExecutableSchema({
-        typeDefs: mergeTypeDefs([
-          gql(schemaString),
-          ...this.plugins.map((pl) => pl.typeDefs),
-        ]),
-        resolvers: {
-          BigInt,
-          IntRange,
-          Upload: GraphQLUpload,
-          /* handler(parent, args, context, info) */
-          Query: {
-            ...middlewareOps('Query'),
-            plugins: () => this.plugins,
-          },
-          Mutation: middlewareOps('Mutation'),
-          Subscription: middlewareOps('Subscription'),
-          ...middlewareOps('Resolver'),
+    this.schema = makeExecutableSchema({
+      typeDefs: mergeTypeDefs([
+        gql(schemaString),
+        ...this.plugins.map((pl) => pl.typeDefs),
+      ]),
+      resolvers: {
+        BigInt,
+        IntRange,
+        Upload: GraphQLUpload,
+        /* handler(parent, args, context, info) */
+        Query: {
+          ...middlewareOps('Query'),
+          plugins: () => this.plugins,
         },
-      }),
-      tracing: process.env.NODE_ENV !== 'production',
+        Mutation: middlewareOps('Mutation'),
+        Subscription: middlewareOps('Subscription'),
+        ...middlewareOps('Resolver'),
+      },
     });
-    this.gqlKoaMiddleware = this.server.getMiddleware({});
+    this.apolloServer = new ApolloServer({ schema: this.schema });
   }
 
   async middleware(app) {
     app.use(graphqlUploadKoa());
-    // eslint-disable-next-line no-underscore-dangle
-    app.use((ctx, next) => {
-      ctx.request.socket.setTimeout(15 * 60 * 1000);
-      return this.gqlKoaMiddleware(ctx, next);
-    });
+    await this.apolloServer.start();
+    this.apolloServer.applyMiddleware({ app });
   }
 
   useSubscription(httpServer) {
-    // eslint-disable-next-line no-underscore-dangle
-    this.server.installSubscriptionHandlers(httpServer);
+    const subscriptionServer = SubscriptionServer.create({
+      schema: this.schema,
+      execute,
+      subscribe,
+    }, {
+      server: httpServer,
+      path: this.apolloServer.graphqlPath,
+    });
+    ['SIGINT', 'SIGTERM'].forEach(signal => {
+      process.on(signal, () => subscriptionServer.close());
+    });
   }
 }

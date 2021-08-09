@@ -3,11 +3,11 @@ import React, {
 } from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
 import {
-  createMuiTheme,
   CssBaseline,
   MuiThemeProvider,
   Theme,
 } from '@material-ui/core';
+import { createTheme } from '@material-ui/core/styles';
 import * as colors from '@material-ui/core/colors';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
@@ -100,7 +100,7 @@ const App = () => {
   }, [apolloClient, enqueueSnackbar]);
 
   const provideTheme = useMemo(
-    () => createMuiTheme({
+    () => createTheme({
       palette: {
         type: isSystemDarkTheme ? 'dark' : 'light',
         primary: colors[primaryColor],

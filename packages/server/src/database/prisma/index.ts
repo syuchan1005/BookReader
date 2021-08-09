@@ -89,7 +89,7 @@ export class PrismaBookDataManager implements IBookDataManager {
       where: { id: bookId },
       data: { thumbnailById: infoId },
     })
-      .catch(/* ignored */);
+      .catch(() => { /* ignored */ });
     return bookId;
   }
 

@@ -1,7 +1,6 @@
-import { ITypeDefinitions } from 'graphql-tools';
-
 import path from 'path';
 import GQLMiddleware from './GQLMiddleware';
+type ITypeDefinitions = any;
 
 export { default as GQLMiddleware } from './GQLMiddleware';
 export interface GQLPlugin {

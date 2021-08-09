@@ -1,4 +1,5 @@
-import { ApolloServer, PubSubEngine } from 'apollo-server-koa';
+import { PubSub } from 'graphql-subscriptions';
+import { ApolloServer } from 'apollo-server-koa';
 import * as Util from '@server/Util';
 import GQLUtil from '@server/graphql/GQLUtil';
 import {
@@ -15,7 +16,7 @@ export default class GQLMiddleware {
 
   readonly server: ApolloServer;
 
-  readonly pubsub: PubSubEngine;
+  readonly pubsub: PubSub;
 
   /* eslint-disable class-methods-use-this,@typescript-eslint/no-unused-vars */
 

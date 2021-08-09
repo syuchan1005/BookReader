@@ -130,7 +130,7 @@ const toInt = (value: string | string[]): number | undefined => {
   const server = app.listen(port, () => {
     /* eslint-disable no-console */
     console.log(`👔 listen  at: http://localhost:${port}`);
-    console.log(`🚀 graphql at: http://localhost:${port}${graphql.server.graphqlPath}`);
+    console.log(`🚀 graphql at: http://localhost:${port}${graphql.apolloServer.graphqlPath}`);
   });
 
   graphql.useSubscription(server);
