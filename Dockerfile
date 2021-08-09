@@ -1,24 +1,21 @@
-FROM node:16-alpine as build
-
-COPY . /build
-
-WORKDIR /build
-
-RUN npm ci
+FROM node:16.6.1-alpine3.14 as build
 
 ENV NODE_ENV="production"
 
-RUN npm run build && npm run script:db-migrate production compile
+COPY . /build
+WORKDIR /build
+
+RUN npm ci --include=dev
+
+#RUN npm run build
 RUN mkdir /bookReader \
-    && cp -r packages/client/dist /bookReader/public \
-    && cp packages/server/dist/index.js /bookReader/ \
-    && mv packages/server/.sequelizerc /bookReader/ \
-    && mv packages/server/sequelize.config.js /bookReader/ \
-    && mv packages/server/build-migrations /bookReader/ \
+    && mv packages/client/dist /bookReader/public/ \
+    && mv packages/server/dist/index.js /bookReader/ \
+    && mv packages/server/prisma/ /bookReader/ \
     && mv packages/server/scripts/ /bookReader/ \
     && mv packages/server/package.json /bookReader/
 
-FROM node:16-alpine
+FROM node:16.6.1-alpine3.14
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
@@ -27,14 +24,13 @@ EXPOSE 80
 
 ENV DEBUG="" NODE_ENV="production"
 
-RUN apk add --no-cache supervisor nginx git p7zip \
-    && mkdir /bookReader
+RUN apk add --no-cache supervisor nginx git p7zip
 
 COPY --from=build /bookReader /bookReader
 
 WORKDIR /bookReader
 
-RUN npm install --force
+RUN npm install --production && npm run prisma -- generate
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/

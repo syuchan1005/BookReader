@@ -1,7 +1,7 @@
 .cache
 .idea
 dist
-**/node_modules/
+node_modules
 storage
 downloads
 *.iml
@@ -9,4 +9,5 @@ downloads
 *.sqlite-journal
 .DS_Store
 book-reader-*
+
 !book-reader-test-plugin
