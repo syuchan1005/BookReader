@@ -1,12 +1,15 @@
-import {
-  ApolloClient, ApolloLink, InMemoryCache, isReference,
-} from '@apollo/client';
+import { ApolloClient, split } from '@apollo/client';
+import { InMemoryCache, isReference } from '@apollo/client/cache';
 import { WebSocketLink } from '@apollo/client/link/ws';
+import {
+  getMainDefinition,
+  relayStylePagination,
+} from '@apollo/client/utilities';
 import { createUploadLink } from 'apollo-upload-client';
-import { getMainDefinition } from 'apollo-utilities';
-import createCustomFetcher from '@client/CustomFetcher';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
-import { offsetLimitPagination, relayStylePagination } from '@apollo/client/utilities';
+
+import createCustomFetcher from '@client/CustomFetcher';
+
 import { BookInfo } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
@@ -65,7 +68,6 @@ const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        bookInfos: offsetLimitPagination(['search', 'order', 'history', 'genres']),
         relayBookInfos: uniqueRelayStylePagination<BookInfo>(
           'id',
           (a, b) => a('updatedAt') > b('updatedAt'),
@@ -85,12 +87,13 @@ const cache = new InMemoryCache({
 });
 
 const cachePersistor = new CachePersistor({
+  // @ts-ignore
   cache,
   storage: new LocalStorageWrapper(window.localStorage),
 });
 
 export const apolloClient = new ApolloClient({
-  link: ApolloLink.split(
+  link: split(
     ({ query }) => {
       const definition = getMainDefinition(query);
       return (

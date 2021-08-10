@@ -20,7 +20,9 @@ const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
         try {
           fs.unlinkSync(`${outDir}/${serviceWorkerFileName}`);
           console.log(`Remove: ${outDir}/${serviceWorkerFileName}`);
-        } catch (ignored) { /* ignored */ }
+        } catch (ignored) {
+          /* ignored */
+        }
       }
     },
   };
@@ -29,6 +31,7 @@ const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
+    dedupe: ['@apollo/client'],
     alias: {
       '@client': resolve(__dirname, 'src'),
     },
