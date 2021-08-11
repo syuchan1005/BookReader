@@ -310,14 +310,24 @@ export class SequelizeBookDataManager implements IBookDataManager {
           + `SELECT DISTINCT infoId FROM infoGenres INNER JOIN genres g on infoGenres.genreId = g.id WHERE name in (${genres.map((g) => `'${g}'`).join(', ')})` // TODO: escape
           + ')'),
       };
-    const nameWhere = {
-      ...(include ? { [Op.like]: `%${include}%` } : undefined),
-      ...SequelizeBookDataManager.transformOperation(between),
-    };
+    let nameWhere: {} | undefined;
+    if (include) {
+      nameWhere = {
+        ...nameWhere,
+        [Op.like]: `%${include}%`,
+      };
+    }
+    const nameRange = SequelizeBookDataManager.transformOperation(between);
+    if (nameRange) {
+      nameWhere = {
+        ...nameWhere,
+        nameRange,
+      };
+    }
     const where = {
       history: infoType ? infoType === 'History' : undefined,
       id: invisibleGenreInfoIdWhere,
-      name: (Object.keys(nameWhere).length === 0 ? undefined : nameWhere),
+      name: nameWhere,
       createdAt: SequelizeBookDataManager.transformOperation(createdAt),
       updatedAt: SequelizeBookDataManager.transformOperation(updatedAt),
     };
@@ -333,7 +343,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     }).then((bookInfos) => bookInfos.map(SequelizeBookDataManager.createBookInfo));
   }
 
-  private static transformOperation<T>(value?: [T | undefined, T | undefined]) {
+  private static transformOperation<T>(value?: [T | undefined, T | undefined]): {} | undefined {
     const [a, b] = value || [];
     if (a !== undefined && b !== undefined) {
       return { [Op.between]: [a, b] };
