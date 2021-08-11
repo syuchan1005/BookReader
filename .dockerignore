@@ -1,12 +1,12 @@
-.cache
 .idea
 **/dist
+node_modules
 **/node_modules
 **/storage
 *.iml
-*.sqlite
-*.sqlite-journal
-.DS_Store
+**/*.sqlite
+**/*.sqlite-journal
+**/.DS_Store
 **/book-reader-test-plugin
 
 screenshots
