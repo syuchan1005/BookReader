@@ -4,9 +4,9 @@ COPY . /build
 
 WORKDIR /build
 
-RUN npm ci
-
 ENV NODE_ENV="production"
+
+RUN npm ci --include=dev
 
 RUN npm run build && npm run script:db-migrate production compile
 RUN mkdir /bookReader \
@@ -17,6 +17,8 @@ RUN mkdir /bookReader \
     && mv packages/server/build-migrations /bookReader/ \
     && mv packages/server/scripts/ /bookReader/ \
     && mv packages/server/package.json /bookReader/
+
+RUN cd /bookReader && npm install --force
 
 FROM node:16-alpine
 
@@ -33,8 +35,6 @@ RUN apk add --no-cache supervisor nginx git p7zip \
 COPY --from=build /bookReader /bookReader
 
 WORKDIR /bookReader
-
-RUN npm install --force
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/
