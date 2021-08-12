@@ -153,7 +153,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     await BookModel.update(removeNullableEntries({
       number,
       thumbnail: thumbnailPage,
-      count: pageCount,
+      pages: pageCount,
     }), {
       where: { id: bookId },
     });
