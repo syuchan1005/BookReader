@@ -86,10 +86,10 @@ const SelectBookInfoThumbnailDialog = (
         {(loading) ? (
           <div>Loading</div>
         ) : null}
-        {(error) ? (
+        {(error && !data) ? (
           <div>{error}</div>
         ) : null}
-        {(!loading && !error && data) ? (
+        {(!loading && data) ? (
           <div className={classes.selectGrid}>
             {data.bookInfo.books.map((book) => (
               // @ts-ignore

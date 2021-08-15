@@ -260,7 +260,7 @@ const Info = (props: InfoProps) => {
         />
       )}
       <main className={classes.info}>
-        {(loading || error) ? (
+        {(loading || (error && !data)) ? (
           <div className={classes.loading}>
             {loading && 'Loading'}
             {error && `${error.toString()

@@ -115,10 +115,10 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
         {(loading) ? (
           <div>Loading</div>
         ) : null}
-        {(error) ? (
+        {(error && !data) ? (
           <div>{error}</div>
         ) : null}
-        {(!loading && !error && data) ? (
+        {(!loading && data) ? (
           <div className={classes.selectGrid}>
             {[...Array(data.book.pages).keys()]
               .map((i) => (

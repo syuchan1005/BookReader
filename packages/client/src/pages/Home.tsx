@@ -213,7 +213,7 @@ const Home = (props: HomeProps) => {
       />
       <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
       <main className={classes.home}>
-        {(loading || error) ? (
+        {(loading || (error && !data)) ? (
           <div className={classes.loading}>
             {loading && 'Loading'}
             {error && `${error.toString()

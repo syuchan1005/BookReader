@@ -430,7 +430,7 @@ const Book = (props: BookProps) => {
 
   const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
 
-  if (loading || error) {
+  if (loading || (error && !data)) {
     return (
       <>
         <TitleAndBackHeader title="Book" />
