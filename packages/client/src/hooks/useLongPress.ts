@@ -23,7 +23,10 @@ const preventDefault = (ev: Event) => {
 const useLongPress = (
   onLongPress: (e: TouchEvent | MouseEvent) => boolean,
   onClick: () => void,
-  { isPreventDefault = true, delay = 300 }: Options = {},
+  {
+    isPreventDefault = true,
+    delay = 300,
+  }: Options = {},
 ) => {
   const [longPressTriggered, setLongPressTriggered] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
@@ -43,27 +46,30 @@ const useLongPress = (
     [onLongPress, delay, isPreventDefault],
   );
 
-  const clear = useCallback((_event, clickAvailable: boolean = true) => {
+  const clear = useCallback((_event) => {
     if (timeout.current) {
       clearTimeout(timeout.current);
-    }
-    if (clickAvailable && isPreventDefault && !longPressTriggered) {
-      onClick();
     }
     setLongPressTriggered(false);
     if (isPreventDefault && target.current) {
       target.current.removeEventListener('touchend', preventDefault);
     }
-  }, [isPreventDefault, onClick, longPressTriggered]);
+  }, [isPreventDefault]);
 
-  const onMouseLeave = useCallback((event) => clear(event, false), [clear]);
+  const handleClick = useCallback((e: any) => {
+    if (!longPressTriggered) {
+      onClick();
+    }
+    clear(e);
+  }, [longPressTriggered, clear, onClick]);
 
   return {
     onMouseDown: (e: any) => start(e),
     onTouchStart: (e: any) => start(e),
+    onMouseLeave: clear,
     onMouseUp: clear,
-    onMouseLeave,
     onTouchEnd: clear,
+    onClick: handleClick,
   } as const;
 };
 
