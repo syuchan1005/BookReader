@@ -28,6 +28,7 @@ import useVisible from '@client/hooks/useVisible';
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
+import useLongPress from '@client/hooks/useLongPress';
 
 const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookDialog'));
 
@@ -46,6 +47,10 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
 
   visibleMargin?: string;
   onVisible?: () => void;
+
+  overlayClassName?: string;
+  disableRipple?: boolean;
+  onLongPress?: (bookId: string) => void;
 
   children?: ReactNode;
 }
@@ -118,6 +123,9 @@ const Book = (props: BookProps) => {
     children,
     visibleMargin,
     onVisible,
+    overlayClassName,
+    disableRipple,
+    onLongPress,
   } = props;
   const isVisible = useVisible(ref, true, visibleMargin);
   React.useEffect(() => {
@@ -201,8 +209,22 @@ const Book = (props: BookProps) => {
     }
   }, [onClick, bookId]);
 
+  const handleLongPressed = React.useCallback(() => {
+    if (onLongPress) {
+      onLongPress(bookId);
+      return true;
+    }
+    return false;
+  }, [onLongPress, bookId]);
+
+  const longPressEvents = useLongPress(handleLongPressed, handleBookClicked, { delay: 1000 });
+
   return (
-    <div ref={ref} style={{ width: thumbnailSize, height: pageAspectRatio(thumbnailSize) }}>
+    <div
+      ref={ref}
+      style={{ width: thumbnailSize, height: pageAspectRatio(thumbnailSize) }}
+      className={overlayClassName}
+    >
       {isVisible && (
         <Card className={classes.card}>
           {/* eslint-disable-next-line no-nested-ternary */}
@@ -233,7 +255,10 @@ const Book = (props: BookProps) => {
               </Menu>
             </CardActions>
           )}
-          <CardActionArea onClick={handleBookClicked}>
+          <CardActionArea
+            {...longPressEvents}
+            disableRipple={disableRipple}
+          >
             <BookPageImage
               bookId={bookId}
               pageIndex={thumbnail}

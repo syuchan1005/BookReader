@@ -5,10 +5,12 @@ import {
   createStyles, Dialog, DialogActions, DialogContent, DialogTitle,
   Icon,
   IconButton,
-  makeStyles, TextField,
+  makeStyles, MuiThemeProvider, TextField,
   Theme,
-  Toolbar,
+  Toolbar, Typography,
 } from '@material-ui/core';
+import { grey } from '@material-ui/core/colors';
+import { createTheme } from '@material-ui/core/styles';
 
 import { commonTheme } from '@client/App';
 
@@ -33,7 +35,18 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'flex',
     justifyContent: 'center',
   },
+  title: {
+    flexGrow: 1,
+  },
 }));
+
+const ContextualActionBarTheme = createTheme({
+  palette: {
+    primary: {
+      main: grey['900'],
+    },
+  },
+});
 
 const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
@@ -74,32 +87,36 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
 
   return (
     <>
-      <AppBar className={classes.appBar}>
-        <Toolbar>
-          <IconButton
-            className={classes.iconButton}
-            onClick={() => (onClose && onClose())}
-          >
-            <Icon>clear</Icon>
-          </IconButton>
-          <div style={{ flexGrow: 1 }} />
-          <Button
-            className={classes.iconButton}
-            disabled={selectIds.length === 0}
-            startIcon={<Icon>move_to_inbox</Icon>}
-            onClick={() => setOpenMoveDialog(true)}
-          >
-            Move
-          </Button>
-          <IconButton
-            className={classes.iconButton}
-            disabled={selectIds.length === 0}
-            onClick={() => setOpenDeleteDialog(true)}
-          >
-            <Icon>delete_outline</Icon>
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+      <MuiThemeProvider theme={ContextualActionBarTheme}>
+        <AppBar className={classes.appBar}>
+          <Toolbar>
+            <IconButton
+              className={classes.iconButton}
+              onClick={() => (onClose && onClose())}
+            >
+              <Icon>clear</Icon>
+            </IconButton>
+            <Typography variant="h6" className={classes.title}>
+              {`${selectIds.length} selected`}
+            </Typography>
+            <Button
+              className={classes.iconButton}
+              disabled={selectIds.length === 0}
+              startIcon={<Icon>move_to_inbox</Icon>}
+              onClick={() => setOpenMoveDialog(true)}
+            >
+              Move
+            </Button>
+            <IconButton
+              className={classes.iconButton}
+              disabled={selectIds.length === 0}
+              onClick={() => setOpenDeleteDialog(true)}
+            >
+              <Icon>delete_outline</Icon>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+      </MuiThemeProvider>
 
       <Dialog
         open={openMoveDialog}

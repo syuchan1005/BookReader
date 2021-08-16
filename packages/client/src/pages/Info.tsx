@@ -87,6 +87,26 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       bottom: theme.spacing(11),
     },
   },
+  selectedBookOverlay: {
+    position: 'relative',
+    '&::after': {
+      pointerEvents: 'none',
+      backgroundColor: theme.palette.primary.main,
+      opacity: '0.45',
+      content: '\'\'',
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      left: 0,
+      bottom: 0,
+      borderRadius: theme.shape.borderRadius,
+    },
+  },
+  selectedBookCheckIcon: {
+    color: theme.palette.common.white,
+    marginRight: theme.spacing(1),
+    marginTop: theme.spacing(1),
+  },
 }));
 
 enum ScreenMode {
@@ -196,9 +216,10 @@ const Info = (props: InfoProps) => {
     }
   }, [clickBook, mode, toggleSelect]);
 
-  const setSelectScreenMode = React.useCallback(() => {
+  const handleBookLongClick = React.useCallback((bookId: string) => {
     setMode(ScreenMode.SELECT);
-  }, []);
+    toggleSelect(bookId);
+  }, [toggleSelect]);
 
   const handleHeaderClose = React.useCallback(() => {
     setMode(ScreenMode.NORMAL);
@@ -219,12 +240,6 @@ const Info = (props: InfoProps) => {
           backRoute="/"
           title={bookName}
         >
-          <IconButton
-            style={{ color: common.white }}
-            onClick={setSelectScreenMode}
-          >
-            <Icon>check_box</Icon>
-          </IconButton>
           <IconButton
             style={{ color: common.white }}
             onClick={setSortEl}
@@ -273,24 +288,27 @@ const Info = (props: InfoProps) => {
                 (bookList && bookList.length > 0) && bookList.map(
                   (book) => (
                     <Book
+                      key={book.id}
                       infoId={infoId}
                       simple={mode === 1}
                       {...book}
                       name={bookName}
                       reading={readId === book.id}
-                      key={book.id}
                       onClick={handleBookClick}
                       onDeleted={onDeletedBook}
                       onEdit={refetch}
                       thumbnailSize={downXs ? 150 : 200}
                       thumbnailNoSave={false}
                       visibleMargin={visibleMargin}
+                      overlayClassName={selectIds.includes(book.id)
+                        ? classes.selectedBookOverlay
+                        : undefined}
+                      disableRipple={mode === ScreenMode.SELECT}
+                      onLongPress={mode === ScreenMode.NORMAL ? handleBookLongClick : undefined}
                     >
-                      <Checkbox
-                        style={{ color: 'white' }}
-                        checked={selectIds.includes(book.id)}
-                        onChange={() => toggleSelect(book.id)}
-                      />
+                      {(selectIds.includes(book.id)) && (
+                        <Icon className={classes.selectedBookCheckIcon}>check_circle</Icon>
+                      )}
                     </Book>
                   ),
                 )
