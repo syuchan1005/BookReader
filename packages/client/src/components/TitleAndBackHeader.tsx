@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { commonTheme } from '../App';
+import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 
 interface TitleAndBackHeaderProps {
   backRoute?: string;
@@ -56,8 +57,10 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
     else history.goBack();
   }, [history, backRoute]);
 
+  const elevation = useAppBarScrollElevation();
+
   return (
-    <AppBar className={classes.appBar}>
+    <AppBar className={classes.appBar} elevation={elevation}>
       <Toolbar>
         <IconButton className={classes.backIcon} onClick={clickBack}>
           <Icon>arrow_back</Icon>

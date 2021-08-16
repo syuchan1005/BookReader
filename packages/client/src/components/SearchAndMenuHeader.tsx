@@ -14,6 +14,7 @@ import {
 import { alpha } from '@material-ui/core/styles';
 
 import { commonTheme } from '@client/App';
+import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
@@ -87,8 +88,10 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     onChangeSearchText?.('');
   }, [onChangeSearchText]);
 
+  const elevation = useAppBarScrollElevation();
+
   return (
-    <AppBar className={classes.appBar}>
+    <AppBar elevation={elevation} className={classes.appBar}>
       <Toolbar>
         <div style={{ flexGrow: 1 }} />
         <div className={classes.search}>
