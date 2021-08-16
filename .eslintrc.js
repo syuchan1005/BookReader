@@ -1,5 +1,8 @@
 module.exports = {
   extends: 'airbnb',
+  globals: {
+    NodeJS: true,
+  },
   plugins: [
     '@typescript-eslint',
     'import',

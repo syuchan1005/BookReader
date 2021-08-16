@@ -1,17 +1,17 @@
-import React, { ReactNode, useRef } from 'react';
+import React from 'react';
 
 import {
   Card,
   CardActionArea,
+  CardActions,
   CardContent,
-  makeStyles,
   createStyles,
-  Theme,
   Icon,
   IconButton,
-  CardActions,
+  makeStyles,
   Menu,
   MenuItem,
+  Theme,
 } from '@material-ui/core';
 
 import { Book as BookType } from '@syuchan1005/book-reader-graphql';
@@ -26,7 +26,7 @@ import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
 import useLazyDialog from '@client/hooks/useLazyDialog';
-import useLongPress from '@client/hooks/useLongPress';
+import { useLongTap } from '@client/hooks/useLongTap';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
@@ -52,7 +52,7 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
   disableRipple?: boolean;
   onLongPress?: (bookId: string) => void;
 
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -105,7 +105,7 @@ const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const Book = (props: BookProps) => {
   const classes = useStyles(props);
-  const ref = useRef();
+  const ref = React.useRef();
   const {
     infoId,
     thumbnailSize,
@@ -203,21 +203,21 @@ const Book = (props: BookProps) => {
     number,
   })), [number]);
 
-  const handleBookClicked = React.useCallback(() => {
-    if (onClick) {
+  const handleBookClicked = React.useCallback((event: React.MouseEvent) => {
+    if (event.shiftKey && onLongPress) {
+      onLongPress(bookId);
+    } else if (onClick) {
       onClick(bookId);
     }
-  }, [onClick, bookId]);
+  }, [onLongPress, onClick, bookId]);
 
   const handleLongPressed = React.useCallback(() => {
     if (onLongPress) {
       onLongPress(bookId);
-      return true;
     }
-    return false;
   }, [onLongPress, bookId]);
 
-  const longPressEvents = useLongPress(handleLongPressed, handleBookClicked, { delay: 1000 });
+  const longTapEvents = useLongTap(handleLongPressed);
 
   return (
     <div
@@ -255,7 +255,8 @@ const Book = (props: BookProps) => {
             </CardActions>
           )}
           <CardActionArea
-            {...longPressEvents}
+            {...longTapEvents}
+            onClick={handleBookClicked}
             disableRipple={disableRipple}
           >
             <BookPageImage
