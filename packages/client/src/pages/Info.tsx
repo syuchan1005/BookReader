@@ -228,7 +228,7 @@ const Info = (props: InfoProps) => {
     }
   }, [selectIds]);
 
-  const handleDeleteBooks = React.useCallback(() => {
+  const handleSelectBookMutated = React.useCallback(() => {
     setMode(ScreenMode.NORMAL);
     refetch();
   }, [refetch]);
@@ -271,7 +271,8 @@ const Info = (props: InfoProps) => {
           infoId={infoId}
           selectIds={selectIds}
           onClose={handleHeaderClose}
-          onDeleteBooks={handleDeleteBooks}
+          onDeleteBooks={handleSelectBookMutated}
+          onMoveBooks={handleSelectBookMutated}
         />
       )}
       <main className={classes.info}>

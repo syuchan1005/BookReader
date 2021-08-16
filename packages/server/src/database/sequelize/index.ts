@@ -181,10 +181,38 @@ export class SequelizeBookDataManager implements IBookDataManager {
   }
 
   async moveBooks(bookIds: Array<BookId>, destinationInfoId: InfoId): Promise<void> {
-    await BookModel.update({ infoId: destinationInfoId }, {
+    const books = await BookModel.findAll({
       where: {
         id: { [Op.in]: bookIds },
       },
+    });
+    const infoToBooks: { [infoId: string]: string[] } = {};
+    books.forEach(({ id, infoId }) => {
+      infoToBooks[infoId] = [...(infoToBooks[infoId] || []), id];
+    });
+
+    await this.sequelize.transaction(async (transaction) => {
+      await BookModel.update({ infoId: destinationInfoId }, {
+        where: {
+          id: { [Op.in]: bookIds },
+        },
+        transaction,
+      });
+      await BookInfoModel.update({
+        count: literal(`count + ${bookIds.length}`),
+      }, {
+        where: { id: destinationInfoId },
+        transaction,
+      });
+      await Promise.all(
+        Object.entries(infoToBooks)
+          .map(([infoId, ids]) => BookInfoModel.update({
+            count: literal(`count - ${ids.length}`),
+          }, {
+            where: { id: infoId },
+            transaction,
+          })),
+      );
     });
   }
 
