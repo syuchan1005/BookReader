@@ -26,9 +26,9 @@ import useBooleanState from '@client/hooks/useBooleanState';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
 import useLazyDialog from '@client/hooks/useLazyDialog';
+import useLongPress from '@client/hooks/useLongPress';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
-import useLongPress from '@client/hooks/useLongPress';
 
 const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookDialog'));
 
@@ -223,10 +223,9 @@ const Book = (props: BookProps) => {
     <div
       ref={ref}
       style={{ width: thumbnailSize, height: pageAspectRatio(thumbnailSize) }}
-      className={overlayClassName}
     >
       {isVisible && (
-        <Card className={classes.card}>
+        <Card className={`${classes.card} ${overlayClassName || ''}`}>
           {/* eslint-disable-next-line no-nested-ternary */}
           {(simple) ? (
             (children) ? (
