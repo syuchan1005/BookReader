@@ -36,6 +36,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
   },
   title: {
+    userSelect: 'none',
     flexGrow: 1,
   },
 }));
