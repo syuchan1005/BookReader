@@ -1,9 +1,11 @@
 {
     "name": "@syuchan1005/book-reader-server",
     "scripts": {
+        "serve:prisma": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && npm run build -- development && cross-env BOOK_READER_DB=next BOOKREADER_PLUGIN=../book-reader-test-plugin node --stack_trace_limit=200 dist\"",
         "serve": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && npm run build -- development && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node --stack_trace_limit=200 dist\"",
         "build": "node scripts/build.js",
         "db-migrate": "node scripts/db-migrate.js",
+        "prisma-migrate": "node scripts/prisma-migrate.js",
         "test": "jest",
         "sequelize-cli": "sequelize-cli",
         "prisma": "prisma"

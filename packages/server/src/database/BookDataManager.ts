@@ -17,6 +17,7 @@ import {
   DeleteGenreError,
   GenreEditableValue,
 } from './models/Genre';
+import { PrismaBookDataManager } from '@server/database/prisma';
 
 export type RequireAtLeastOne<ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
@@ -99,4 +100,11 @@ export interface IBookDataManager {
   };
 }
 
-export const BookDataManager: IBookDataManager = new SequelizeBookDataManager();
+let manager: IBookDataManager;
+if (process.env.BOOK_READER_DB === 'next') {
+  manager = new PrismaBookDataManager();
+} else {
+  manager = new SequelizeBookDataManager();
+}
+
+export const BookDataManager: IBookDataManager = manager;

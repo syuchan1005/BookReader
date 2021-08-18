@@ -28,6 +28,11 @@ function removeNullableEntries<T extends {}>(obj: T): Omit<T, NullableKeys<T>> {
   return Object.fromEntries(entries) as Omit<T, NullableKeys<T>>;
 }
 
+// Same as scripts/prisma-migrate.js
+const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
+  ? 'production-p'
+  : 'development-p';
+
 export class PrismaBookDataManager implements IBookDataManager {
   private prismaClient: PrismaClient;
 
@@ -35,7 +40,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     this.prismaClient = new PrismaClient({
       datasources: {
         db: {
-          url: 'file:../development.sqlite',
+          url: `file:../${env}.sqlite`,
         },
       },
       log: [{
