@@ -363,6 +363,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     const createMany = bookHistories.map((bookHistory) => this.prismaClient.bookInfo.create({
       data: {
         id: uuidv4(),
+        isHistory: true,
         ...bookHistory,
       },
     }));
