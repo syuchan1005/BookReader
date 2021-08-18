@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '@server/database/BookDataManager';
 import {
-  Book, BookEditableValue, BookId, InputBook,
+  Book, BookEditableValue, BookId, InputBook, SortableBookProperties,
 } from '@server/database/models/Book';
 import {
   BookInfo, BookInfoEditableValue,
@@ -225,7 +225,7 @@ export class PrismaBookDataManager implements IBookDataManager {
 
   async getBookInfoBooks(
     infoId: InfoId,
-    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+    sort?: Array<[SortableBookProperties, SortKey]>,
   ): Promise<Array<Book>> {
     const bookInfo = await this.prismaClient.bookInfo.findUnique({
       where: { id: infoId },

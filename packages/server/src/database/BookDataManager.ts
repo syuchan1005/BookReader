@@ -3,7 +3,7 @@ import {
   Book,
   BookEditableValue,
   BookId,
-  InputBook,
+  InputBook, SortableBookProperties,
 } from './models/Book';
 import {
   BookInfo, BookInfoEditableValue,
@@ -57,7 +57,7 @@ export interface IBookDataManager {
 
   getBookInfoBooks(
     infoId: InfoId,
-    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+    sort?: Array<[SortableBookProperties, SortKey]>,
   ): Promise<Array<Book>>;
 
   getBookInfos(option: {

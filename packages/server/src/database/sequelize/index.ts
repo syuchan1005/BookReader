@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import {
-  Book, BookEditableValue, BookId, InputBook,
+  Book, BookEditableValue, BookId, InputBook, SortableBookProperties,
 } from '@server/database/models/Book';
 import {
   BookInfo, BookInfoEditableValue,
@@ -290,7 +290,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
 
   getBookInfoBooks(
     infoId: InfoId,
-    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+    sort?: Array<[SortableBookProperties, SortKey]>,
   ): Promise<Array<Book>> {
     return BookModel.findAll({
       where: { infoId },

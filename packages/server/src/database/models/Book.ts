@@ -12,6 +12,8 @@ export type Book = {
   updatedAt: Date
 };
 
+export type SortableBookProperties = 'updatedAt';
+
 export type BookEditableValue = Partial<Pick<Book, 'thumbnailPage' | 'number' | 'pageCount'>>;
 
 type BookRequiredProps = 'number' | 'pageCount' | 'infoId';
