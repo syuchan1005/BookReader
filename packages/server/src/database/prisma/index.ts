@@ -33,6 +33,10 @@ const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
   ? 'production-p'
   : 'development-p';
 
+const PrismaErrorCode = {
+  UniqueConstraintFailed: 'P2002',
+} as const;
+
 export class PrismaBookDataManager implements IBookDataManager {
   private prismaClient: PrismaClient;
 
@@ -86,11 +90,17 @@ export class PrismaBookDataManager implements IBookDataManager {
         data: { bookCount: 1 },
       }),
     ]);
-    await this.prismaClient.book.updateMany({
-      where: { id: bookId },
-      data: { thumbnailById: infoId },
-    })
-      .catch(() => { /* ignored */ });
+    try {
+      // TODO: transaction
+      await this.prismaClient.book.update({
+        where: { id: bookId },
+        data: { thumbnailById: infoId },
+      });
+    } catch (e) {
+      if (e.code !== PrismaErrorCode.UniqueConstraintFailed) {
+        throw e;
+      }
+    }
     return bookId;
   }
 
@@ -121,14 +131,49 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   async moveBooks(bookIds: Array<BookId>, destinationInfoId: InfoId): Promise<void> {
-    await this.prismaClient.book.updateMany({
+    const books = await this.prismaClient.book.findMany({
+      select: { id: true, infoId: true },
       where: {
-        id: {
-          in: bookIds,
-        },
+        id: { in: bookIds },
       },
-      data: { infoId: destinationInfoId },
     });
+    const infoToBooks: { [infoId: string]: string[] } = {};
+    books.forEach(({ id, infoId }) => {
+      infoToBooks[infoId] = [...(infoToBooks[infoId] || []), id];
+    });
+
+    const decrementBookInfoBookCount = Object.entries(infoToBooks)
+      .map(([infoId, ids]) => this.prismaClient.bookInfo.update({
+        where: { id: infoId },
+        data: {
+          bookCount: {
+            decrement: ids.length,
+          },
+        },
+      }));
+
+    await this.prismaClient.$transaction([
+      this.prismaClient.book.updateMany({
+        where: {
+          id: {
+            in: bookIds,
+          },
+        },
+        data: {
+          infoId: destinationInfoId,
+          thumbnailById: null,
+        },
+      }),
+      ...decrementBookInfoBookCount,
+      this.prismaClient.bookInfo.update({
+        where: { id: destinationInfoId },
+        data: {
+          bookCount: {
+            increment: bookIds.length,
+          },
+        },
+      }),
+    ]);
   }
 
   getBookInfo(infoId: InfoId): Promise<BookInfo | undefined> {
@@ -327,46 +372,60 @@ export class PrismaBookDataManager implements IBookDataManager {
   async editBookInfo(
     infoId: InfoId,
     {
+      name: bookName,
       genres,
-      ...bookInfo
+      thumbnail,
     }: RequireAtLeastOne<BookInfoEditableValue>,
   ): Promise<void> {
-    await this.prismaClient.$transaction([
-      this.prismaClient.bookInfo.update({
-        where: { id: infoId },
-        data: {
-          id: infoId,
-          ...removeNullableEntries(bookInfo),
-          genres: {
-            connectOrCreate: genres.map(({
-              name,
-              isInvisible,
-            }) => ({
-              where: {
-                infoId_genreName: { infoId, genreName: name },
-              },
-              create: {
-                genre: {
-                  connectOrCreate: {
-                    where: { name },
-                    create: { name, isInvisible },
+    if (bookName || genres) {
+      await this.prismaClient.$transaction([
+        this.prismaClient.bookInfo.update({
+          where: { id: infoId },
+          data: {
+            id: infoId,
+            name: bookName,
+            genres: {
+              connectOrCreate: (genres || []).map(({
+                name,
+                isInvisible,
+              }) => ({
+                where: {
+                  infoId_genreName: { infoId, genreName: name },
+                },
+                create: {
+                  genre: {
+                    connectOrCreate: {
+                      where: { name },
+                      create: { name, isInvisible },
+                    },
                   },
                 },
-              },
-            })),
+              })),
+            },
           },
-          ...bookInfo,
-        },
-      }),
-      this.prismaClient.bookInfosToGenres.deleteMany({
-        where: {
-          infoId,
-          genreName: {
-            notIn: genres.map(({ name }) => name),
+        }),
+        this.prismaClient.bookInfosToGenres.deleteMany({
+          where: {
+            infoId,
+            genreName: {
+              notIn: (genres || []).map(({ name }) => name),
+            },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
+    }
+    if (thumbnail) {
+      await this.prismaClient.$transaction([
+        this.prismaClient.book.updateMany({
+          where: { thumbnailById: infoId },
+          data: { thumbnailById: null },
+        }),
+        this.prismaClient.book.updateMany({
+          where: { id: thumbnail, infoId },
+          data: { thumbnailById: infoId },
+        }),
+      ]);
+    }
   }
 
   async deleteBookInfo(infoId: InfoId): Promise<void> {
