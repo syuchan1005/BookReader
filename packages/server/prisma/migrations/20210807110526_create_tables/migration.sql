@@ -42,10 +42,19 @@ CREATE TABLE "BookInfosToGenres" (
 CREATE UNIQUE INDEX "BookInfo_name_unique" ON "BookInfo"("name");
 
 -- CreateIndex
+CREATE INDEX "BookInfo_createdAt_index" ON "BookInfo"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "BookInfo_updatedAt_index" ON "BookInfo"("updatedAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Book_infoId_number_unique" ON "Book"("infoId", "number");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Book_thumbnailById_unique" ON "Book"("thumbnailById");
+
+-- CreateIndex
+CREATE INDEX "Book_infoId_updatedAt_index" ON "Book"("infoId", "updatedAt");
 
 -- Seeding (It's a workaround for windows problem in seed feature)
 INSERT INTO Genre (name, isInvisible) VALUES ('Invisible', true);

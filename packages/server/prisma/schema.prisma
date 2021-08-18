@@ -23,6 +23,8 @@ model BookInfo {
   genres        BookInfosToGenres[]
 
   @@unique([name], name: "BookInfo_name_unique")
+  @@index([createdAt], name: "BookInfo_createdAt_index")
+  @@index([updatedAt], name: "BookInfo_updatedAt_index")
 }
 
 model Book {
@@ -45,6 +47,7 @@ model Book {
 
   @@unique([infoId, number], name: "Book_infoId_number_unique")
   @@unique([thumbnailById], name: "Book_thumbnailById_unique")
+  @@index([infoId, updatedAt], name: "Book_infoId_updatedAt_index")
 }
 
 model Genre {
