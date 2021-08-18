@@ -51,13 +51,13 @@ const getCursor = (
   let sqlOrder;
   switch (order) {
     case BookInfoOrder.UpdateOldest:
-    case BookInfoOrder.AddNewest:
+    case BookInfoOrder.AddOldest:
     case BookInfoOrder.NameAsc:
       sqlOrder = 'asc';
       break;
     default:
     case BookInfoOrder.UpdateNewest:
-    case BookInfoOrder.AddOldest:
+    case BookInfoOrder.AddNewest:
     case BookInfoOrder.NameDesc:
       sqlOrder = 'desc';
       break;
