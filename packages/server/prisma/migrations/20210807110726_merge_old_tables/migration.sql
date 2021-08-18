@@ -39,17 +39,24 @@ CREATE TABLE IF NOT EXISTS infoGenres (
 INSERT OR IGNORE INTO Genre (name, isInvisible) SELECT name, invisible FROM genres;
 
 INSERT INTO BookInfo (id, name, bookCount, createdAt, updatedAt, isHistory)
-    SELECT id, name, count, datetime(createdAt), datetime(updatedAt), history FROM bookInfos;
+    SELECT
+        id,
+        name,
+        count,
+        strftime('%Y-%m-%dT%H:%M:%fZ', createdAt),
+        (strftime('%s', updatedAt) - strftime('%S', updatedAt) + strftime('%f', updatedAt)) * 1000, -- unix epoch
+        history
+    FROM bookInfos;
 
 INSERT INTO Book (id, infoId, thumbnailPage, number, pageCount, thumbnailById, createdAt, updatedAt)
     SELECT b.id,
-       infoId,
-       b.thumbnail,
-       number,
-       pages,
-       bI.id,
-       datetime(b.createdAt),
-       datetime(b.updatedAt)
+        infoId,
+        b.thumbnail,
+        number,
+        pages,
+        bI.id,
+        strftime('%Y-%m-%dT%H:%M:%fZ', b.createdAt),
+        (strftime('%s', b.updatedAt) - strftime('%S', b.updatedAt) + strftime('%f', b.updatedAt)) * 1000 -- unix epoch
     FROM books as b LEFT JOIN bookInfos bI on bI.thumbnail = b.id;
 
 INSERT INTO BookInfosToGenres (infoId, genreName)

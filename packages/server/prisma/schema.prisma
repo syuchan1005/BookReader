@@ -15,7 +15,7 @@ model BookInfo {
   bookCount Int     @default(0)
   isHistory Boolean @default(false)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(dbgenerated("(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"))
   updatedAt DateTime @updatedAt
 
   thumbnailBook Book?               @relation(name: "ThumbnailBook")
@@ -37,7 +37,7 @@ model Book {
   /// uuidv4
   thumbnailById String? // @db.VarChar(36)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(dbgenerated("(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"))
   updatedAt DateTime @updatedAt
 
   bookInfo    BookInfo  @relation("Books", fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)

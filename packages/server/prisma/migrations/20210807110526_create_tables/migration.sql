@@ -4,7 +4,7 @@ CREATE TABLE "BookInfo" (
                             "name" TEXT NOT NULL,
                             "bookCount" INTEGER NOT NULL DEFAULT 0,
                             "isHistory" BOOLEAN NOT NULL DEFAULT false,
-                            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                            "createdAt" DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
                             "updatedAt" DATETIME NOT NULL
 );
 
@@ -16,7 +16,7 @@ CREATE TABLE "Book" (
                         "number" TEXT NOT NULL,
                         "pageCount" INTEGER NOT NULL,
                         "thumbnailById" TEXT,
-                        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        "createdAt" DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
                         "updatedAt" DATETIME NOT NULL,
                         FOREIGN KEY ("infoId") REFERENCES "BookInfo" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY ("thumbnailById") REFERENCES "BookInfo" ("id") ON DELETE SET NULL ON UPDATE CASCADE
