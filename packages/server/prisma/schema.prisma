@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialActions"]
+  previewFeatures = ["referentialActions", "selectRelationCount"]
 }
 
 datasource db {
@@ -10,10 +10,9 @@ datasource db {
 
 model BookInfo {
   /// uuidv4
-  id        String  @id // @db.VarChar(36)
-  name      String
-  bookCount Int     @default(0)
-  isHistory Boolean @default(false)
+  id               String  @id // @db.VarChar(36)
+  name             String
+  historyBookCount Int?
 
   createdAt DateTime @default(dbgenerated("(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"))
   updatedAt DateTime @updatedAt

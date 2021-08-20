@@ -2,8 +2,7 @@
 CREATE TABLE "BookInfo" (
                             "id" TEXT NOT NULL PRIMARY KEY,
                             "name" TEXT NOT NULL,
-                            "bookCount" INTEGER NOT NULL DEFAULT 0,
-                            "isHistory" BOOLEAN NOT NULL DEFAULT false,
+                            "historyBookCount" INTEGER,
                             "createdAt" DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
                             "updatedAt" DATETIME NOT NULL
 );
@@ -39,13 +38,16 @@ CREATE TABLE "BookInfosToGenres" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BookInfo_name_unique" ON "BookInfo"("name");
-
--- CreateIndex
 CREATE INDEX "BookInfo_createdAt_index" ON "BookInfo"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "BookInfo_updatedAt_index" ON "BookInfo"("updatedAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BookInfo_name_unique" ON "BookInfo"("name");
+
+-- CreateIndex
+CREATE INDEX "Book_infoId_updatedAt_index" ON "Book"("infoId", "updatedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Book_infoId_number_unique" ON "Book"("infoId", "number");
@@ -53,8 +55,6 @@ CREATE UNIQUE INDEX "Book_infoId_number_unique" ON "Book"("infoId", "number");
 -- CreateIndex
 CREATE UNIQUE INDEX "Book_thumbnailById_unique" ON "Book"("thumbnailById");
 
--- CreateIndex
-CREATE INDEX "Book_infoId_updatedAt_index" ON "Book"("infoId", "updatedAt");
 
 -- Seeding (It's a workaround for windows problem in seed feature)
 INSERT INTO Genre (name, isInvisible) VALUES ('Invisible', true);

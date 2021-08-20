@@ -25,6 +25,9 @@ class BookInfo extends GQLMiddleware {
         id: infoId,
       }): Promise<Omit<BookInfoGQLModel, BookInfoResolveAttrs>> => {
         const bookInfo = await BookDataManager.getBookInfo(infoId);
+        if (!bookInfo) {
+          return undefined;
+        }
         return {
           ...bookInfo,
           count: bookInfo.bookCount,

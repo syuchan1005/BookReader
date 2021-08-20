@@ -38,14 +38,13 @@ CREATE TABLE IF NOT EXISTS infoGenres (
 -- Move data
 INSERT OR IGNORE INTO Genre (name, isInvisible) SELECT name, invisible FROM genres;
 
-INSERT INTO BookInfo (id, name, bookCount, createdAt, updatedAt, isHistory)
+INSERT INTO BookInfo (id, name, historyBookCount, createdAt, updatedAt)
     SELECT
         id,
         name,
-        count,
+        case when history then count end,
         strftime('%Y-%m-%dT%H:%M:%fZ', createdAt),
-        (strftime('%s', updatedAt) - strftime('%S', updatedAt) + strftime('%f', updatedAt)) * 1000, -- unix epoch
-        history
+        (strftime('%s', updatedAt) - strftime('%S', updatedAt) + strftime('%f', updatedAt)) * 1000 -- unix epoch
     FROM bookInfos;
 
 INSERT INTO Book (id, infoId, thumbnailPage, number, pageCount, thumbnailById, createdAt, updatedAt)
