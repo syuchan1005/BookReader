@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Checkbox,
   createStyles,
   Fab,
   Icon,
@@ -109,10 +108,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-enum ScreenMode {
-  NORMAL,
-  SELECT,
-}
+const ScreenMode = {
+  NORMAL: 'NORMAL',
+  SELECT: 'SELECT',
+} as const;
+type ScreenModeType = typeof ScreenMode[keyof typeof ScreenMode];
 
 const Info = (props: InfoProps) => {
   const [sortBookOrder, setSortBookOrder] = useRecoilState(sortBookOrderState);
@@ -125,7 +125,7 @@ const Info = (props: InfoProps) => {
     .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
   const [readId, setReadId] = React.useState('');
   const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] = useLazyDialog(false);
-  const [mode, setMode] = React.useState<ScreenMode>(ScreenMode.NORMAL);
+  const [mode, setMode] = React.useState<ScreenModeType>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
 
   const setTitle = React.useCallback((title) => {
@@ -235,7 +235,7 @@ const Info = (props: InfoProps) => {
 
   return (
     <>
-      {(mode === 0) ? (
+      {(mode === ScreenMode.NORMAL) ? (
         <TitleAndBackHeader
           backRoute="/"
           title={bookName}
@@ -291,7 +291,7 @@ const Info = (props: InfoProps) => {
                     <Book
                       key={book.id}
                       infoId={infoId}
-                      simple={mode === 1}
+                      simple={mode === ScreenMode.SELECT}
                       {...book}
                       name={bookName}
                       reading={readId === book.id}

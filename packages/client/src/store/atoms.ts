@@ -63,12 +63,13 @@ export const sortBookOrderState = atom<BookOrder>({
   ],
 });
 
-export enum ReadOrder {
-  LTR,
-  RTL
-}
+export const ReadOrder = {
+  LTR: 'LTR',
+  RTL: 'RTL',
+} as const;
+export type ReadOrderType = typeof ReadOrder[keyof typeof ReadOrder];
 
-export const readOrderState = atom<ReadOrder>({
+export const readOrderState = atom<ReadOrderType>({
   key: 'readOrderState',
   default: ReadOrder.RTL,
   effects_UNSTABLE: [

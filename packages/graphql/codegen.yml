@@ -30,6 +30,7 @@ generates:
             - "export type Upload = File;"
 config:
   strictScalars: true
+  enumsAsConst: true
   scalars:
     BigInt: BigInt
     IntRange: IntRange

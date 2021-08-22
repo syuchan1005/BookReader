@@ -62,12 +62,13 @@ interface SourceSet {
   }[];
 }
 
-enum ImageState {
-  LOADING,
-  LOADED,
-  ERROR,
-  UNSET,
-}
+const ImageState = {
+  LOADING: 'LOADING',
+  LOADED: 'LOADED',
+  ERROR: 'ERROR',
+  UNSET: 'UNSET',
+} as const;
+type ImageStateType = typeof ImageState[keyof typeof ImageState];
 
 const BookPageImage = (props: BookPageImageProps) => {
   const classes = useStyles(props);
@@ -150,7 +151,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     [className, classes.img],
   );
 
-  const [imageState, setImageState] = React.useState(ImageState.LOADING);
+  const [imageState, setImageState] = React.useState<ImageStateType>(ImageState.LOADING);
   React.useEffect(() => {
     if (!imageSourceSet.imgSrc && imageState !== ImageState.UNSET) {
       setImageState(ImageState.UNSET);
