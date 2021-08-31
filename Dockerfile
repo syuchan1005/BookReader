@@ -1,4 +1,4 @@
-FROM node:16-alpine as build
+FROM node:16.7.0-alpine as build
 
 COPY . /build
 
@@ -20,7 +20,7 @@ RUN mkdir /bookReader \
 
 RUN cd /bookReader && npm install --force
 
-FROM node:16-alpine
+FROM node:16.7.0-alpine
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
