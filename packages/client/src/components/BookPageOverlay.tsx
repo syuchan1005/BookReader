@@ -232,7 +232,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
             }
           }}
         >
-          {['L > R', 'L < R'][readOrder]}
+          {readOrder === ReadOrder.LTR ? 'L > R' : 'L < R'}
         </Button>
         <Button
           aria-controls="effect menu"

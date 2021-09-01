@@ -299,6 +299,11 @@ const Book = (props: BookProps) => {
     }
   }, [data, setTitle]);
   const maxPage = React.useMemo(() => (data ? data.book.pages : 0), [data]);
+  const [prevBook, nextBook] = usePrevNextBook(
+    data ? data.book.info.id : undefined,
+    bookId,
+  );
+
   React.useEffect(() => {
     if (page >= maxPage) {
       if (nextBook && data) {
@@ -323,12 +328,7 @@ const Book = (props: BookProps) => {
       swiper.slideTo(validatedPage, time, false);
     }
     updatePage(validatedPage);
-  }, [maxPage, swiper, normalizeCount]);
-
-  const [prevBook, nextBook] = usePrevNextBook(
-    data ? data.book.info.id : undefined,
-    bookId,
-  );
+  }, [maxPage, normalizeCount, swiper, nextBook]);
 
   const increment = React.useCallback(() => {
     setPage(page + slidesPerView);
@@ -355,8 +355,36 @@ const Book = (props: BookProps) => {
     }
   }, [effect, effectPercentage]);
 
-  useKey('ArrowRight', () => (openEditDialog) || [increment, decrement][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
-  useKey('ArrowLeft', () => (openEditDialog) || [decrement, increment][readOrder](), undefined, [increment, decrement, readOrder, openEditDialog]);
+  useKey(
+    'ArrowRight',
+    () => {
+      if (openEditDialog) {
+        return;
+      }
+      if (readOrder === ReadOrder.LTR) {
+        increment();
+      } else {
+        decrement();
+      }
+    },
+    undefined,
+    [increment, decrement, readOrder, openEditDialog],
+  );
+  useKey(
+    'ArrowLeft',
+    () => {
+      if (openEditDialog) {
+        return;
+      }
+      if (readOrder === ReadOrder.LTR) {
+        decrement();
+      } else {
+        increment();
+      }
+    },
+    undefined,
+    [increment, decrement, readOrder, openEditDialog],
+  );
 
   const clickPage = React.useCallback((event) => {
     if (openEditDialog) return;
@@ -536,7 +564,7 @@ const Book = (props: BookProps) => {
 
         <div
           className={classes.pageProgress}
-          style={{ justifyContent: `flex-${['start', 'end'][readOrder]}` }}
+          style={{ justifyContent: `flex-${readOrder === ReadOrder.LTR ? 'start' : 'end'}` }}
         >
           <div style={{ width: `${(swiper ? swiper.progress : 0) * 100}%` }} />
         </div>
