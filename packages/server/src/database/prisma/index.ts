@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, BookInfo as PBookInfo } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '@server/database/BookDataManager';
@@ -185,17 +185,22 @@ export class PrismaBookDataManager implements IBookDataManager {
     return PrismaBookDataManager.convertBookInfo(book?.bookInfo);
   }
 
-  private static convertBookInfo(bookInfo): BookInfo | undefined {
+  private static convertBookInfo(
+    bookInfo: PBookInfo & { _count: { books: number } },
+  ): BookInfo | undefined {
     if (!bookInfo) {
       return undefined;
     }
     // eslint-disable-next-line no-underscore-dangle
     const bookCount = bookInfo._count.books;
-    const isHistory = bookInfo.historyBookCount !== undefined && bookCount === 0;
+    const isHistory = bookInfo.historyBookCount !== null && bookCount === 0;
     return {
-      ...bookInfo,
+      id: bookInfo.id,
+      name: bookInfo.name,
       isHistory,
       bookCount: isHistory ? bookInfo.historyBookCount : bookCount,
+      createdAt: bookInfo.createdAt,
+      updatedAt: bookInfo.updatedAt,
     };
   }
 
