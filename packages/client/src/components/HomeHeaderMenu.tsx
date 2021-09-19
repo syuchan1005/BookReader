@@ -142,7 +142,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   return (
     <>
       <Menu
-        getContentAnchorEl={null}
         anchorOrigin={{
           horizontal: 'center',
           vertical: 'bottom',
@@ -283,7 +282,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         </MenuItem>
       </Menu>
       <Menu
-        getContentAnchorEl={null}
         anchorOrigin={{
           horizontal: 'center',
           vertical: 'bottom',
@@ -333,7 +331,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         ) : null))}
       </Menu>
       <Menu
-        getContentAnchorEl={null}
         anchorEl={historyAnchorEl}
         anchorOrigin={{
           horizontal: 'center',

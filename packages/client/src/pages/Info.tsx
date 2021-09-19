@@ -1,5 +1,7 @@
 import React from 'react';
-import { Fab, Icon, IconButton, Menu, MenuItem, Theme, useTheme } from '@mui/material';
+import {
+  Fab, Icon, IconButton, Menu, MenuItem, Theme, useTheme,
+} from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { common } from '@mui/material/colors';
@@ -225,55 +227,55 @@ const Info = (props: InfoProps) => {
     refetch();
   }, [refetch]);
 
-  return <>
-    {(mode === ScreenMode.NORMAL) ? (
-      <TitleAndBackHeader
-        backRoute="/"
-        title={bookName}
-      >
-        <IconButton style={{ color: common.white }} onClick={setSortEl} size="large">
-          <Icon>sort</Icon>
-        </IconButton>
-        <Menu
-          getContentAnchorEl={null}
-          anchorEl={sortEl}
-          open={!!sortEl}
-          onClose={resetSortEl}
+  return (
+    <>
+      {(mode === ScreenMode.NORMAL) ? (
+        <TitleAndBackHeader
+          backRoute="/"
+          title={bookName}
         >
-          {Object.keys(BookOrder)
-            .map((order: BookOrder) => (
-              <MenuItem
-                key={order}
-                onClick={() => {
-                  setSortBookOrder(BookOrder[order]);
-                  resetSortEl();
-                }}
-              >
-                {BookOrder[order]}
-              </MenuItem>
-            ))}
-        </Menu>
-      </TitleAndBackHeader>
-    ) : (
-      <SelectBookHeader
-        infoId={infoId}
-        selectIds={selectIds}
-        onClose={handleHeaderClose}
-        onDeleteBooks={handleSelectBookMutated}
-        onMoveBooks={handleSelectBookMutated}
-      />
-    )}
-    <main className={classes.info}>
-      {(loading || (error && !data)) ? (
-        <div className={classes.loading}>
-          {loading && 'Loading'}
-          {error && `${error.toString()
-            .replace(/:\s*/g, '\n')}`}
-        </div>
+          <IconButton style={{ color: common.white }} onClick={setSortEl} size="large">
+            <Icon>sort</Icon>
+          </IconButton>
+          <Menu
+            anchorEl={sortEl}
+            open={!!sortEl}
+            onClose={resetSortEl}
+          >
+            {Object.keys(BookOrder)
+              .map((order: BookOrder) => (
+                <MenuItem
+                  key={order}
+                  onClick={() => {
+                    setSortBookOrder(BookOrder[order]);
+                    resetSortEl();
+                  }}
+                >
+                  {BookOrder[order]}
+                </MenuItem>
+              ))}
+          </Menu>
+        </TitleAndBackHeader>
       ) : (
-        <>
-          <div className={classes.infoGrid}>
-            {// @ts-ignore
+        <SelectBookHeader
+          infoId={infoId}
+          selectIds={selectIds}
+          onClose={handleHeaderClose}
+          onDeleteBooks={handleSelectBookMutated}
+          onMoveBooks={handleSelectBookMutated}
+        />
+      )}
+      <main className={classes.info}>
+        {(loading || (error && !data)) ? (
+          <div className={classes.loading}>
+            {loading && 'Loading'}
+            {error && `${error.toString()
+              .replace(/:\s*/g, '\n')}`}
+          </div>
+        ) : (
+          <>
+            <div className={classes.infoGrid}>
+              {// @ts-ignore
               (bookList && bookList.length > 0) && bookList.map(
                 (book) => (
                   <Book
@@ -302,35 +304,36 @@ const Info = (props: InfoProps) => {
                 ),
               )
             }
-          </div>
-          <Fab
-            className={classes.addButton}
-            onClick={showAddDialog}
-            aria-label="add"
-          >
-            <Icon>add</Icon>
-          </Fab>
-        </>
-      )}
-      <Fab
-        color="secondary"
-        className={classes.fab}
-        onClick={() => refetch()}
-        aria-label="refetch"
-      >
-        <Icon style={{ color: 'white' }}>refresh</Icon>
-      </Fab>
+            </div>
+            <Fab
+              className={classes.addButton}
+              onClick={showAddDialog}
+              aria-label="add"
+            >
+              <Icon>add</Icon>
+            </Fab>
+          </>
+        )}
+        <Fab
+          color="secondary"
+          className={classes.fab}
+          onClick={() => refetch()}
+          aria-label="refetch"
+        >
+          <Icon style={{ color: 'white' }}>refresh</Icon>
+        </Fab>
 
-      {(canMountAddDialog) && (
+        {(canMountAddDialog) && (
         <AddBookDialog
           open={isShownAddDialog}
           infoId={infoId}
           onAdded={refetch}
           onClose={hideAddDialog}
         />
-      )}
-    </main>
-  </>;
+        )}
+      </main>
+    </>
+  );
 };
 
 export default React.memo(Info);

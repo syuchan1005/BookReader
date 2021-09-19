@@ -247,7 +247,6 @@ const BookInfo = (props: BookInfoProps) => {
               <Icon>more_vert</Icon>
             </IconButton>
             <Menu
-              getContentAnchorEl={null}
               anchorEl={menuAnchor}
               open={Boolean(menuAnchor)}
               onClose={resetMenuAnchor}

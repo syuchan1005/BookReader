@@ -199,7 +199,6 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           anchorEl={settingsMenuAnchor}
           open={Boolean(settingsMenuAnchor)}
           onClose={resetSettingMenuAnchor}
-          getContentAnchorEl={null}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'right',
