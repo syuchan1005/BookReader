@@ -1,11 +1,7 @@
 import React from 'react';
-import {
-  makeStyles,
-  createStyles,
-  Theme,
-  Fab,
-  Icon, Typography,
-} from '@material-ui/core';
+import { Theme, Fab, Icon, Typography } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import createStyles from '@mui/styles/createStyles';
 import { useHistory } from 'react-router-dom';
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import useTestId from '../hooks/useTestId';

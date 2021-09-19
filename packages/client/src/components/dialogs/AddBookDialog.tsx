@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import {
-  Button, ButtonGroup,
+  Button,
+  ButtonGroup,
   CircularProgress,
-  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,12 +11,13 @@ import {
   Icon,
   IconButton,
   LinearProgress,
-  makeStyles,
   Radio,
   RadioGroup,
   TextField,
   Theme,
-} from '@material-ui/core';
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import { gql, useMutation } from '@apollo/client';
 
 import { Result } from '@syuchan1005/book-reader-graphql';
@@ -420,7 +421,9 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                           autoFocus
                         />
                       )}
-                      <IconButton onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}>
+                      <IconButton
+                        onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}
+                        size="large">
                         <Icon>clear</Icon>
                       </IconButton>
                     </div>

@@ -1,14 +1,8 @@
 import React, { ReactNode } from 'react';
 import { useHistory } from 'react-router-dom';
-import {
-  AppBar,
-  createStyles,
-  Icon,
-  IconButton,
-  makeStyles,
-  Toolbar,
-  Typography,
-} from '@material-ui/core';
+import { AppBar, Icon, IconButton, Toolbar, Typography } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import { commonTheme } from '../App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 
@@ -62,7 +56,7 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   return (
     <AppBar className={classes.appBar} elevation={elevation}>
       <Toolbar>
-        <IconButton className={classes.backIcon} onClick={clickBack}>
+        <IconButton className={classes.backIcon} onClick={clickBack} size="large">
           <Icon>arrow_back</Icon>
         </IconButton>
         <Typography

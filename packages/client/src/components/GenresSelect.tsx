@@ -3,15 +3,24 @@ import {
   Button,
   Checkbox,
   Chip,
-  createStyles, Dialog, DialogActions, DialogContent, DialogTitle,
-  FormControl, Icon, IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Icon,
+  IconButton,
   Input,
   InputLabel,
   ListItemText,
-  makeStyles,
   MenuItem,
-  Select, TextField, Theme,
-} from '@material-ui/core';
+  Select,
+  TextField,
+  Theme,
+} from '@mui/material';
+
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 

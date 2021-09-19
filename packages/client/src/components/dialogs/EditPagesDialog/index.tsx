@@ -7,7 +7,7 @@ import {
   List,
   ListItem,
   ListItemText,
-} from '@material-ui/core';
+} from '@mui/material';
 import { List as MovableList, arrayMove } from 'react-movable';
 import { v4 as uuidv4 } from 'uuid';
 

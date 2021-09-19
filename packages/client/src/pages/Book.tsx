@@ -1,5 +1,8 @@
 import React from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core';
+import { Theme } from '@mui/material';
+
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import SwiperCore, { Virtual } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -459,20 +462,18 @@ const Book = (props: BookProps) => {
   const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
 
   if (loading || (error && !data)) {
-    return (
-      <>
-        <TitleAndBackHeader title="Book" />
-        <main>
-          <div className={classes.loading}>
-            <div>
-              {loading && 'Loading'}
-              {error && `${error.toString()
-                .replace(/:\s*/g, '\n')}`}
-            </div>
+    return <>
+      <TitleAndBackHeader title="Book" />
+      <main>
+        <div className={classes.loading}>
+          <div>
+            {loading && 'Loading'}
+            {error && `${error.toString()
+              .replace(/:\s*/g, '\n')}`}
           </div>
-        </main>
-      </>
-    );
+        </div>
+      </main>
+    </>;
   }
 
   return (

@@ -4,15 +4,15 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
-  createStyles,
   Icon,
   IconButton,
-  makeStyles,
   Menu,
   MenuItem,
   Theme,
-} from '@material-ui/core';
-import { orange as color } from '@material-ui/core/colors';
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { orange as color } from '@mui/material/colors';
 
 import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
 import {
@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   invisibleLabel: {
     position: 'absolute',
     right: theme.spacing(1.5),
-    bottom: `calc(2rem + ${theme.spacing(1)}px)`,
+    bottom: `calc(2rem + ${theme.spacing(1)})`,
     color: 'white',
     textShadow: '1px 1px 1px black',
   },
@@ -243,10 +243,7 @@ const BookInfo = (props: BookInfoProps) => {
       {isVisible && (
         <Card className={classes.card} style={style}>
           <CardActions className={classes.headerMenu}>
-            <IconButton
-              onClick={setMenuAnchor}
-              aria-label="menu"
-            >
+            <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
               <Icon>more_vert</Icon>
             </IconButton>
             <Menu

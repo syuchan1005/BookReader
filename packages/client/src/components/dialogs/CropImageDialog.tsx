@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
-} from '@material-ui/core';
+} from '@mui/material';
 import { Cropper } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 

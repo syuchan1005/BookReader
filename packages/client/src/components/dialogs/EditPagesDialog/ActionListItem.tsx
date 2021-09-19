@@ -17,7 +17,7 @@ import {
   RadioGroup,
   TextField,
   useTheme,
-} from '@material-ui/core';
+} from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
 
 import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
@@ -107,7 +107,7 @@ const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
           <ListItemIcon><Icon {...dragHandleProps}>menu</Icon></ListItemIcon>
           <ListItemText primary={menuText} />
           <ListItemSecondaryAction>
-            <IconButton edge="end" onClick={onDelete}>
+            <IconButton edge="end" onClick={onDelete} size="large">
               <Icon>delete</Icon>
             </IconButton>
           </ListItemSecondaryAction>

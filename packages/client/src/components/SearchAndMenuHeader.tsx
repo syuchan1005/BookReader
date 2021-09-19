@@ -1,17 +1,17 @@
 import React, { ChangeEvent, useCallback } from 'react';
 import {
   AppBar,
-  createStyles,
   Icon,
   IconButton,
   InputAdornment,
   InputBase,
-  makeStyles,
   Theme,
   Toolbar,
   useTheme,
-} from '@material-ui/core';
-import { alpha } from '@material-ui/core/styles';
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { alpha } from '@mui/material/styles';
 
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
@@ -125,7 +125,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
           className={classes.sortIcon}
           onClick={(event) => (onClickMenuIcon && onClickMenuIcon(event.currentTarget))}
           aria-label="sort"
-        >
+          size="large">
           <Icon>sort</Icon>
         </IconButton>
       </Toolbar>

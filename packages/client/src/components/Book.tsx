@@ -5,14 +5,15 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
-  createStyles,
   Icon,
   IconButton,
-  makeStyles,
   Menu,
   MenuItem,
   Theme,
-} from '@material-ui/core';
+} from '@mui/material';
+
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import { Book as BookType } from '@syuchan1005/book-reader-graphql';
 import {
@@ -235,10 +236,7 @@ const Book = (props: BookProps) => {
             ) : undefined
           ) : (
             <CardActions className={classes.headerMenu}>
-              <IconButton
-                onClick={setMenuAnchor}
-                aria-label="menu"
-              >
+              <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
                 <Icon>more_vert</Icon>
               </IconButton>
               <Menu

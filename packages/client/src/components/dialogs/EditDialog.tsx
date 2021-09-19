@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Button,
-  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
@@ -9,9 +8,11 @@ import {
   Icon,
   IconButton,
   InputAdornment,
-  makeStyles,
-  TextField, Theme,
-} from '@material-ui/core';
+  TextField,
+  Theme,
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import GenresSelect from '../GenresSelect';
 
 interface EditDialogProps {
@@ -86,7 +87,7 @@ const EditDialog = (props: EditDialogProps) => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={onClickRestore}>
+                <IconButton onClick={onClickRestore} size="large">
                   <Icon>restore</Icon>
                 </IconButton>
               </InputAdornment>

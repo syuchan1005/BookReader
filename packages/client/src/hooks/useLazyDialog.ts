@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useTheme } from '@material-ui/core';
+import { useTheme } from '@mui/material';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 
 export const useLazyDialog = (initialState: boolean, leavingScreen?: number): [

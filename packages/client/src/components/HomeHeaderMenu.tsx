@@ -4,7 +4,6 @@ import {
   Chip,
   CircularProgress,
   Collapse,
-  createStyles,
   FormControl,
   Icon,
   Input,
@@ -12,13 +11,14 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  makeStyles,
   Menu,
   MenuItem,
   Select,
   useTheme,
-} from '@material-ui/core';
-import * as colors from '@material-ui/core/colors';
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import * as colors from '@mui/material/colors';
 import { useHistory } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 

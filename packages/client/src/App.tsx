@@ -2,13 +2,9 @@ import React, {
   useEffect, useMemo, lazy, Suspense,
 } from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
-import {
-  CssBaseline,
-  MuiThemeProvider,
-  Theme,
-} from '@material-ui/core';
-import { createTheme } from '@material-ui/core/styles';
-import * as colors from '@material-ui/core/colors';
+import { CssBaseline, ThemeProvider, StyledEngineProvider, Theme, adaptV4Theme } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
+import * as colors from '@mui/material/colors';
 import { createBrowserHistory } from 'history';
 import { useSnackbar } from 'notistack';
 import { useApolloClient } from '@apollo/client';
@@ -100,33 +96,35 @@ const App = () => {
   }, [apolloClient, enqueueSnackbar]);
 
   const provideTheme = useMemo(
-    () => createTheme({
+    () => createTheme(adaptV4Theme({
       palette: {
-        type: isSystemDarkTheme ? 'dark' : 'light',
+        mode: isSystemDarkTheme ? 'dark' : 'light',
         primary: colors[primaryColor],
         secondary: colors[secondaryColor],
       },
-    }),
+    })),
     [isSystemDarkTheme, primaryColor, secondaryColor],
   );
 
   return (
-    <MuiThemeProvider theme={provideTheme}>
-      <CssBaseline />
-      <Router history={history}>
-        <QueryParamProvider ReactRouterRoute={Route}>
-          <Suspense fallback={<LoadingFullscreen open />}>
-            <Switch>
-              <Route exact path="/" component={Home} />
-              <Route exact path="/info/:id" component={Info} />
-              <Route exact path="/book/:id" component={Book} />
-              <Route exact path="/setting" component={Setting} />
-              <Route component={Error} />
-            </Switch>
-          </Suspense>
-        </QueryParamProvider>
-      </Router>
-    </MuiThemeProvider>
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={provideTheme}>
+        <CssBaseline />
+        <Router history={history}>
+          <QueryParamProvider ReactRouterRoute={Route}>
+            <Suspense fallback={<LoadingFullscreen open />}>
+              <Switch>
+                <Route exact path="/" component={Home} />
+                <Route exact path="/info/:id" component={Info} />
+                <Route exact path="/book/:id" component={Book} />
+                <Route exact path="/setting" component={Setting} />
+                <Route component={Error} />
+              </Switch>
+            </Suspense>
+          </QueryParamProvider>
+        </Router>
+      </ThemeProvider>
+    </StyledEngineProvider>
   );
 };
 

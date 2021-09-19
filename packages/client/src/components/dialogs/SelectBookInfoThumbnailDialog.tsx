@@ -1,14 +1,17 @@
 import React from 'react';
 import {
   Button,
-  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  makeStyles,
-  Theme, useMediaQuery, useTheme,
-} from '@material-ui/core';
+  Theme,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import { useBookInfoQuery, useEditBookInfoThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import Book from '@client/components/Book';
@@ -28,8 +31,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
     justifyContent: 'center',
-    columnGap: `${theme.spacing(2)}px`,
-    rowGap: `${theme.spacing(2)}px`,
+    columnGap: theme.spacing(2),
+    rowGap: theme.spacing(2),
   },
 }));
 
@@ -74,9 +77,9 @@ const SelectBookInfoThumbnailDialog = (
   };
 
   const theme = useTheme();
-  const fullscreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const fullscreen = useMediaQuery(theme.breakpoints.down('md'));
   const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
+    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
 
   return (
     <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>

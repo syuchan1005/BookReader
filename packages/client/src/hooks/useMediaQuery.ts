@@ -1,4 +1,4 @@
-import { useMediaQuery as muiUseMediaQuery } from '@material-ui/core';
+import { useMediaQuery as muiUseMediaQuery } from '@mui/material';
 import { useMemo } from 'react';
 
 export const useMediaQuery = (queryInput: string) => {

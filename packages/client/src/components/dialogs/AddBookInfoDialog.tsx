@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Button,
   CircularProgress,
-  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,10 +10,12 @@ import {
   IconButton,
   List,
   ListItem,
-  makeStyles,
   TextField,
   Theme,
-} from '@material-ui/core';
+} from '@mui/material';
+
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import { useAddBookInfoMutation, useAddBookInfoHistoriesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import GenresSelect from '../GenresSelect';

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,
-} from '@material-ui/core';
+} from '@mui/material';
 import { createBookPageUrl } from '../BookPageImage';
 
 interface CalcImagePaddingDialogProps {

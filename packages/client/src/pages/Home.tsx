@@ -1,13 +1,7 @@
 import React from 'react';
-import {
-  CircularProgress,
-  createStyles,
-  Fab,
-  Icon,
-  makeStyles,
-  Theme,
-  useTheme,
-} from '@material-ui/core';
+import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import { useHistory } from 'react-router-dom';
 import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilValue } from 'recoil';
@@ -55,9 +49,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
     gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
     justifyContent: 'center',
-    columnGap: `${theme.spacing(2)}px`,
-    rowGap: `${theme.spacing(2)}px`,
-    [theme.breakpoints.down('xs')]: {
+    columnGap: theme.spacing(2),
+    rowGap: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
       gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
     },
@@ -74,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   fab: {
     position: 'fixed',
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
     right: theme.spacing(2),
     zIndex: 2,
     fallbacks: {
@@ -84,7 +78,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   addButton: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
@@ -112,7 +106,7 @@ const Home = (props: HomeProps) => {
   const history = useHistory();
 
   const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
+    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
   const [openAddBook, setOpenAddBook,
@@ -195,7 +189,7 @@ const Home = (props: HomeProps) => {
     first: infos.length || defaultLoadBookInfoCount,
   }), [refetch, infos]);
 
-  const downXs = useMediaQuery(theme.breakpoints.down('xs'));
+  const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleBookInfoClick = React.useCallback((infoId, isHistory) => {
     if (isHistory) {
@@ -205,85 +199,83 @@ const Home = (props: HomeProps) => {
     }
   }, [history, setOpenAddBook]);
 
-  return (
-    <>
-      <SearchAndMenuHeader
-        searchText={searchText || ''}
-        onChangeSearchText={handleSearchText}
-        onClickMenuIcon={setMenuAnchor}
-      />
-      <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
-      <main className={classes.home}>
-        {(loading || (error && !data)) ? (
-          <div className={classes.loading}>
-            {loading && 'Loading'}
-            {error && `${error.toString()
-              .replace(/:\s*/g, '\n')}`}
+  return <>
+    <SearchAndMenuHeader
+      searchText={searchText || ''}
+      onChangeSearchText={handleSearchText}
+      onClickMenuIcon={setMenuAnchor}
+    />
+    <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
+    <main className={classes.home}>
+      {(loading || (error && !data)) ? (
+        <div className={classes.loading}>
+          {loading && 'Loading'}
+          {error && `${error.toString()
+            .replace(/:\s*/g, '\n')}`}
+        </div>
+      ) : (
+        <>
+          <div className={classes.homeGrid}>
+            {infos.map((info, i, arr) => (
+              <BookInfo
+                key={info.id}
+                {...info}
+                onClick={handleBookInfoClick}
+                onDeleted={handleDeletedBookInfo}
+                onEdit={refetchAll}
+                thumbnailSize={downXs ? 150 : 200}
+                showName={showBookInfoName}
+                visibleMargin={visibleMargin}
+                onVisible={() => {
+                  const isLast = i === arr.length - 1;
+                  if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+                    handleLoadMore();
+                  }
+                }}
+              />
+            ))}
+            {(loading) && (
+              <div className={classes.loadMoreProgress}>
+                <CircularProgress color="secondary" />
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            <div className={classes.homeGrid}>
-              {infos.map((info, i, arr) => (
-                <BookInfo
-                  key={info.id}
-                  {...info}
-                  onClick={handleBookInfoClick}
-                  onDeleted={handleDeletedBookInfo}
-                  onEdit={refetchAll}
-                  thumbnailSize={downXs ? 150 : 200}
-                  showName={showBookInfoName}
-                  visibleMargin={visibleMargin}
-                  onVisible={() => {
-                    const isLast = i === arr.length - 1;
-                    if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
-                      handleLoadMore();
-                    }
-                  }}
-                />
-              ))}
-              {(loading) && (
-                <div className={classes.loadMoreProgress}>
-                  <CircularProgress color="secondary" />
-                </div>
-              )}
-            </div>
-            <Fab
-              className={classes.addButton}
-              onClick={setOpen}
-              aria-label="add"
-            >
-              <Icon>add</Icon>
-            </Fab>
-          </>
-        )}
+          <Fab
+            className={classes.addButton}
+            onClick={setOpen}
+            aria-label="add"
+          >
+            <Icon>add</Icon>
+          </Fab>
+        </>
+      )}
 
-        <Fab
-          color="secondary"
-          className={classes.fab}
-          onClick={refetchAll}
-          aria-label="refetch"
-        >
-          <Icon>refresh</Icon>
-        </Fab>
+      <Fab
+        color="secondary"
+        className={classes.fab}
+        onClick={refetchAll}
+        aria-label="refetch"
+      >
+        <Icon>refresh</Icon>
+      </Fab>
 
-        <AddBookInfoDialog
-          open={open}
-          name={infos.length === 0 ? searchText : undefined}
+      <AddBookInfoDialog
+        open={open}
+        name={infos.length === 0 ? searchText : undefined}
+        onAdded={refetchAll}
+        onClose={setClose}
+      />
+
+      {(!!openAddBook || !!canMountAddBook) && (
+        <AddBookDialog
+          open={!!openAddBook}
+          infoId={openAddBook}
+          onClose={resetOpenAddBook}
           onAdded={refetchAll}
-          onClose={setClose}
         />
-
-        {(!!openAddBook || !!canMountAddBook) && (
-          <AddBookDialog
-            open={!!openAddBook}
-            infoId={openAddBook}
-            onClose={resetOpenAddBook}
-            onAdded={refetchAll}
-          />
-        )}
-      </main>
-    </>
-  );
+      )}
+    </main>
+  </>;
 };
 
 export default React.memo(Home);

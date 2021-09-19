@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
-import { createStyles, makeStyles, Theme } from '@material-ui/core';
-import { grey } from '@material-ui/core/colors';
+import { Theme } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { grey } from '@mui/material/colors';
 
 import { archiveTypes } from '@syuchan1005/book-reader-common';
 import useOS from '@client/hooks/useOS';
@@ -14,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   dropZone: {
     marginTop: theme.spacing(1),
     width: '100%',
-    border: `dashed ${theme.spacing(0.25)}px ${grey[600]}`,
+    border: `dashed ${theme.spacing(0.25)} ${grey[600]}`,
     padding: theme.spacing(1),
     '&.dragging': {
       background: grey[200],

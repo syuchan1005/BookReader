@@ -1,4 +1,4 @@
-import { useScrollTrigger } from '@material-ui/core';
+import { useScrollTrigger } from '@mui/material';
 import { useMemo } from 'react';
 
 export const useAppBarScrollElevation = (): number => {

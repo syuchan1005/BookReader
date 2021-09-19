@@ -1,16 +1,8 @@
 import React from 'react';
-import {
-  createStyles,
-  Fab,
-  Icon,
-  IconButton,
-  makeStyles,
-  Menu,
-  MenuItem,
-  Theme,
-  useTheme,
-} from '@material-ui/core';
-import { common } from '@material-ui/core/colors';
+import { Fab, Icon, IconButton, Menu, MenuItem, Theme, useTheme } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { common } from '@mui/material/colors';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useRecoilState } from 'recoil';
@@ -49,9 +41,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     justifyContent: 'center',
     gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
     gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-    columnGap: `${theme.spacing(2)}px`,
-    rowGap: `${theme.spacing(2)}px`,
-    [theme.breakpoints.down('xs')]: {
+    columnGap: theme.spacing(2),
+    rowGap: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
       gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
       gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
     },
@@ -68,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   fab: {
     position: 'fixed',
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
     right: theme.spacing(2),
     zIndex: 2,
     fallbacks: {
@@ -78,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   addButton: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)}px)`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
@@ -122,7 +114,7 @@ const Info = (props: InfoProps) => {
   const { id: infoId } = useParams<{ id: string }>();
 
   const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)}px 0px`, [theme]);
+    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
   const [readId, setReadId] = React.useState('');
   const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] = useLazyDialog(false);
   const [mode, setMode] = React.useState<ScreenModeType>(ScreenMode.NORMAL);
@@ -196,7 +188,7 @@ const Info = (props: InfoProps) => {
     });
   }, [refetch]);
 
-  const downXs = useMediaQuery(theme.breakpoints.down('xs'));
+  const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const toggleSelect = React.useCallback((id: string) => {
     if (selectIds.includes(id)) {
@@ -233,117 +225,112 @@ const Info = (props: InfoProps) => {
     refetch();
   }, [refetch]);
 
-  return (
-    <>
-      {(mode === ScreenMode.NORMAL) ? (
-        <TitleAndBackHeader
-          backRoute="/"
-          title={bookName}
+  return <>
+    {(mode === ScreenMode.NORMAL) ? (
+      <TitleAndBackHeader
+        backRoute="/"
+        title={bookName}
+      >
+        <IconButton style={{ color: common.white }} onClick={setSortEl} size="large">
+          <Icon>sort</Icon>
+        </IconButton>
+        <Menu
+          getContentAnchorEl={null}
+          anchorEl={sortEl}
+          open={!!sortEl}
+          onClose={resetSortEl}
         >
-          <IconButton
-            style={{ color: common.white }}
-            onClick={setSortEl}
-          >
-            <Icon>sort</Icon>
-          </IconButton>
-          <Menu
-            getContentAnchorEl={null}
-            anchorEl={sortEl}
-            open={!!sortEl}
-            onClose={resetSortEl}
-          >
-            {Object.keys(BookOrder)
-              .map((order: BookOrder) => (
-                <MenuItem
-                  key={order}
-                  onClick={() => {
-                    setSortBookOrder(BookOrder[order]);
-                    resetSortEl();
-                  }}
-                >
-                  {BookOrder[order]}
-                </MenuItem>
-              ))}
-          </Menu>
-        </TitleAndBackHeader>
+          {Object.keys(BookOrder)
+            .map((order: BookOrder) => (
+              <MenuItem
+                key={order}
+                onClick={() => {
+                  setSortBookOrder(BookOrder[order]);
+                  resetSortEl();
+                }}
+              >
+                {BookOrder[order]}
+              </MenuItem>
+            ))}
+        </Menu>
+      </TitleAndBackHeader>
+    ) : (
+      <SelectBookHeader
+        infoId={infoId}
+        selectIds={selectIds}
+        onClose={handleHeaderClose}
+        onDeleteBooks={handleSelectBookMutated}
+        onMoveBooks={handleSelectBookMutated}
+      />
+    )}
+    <main className={classes.info}>
+      {(loading || (error && !data)) ? (
+        <div className={classes.loading}>
+          {loading && 'Loading'}
+          {error && `${error.toString()
+            .replace(/:\s*/g, '\n')}`}
+        </div>
       ) : (
-        <SelectBookHeader
+        <>
+          <div className={classes.infoGrid}>
+            {// @ts-ignore
+              (bookList && bookList.length > 0) && bookList.map(
+                (book) => (
+                  <Book
+                    key={book.id}
+                    infoId={infoId}
+                    simple={mode === ScreenMode.SELECT}
+                    {...book}
+                    name={bookName}
+                    reading={readId === book.id}
+                    onClick={handleBookClick}
+                    onDeleted={onDeletedBook}
+                    onEdit={refetch}
+                    thumbnailSize={downXs ? 150 : 200}
+                    thumbnailNoSave={false}
+                    visibleMargin={visibleMargin}
+                    overlayClassName={selectIds.includes(book.id)
+                      ? classes.selectedBookOverlay
+                      : undefined}
+                    disableRipple={mode === ScreenMode.SELECT}
+                    onLongPress={mode === ScreenMode.NORMAL ? handleBookLongClick : undefined}
+                  >
+                    {(selectIds.includes(book.id)) && (
+                      <Icon className={classes.selectedBookCheckIcon}>check_circle</Icon>
+                    )}
+                  </Book>
+                ),
+              )
+            }
+          </div>
+          <Fab
+            className={classes.addButton}
+            onClick={showAddDialog}
+            aria-label="add"
+          >
+            <Icon>add</Icon>
+          </Fab>
+        </>
+      )}
+      <Fab
+        color="secondary"
+        className={classes.fab}
+        onClick={() => refetch()}
+        aria-label="refetch"
+      >
+        <Icon style={{ color: 'white' }}>refresh</Icon>
+      </Fab>
+
+      {(canMountAddDialog) && (
+        <AddBookDialog
+          open={isShownAddDialog}
           infoId={infoId}
-          selectIds={selectIds}
-          onClose={handleHeaderClose}
-          onDeleteBooks={handleSelectBookMutated}
-          onMoveBooks={handleSelectBookMutated}
+          onAdded={refetch}
+          onClose={hideAddDialog}
         />
       )}
-      <main className={classes.info}>
-        {(loading || (error && !data)) ? (
-          <div className={classes.loading}>
-            {loading && 'Loading'}
-            {error && `${error.toString()
-              .replace(/:\s*/g, '\n')}`}
-          </div>
-        ) : (
-          <>
-            <div className={classes.infoGrid}>
-              {// @ts-ignore
-                (bookList && bookList.length > 0) && bookList.map(
-                  (book) => (
-                    <Book
-                      key={book.id}
-                      infoId={infoId}
-                      simple={mode === ScreenMode.SELECT}
-                      {...book}
-                      name={bookName}
-                      reading={readId === book.id}
-                      onClick={handleBookClick}
-                      onDeleted={onDeletedBook}
-                      onEdit={refetch}
-                      thumbnailSize={downXs ? 150 : 200}
-                      thumbnailNoSave={false}
-                      visibleMargin={visibleMargin}
-                      overlayClassName={selectIds.includes(book.id)
-                        ? classes.selectedBookOverlay
-                        : undefined}
-                      disableRipple={mode === ScreenMode.SELECT}
-                      onLongPress={mode === ScreenMode.NORMAL ? handleBookLongClick : undefined}
-                    >
-                      {(selectIds.includes(book.id)) && (
-                        <Icon className={classes.selectedBookCheckIcon}>check_circle</Icon>
-                      )}
-                    </Book>
-                  ),
-                )
-              }
-            </div>
-            <Fab
-              className={classes.addButton}
-              onClick={showAddDialog}
-              aria-label="add"
-            >
-              <Icon>add</Icon>
-            </Fab>
-          </>
-        )}
-        <Fab
-          color="secondary"
-          className={classes.fab}
-          onClick={() => refetch()}
-          aria-label="refetch"
-        >
-          <Icon style={{ color: 'white' }}>refresh</Icon>
-        </Fab>
-
-        {(canMountAddDialog) && (
-          <AddBookDialog
-            open={isShownAddDialog}
-            infoId={infoId}
-            onAdded={refetch}
-            onClose={hideAddDialog}
-          />
-        )}
-      </main>
-    </>
-  );
+    </main>
+  </>;
 };
 
 export default React.memo(Info);

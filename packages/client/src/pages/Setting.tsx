@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Button,
-  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,8 +17,12 @@ import {
   Theme,
   Toolbar,
   Typography,
-  makeStyles, useTheme, Switch,
-} from '@material-ui/core';
+  useTheme,
+  Switch,
+} from '@mui/material';
+
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import { useDeleteGenreMutation, useEditGenreMutation, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 

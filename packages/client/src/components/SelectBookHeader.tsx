@@ -1,16 +1,26 @@
 import React from 'react';
 import {
   AppBar,
-  Button, CircularProgress,
-  createStyles, Dialog, DialogActions, DialogContent, DialogTitle,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Icon,
   IconButton,
-  makeStyles, MuiThemeProvider, TextField,
+  ThemeProvider,
+  StyledEngineProvider,
+  TextField,
   Theme,
-  Toolbar, Typography,
-} from '@material-ui/core';
-import { grey } from '@material-ui/core/colors';
-import { createTheme } from '@material-ui/core/styles';
+  Toolbar,
+  Typography,
+  adaptV4Theme,
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { grey } from '@mui/material/colors';
+import { createTheme } from '@mui/material/styles';
 
 import { commonTheme } from '@client/App';
 
@@ -41,13 +51,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const ContextualActionBarTheme = createTheme({
+const ContextualActionBarTheme = createTheme(adaptV4Theme({
   palette: {
     primary: {
       main: grey['900'],
     },
   },
-});
+}));
 
 const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
@@ -86,15 +96,15 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
     },
   });
 
-  return (
-    <>
-      <MuiThemeProvider theme={ContextualActionBarTheme}>
+  return <>
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={ContextualActionBarTheme}>
         <AppBar className={classes.appBar}>
           <Toolbar>
             <IconButton
               className={classes.iconButton}
               onClick={() => (onClose && onClose())}
-            >
+              size="large">
               <Icon>clear</Icon>
             </IconButton>
             <Typography variant="h6" className={classes.title}>
@@ -112,76 +122,76 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
               className={classes.iconButton}
               disabled={selectIds.length === 0}
               onClick={() => setOpenDeleteDialog(true)}
-            >
+              size="large">
               <Icon>delete_outline</Icon>
             </IconButton>
           </Toolbar>
         </AppBar>
-      </MuiThemeProvider>
+      </ThemeProvider>
+    </StyledEngineProvider>
 
-      <Dialog
-        open={openMoveDialog}
-        onClose={() => (!moveBooksLoading && setOpenMoveDialog(false))}
-      >
-        <DialogTitle>Move Books</DialogTitle>
-        {(moveBooksLoading) ? (
-          <DialogContent className={classes.loadingContent}>
-            <CircularProgress color="secondary" />
-          </DialogContent>
-        ) : (
-          <DialogContent>
-            <TextField
-              label="Move InfoId"
-              value={moveInfoId}
-              onChange={(e) => setMoveInfoId(e.target.value)}
-            />
-          </DialogContent>
-        )}
-        <DialogActions>
-          <Button
-            disabled={moveBooksLoading}
-            onClick={() => setOpenMoveDialog(false)}
-          >
-            Close
-          </Button>
-          <Button
-            disabled={moveBooksLoading}
-            onClick={() => doMoveBooks()}
-            color="secondary"
-            variant="contained"
-          >
-            Move
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={openDeleteDialog}
-        onClose={() => (!deleteBooksLoading && setOpenDeleteDialog(false))}
-      >
-        <DialogTitle>Delete Books</DialogTitle>
+    <Dialog
+      open={openMoveDialog}
+      onClose={() => (!moveBooksLoading && setOpenMoveDialog(false))}
+    >
+      <DialogTitle>Move Books</DialogTitle>
+      {(moveBooksLoading) ? (
         <DialogContent className={classes.loadingContent}>
-          {deleteBooksLoading && <CircularProgress color="secondary" />}
+          <CircularProgress color="secondary" />
         </DialogContent>
-        <DialogActions>
-          <Button
-            disabled={deleteBooksLoading}
-            onClick={() => setOpenDeleteDialog(false)}
-          >
-            Close
-          </Button>
-          <Button
-            disabled={deleteBooksLoading}
-            onClick={() => doDeleteBooks()}
-            color="secondary"
-            variant="contained"
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
+      ) : (
+        <DialogContent>
+          <TextField
+            label="Move InfoId"
+            value={moveInfoId}
+            onChange={(e) => setMoveInfoId(e.target.value)}
+          />
+        </DialogContent>
+      )}
+      <DialogActions>
+        <Button
+          disabled={moveBooksLoading}
+          onClick={() => setOpenMoveDialog(false)}
+        >
+          Close
+        </Button>
+        <Button
+          disabled={moveBooksLoading}
+          onClick={() => doMoveBooks()}
+          color="secondary"
+          variant="contained"
+        >
+          Move
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+    <Dialog
+      open={openDeleteDialog}
+      onClose={() => (!deleteBooksLoading && setOpenDeleteDialog(false))}
+    >
+      <DialogTitle>Delete Books</DialogTitle>
+      <DialogContent className={classes.loadingContent}>
+        {deleteBooksLoading && <CircularProgress color="secondary" />}
+      </DialogContent>
+      <DialogActions>
+        <Button
+          disabled={deleteBooksLoading}
+          onClick={() => setOpenDeleteDialog(false)}
+        >
+          Close
+        </Button>
+        <Button
+          disabled={deleteBooksLoading}
+          onClick={() => doDeleteBooks()}
+          color="secondary"
+          variant="contained"
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </>;
 };
 
 export default React.memo(SelectBookHeader);

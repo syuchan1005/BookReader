@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogTitle,
   LinearProgress,
-} from '@material-ui/core';
+} from '@mui/material';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 

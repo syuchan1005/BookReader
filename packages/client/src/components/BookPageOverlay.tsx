@@ -1,16 +1,18 @@
 import React, { MouseEventHandler } from 'react';
 import {
   Button,
-  createStyles,
   Icon,
   IconButton,
-  makeStyles,
   Menu,
   MenuItem,
-  MuiThemeProvider,
-  Slider, Theme,
-} from '@material-ui/core';
-import { orange } from '@material-ui/core/colors';
+  ThemeProvider,
+  StyledEngineProvider,
+  Slider,
+  Theme,
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { orange } from '@mui/material/colors';
 import { useRecoilState } from 'recoil';
 
 import { commonTheme } from '@client/App';
@@ -59,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     borderRadius: theme.spacing(1),
     position: 'absolute',
     '&.top': {
-      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}px`),
+      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}`),
       whiteSpace: 'nowrap',
     },
     '&.bottom': {
@@ -252,44 +254,48 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           <MenuItem onClick={() => clickEffect('dark')}>Dark</MenuItem>
         </Menu>
         <div className={classes.bottomSlider}>
-          <MuiThemeProvider
-            theme={{
-              direction: readOrder === ReadOrder.RTL ? 'rtl' : 'ltr',
-            }}
-          >
-            <Slider
-              color="secondary"
-              valueLabelDisplay="auto"
-              max={maxPages}
-              min={1}
-              step={pageStyle.slidesPerView}
-              value={currentPage + 1}
-              onChange={(e, v: number) => onPageSliderChanged(v - 1)}
-            />
-          </MuiThemeProvider>
+          <StyledEngineProvider injectFirst>
+            <ThemeProvider
+              theme={{
+                direction: readOrder === ReadOrder.RTL ? 'rtl' : 'ltr',
+              }}
+            >
+              <Slider
+                color="secondary"
+                valueLabelDisplay="auto"
+                max={maxPages}
+                min={1}
+                step={pageStyle.slidesPerView}
+                value={currentPage + 1}
+                onChange={(e, v: number) => onPageSliderChanged(v - 1)}
+              />
+            </ThemeProvider>
+          </StyledEngineProvider>
         </div>
         {(pageEffect) && (
           <div className={classes.bottomSlider}>
-            <MuiThemeProvider
-              theme={(outerTheme) => ({
-                ...outerTheme,
-                palette: {
-                  // @ts-ignore
-                  ...outerTheme.palette,
-                  primary: {
-                    main: orange['700'],
+            <StyledEngineProvider injectFirst>
+              <ThemeProvider
+                theme={(outerTheme) => ({
+                  ...outerTheme,
+                  palette: {
+                    // @ts-ignore
+                    ...outerTheme.palette,
+                    primary: {
+                      main: orange['700'],
+                    },
                   },
-                },
-              })}
-            >
-              <Slider
-                valueLabelDisplay="auto"
-                max={100}
-                min={0}
-                value={pageEffectPercentage}
-                onChange={(e, v: number) => onPageEffectPercentage(v)}
-              />
-            </MuiThemeProvider>
+                })}
+              >
+                <Slider
+                  valueLabelDisplay="auto"
+                  max={100}
+                  min={0}
+                  value={pageEffectPercentage}
+                  onChange={(e, v: number) => onPageEffectPercentage(v)}
+                />
+              </ThemeProvider>
+            </StyledEngineProvider>
           </div>
         )}
       </div>
