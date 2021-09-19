@@ -4,9 +4,10 @@ import { Theme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import SwiperCore, { Virtual } from 'swiper';
+import { Virtual } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/swiper-bundle.min.css';
+import 'swiper/css';
+import 'swiper/css/virtual';
 
 import { useHistory, useParams } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
@@ -19,7 +20,6 @@ import { defaultTitle } from '@syuchan1005/book-reader-common';
 
 import db from '@client/Database';
 import { commonTheme } from '@client/App';
-import useDebounceValue from '@client/hooks/useDebounceValue';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
@@ -30,7 +30,6 @@ import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
-SwiperCore.use([Virtual]);
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -223,7 +222,6 @@ const Book = (props: BookProps) => {
   }, []);
 
   const [page, updatePage] = React.useState(0);
-  const debouncePage = useDebounceValue(page, 200);
   const [queryPage, setQueryPage] = useQueryParam('page', NumberParam);
   const [dbLoading, dbPage, setDbPage] = useDatabasePage(bookId);
   const [isPageSet, setPageSet] = React.useState(false);
@@ -435,13 +433,6 @@ const Book = (props: BookProps) => {
     return windowSize;
   }, [windowSize, showOriginalImage]);
 
-  const canImageVisible = React.useCallback((i: number) => imageSize
-    && isPageSet
-    && (i < debouncePage
-      ? debouncePage - i <= slidesPerView
-      : i - debouncePage <= (slidesPerView * 2 - 1)),
-  [debouncePage, imageSize, isPageSet, slidesPerView]);
-
   const goNextBook = React.useMemo(() => {
     if (nextBook && data) {
       return () => openBook(data.book.info.id, nextBook);
@@ -462,18 +453,20 @@ const Book = (props: BookProps) => {
   const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
 
   if (loading || (error && !data)) {
-    return <>
-      <TitleAndBackHeader title="Book" />
-      <main>
-        <div className={classes.loading}>
-          <div>
-            {loading && 'Loading'}
-            {error && `${error.toString()
-              .replace(/:\s*/g, '\n')}`}
+    return (
+      <>
+        <TitleAndBackHeader title="Book" />
+        <main>
+          <div className={classes.loading}>
+            <div>
+              {loading && 'Loading'}
+              {error && `${error.toString()
+                .replace(/:\s*/g, '\n')}`}
+            </div>
           </div>
-        </div>
-      </main>
-    </>;
+        </main>
+      </>
+    );
   }
 
   return (
@@ -516,6 +509,7 @@ const Book = (props: BookProps) => {
 
         <Remount remountKey={`${bookId}:${pageStyleKey}:${readOrder}`}>
           <Swiper
+            modules={[Virtual]}
             onSwiper={updateSwiper}
             dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
             className={classes.pageContainer}
@@ -532,19 +526,17 @@ const Book = (props: BookProps) => {
                 virtualIndex={index + prefixPage}
                 className={pageClass(index)}
               >
-                {canImageVisible(i) && (
-                  <BookPageImage
-                    style={effectBackGround}
-                    bookId={bookId}
-                    pageIndex={i}
-                    bookPageCount={maxPage}
-                    {...imageSize}
-                    alt={(i + 1).toString(10)}
-                    className={classes.pageImage}
-                    loading="eager"
-                    sizeDebounceDelay={300}
-                  />
-                )}
+                <BookPageImage
+                  style={effectBackGround}
+                  bookId={bookId}
+                  pageIndex={i}
+                  bookPageCount={maxPage}
+                  {...imageSize}
+                  alt={(i + 1).toString(10)}
+                  className={classes.pageImage}
+                  loading="eager"
+                  sizeDebounceDelay={300}
+                />
               </SwiperSlide>
             ))}
             {[...new Array(((maxPage + prefixPage) % slidesPerView)).keys()].map((i) => (
