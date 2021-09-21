@@ -1,3 +1,4 @@
+/* eslint no-underscore-dangle: ["error", { "allow": ["_count"] }] */
 import { PrismaClient, BookInfo as PBookInfo } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -67,30 +68,29 @@ export class PrismaBookDataManager implements IBookDataManager {
     ...book
   }: InputBook): Promise<BookId> {
     const bookId = id || uuidv4();
-    await this.prismaClient.$transaction([
-      this.prismaClient.book.create({
+    await this.prismaClient.$transaction(async (transactionalPrismaClient) => {
+      await transactionalPrismaClient.book.create({
         data: {
           id: bookId,
           infoId,
           ...book,
         },
-      }),
-      this.prismaClient.bookInfo.updateMany({
+      });
+      await transactionalPrismaClient.bookInfo.updateMany({
         where: { id: infoId },
         data: { historyBookCount: null },
-      }),
-    ]);
-    try {
-      // TODO: transaction
-      await this.prismaClient.book.update({
-        where: { id: bookId },
-        data: { thumbnailById: infoId },
       });
-    } catch (e) {
-      if (e.code !== PrismaErrorCode.UniqueConstraintFailed) {
-        throw e;
+      try {
+        await transactionalPrismaClient.book.update({
+          where: { id: bookId },
+          data: { thumbnailById: infoId },
+        });
+      } catch (e) {
+        if (e.code !== PrismaErrorCode.UniqueConstraintFailed) {
+          throw e;
+        }
       }
-    }
+    });
     return bookId;
   }
 
@@ -191,7 +191,6 @@ export class PrismaBookDataManager implements IBookDataManager {
     if (!bookInfo) {
       return undefined;
     }
-    // eslint-disable-next-line no-underscore-dangle
     const bookCount = bookInfo._count.books;
     const isHistory = bookInfo.historyBookCount !== null && bookCount === 0;
     return {
