@@ -1,3 +1,12 @@
-export { v4 as generateId } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
+import { ulid } from 'ulid';
+import { FeatureFlag } from '@server/FeatureFlag';
+
+export const generateId = () => {
+  if (FeatureFlag.useUlidForIds) {
+    return ulid();
+  }
+  return uuidv4();
+};
 
 export type Id = string;
