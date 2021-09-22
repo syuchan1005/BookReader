@@ -330,16 +330,16 @@ export class PrismaBookDataManager implements IBookDataManager {
         ...historyFilter,
         name: {
           contains: include,
-          gte: between?.[0],
-          lte: between?.[1],
+          gt: between?.[0],
+          lt: between?.[1],
         },
         createdAt: {
-          gte: createdAt?.[0] ? new Date(createdAt[0]) : undefined,
-          lte: createdAt?.[1] ? new Date(createdAt[1]) : undefined,
+          gt: createdAt?.[0] ? new Date(createdAt[0]) : undefined,
+          lt: createdAt?.[1] ? new Date(createdAt[1]) : undefined,
         },
         updatedAt: {
-          gte: updatedAt?.[0] ? new Date(updatedAt[0]) : undefined,
-          lte: updatedAt?.[1] ? new Date(updatedAt[1]) : undefined,
+          gt: updatedAt?.[0] ? new Date(updatedAt[0]) : undefined,
+          lt: updatedAt?.[1] ? new Date(updatedAt[1]) : undefined,
         },
         ...genreFilter.where,
       },
