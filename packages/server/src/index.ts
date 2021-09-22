@@ -30,43 +30,6 @@ const toInt = (value: string | string[]): number | undefined => {
   const app = new Koa();
   const graphql = new GraphQL();
 
-  /* image serve with options in headers */
-  app.use(async (ctx, next) => {
-    const { url, headers } = ctx.req;
-    const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)\.([a-z]+)$/);
-    if (!match) {
-      await next();
-      return;
-    }
-
-    const [_full, bookId, pageNum, ext] = match;
-    if (!['jpg', 'webp'].includes(ext)) {
-      ctx.code = 400;
-      return;
-    }
-    // @ts-ignore
-    const extension: 'jpg' | 'webp' = ext;
-
-    const width = toInt(headers[ImageHeader.width]);
-    const height = toInt(headers[ImageHeader.height]);
-    const isCache = headers[ImageHeader.cache] === 'true';
-    if (extension === 'jpg' && !(width || height)) {
-      await next();
-      return;
-    }
-    const result = await getCacheOrConvertImage(bookId, pageNum, extension, width, height, isCache);
-    if (!result.success) {
-      ctx.code = 503;
-      return;
-    }
-    ctx.code = 200;
-    ctx.vary([ImageHeader.width, ImageHeader.height].join(','));
-    ctx.body = result.body;
-    ctx.length = result.length;
-    ctx.type = result.mimeType;
-    ctx.lastModified = result.lastModified;
-  });
-
   app.use(Serve(storageBasePath));
 
   app.use(Serve(cacheFolderPath));
@@ -74,7 +37,7 @@ const toInt = (value: string | string[]): number | undefined => {
   /* image serve with options in image name */
   app.use(async (ctx, next) => {
     const { url } = ctx.req;
-    const match = url.match(/^\/book\/([a-f0-9-]{36})\/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
+    const match = url.match(/^\/book\/([^/]+)\/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
     if (!match) {
       await next();
       return;
