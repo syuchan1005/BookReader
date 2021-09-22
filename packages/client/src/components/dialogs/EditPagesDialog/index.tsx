@@ -9,7 +9,6 @@ import {
   ListItemText,
 } from '@mui/material';
 import { List as MovableList, arrayMove } from 'react-movable';
-import { v4 as uuidv4 } from 'uuid';
 
 import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
@@ -99,7 +98,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
             setActions([
               ...actions,
               {
-                id: uuidv4(),
+                id: `${Date.now()}`,
                 editType,
                 content: createInitValue(editType),
               },
@@ -137,7 +136,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
             setActions([
               ...actions,
               {
-                id: uuidv4(),
+                id: `${Date.now()}`,
                 editType,
                 content: createInitValue(editType),
               },

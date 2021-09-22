@@ -18,7 +18,6 @@ import {
   TextField,
   useTheme,
 } from '@mui/material';
-import { v4 as uuidv4 } from 'uuid';
 
 import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
 import IntRangeInputField from '@client/components/IntRangeInputField';
@@ -326,7 +325,7 @@ const Templates = {
     ]);
     return [
       {
-        id: uuidv4(),
+        id: `${Date.now()}${Math.random()}`,
         editType: EditType.Crop,
         content: {
           pageRange: [coverIndex],
@@ -334,7 +333,7 @@ const Templates = {
         },
       },
       {
-        id: uuidv4(),
+        id: `${Date.now()}${Math.random()}`,
         editType: EditType.Crop,
         content: {
           pageRange: [[1, maxPage - 1]],
@@ -342,7 +341,7 @@ const Templates = {
         },
       },
       {
-        id: uuidv4(),
+        id: `${Date.now()}${Math.random()}`,
         editType: EditType.Split,
         content: {
           pageRange: [[1, maxPage - 1]],
