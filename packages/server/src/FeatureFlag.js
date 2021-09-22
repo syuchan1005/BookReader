@@ -1,7 +1,14 @@
+function value(rawValue/* string */, defaultValue/* unknown */) {
+  if (typeof defaultValue === 'boolean') {
+    return rawValue === 'true';
+  }
+  return rawValue;
+}
+
 export const FeatureFlag = {
   useUlidForIds: false,
   prisma: {
-    enable: false,
+    enable: value(process.env.BOOK_READER_DB, false),
     dbFileSuffix: '-p',
   },
 };
