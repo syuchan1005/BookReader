@@ -1,6 +1,7 @@
+import { Id } from './Id';
 import { InfoId } from './BookInfo';
 
-export type BookId = string;
+export type BookId = Id;
 
 export type Book = {
   id: BookId;

@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '@server/database/models/Id';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
 
@@ -110,7 +110,7 @@ const GQLUtil = {
       archiveFilePath = path.resolve(normalizeLocalPath);
     } else if (file) {
       const awaitFile = await file;
-      archiveFilePath = createDownloadFilePath(uuidv4());
+      archiveFilePath = createDownloadFilePath(generateId());
       try {
         await fs.writeFile(archiveFilePath, awaitFile.createReadStream());
       } catch (e) {

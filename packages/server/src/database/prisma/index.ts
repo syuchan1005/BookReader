@@ -1,6 +1,5 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_count"] }] */
 import { PrismaClient, BookInfo as PBookInfo } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '@server/database/BookDataManager';
 import {
@@ -19,6 +18,7 @@ import {
   GenreName,
 } from '@server/database/models/Genre';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
+import { generateId } from '@server/database/models/Id';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -67,7 +67,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     infoId,
     ...book
   }: InputBook): Promise<BookId> {
-    const bookId = id || uuidv4();
+    const bookId = id || generateId();
     await this.prismaClient.$transaction(async (transactionalPrismaClient) => {
       await transactionalPrismaClient.book.create({
         data: {
@@ -364,7 +364,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     genres = [],
     ...bookInfo
   }: InputBookInfo): Promise<InfoId> {
-    const infoId = id || uuidv4();
+    const infoId = id || generateId();
     await this.prismaClient.bookInfo.create({
       data: {
         id: infoId,
@@ -397,7 +397,7 @@ export class PrismaBookDataManager implements IBookDataManager {
         bookCount,
       }) => this.prismaClient.bookInfo.create({
         data: {
-          id: uuidv4(),
+          id: generateId(),
           name,
           historyBookCount: bookCount,
         },

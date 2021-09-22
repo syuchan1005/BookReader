@@ -1,6 +1,6 @@
 import { promises as fs, rmSync as fsRmSync } from 'fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '@server/database/models/Id';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
@@ -50,7 +50,7 @@ class Book extends GQLMiddleware {
           books,
         },
       ) => asyncMap(books, async (book) => {
-        const bookId = uuidv4();
+        const bookId = generateId();
         const bookInfo = await BookDataManager.getBookInfo(infoId);
         if (!bookInfo) {
           return {
@@ -183,7 +183,7 @@ class Book extends GQLMiddleware {
           return GQLUtil.addBookFromLocalPath(
             folderPath,
             infoId,
-            uuidv4(),
+            generateId(),
             nums,
             (current, total) => {
               this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {

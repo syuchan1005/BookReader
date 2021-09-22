@@ -1,7 +1,8 @@
-import { BookId } from '@server/database/models/Book';
-import { InputGenre } from '@server/database/models/Genre';
+import { Id } from './Id';
+import { BookId } from './Book';
+import { InputGenre } from './Genre';
 
-export type InfoId = string;
+export type InfoId = Id;
 
 export type BookInfo = {
   id: InfoId;

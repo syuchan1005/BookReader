@@ -5,7 +5,6 @@ import {
   Sequelize,
   Options,
 } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
 
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import {
@@ -28,6 +27,7 @@ import BookModel from '@server/database/sequelize/models/Book';
 import BookInfoModel from '@server/database/sequelize/models/BookInfo';
 import GenreModel from '@server/database/sequelize/models/Genre';
 import InfoGenreModel from '@server/database/sequelize/models/InfoGenre';
+import { generateId } from '@server/database/models/Id';
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '../BookDataManager';
 
 import * as baseConfig from '../../../sequelize.config';
@@ -104,7 +104,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     infoId,
     ...book
   }: InputBook): Promise<BookId> {
-    const bookId = id || uuidv4();
+    const bookId = id || generateId();
     await this.sequelize.transaction(async (transaction) => {
       await BookModel.create({
         ...book,
@@ -390,7 +390,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     genres = [],
     ...bookInfo
   }: InputBookInfo): Promise<InfoId> {
-    const infoId = id || uuidv4();
+    const infoId = id || generateId();
     await this.sequelize.transaction(async (transaction) => {
       await BookInfoModel.create({
         ...bookInfo,
@@ -410,7 +410,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
         name,
         bookCount,
       }) => ({
-        id: uuidv4(),
+        id: generateId(),
         history: true,
         name,
         count: bookCount,
