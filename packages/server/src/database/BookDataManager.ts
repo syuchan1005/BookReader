@@ -18,6 +18,7 @@ import {
   GenreEditableValue,
 } from './models/Genre';
 import { PrismaBookDataManager } from '@server/database/prisma';
+import { FeatureFlag } from '@server/FeatureFlag';
 
 export type RequireAtLeastOne<ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
@@ -101,7 +102,7 @@ export interface IBookDataManager {
 }
 
 let manager: IBookDataManager;
-if (process.env.BOOK_READER_DB === 'next') {
+if (FeatureFlag.prisma.enable) {
   manager = new PrismaBookDataManager();
 } else {
   manager = new SequelizeBookDataManager();

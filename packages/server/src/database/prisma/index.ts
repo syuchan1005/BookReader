@@ -19,6 +19,7 @@ import {
 } from '@server/database/models/Genre';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import { generateId } from '@server/database/models/Id';
+import { FeatureFlag } from '@server/FeatureFlag.js';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -31,8 +32,8 @@ function removeNullableEntries<T extends {}>(obj: T): Omit<T, NullableKeys<T>> {
 
 // Same as scripts/prisma-migrate.js
 const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
-  ? 'production-p'
-  : 'development-p';
+  ? 'production'
+  : 'development';
 
 const PrismaErrorCode = {
   UniqueConstraintFailed: 'P2002',
@@ -42,7 +43,7 @@ export class PrismaBookDataManager implements IBookDataManager {
   private prismaClient: PrismaClient;
 
   async init(databaseUrl?: string): Promise<void> {
-    const url = databaseUrl ?? `file:../${env}.sqlite`;
+    const url = databaseUrl ?? `file:../${env}${FeatureFlag.prisma.dbFileSuffix}.sqlite`;
     this.prismaClient = new PrismaClient({
       datasources: {
         db: { url },
