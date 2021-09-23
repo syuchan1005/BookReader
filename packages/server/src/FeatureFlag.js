@@ -5,10 +5,12 @@ function value(rawValue/* string */, defaultValue/* unknown */) {
   return rawValue;
 }
 
-export const FeatureFlag = {
+const FeatureFlag = {
   useUlidForIds: false,
   prisma: {
     enable: value(process.env.BOOK_READER_DB, false),
     dbFileSuffix: '-p',
   },
 };
+
+module.exports = { FeatureFlag };

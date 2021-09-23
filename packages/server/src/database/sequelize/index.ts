@@ -44,16 +44,17 @@ function removeNullableEntries<T extends {}>(obj: T): Omit<T, NullableKeys<T>> {
 export class SequelizeBookDataManager implements IBookDataManager {
   private sequelize: Sequelize;
 
-  async init() {
-    this.sequelize = SequelizeBookDataManager.createSequelize();
+  async init(options: Options = undefined) {
+    const env = process.env.NODE_ENV || 'development';
+    const config: Options = baseConfig[env];
+    this.sequelize = SequelizeBookDataManager.createSequelize(options || config);
     await this.initModels();
   }
 
-  private static createSequelize() {
-    const env = process.env.NODE_ENV || 'development';
+  private static createSequelize(
     // eslint-disable-next-line camelcase
-    const config: Options & { dialect?: string, use_env_variable?: string } = baseConfig[env];
-
+    config: Options & { dialect?: string, use_env_variable?: string },
+  ) {
     let sequelize;
     if (config.dialect === 'sqlite') {
       sequelize = new Sequelize(config);
@@ -93,9 +94,13 @@ export class SequelizeBookDataManager implements IBookDataManager {
       return undefined;
     }
     return {
-      ...bookModel,
+      id: bookModel.id,
       thumbnailPage: bookModel.thumbnail,
+      number: bookModel.number,
       pageCount: bookModel.pages,
+      infoId: bookModel.infoId,
+      createdAt: bookModel.createdAt,
+      updatedAt: bookModel.updatedAt,
     };
   }
 

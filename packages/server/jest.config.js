@@ -1,6 +1,6 @@
 module.exports = {
   roots: [
-    '<rootDir>/src/database',
+    '<rootDir>/src/database/sequelize',
   ],
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx|js)',
@@ -8,5 +8,9 @@ module.exports = {
   ],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
+  },
+  moduleNameMapper: {
+    '^@server/(.+)': '<rootDir>/src/$1',
+    'natural-orderby': '<rootDir>/src/sort',
   },
 };
