@@ -26,7 +26,9 @@ export type BookInfoEditableValue = Partial<Pick<BookInfo, 'name'>> & {
   genres?: Array<InputGenre>;
 };
 
-export type InputBookInfo = Required<Pick<BookInfo, 'name'>> & Partial<Omit<BookInfo, 'name'>> & {
+export type InputBookInfo = Required<Pick<BookInfo, 'name'>>
+  & Partial<Omit<BookInfo, 'name' | 'updatedAt'>>
+  & {
   thumbnail?: BookId;
   genres?: Array<InputGenre>;
 };

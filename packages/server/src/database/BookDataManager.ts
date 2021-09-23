@@ -1,4 +1,6 @@
+import { FeatureFlag } from '@server/FeatureFlag';
 import { SequelizeBookDataManager } from './sequelize/index';
+import { PrismaBookDataManager } from './prisma';
 import {
   Book,
   BookEditableValue,
@@ -17,8 +19,6 @@ import {
   DeleteGenreError,
   GenreEditableValue,
 } from './models/Genre';
-import { PrismaBookDataManager } from '@server/database/prisma';
-import { FeatureFlag } from '@server/FeatureFlag';
 
 export type RequireAtLeastOne<ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
