@@ -41,7 +41,6 @@
       "graphql": "^15.5.3",
       "history": "4.10.1",
       "jszip": "^3.7.1",
-      "notistack": "^1.0.10",
       "query-string": "^7.0.1",
       "react": "^17.0.2",
       "react-cropper": "^2.1.8",

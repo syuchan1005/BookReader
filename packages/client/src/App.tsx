@@ -1,18 +1,29 @@
 import React, {
-  useEffect, useMemo, lazy, Suspense,
+  useEffect, useMemo, lazy, Suspense, useCallback,
 } from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
-import { CssBaseline, ThemeProvider, StyledEngineProvider, Theme, adaptV4Theme } from '@mui/material';
+import {
+  CssBaseline,
+  ThemeProvider,
+  StyledEngineProvider,
+  Theme,
+  adaptV4Theme,
+  Snackbar, Alert,
+} from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import * as colors from '@mui/material/colors';
 import { createBrowserHistory } from 'history';
-import { useSnackbar } from 'notistack';
 import { useApolloClient } from '@apollo/client';
 import { QueryParamProvider } from 'use-query-params';
 
 import { workbox } from '@client/registerServiceWorker';
-import { useRecoilValue } from 'recoil';
-import { primaryColorState, secondaryColorState } from '@client/store/atoms';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import {
+  alertDataState,
+  alertOpenState, innerAlertDataState,
+  primaryColorState,
+  secondaryColorState
+} from '@client/store/atoms';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 
@@ -73,16 +84,28 @@ const App = () => {
 
   const isSystemDarkTheme = useMediaQuery('@media (prefers-color-scheme: dark)');
 
-  const { enqueueSnackbar } = useSnackbar();
   const apolloClient = useApolloClient();
+
+  const openAlert = useRecoilValue(alertOpenState);
+  const alertData = useRecoilValue(innerAlertDataState);
+  const setAlertData = useSetRecoilState(alertDataState);
+  const closeAlert = useCallback((event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setAlertData(undefined);
+  }, [setAlertData]);
 
   useEffect(() => {
     // @ts-ignore
-    apolloClient.snackbar = enqueueSnackbar;
+    apolloClient.snackbar = (message: string, opt: { variant: 'error' }) => {
+      setAlertData({ message, variant: opt.variant, persist: true });
+    };
 
     const handleUpdate = (event) => {
       if (event.isUpdate) {
-        enqueueSnackbar('Update here! Please reload.', {
+        setAlertData({
+          message: 'Update here! Please reload.',
           variant: 'warning',
           persist: true,
         });
@@ -93,7 +116,7 @@ const App = () => {
     return () => {
       workbox?.removeEventListener('installed', handleUpdate);
     };
-  }, [apolloClient, enqueueSnackbar]);
+  }, [apolloClient, setAlertData]);
 
   const provideTheme = useMemo(
     () => createTheme(adaptV4Theme({
@@ -123,6 +146,19 @@ const App = () => {
             </Suspense>
           </QueryParamProvider>
         </Router>
+        <Snackbar
+          open={openAlert}
+          autoHideDuration={alertData?.persist ? undefined : 6000}
+          onClose={alertData?.persist ? undefined : closeAlert}
+        >
+          <Alert
+            severity={alertData?.variant}
+            sx={{ width: '100%' }}
+            onClose={alertData?.persist ? undefined : closeAlert}
+          >
+            {alertData?.message}
+          </Alert>
+        </Snackbar>
       </ThemeProvider>
     </StyledEngineProvider>
   );

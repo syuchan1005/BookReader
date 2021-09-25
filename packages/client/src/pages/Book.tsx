@@ -11,8 +11,7 @@ import 'swiper/css/virtual';
 
 import { useHistory, useParams } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
-import { useSnackbar } from 'notistack';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { NumberParam, useQueryParam } from 'use-query-params';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -24,7 +23,12 @@ import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
-import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
+import {
+  alertDataState,
+  ReadOrder,
+  readOrderState,
+  showOriginalImageState,
+} from '@client/store/atoms';
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
@@ -215,7 +219,7 @@ const Book = (props: BookProps) => {
   const showOriginalImage = useRecoilValue(showOriginalImageState);
   const classes = useStyles(props);
   const history = useHistory();
-  const { enqueueSnackbar } = useSnackbar();
+  const setAlertData = useSetRecoilState(alertDataState);
   const { id: bookId } = useParams<{ id: string }>();
   const setTitle = React.useCallback((title) => {
     document.title = typeof title === 'function' ? title(defaultTitle) : title;
@@ -312,11 +316,11 @@ const Book = (props: BookProps) => {
       }
     } else if (isPageSet) {
       setDbPage(page)
-        .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
+        .catch((e) => setAlertData({ message: e, variant: 'error' }));
       setQueryPage(page, 'replace');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, setAlertData]);
 
   const setPage = React.useCallback((s, time = 150) => {
     let validatedPage = Math.max(s, 0);
@@ -419,9 +423,9 @@ const Book = (props: BookProps) => {
       infoId,
       bookId: targetBookId,
     })
-      .catch((e1) => enqueueSnackbar(e1, { variant: 'error' }));
+      .catch((e1) => setAlertData({ message: e1, variant: 'error' }));
     history.push(`/book/${targetBookId}`);
-  }, [enqueueSnackbar, history]);
+  }, [setAlertData, history]);
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {

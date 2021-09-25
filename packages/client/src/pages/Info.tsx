@@ -6,8 +6,7 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { common } from '@mui/material/colors';
 import { useHistory, useParams } from 'react-router-dom';
-import { useSnackbar } from 'notistack';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 
 import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
@@ -21,7 +20,7 @@ import SelectBookHeader from '@client/components/SelectBookHeader';
 import { workbox } from '@client/registerServiceWorker';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import { sortBookOrderState } from '@client/store/atoms';
+import { alertDataState, sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import { defaultTitle } from '../../../common';
@@ -162,16 +161,16 @@ const Info = (props: InfoProps) => {
     };
   }, [infoId]);
 
-  const { enqueueSnackbar } = useSnackbar();
+  const setAlertData = useSetRecoilState(alertDataState);
 
   const clickBook = React.useCallback((bookId) => {
     db.infoReads.put({
       infoId,
       bookId,
     })
-      .catch((e) => enqueueSnackbar(e, { variant: 'error' }));
+      .catch((e) => setAlertData({ message: e, variant: 'error' }));
     history.push(`/book/${bookId}`);
-  }, [infoId, history, enqueueSnackbar]);
+  }, [infoId, history, setAlertData]);
 
   const bookList: typeof data.bookInfo.books = React.useMemo(
     () => (data?.bookInfo?.books ?? []),

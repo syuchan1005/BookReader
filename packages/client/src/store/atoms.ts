@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { atom } from 'recoil';
+import { atom, selector } from 'recoil';
 import { localStorageEffect, logEffect } from '@client/store/effects';
 import { BookInfoOrder, BookOrder } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
@@ -94,4 +94,42 @@ export const showBookInfoNameState = atom<boolean>({
     logEffect(),
     localStorageEffect('showBookInfoName'),
   ],
+});
+
+export const alertOpenState = atom<boolean>({
+  key: 'alertOpenState',
+  default: false,
+  effects_UNSTABLE: [
+    logEffect(),
+  ],
+});
+
+type AlertData = {
+  message: string,
+  variant: 'warning' | 'error',
+  persist?: boolean,
+};
+
+export const innerAlertDataState = atom<AlertData>({
+  key: 'innerAlertDataState',
+  default: undefined,
+  effects_UNSTABLE: [
+    logEffect(),
+  ],
+});
+
+export const alertDataState = selector<AlertData>({
+  key: 'alertDataState',
+  get: ({ get }) => {
+    if (get(alertOpenState)) {
+      return get(innerAlertDataState);
+    }
+    return undefined;
+  },
+  set: ({ set }, value) => {
+    if (value) {
+      set(innerAlertDataState, value);
+    }
+    set(alertOpenState, !!value);
+  },
 });
