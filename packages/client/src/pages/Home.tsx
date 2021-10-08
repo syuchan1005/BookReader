@@ -1,5 +1,11 @@
 import React from 'react';
-import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
+import {
+  CircularProgress,
+  Fab,
+  Icon,
+  Theme,
+  useTheme,
+} from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -200,83 +206,85 @@ const Home = (props: HomeProps) => {
     }
   }, [history, setOpenAddBook, location]);
 
-  return <>
-    <SearchAndMenuHeader
-      searchText={searchText || ''}
-      onChangeSearchText={handleSearchText}
-      onClickMenuIcon={setMenuAnchor}
-    />
-    <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
-    <main className={classes.home}>
-      {(loading || (error && !data)) ? (
-        <div className={classes.loading}>
-          {loading && 'Loading'}
-          {error && `${error.toString()
-            .replace(/:\s*/g, '\n')}`}
-        </div>
-      ) : (
-        <>
-          <div className={classes.homeGrid}>
-            {infos.map((info, i, arr) => (
-              <BookInfo
-                key={info.id}
-                {...info}
-                onClick={handleBookInfoClick}
-                onDeleted={handleDeletedBookInfo}
-                onEdit={refetchAll}
-                thumbnailSize={downXs ? 150 : 200}
-                showName={showBookInfoName}
-                visibleMargin={visibleMargin}
-                onVisible={() => {
-                  const isLast = i === arr.length - 1;
-                  if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
-                    handleLoadMore();
-                  }
-                }}
-              />
-            ))}
-            {(loading) && (
-              <div className={classes.loadMoreProgress}>
-                <CircularProgress color="secondary" />
-              </div>
-            )}
-          </div>
-          <Fab
-            className={classes.addButton}
-            onClick={setOpen}
-            aria-label="add"
-          >
-            <Icon>add</Icon>
-          </Fab>
-        </>
-      )}
-
-      <Fab
-        color="secondary"
-        className={classes.fab}
-        onClick={refetchAll}
-        aria-label="refetch"
-      >
-        <Icon>refresh</Icon>
-      </Fab>
-
-      <AddBookInfoDialog
-        open={open}
-        name={infos.length === 0 ? searchText : undefined}
-        onAdded={refetchAll}
-        onClose={setClose}
+  return (
+    <>
+      <SearchAndMenuHeader
+        searchText={searchText || ''}
+        onChangeSearchText={handleSearchText}
+        onClickMenuIcon={setMenuAnchor}
       />
+      <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
+      <main className={classes.home}>
+        {(loading || (error && !data)) ? (
+          <div className={classes.loading}>
+            {loading && 'Loading'}
+            {error && `${error.toString()
+              .replace(/:\s*/g, '\n')}`}
+          </div>
+        ) : (
+          <>
+            <div className={classes.homeGrid}>
+              {infos.map((info, i, arr) => (
+                <BookInfo
+                  key={info.id}
+                  {...info}
+                  onClick={handleBookInfoClick}
+                  onDeleted={handleDeletedBookInfo}
+                  onEdit={refetchAll}
+                  thumbnailSize={downXs ? 150 : 200}
+                  showName={showBookInfoName}
+                  visibleMargin={visibleMargin}
+                  onVisible={() => {
+                    const isLast = i === arr.length - 1;
+                    if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+                      handleLoadMore();
+                    }
+                  }}
+                />
+              ))}
+              {(loading) && (
+                <div className={classes.loadMoreProgress}>
+                  <CircularProgress color="secondary" />
+                </div>
+              )}
+            </div>
+            <Fab
+              className={classes.addButton}
+              onClick={setOpen}
+              aria-label="add"
+            >
+              <Icon>add</Icon>
+            </Fab>
+          </>
+        )}
 
-      {(!!openAddBook || !!canMountAddBook) && (
-        <AddBookDialog
-          open={!!openAddBook}
-          infoId={openAddBook}
-          onClose={resetOpenAddBook}
+        <Fab
+          color="secondary"
+          className={classes.fab}
+          onClick={refetchAll}
+          aria-label="refetch"
+        >
+          <Icon>refresh</Icon>
+        </Fab>
+
+        <AddBookInfoDialog
+          open={open}
+          name={infos.length === 0 ? searchText : undefined}
           onAdded={refetchAll}
+          onClose={setClose}
         />
-      )}
-    </main>
-  </>;
+
+        {(!!openAddBook || !!canMountAddBook) && (
+          <AddBookDialog
+            open={!!openAddBook}
+            infoId={openAddBook}
+            onClose={resetOpenAddBook}
+            onAdded={refetchAll}
+          />
+        )}
+      </main>
+    </>
+  );
 };
 
 export default React.memo(Home);

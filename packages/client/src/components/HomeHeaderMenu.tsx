@@ -136,7 +136,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     }
   }, [vConsole]);
 
-  const handleGenresChange = React.useCallback((event: ChangeEvent<{ value: string[] }>) => {
+  const handleGenresChange = React.useCallback((event) => {
     setGenres(event.target.value);
   }, [setGenres]);
 

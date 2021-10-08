@@ -1,5 +1,7 @@
 import React from 'react';
-import { Theme, Fab, Icon, Typography } from '@mui/material';
+import {
+  Theme, Fab, Icon, Typography,
+} from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import createStyles from '@mui/styles/createStyles';
 import { useHistory, useLocation } from 'react-router-dom';

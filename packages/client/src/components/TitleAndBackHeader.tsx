@@ -1,10 +1,12 @@
 import React, { ReactNode } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { AppBar, Icon, IconButton, Toolbar, Typography } from '@mui/material';
+import {
+  AppBar, Icon, IconButton, Theme, Toolbar, Typography,
+} from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { commonTheme } from '../App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
+import { commonTheme } from '../App';
 
 interface TitleAndBackHeaderProps {
   backRoute?: string;
@@ -13,7 +15,7 @@ interface TitleAndBackHeaderProps {
   children?: ReactNode;
 }
 
-const useStyles = makeStyles((theme) => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   backIcon: {
     color: theme.palette.common.white,
     marginRight: theme.spacing(1),

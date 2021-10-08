@@ -96,102 +96,106 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
     },
   });
 
-  return <>
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={ContextualActionBarTheme}>
-        <AppBar className={classes.appBar}>
-          <Toolbar>
-            <IconButton
-              className={classes.iconButton}
-              onClick={() => (onClose && onClose())}
-              size="large">
-              <Icon>clear</Icon>
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              {`${selectIds.length} selected`}
-            </Typography>
-            <Button
-              className={classes.iconButton}
-              disabled={selectIds.length === 0}
-              startIcon={<Icon>move_to_inbox</Icon>}
-              onClick={() => setOpenMoveDialog(true)}
-            >
-              Move
-            </Button>
-            <IconButton
-              className={classes.iconButton}
-              disabled={selectIds.length === 0}
-              onClick={() => setOpenDeleteDialog(true)}
-              size="large">
-              <Icon>delete_outline</Icon>
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-      </ThemeProvider>
-    </StyledEngineProvider>
+  return (
+    <>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={ContextualActionBarTheme}>
+          <AppBar className={classes.appBar}>
+            <Toolbar>
+              <IconButton
+                className={classes.iconButton}
+                onClick={() => (onClose && onClose())}
+                size="large"
+              >
+                <Icon>clear</Icon>
+              </IconButton>
+              <Typography variant="h6" className={classes.title}>
+                {`${selectIds.length} selected`}
+              </Typography>
+              <Button
+                className={classes.iconButton}
+                disabled={selectIds.length === 0}
+                startIcon={<Icon>move_to_inbox</Icon>}
+                onClick={() => setOpenMoveDialog(true)}
+              >
+                Move
+              </Button>
+              <IconButton
+                className={classes.iconButton}
+                disabled={selectIds.length === 0}
+                onClick={() => setOpenDeleteDialog(true)}
+                size="large"
+              >
+                <Icon>delete_outline</Icon>
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+        </ThemeProvider>
+      </StyledEngineProvider>
 
-    <Dialog
-      open={openMoveDialog}
-      onClose={() => (!moveBooksLoading && setOpenMoveDialog(false))}
-    >
-      <DialogTitle>Move Books</DialogTitle>
-      {(moveBooksLoading) ? (
+      <Dialog
+        open={openMoveDialog}
+        onClose={() => (!moveBooksLoading && setOpenMoveDialog(false))}
+      >
+        <DialogTitle>Move Books</DialogTitle>
+        {(moveBooksLoading) ? (
+          <DialogContent className={classes.loadingContent}>
+            <CircularProgress color="secondary" />
+          </DialogContent>
+        ) : (
+          <DialogContent>
+            <TextField
+              label="Move InfoId"
+              value={moveInfoId}
+              onChange={(e) => setMoveInfoId(e.target.value)}
+            />
+          </DialogContent>
+        )}
+        <DialogActions>
+          <Button
+            disabled={moveBooksLoading}
+            onClick={() => setOpenMoveDialog(false)}
+          >
+            Close
+          </Button>
+          <Button
+            disabled={moveBooksLoading}
+            onClick={() => doMoveBooks()}
+            color="secondary"
+            variant="contained"
+          >
+            Move
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => (!deleteBooksLoading && setOpenDeleteDialog(false))}
+      >
+        <DialogTitle>Delete Books</DialogTitle>
         <DialogContent className={classes.loadingContent}>
-          <CircularProgress color="secondary" />
+          {deleteBooksLoading && <CircularProgress color="secondary" />}
         </DialogContent>
-      ) : (
-        <DialogContent>
-          <TextField
-            label="Move InfoId"
-            value={moveInfoId}
-            onChange={(e) => setMoveInfoId(e.target.value)}
-          />
-        </DialogContent>
-      )}
-      <DialogActions>
-        <Button
-          disabled={moveBooksLoading}
-          onClick={() => setOpenMoveDialog(false)}
-        >
-          Close
-        </Button>
-        <Button
-          disabled={moveBooksLoading}
-          onClick={() => doMoveBooks()}
-          color="secondary"
-          variant="contained"
-        >
-          Move
-        </Button>
-      </DialogActions>
-    </Dialog>
-
-    <Dialog
-      open={openDeleteDialog}
-      onClose={() => (!deleteBooksLoading && setOpenDeleteDialog(false))}
-    >
-      <DialogTitle>Delete Books</DialogTitle>
-      <DialogContent className={classes.loadingContent}>
-        {deleteBooksLoading && <CircularProgress color="secondary" />}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          disabled={deleteBooksLoading}
-          onClick={() => setOpenDeleteDialog(false)}
-        >
-          Close
-        </Button>
-        <Button
-          disabled={deleteBooksLoading}
-          onClick={() => doDeleteBooks()}
-          color="secondary"
-          variant="contained"
-        >
-          Delete
-        </Button>
-      </DialogActions>
-    </Dialog>
-  </>;
+        <DialogActions>
+          <Button
+            disabled={deleteBooksLoading}
+            onClick={() => setOpenDeleteDialog(false)}
+          >
+            Close
+          </Button>
+          <Button
+            disabled={deleteBooksLoading}
+            onClick={() => doDeleteBooks()}
+            color="secondary"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
 };
 
 export default React.memo(SelectBookHeader);

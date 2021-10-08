@@ -423,7 +423,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                       )}
                       <IconButton
                         onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}
-                        size="large">
+                        size="large"
+                      >
                         <Icon>clear</Icon>
                       </IconButton>
                     </div>

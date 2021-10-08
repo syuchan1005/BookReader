@@ -2,6 +2,7 @@ import React from 'react';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import useDebounceValue from '@client/hooks/useDebounceValue';
+import { Theme } from '@mui/material';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -19,7 +20,7 @@ interface BookPageImageProps {
   forceUsePropSize?: boolean;
 }
 
-const useStyles = makeStyles((theme) => createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   pictureFull: {
     width: '100%',
     height: '100%',

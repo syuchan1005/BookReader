@@ -52,12 +52,14 @@ const IntRangeInputField = (props: IntRangeInputFieldProps) => {
       return intRange;
     }
     return undefined;
+    // eslint-disable-next-line
   }, [inputText]);
   React.useEffect(() => {
     const intRange = parseIntRange(inputText, maxPage);
     if (typeof intRange !== 'string' && onChange && initValue !== intRange) {
       onChange(intRange);
     }
+    // eslint-disable-next-line
   }, [inputText]);
 
   React.useEffect(() => {
@@ -71,6 +73,7 @@ const IntRangeInputField = (props: IntRangeInputFieldProps) => {
       })
       .join(',');
     setInputText(text);
+    // eslint-disable-next-line
   }, []);
 
   return (

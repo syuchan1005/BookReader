@@ -9,7 +9,11 @@ import { archiveTypes } from '@syuchan1005/book-reader-common';
 import useOS from '@client/hooks/useOS';
 
 interface FileFieldProps {
-  onChange?: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void;
+  onChange?: <T extends File>(
+    acceptedFiles: T[],
+    fileRejections: FileRejection[],
+    event: DropEvent,
+  ) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -40,6 +44,7 @@ const DropZone = (props: FileFieldProps) => {
     if (!isDragActive && ref.current) {
       setWidth(Math.max(width || -1, ref.current.offsetWidth));
     }
+    // eslint-disable-next-line
   }, [isDragActive]);
 
   const os = useOS();

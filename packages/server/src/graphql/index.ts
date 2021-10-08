@@ -92,7 +92,7 @@ export default class GraphQL {
       server: httpServer,
       path: this.apolloServer.graphqlPath,
     });
-    ['SIGINT', 'SIGTERM'].forEach(signal => {
+    ['SIGINT', 'SIGTERM'].forEach((signal) => {
       process.on(signal, () => subscriptionServer.close());
     });
   }

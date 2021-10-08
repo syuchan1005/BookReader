@@ -17,12 +17,12 @@ import { useApolloClient } from '@apollo/client';
 import { QueryParamProvider } from 'use-query-params';
 
 import { workbox } from '@client/registerServiceWorker';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
   alertDataState,
   alertOpenState, innerAlertDataState,
   primaryColorState,
-  secondaryColorState
+  secondaryColorState,
 } from '@client/store/atoms';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';

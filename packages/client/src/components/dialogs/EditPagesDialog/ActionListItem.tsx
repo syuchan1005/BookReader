@@ -312,6 +312,7 @@ export interface EditTypeContent {
   content: { [key: string]: any };
 }
 
+// noinspection JSUnusedGlobalSymbols
 const Templates = {
   PaddingOnCoverAndContents: async (
     bookId: string,
