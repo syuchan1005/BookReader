@@ -5,7 +5,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { common } from '@mui/material/colors';
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 
 import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -112,6 +112,7 @@ const Info = (props: InfoProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
+  const location = useLocation();
   const { id: infoId } = useParams<{ id: string }>();
 
   const visibleMargin = React
@@ -169,8 +170,8 @@ const Info = (props: InfoProps) => {
       bookId,
     })
       .catch((e) => setAlertData({ message: e, variant: 'error' }));
-    history.push(`/book/${bookId}`);
-  }, [infoId, history, setAlertData]);
+    history.push(`/book/${bookId}`, { referrer: location.pathname });
+  }, [infoId, history, setAlertData, location]);
 
   const bookList: typeof data.bookInfo.books = React.useMemo(
     () => (data?.bookInfo?.books ?? []),

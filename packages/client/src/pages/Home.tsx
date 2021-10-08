@@ -2,7 +2,7 @@ import React from 'react';
 import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilValue } from 'recoil';
 
@@ -104,6 +104,7 @@ const Home = (props: HomeProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
   const history = useHistory();
+  const location = useLocation();
 
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
@@ -195,9 +196,9 @@ const Home = (props: HomeProps) => {
     if (isHistory) {
       setOpenAddBook(infoId);
     } else {
-      history.push(`/info/${infoId}`);
+      history.push(`/info/${infoId}`, { referrer: location.pathname });
     }
-  }, [history, setOpenAddBook]);
+  }, [history, setOpenAddBook, location]);
 
   return <>
     <SearchAndMenuHeader

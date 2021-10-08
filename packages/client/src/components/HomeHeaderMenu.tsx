@@ -19,7 +19,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import * as colors from '@mui/material/colors';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
 import {
@@ -77,6 +77,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const classes = useStyles(props);
 
   const history = useHistory();
+  const location = useLocation();
   const [genres, setGenres] = useRecoilState(genresState);
   const [primaryColor, setPrimaryColor] = useRecoilState(primaryColorState);
   const [secondaryColor, setSecondaryColor] = useRecoilState(secondaryColorState);
@@ -207,7 +208,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         <MenuItem onClick={() => setShowBookInfoName((v) => !v)}>
           <span>{`${showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
         </MenuItem>
-        <MenuItem onClick={() => history.push('/setting')}>
+        <MenuItem onClick={() => history.push('/setting', { referrer: location.pathname })}>
           <ListItemIcon><Icon>settings</Icon></ListItemIcon>
           Settings
         </MenuItem>

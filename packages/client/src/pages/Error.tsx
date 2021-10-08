@@ -2,7 +2,7 @@ import React from 'react';
 import { Theme, Fab, Icon, Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import createStyles from '@mui/styles/createStyles';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { defaultTitle } from '@syuchan1005/book-reader-common';
 import useTestId from '../hooks/useTestId';
 
@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const Error = (props) => {
   const classes = useStyles(props);
   const history = useHistory();
+  const location = useLocation();
   const svgTestId = useTestId('svg');
   const textTestId = useTestId('text');
   const buttonTestId = useTestId('button');
@@ -67,7 +68,7 @@ const Error = (props) => {
         className={classes.backButton}
         color="secondary"
         variant="extended"
-        onClick={() => history.push('/')}
+        onClick={() => history.push('/', { referrer: location.pathname })}
       >
         <Icon className={classes.backIcon}>send</Icon>
         Go to homepage

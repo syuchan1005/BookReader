@@ -9,7 +9,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/virtual';
 
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { useKey, useWindowSize } from 'react-use';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { NumberParam, useQueryParam } from 'use-query-params';
@@ -219,6 +219,7 @@ const Book = (props: BookProps) => {
   const showOriginalImage = useRecoilValue(showOriginalImageState);
   const classes = useStyles(props);
   const history = useHistory();
+  const location = useLocation();
   const setAlertData = useSetRecoilState(alertDataState);
   const { id: bookId } = useParams<{ id: string }>();
   const setTitle = React.useCallback((title) => {
@@ -424,8 +425,8 @@ const Book = (props: BookProps) => {
       bookId: targetBookId,
     })
       .catch((e1) => setAlertData({ message: e1, variant: 'error' }));
-    history.push(`/book/${targetBookId}`);
-  }, [setAlertData, history]);
+    history.push(`/book/${targetBookId}`, { referrer: location.pathname });
+  }, [setAlertData, history, location]);
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {
