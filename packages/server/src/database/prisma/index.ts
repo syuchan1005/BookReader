@@ -118,23 +118,6 @@ export class PrismaBookDataManager implements IBookDataManager {
       return;
     }
 
-    const books = await this.prismaClient.book.findMany({
-      select: {
-        id: true,
-        infoId: true,
-      },
-      where: {
-        id: { in: bookIds },
-      },
-    });
-    const infoToBooks: { [infoId: string]: string[] } = {};
-    books.forEach(({
-      id,
-      infoId,
-    }) => {
-      infoToBooks[infoId] = [...(infoToBooks[infoId] || []), id];
-    });
-
     await this.prismaClient.$transaction([
       this.prismaClient.book.updateMany({
         where: {
