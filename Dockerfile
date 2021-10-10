@@ -16,7 +16,10 @@ RUN mkdir /bookReader \
     && mv packages/server/sequelize.config.js /bookReader/ \
     && mv packages/server/build-migrations /bookReader/ \
     && mv packages/server/scripts/ /bookReader/ \
-    && mv packages/server/package.json /bookReader/
+    && mv packages/server/package.json /bookReader/ \
+    && mv packages/server/prisma /bookReader/ \
+    && mkdir /bookReader/src \
+    && mv packages/server/src/FeatureFlag.js /bookReader/src/
 
 RUN cd /bookReader && npm install --force
 

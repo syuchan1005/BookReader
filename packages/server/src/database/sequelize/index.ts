@@ -232,9 +232,12 @@ export class SequelizeBookDataManager implements IBookDataManager {
       return undefined;
     }
     return {
-      ...bookInfoModel,
+      id: bookInfoModel.id,
+      name: bookInfoModel.name,
       bookCount: bookInfoModel.count,
       isHistory: bookInfoModel.history,
+      createdAt: bookInfoModel.createdAt,
+      updatedAt: bookInfoModel.updatedAt,
     };
   }
 

@@ -57,10 +57,14 @@ export class PrismaBookDataManager implements IBookDataManager {
     // The `prismaClient` has the`.$connect(): Promise` method. But, It'll be called automatically.
   }
 
-  getBook(bookId: BookId): Promise<Book | undefined> {
-    return this.prismaClient.book.findUnique({
+  async getBook(bookId: BookId): Promise<Book | undefined> {
+    const book = await this.prismaClient.book.findUnique({
       where: { id: bookId },
     });
+    if (book) {
+      delete book.thumbnailById;
+    }
+    return book;
   }
 
   async addBook({
@@ -230,7 +234,11 @@ export class PrismaBookDataManager implements IBookDataManager {
         },
       },
     });
-    return bookInfo?.books;
+    return bookInfo?.books?.map((b) => {
+      // eslint-disable-next-line no-param-reassign
+      delete b.thumbnailById;
+      return b;
+    });
   }
 
   async getBookInfos(option: {

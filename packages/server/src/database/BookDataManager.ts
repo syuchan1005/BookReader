@@ -1,4 +1,4 @@
-import { FeatureFlag } from '@server/FeatureFlag';
+import assert from 'assert';
 import { SequelizeBookDataManager } from './sequelize/index';
 import { PrismaBookDataManager } from './prisma';
 import {
@@ -101,11 +101,41 @@ export interface IBookDataManager {
   };
 }
 
-let manager: IBookDataManager;
-if (FeatureFlag.prisma.enable) {
-  manager = new PrismaBookDataManager();
-} else {
-  manager = new SequelizeBookDataManager();
-}
+const prisma = new PrismaBookDataManager();
+const sequelize = new SequelizeBookDataManager();
 
-export const BookDataManager: IBookDataManager = manager;
+const removeDate = <T>(obj: T): T | undefined => {
+  if (!obj) {
+    return obj;
+  }
+
+  // @ts-ignore
+  return JSON.parse(
+    JSON.stringify(obj).replace(/,?"(createdAt|updatedAt)":".+Z"/g, ''),
+  );
+};
+
+export const BookDataManager: IBookDataManager = new Proxy(sequelize, {
+  get(target, prop, receiver) {
+    const result = Reflect.get(target, prop, receiver);
+    if (typeof prop === 'string' && !['sequelize', 'initModels', 'Debug'].includes(prop)) {
+      const result2 = Reflect.get(prisma, prop, receiver);
+      return async (...args) => {
+        const r = await result.bind(target)(...args);
+        let r2;
+        try {
+          r2 = await result2.bind(prisma)(...args);
+        } catch (e) {
+          r2 = e;
+        }
+        try {
+          assert.deepEqual(removeDate(r), removeDate(r2));
+        } catch (e) {
+          console.error(prop, e);
+        }
+        return r;
+      };
+    }
+    return result;
+  },
+});

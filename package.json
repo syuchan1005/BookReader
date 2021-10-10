@@ -15,7 +15,6 @@
       "build:client": "npm run build --workspace=\"packages/client\"",
       "test:client": "npm run test --workspace=\"packages/client\"",
       "serve:server": "npm run serve --workspace=\"packages/server\"",
-      "serve:server:prisma": "npm run serve:prisma --workspace=\"packages/server\"",
       "build:server": "npm run build --workspace=\"packages/server\"",
       "test:server": "npm run test --workspace=\"packages/server\"",
       "build": "npm run build:client && npm run build:server",
