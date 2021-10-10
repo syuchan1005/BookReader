@@ -425,7 +425,10 @@ const Book = (props: BookProps) => {
       bookId: targetBookId,
     })
       .catch((e1) => setAlertData({ message: e1, variant: 'error' }));
-    history.push(`/book/${targetBookId}`, { referrer: location.pathname });
+    history.replace(`/book/${targetBookId}`, {
+      // @ts-ignore
+      referrer: location.state?.referrer || location.pathname,
+    });
   }, [setAlertData, history, location]);
 
   const imageSize = React.useMemo(() => {
