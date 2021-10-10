@@ -14,6 +14,7 @@ import Errors from '@server/Errors';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { removeBook } from '@server/StorageUtil';
+import { generateId } from '@server/database/models/Id';
 
 export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
 
@@ -45,6 +46,7 @@ class BookInfo extends GQLMiddleware {
         genres,
       }) => {
         const infoId = await BookDataManager.addBookInfo({
+          id: generateId(),
           name,
           genres: genres?.map((genre) => ({ name: genre })),
         });

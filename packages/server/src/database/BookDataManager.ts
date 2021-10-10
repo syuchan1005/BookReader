@@ -54,7 +54,7 @@ export interface IBookDataManager {
 
   getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined>;
 
-  getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined>;
+  getBookInfoGenres(infoId: InfoId): Promise<Array<Genre>>;
 
   getBookInfoBooks(
     infoId: InfoId,

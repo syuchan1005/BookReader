@@ -273,7 +273,7 @@ export class SequelizeBookDataManager implements IBookDataManager {
     };
   }
 
-  async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined> {
+  async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre>> {
     const bookInfo = await BookInfoModel.findOne({
       where: { id: infoId },
       include: [
@@ -382,13 +382,13 @@ export class SequelizeBookDataManager implements IBookDataManager {
   private static transformOperation<T>(value?: [T | undefined, T | undefined]): {} | undefined {
     const [a, b] = value || [];
     if (a !== undefined && b !== undefined) {
-      return { [Op.between]: [a, b] };
+      return { [Op.gt]: a, [Op.lt]: b };
     }
     if (a !== undefined) {
-      return { [Op.gte]: a };
+      return { [Op.gt]: a };
     }
     if (b !== undefined) {
-      return { [Op.lte]: b };
+      return { [Op.lt]: b };
     }
     return undefined;
   }

@@ -83,7 +83,10 @@ export class PrismaBookDataManager implements IBookDataManager {
       });
       await transactionalPrismaClient.bookInfo.updateMany({
         where: { id: infoId },
-        data: { historyBookCount: null },
+        data: {
+          historyBookCount: null,
+          updatedAt: new Date(),
+        },
       });
       try {
         await transactionalPrismaClient.book.update({
@@ -107,14 +110,20 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   async deleteBooks(infoId: InfoId, bookIds: Array<BookId>): Promise<void> {
-    await this.prismaClient.book.deleteMany({
-      where: {
-        infoId,
-        id: {
-          in: bookIds,
+    await this.prismaClient.$transaction([
+      this.prismaClient.book.deleteMany({
+        where: {
+          infoId,
+          id: {
+            in: bookIds,
+          },
         },
-      },
-    });
+      }),
+      this.prismaClient.bookInfo.update({
+        where: { id: infoId },
+        data: { updatedAt: new Date() },
+      }),
+    ]);
   }
 
   async moveBooks(bookIds: Array<BookId>, destinationInfoId: InfoId): Promise<void> {
@@ -192,13 +201,9 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   async getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined> {
-    const bookInfo = await this.prismaClient.bookInfo.findUnique({
-      where: { id: infoId },
-      include: {
-        thumbnailBook: true,
-      },
+    const thumbnailBook = await this.prismaClient.book.findFirst({
+      where: { thumbnailById: infoId },
     });
-    const thumbnailBook = bookInfo?.thumbnailBook;
     return thumbnailBook ? {
       bookId: thumbnailBook.id,
       pageCount: thumbnailBook.pageCount,
@@ -206,7 +211,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     } : undefined;
   }
 
-  async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre> | undefined> {
+  async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre>> {
     const bookInfo = await this.prismaClient.bookInfo.findUnique({
       where: {
         id: infoId,
@@ -219,7 +224,7 @@ export class PrismaBookDataManager implements IBookDataManager {
         },
       },
     });
-    return bookInfo?.genres?.map(({ genre }) => genre);
+    return bookInfo?.genres?.map(({ genre }) => genre) ?? [];
   }
 
   async getBookInfoBooks(
@@ -405,9 +410,12 @@ export class PrismaBookDataManager implements IBookDataManager {
       thumbnail,
     }: RequireAtLeastOne<BookInfoEditableValue>,
   ): Promise<void> {
-    if (bookName || genres) {
-      await this.prismaClient.$transaction([
-        this.prismaClient.bookInfo.update({
+    if (!bookName && !genres && !thumbnail) {
+      return;
+    }
+    await this.prismaClient.$transaction(async (transactionalPrismaClient) => {
+      if (bookName || genres) {
+        await transactionalPrismaClient.bookInfo.update({
           where: { id: infoId },
           data: {
             id: infoId,
@@ -437,32 +445,53 @@ export class PrismaBookDataManager implements IBookDataManager {
               })),
             },
           },
-        }),
-        this.prismaClient.bookInfosToGenres.deleteMany({
+        });
+        await transactionalPrismaClient.bookInfosToGenres.deleteMany({
           where: {
             infoId,
             genreName: {
               notIn: (genres || []).map(({ name }) => name),
             },
           },
-        }),
-      ]);
-    }
-    if (thumbnail) {
-      await this.prismaClient.$transaction([
-        this.prismaClient.book.updateMany({
+        });
+      }
+      if (thumbnail) {
+        const oldThumbnailBook = await transactionalPrismaClient.book.findUnique({
           where: { thumbnailById: infoId },
-          data: { thumbnailById: null },
-        }),
-        this.prismaClient.book.updateMany({
+          select: { updatedAt: true },
+        });
+        if (oldThumbnailBook) {
+          await transactionalPrismaClient.book.updateMany({
+            where: { thumbnailById: infoId },
+            data: {
+              thumbnailById: null,
+              updatedAt: oldThumbnailBook.updatedAt,
+            },
+          });
+        }
+        const newThumbnailBook = await transactionalPrismaClient.book.findFirst({
           where: {
             id: thumbnail,
             infoId,
           },
-          data: { thumbnailById: infoId },
-        }),
-      ]);
-    }
+          select: { updatedAt: true },
+        });
+        await transactionalPrismaClient.book.updateMany({
+          where: {
+            id: thumbnail,
+            infoId,
+          },
+          data: {
+            thumbnailById: infoId,
+            updatedAt: newThumbnailBook.updatedAt,
+          },
+        });
+        await transactionalPrismaClient.bookInfo.update({
+          where: { id: infoId },
+          data: { updatedAt: new Date() },
+        });
+      }
+    });
   }
 
   async deleteBookInfo(infoId: InfoId): Promise<void> {
