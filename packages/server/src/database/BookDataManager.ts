@@ -60,7 +60,7 @@ export interface IBookDataManager {
 
   getBookInfoBooks(
     infoId: InfoId,
-    sort?: Array<[SortableBookProperties, SortKey]>,
+    sort: Array<[SortableBookProperties, SortKey]>, /* = [['updatedAt', 'asc']] */
   ): Promise<Array<Book>>;
 
   getBookInfos(option: {

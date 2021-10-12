@@ -229,13 +229,14 @@ export class PrismaBookDataManager implements IBookDataManager {
 
   async getBookInfoBooks(
     infoId: InfoId,
-    sort?: Array<[SortableBookProperties, SortKey]>,
+    sort: Array<[SortableBookProperties, SortKey]>,
   ): Promise<Array<Book>> {
     const bookInfo = await this.prismaClient.bookInfo.findUnique({
       where: { id: infoId },
       include: {
         books: {
-          orderBy: sort?.map(([key, order]) => ({ [key]: order })),
+          orderBy: (sort.length === 0 ? [['updatedAt', 'asc']] : sort)
+            .map(([key, order]) => ({ [key]: order })),
         },
       },
     });

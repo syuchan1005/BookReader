@@ -83,7 +83,7 @@ class BookInfo extends GQLMiddleware {
         return { success: true };
       },
       deleteBookInfo: async (parent, { id: infoId }) => {
-        const books = await BookDataManager.getBookInfoBooks(infoId);
+        const books = await BookDataManager.getBookInfoBooks(infoId, []);
         await BookDataManager.deleteBookInfo(infoId);
 
         await Promise.allSettled(books.map(({ id }) => removeBook(id)));
@@ -142,7 +142,7 @@ class BookInfo extends GQLMiddleware {
           const sortNumber = order.startsWith('Number_');
           let books = await BookDataManager.getBookInfoBooks(
             id,
-            sortNumber ? undefined : [
+            sortNumber ? [] : [
               ['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc'],
             ],
           );

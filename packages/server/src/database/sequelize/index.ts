@@ -298,11 +298,11 @@ export class SequelizeBookDataManager implements IBookDataManager {
 
   getBookInfoBooks(
     infoId: InfoId,
-    sort?: Array<[SortableBookProperties, SortKey]>,
+    sort: Array<[SortableBookProperties, SortKey]>,
   ): Promise<Array<Book>> {
     return BookModel.findAll({
       where: { infoId },
-      order: sort,
+      order: sort.length === 0 ? [['updatedAt', 'asc']] : sort,
     }).then((books) => books.map(SequelizeBookDataManager.createBook));
   }
 
