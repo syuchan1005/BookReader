@@ -5,7 +5,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { common } from '@mui/material/colors';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 
 import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -111,8 +111,6 @@ const Info = (props: InfoProps) => {
   const [sortBookOrder, setSortBookOrder] = useRecoilState(sortBookOrderState);
   const classes = useStyles(props);
   const theme = useTheme();
-  const history = useHistory();
-  const location = useLocation();
   const { id: infoId } = useParams<{ id: string }>();
 
   const visibleMargin = React
@@ -164,15 +162,6 @@ const Info = (props: InfoProps) => {
 
   const setAlertData = useSetRecoilState(alertDataState);
 
-  const clickBook = React.useCallback((bookId) => {
-    db.infoReads.put({
-      infoId,
-      bookId,
-    })
-      .catch((e) => setAlertData({ message: e, variant: 'error' }));
-    history.push(`/book/${bookId}`, { referrer: location.pathname });
-  }, [infoId, history, setAlertData, location]);
-
   const bookList: typeof data.bookInfo.books = React.useMemo(
     () => (data?.bookInfo?.books ?? []),
     [data],
@@ -202,15 +191,21 @@ const Info = (props: InfoProps) => {
 
   const [sortEl, setSortEl, resetSortEl] = useMenuAnchor();
 
-  const handleBookClick = React.useCallback((bookId: string) => {
+  const handleBookClick = React.useCallback((event: React.MouseEvent, bookId: string) => {
     if (mode === ScreenMode.NORMAL) {
-      clickBook(bookId);
+      db.infoReads.put({
+        infoId,
+        bookId,
+      })
+        .catch((e) => setAlertData({ message: e, variant: 'error' }));
     } else {
+      event.preventDefault();
       toggleSelect(bookId);
     }
-  }, [clickBook, mode, toggleSelect]);
+  }, [infoId, mode, setAlertData, toggleSelect]);
 
-  const handleBookLongClick = React.useCallback((bookId: string) => {
+  const handleBookLongClick = React.useCallback((event, bookId: string) => {
+    event.preventDefault();
     setMode(ScreenMode.SELECT);
     toggleSelect(bookId);
   }, [toggleSelect]);

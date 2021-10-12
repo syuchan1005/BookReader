@@ -102,7 +102,8 @@ const SelectBookInfoThumbnailDialog = (
                 name={data.bookInfo.name}
                 {...book}
                 infoId={infoId}
-                onClick={() => {
+                onClick={(event) => {
+                  event.preventDefault();
                   changeThumbnail({
                     variables: {
                       thumbnail: book.id,

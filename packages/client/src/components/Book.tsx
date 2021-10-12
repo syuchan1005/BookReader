@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { TouchEvent as ReactTouchEvent } from 'react';
 
 import {
   Card,
@@ -11,6 +11,7 @@ import {
   MenuItem,
   Theme,
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -40,7 +41,7 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
   name: string;
   updatedAt?: string;
   reading?: boolean;
-  onClick?: (bookId: string) => void;
+  onClick?: (event: React.MouseEvent, bookId: string) => void;
   onDeleted?: (bookId: string, pages: number) => void;
   onEdit?: () => void;
 
@@ -51,7 +52,7 @@ interface BookProps extends Pick<BookType, 'id' | 'thumbnail' | 'number' | 'page
 
   overlayClassName?: string;
   disableRipple?: boolean;
-  onLongPress?: (bookId: string) => void;
+  onLongPress?: (event: React.MouseEvent | ReactTouchEvent, bookId: string) => void;
 
   children?: React.ReactNode;
 }
@@ -99,6 +100,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'absolute',
     zIndex: 1,
     padding: 0,
+  },
+  link: {
+    width: '100%',
+    color: 'unset',
+    textDecoration: 'unset',
   },
 }));
 
@@ -206,15 +212,15 @@ const Book = (props: BookProps) => {
 
   const handleBookClicked = React.useCallback((event: React.MouseEvent) => {
     if (event.shiftKey && onLongPress) {
-      onLongPress(bookId);
+      onLongPress(event, bookId);
     } else if (onClick) {
-      onClick(bookId);
+      onClick(event, bookId);
     }
   }, [onLongPress, onClick, bookId]);
 
-  const handleLongPressed = React.useCallback(() => {
+  const handleLongPressed = React.useCallback((event: ReactTouchEvent) => {
     if (onLongPress) {
-      onLongPress(bookId);
+      onLongPress(event, bookId);
     }
   }, [onLongPress, bookId]);
 
@@ -223,7 +229,10 @@ const Book = (props: BookProps) => {
   return (
     <div
       ref={ref}
-      style={{ width: thumbnailSize, height: pageAspectRatio(thumbnailSize) }}
+      style={{
+        width: thumbnailSize,
+        height: pageAspectRatio(thumbnailSize),
+      }}
     >
       {isVisible && (
         <Card className={`${classes.card} ${overlayClassName || ''}`}>
@@ -251,32 +260,41 @@ const Book = (props: BookProps) => {
               </Menu>
             </CardActions>
           )}
-          <CardActionArea
-            {...longTapEvents}
-            onClick={handleBookClicked}
-            disableRipple={disableRipple}
+          <Link
+            className={classes.link}
+            to={(location) => ({
+              pathname: `/book/${bookId}`,
+              state: { referrer: location.pathname },
+            })}
           >
-            <BookPageImage
-              bookId={bookId}
-              pageIndex={thumbnail}
-              bookPageCount={pages}
-              width={thumbnailSize}
-              height={pageAspectRatio(thumbnailSize)}
-              noSave={thumbnailNoSave}
-              forceUsePropSize
-            />
-            <CardContent className={classes.cardContent}>
-              <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
-            </CardContent>
-            <div className={classes.labelContainer}>
-              {(reading && !simple) ? (
-                <div className={classes.readLabel}>Reading</div>
-              ) : null}
-              {((Date.now() - Number(updatedAt)) < NEW_BOOK_EXPIRED) && (
-                <Icon className={classes.newLabel}>tips_and_updates</Icon>
-              )}
-            </div>
-          </CardActionArea>
+            <CardActionArea
+              {...longTapEvents}
+              onClick={handleBookClicked}
+              disableRipple={disableRipple}
+            >
+
+              <BookPageImage
+                bookId={bookId}
+                pageIndex={thumbnail}
+                bookPageCount={pages}
+                width={thumbnailSize}
+                height={pageAspectRatio(thumbnailSize)}
+                noSave={thumbnailNoSave}
+                forceUsePropSize
+              />
+              <CardContent className={classes.cardContent}>
+                <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
+              </CardContent>
+              <div className={classes.labelContainer}>
+                {(reading && !simple) ? (
+                  <div className={classes.readLabel}>Reading</div>
+                ) : null}
+                {((Date.now() - Number(updatedAt)) < NEW_BOOK_EXPIRED) && (
+                  <Icon className={classes.newLabel}>tips_and_updates</Icon>
+                )}
+              </div>
+            </CardActionArea>
+          </Link>
 
           <DeleteDialog
             open={isShownDeleteDialog}
