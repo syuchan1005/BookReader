@@ -1,3 +1,5 @@
+import axios from 'axios';
+import * as querystring from 'querystring';
 import assert from 'assert';
 import { SequelizeBookDataManager } from './sequelize/index';
 import { PrismaBookDataManager } from './prisma';
@@ -115,6 +117,7 @@ const removeDate = <T>(obj: T): T | undefined => {
   );
 };
 
+const queue = [];
 export const BookDataManager: IBookDataManager = new Proxy(sequelize, {
   get(target, prop, receiver) {
     const result = Reflect.get(target, prop, receiver);
@@ -128,10 +131,28 @@ export const BookDataManager: IBookDataManager = new Proxy(sequelize, {
         } catch (e) {
           r2 = e;
         }
+        queue.push([prop, args]);
+        if (queue.length > 3) {
+          queue.shift();
+        }
         try {
           assert.deepEqual(removeDate(r), removeDate(r2));
         } catch (e) {
-          console.error(prop, e);
+          const message = `${prop} ${e}\n${JSON.stringify(queue, null, 2)}`;
+          console.error(message);
+          if (process.env.LINE_NOTIFY) {
+            axios(
+              {
+                method: 'post',
+                url: 'https://notify-api.line.me/api/notify',
+                headers: {
+                  Authorization: `Bearer ${process.env.LINE_NOTIFY}`,
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                data: querystring.stringify({ message }),
+              },
+            ).catch(() => {});
+          }
         }
         return r;
       };
