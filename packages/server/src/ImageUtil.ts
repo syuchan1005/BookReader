@@ -44,8 +44,8 @@ export const obsoleteConvertImage = async (
     }
   } catch (e) { /* ignored */ }
 
-  const stats = await fs.stat(originalFilePath);
-  if (!stats.isFile()) {
+  const stats = await fs.stat(originalFilePath).catch(() => undefined);
+  if (!stats || !stats.isFile()) {
     return {
       success: false,
       body: undefined,
