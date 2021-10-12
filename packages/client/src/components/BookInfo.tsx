@@ -13,6 +13,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { orange as color } from '@mui/material/colors';
+import { Link } from 'react-router-dom';
 
 import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
 import {
@@ -37,7 +38,7 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   showName?: boolean;
   updatedAt?: string;
 
-  onClick?: (infoId: string, isHistory: boolean) => void;
+  onHistoryBookClick?: (infoId: string) => void;
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
   onEdit?: () => void;
   onVisible?: () => void;
@@ -124,6 +125,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     padding: theme.spacing(1),
     borderTopRightRadius: theme.spacing(0.5),
   },
+  link: {
+    width: '100%',
+    color: 'unset',
+    textDecoration: 'unset',
+  },
 }));
 
 const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
@@ -142,7 +148,7 @@ const BookInfo = (props: BookInfoProps) => {
     genres,
     updatedAt,
     showName,
-    onClick,
+    onHistoryBookClick,
     onDeleted,
     onEdit,
     onVisible,
@@ -232,14 +238,21 @@ const BookInfo = (props: BookInfoProps) => {
     }));
   }, [name]);
 
-  const handleCardClick = React.useCallback(() => {
-    if (onClick) {
-      onClick(infoId, history);
+  const handleCardClick = React.useCallback((e) => {
+    if (history && onHistoryBookClick) {
+      e.preventDefault();
+      onHistoryBookClick(infoId);
     }
-  }, [history, infoId, onClick]);
+  }, [history, infoId, onHistoryBookClick]);
 
   return (
-    <div ref={ref} style={{ width: thumbnailSize, height: pageAspectRatio(thumbnailSize) }}>
+    <div
+      ref={ref}
+      style={{
+        width: thumbnailSize,
+        height: pageAspectRatio(thumbnailSize),
+      }}
+    >
       {isVisible && (
         <Card className={classes.card} style={style}>
           <CardActions className={classes.headerMenu}>
@@ -257,39 +270,49 @@ const BookInfo = (props: BookInfoProps) => {
               {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
             </Menu>
           </CardActions>
-          <CardActionArea onClick={handleCardClick}>
-            <BookPageImage
-              bookId={thumbnail?.bookId}
-              pageIndex={thumbnail?.pageIndex}
-              bookPageCount={thumbnail?.bookPageCount}
-              alt={name}
-              width={thumbnailSize}
-              height={pageAspectRatio(thumbnailSize)}
-              noSave={false}
-              forceUsePropSize
-            />
-            {showName ? (
-              <CardContent className={classes.cardContent}>
-                <div>{`${name} (${count}${genres.some((g) => g.name === 'Completed') ? ', Completed' : ''})`}</div>
-              </CardContent>
-            ) : (
-              <CardContent className={classes.countLabel}>
-                <div>{count}</div>
-              </CardContent>
-            )}
-            {(history) ? (
-              <div className={classes.historyLabel}>History</div>
-            ) : null}
-            {(genres.some((g) => g.name === 'Completed') && !showName) ? (
-              <div className={classes.completedLabel}>Completed</div>
-            ) : null}
-            {(genres.some((g) => g.invisible)) ? (
-              <Icon className={classes.invisibleLabel}>visibility_off</Icon>
-            ) : null}
-            {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
-              <Icon className={classes.newLabel}>tips_and_updates</Icon>
-            )}
-          </CardActionArea>
+          <Link
+            className={classes.link}
+            to={
+              (location) => ({
+                pathname: `/info/${infoId}`,
+                state: { referrer: location.pathname },
+              })
+            }
+          >
+            <CardActionArea onClick={handleCardClick}>
+              <BookPageImage
+                bookId={thumbnail?.bookId}
+                pageIndex={thumbnail?.pageIndex}
+                bookPageCount={thumbnail?.bookPageCount}
+                alt={name}
+                width={thumbnailSize}
+                height={pageAspectRatio(thumbnailSize)}
+                noSave={false}
+                forceUsePropSize
+              />
+              {showName ? (
+                <CardContent className={classes.cardContent}>
+                  <div>{`${name} (${count}${genres.some((g) => g.name === 'Completed') ? ', Completed' : ''})`}</div>
+                </CardContent>
+              ) : (
+                <CardContent className={classes.countLabel}>
+                  <div>{count}</div>
+                </CardContent>
+              )}
+              {(history) ? (
+                <div className={classes.historyLabel}>History</div>
+              ) : null}
+              {(genres.some((g) => g.name === 'Completed') && !showName) ? (
+                <div className={classes.completedLabel}>Completed</div>
+              ) : null}
+              {(genres.some((g) => g.invisible)) ? (
+                <Icon className={classes.invisibleLabel}>visibility_off</Icon>
+              ) : null}
+              {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
+                <Icon className={classes.newLabel}>tips_and_updates</Icon>
+              )}
+            </CardActionArea>
+          </Link>
 
           <DeleteDialog
             open={isShownDeleteDialog}
