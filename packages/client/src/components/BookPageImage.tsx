@@ -200,11 +200,11 @@ const BookPageImage = (props: BookPageImageProps) => {
       <img
         loading={loading}
         className={`${imgClassName} ${forceUsePropSize ? classes.imageFull : ''}`}
-        style={style}
+        style={{ ...style, maxHeight: imgHeight }}
         src={imageSourceSet.imgSrc}
         alt={alt}
         width={imgWidth}
-        height={imgHeight}
+        height={imageState == ImageState.LOADED ? undefined : imgHeight}
         onLoad={() => setImageState(ImageState.LOADED)}
         onError={() => setImageState(ImageState.ERROR)}
       />
