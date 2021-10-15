@@ -15,7 +15,6 @@ import {
   Theme,
   Toolbar,
   Typography,
-  adaptV4Theme,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -51,13 +50,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const ContextualActionBarTheme = createTheme(adaptV4Theme({
+const ContextualActionBarTheme = createTheme({
   palette: {
     primary: {
       main: grey['900'],
     },
   },
-}));
+});
 
 const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);

@@ -7,7 +7,6 @@ import {
   ThemeProvider,
   StyledEngineProvider,
   Theme,
-  adaptV4Theme,
   Snackbar, Alert,
 } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
@@ -119,13 +118,13 @@ const App = () => {
   }, [apolloClient, setAlertData]);
 
   const provideTheme = useMemo(
-    () => createTheme(adaptV4Theme({
+    () => createTheme({
       palette: {
         mode: isSystemDarkTheme ? 'dark' : 'light',
         primary: colors[primaryColor],
         secondary: colors[secondaryColor],
       },
-    })),
+    }),
     [isSystemDarkTheme, primaryColor, secondaryColor],
   );
 
