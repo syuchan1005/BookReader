@@ -220,7 +220,10 @@ const Info = (props: InfoProps) => {
   const handleSelectBookMutated = React.useCallback(() => {
     setMode(ScreenMode.NORMAL);
     refetch();
-  }, [refetch]);
+    if (selectIds.length > 0) {
+      setSelectIds([]);
+    }
+  }, [refetch, selectIds]);
 
   return (
     <>
