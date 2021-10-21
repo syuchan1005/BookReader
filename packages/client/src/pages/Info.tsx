@@ -23,6 +23,7 @@ import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import { alertDataState, sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useLazyDialog from '@client/hooks/useLazyDialog';
+import { EmptyScreen } from '@client/components/EmptyScreen';
 import { defaultTitle } from '../../../common';
 
 const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
@@ -272,37 +273,40 @@ const Info = (props: InfoProps) => {
           </div>
         ) : (
           <>
-            <div className={classes.infoGrid}>
-              {// @ts-ignore
-              (bookList && bookList.length > 0) && bookList.map(
-                (book) => (
-                  <Book
-                    key={book.id}
-                    infoId={infoId}
-                    simple={mode === ScreenMode.SELECT}
-                    {...book}
-                    name={bookName}
-                    reading={readId === book.id}
-                    onClick={handleBookClick}
-                    onDeleted={onDeletedBook}
-                    onEdit={refetch}
-                    thumbnailSize={downXs ? 150 : 200}
-                    thumbnailNoSave={false}
-                    visibleMargin={visibleMargin}
-                    overlayClassName={selectIds.includes(book.id)
-                      ? classes.selectedBookOverlay
-                      : undefined}
-                    disableRipple={mode === ScreenMode.SELECT}
-                    onLongPress={mode === ScreenMode.NORMAL ? handleBookLongClick : undefined}
-                  >
-                    {(selectIds.includes(book.id)) && (
-                      <Icon className={classes.selectedBookCheckIcon}>check_circle</Icon>
-                    )}
-                  </Book>
-                ),
-              )
-            }
-            </div>
+            {(loading || bookList?.length > 0) && (
+              <div className={classes.infoGrid}>
+                {// @ts-ignore
+                  (bookList && bookList.length > 0) && bookList.map(
+                    (book) => (
+                      <Book
+                        key={book.id}
+                        infoId={infoId}
+                        simple={mode === ScreenMode.SELECT}
+                        {...book}
+                        name={bookName}
+                        reading={readId === book.id}
+                        onClick={handleBookClick}
+                        onDeleted={onDeletedBook}
+                        onEdit={refetch}
+                        thumbnailSize={downXs ? 150 : 200}
+                        thumbnailNoSave={false}
+                        visibleMargin={visibleMargin}
+                        overlayClassName={selectIds.includes(book.id)
+                          ? classes.selectedBookOverlay
+                          : undefined}
+                        disableRipple={mode === ScreenMode.SELECT}
+                        onLongPress={mode === ScreenMode.NORMAL ? handleBookLongClick : undefined}
+                      >
+                        {(selectIds.includes(book.id)) && (
+                          <Icon className={classes.selectedBookCheckIcon}>check_circle</Icon>
+                        )}
+                      </Book>
+                    ),
+                  )
+                }
+              </div>
+            )}
+            {(!loading && bookList.length === 0) && (<EmptyScreen />)}
             <Fab
               className={classes.addButton}
               onClick={showAddDialog}

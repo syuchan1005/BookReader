@@ -35,6 +35,7 @@ import {
   sortOrderState,
   showBookInfoNameState,
 } from '@client/store/atoms';
+import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '../Database';
 
 const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
@@ -216,31 +217,34 @@ const Home = (props: HomeProps) => {
           </div>
         ) : (
           <>
-            <div className={classes.homeGrid}>
-              {infos.map((info, i, arr) => (
-                <BookInfo
-                  key={info.id}
-                  {...info}
-                  onHistoryBookClick={handleHistoryBookInfoClick}
-                  onDeleted={handleDeletedBookInfo}
-                  onEdit={refetchAll}
-                  thumbnailSize={downXs ? 150 : 200}
-                  showName={showBookInfoName}
-                  visibleMargin={visibleMargin}
-                  onVisible={() => {
-                    const isLast = i === arr.length - 1;
-                    if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
-                      handleLoadMore();
-                    }
-                  }}
-                />
-              ))}
-              {(loading) && (
-                <div className={classes.loadMoreProgress}>
-                  <CircularProgress color="secondary" />
-                </div>
-              )}
-            </div>
+            {(loading || infos.length > 0) && (
+              <div className={classes.homeGrid}>
+                {infos.map((info, i, arr) => (
+                  <BookInfo
+                    key={info.id}
+                    {...info}
+                    onHistoryBookClick={handleHistoryBookInfoClick}
+                    onDeleted={handleDeletedBookInfo}
+                    onEdit={refetchAll}
+                    thumbnailSize={downXs ? 150 : 200}
+                    showName={showBookInfoName}
+                    visibleMargin={visibleMargin}
+                    onVisible={() => {
+                      const isLast = i === arr.length - 1;
+                      if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+                        handleLoadMore();
+                      }
+                    }}
+                  />
+                ))}
+                {(loading) && (
+                  <div className={classes.loadMoreProgress}>
+                    <CircularProgress color="secondary" />
+                  </div>
+                )}
+              </div>
+            )}
+            {(!loading && infos.length === 0) && (<EmptyScreen />)}
             <Fab
               className={classes.addButton}
               onClick={setOpen}
