@@ -124,10 +124,10 @@ export const BookDataManager: IBookDataManager = new Proxy(sequelize, {
     if (typeof prop === 'string' && !['sequelize', 'initModels', 'Debug'].includes(prop)) {
       const result2 = Reflect.get(prisma, prop, receiver);
       return async (...args) => {
-        const r = await result.bind(target)(...args);
+        const r = await result2.bind(prisma)(...args);
         let r2;
         try {
-          r2 = await result2.bind(prisma)(...args);
+          r2 = await result.bind(target)(...args);
         } catch (e) {
           r2 = e;
         }
@@ -138,7 +138,7 @@ export const BookDataManager: IBookDataManager = new Proxy(sequelize, {
         try {
           assert.deepEqual(removeDate(r), removeDate(r2));
         } catch (e) {
-          const message = `${prop} ${e}\n${JSON.stringify(queue, null, 2)}`;
+          const message = `${prop} p -> s\n${e}\n${JSON.stringify(queue, null, 2)}`;
           console.error(message);
           if (process.env.LINE_NOTIFY) {
             axios(
