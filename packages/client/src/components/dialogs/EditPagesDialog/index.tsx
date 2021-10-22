@@ -121,6 +121,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
             )}
             renderItem={({ value, index, props: itemProps }) => (
               <ActionListItem
+                key={value.id}
                 draggableProps={itemProps}
                 dragHandleProps={{ 'data-movable-handle': true }}
                 editType={value.editType}
