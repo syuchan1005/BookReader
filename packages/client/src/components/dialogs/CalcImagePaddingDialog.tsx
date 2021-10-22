@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography,
 } from '@mui/material';
 import { createBookPageUrl } from '../BookPageImage';
 
@@ -36,6 +36,8 @@ export const urlToImageData = (
 export const calcPadding = (
   imageData: ImageData,
   threshold: number,
+  verticalOffset: number,
+  horizontalOffset: number,
 ): { left: number, right: number } => {
   const isWhite = (width: number, height: number) => {
     const pixelIndex = width + height * imageData.width;
@@ -48,8 +50,8 @@ export const calcPadding = (
 
   /* eslint-disable no-labels,no-restricted-syntax */
   let left = 0;
-  leftWidth: for (let w = 0; w < imageData.width; w += 1) {
-    for (let h = 0; h < imageData.height; h += 1) {
+  leftWidth: for (let w = horizontalOffset; w < (imageData.width - horizontalOffset); w += 1) {
+    for (let h = verticalOffset; h < (imageData.height - verticalOffset); h += 1) {
       if (!isWhite(w, h)) {
         left = w;
         break leftWidth;
@@ -57,8 +59,8 @@ export const calcPadding = (
     }
   }
   let right = 0;
-  rightWidth: for (let w = imageData.width - 1; w >= 0; w -= 1) {
-    for (let h = 0; h < imageData.height; h += 1) {
+  rightWidth: for (let w = imageData.width - 1 - horizontalOffset; w >= horizontalOffset; w -= 1) {
+    for (let h = verticalOffset; h < (imageData.height - verticalOffset); h += 1) {
       if (!isWhite(w, h)) {
         right = w;
         break rightWidth;
@@ -84,7 +86,9 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
     onSizeChange,
   } = props;
   const [pageIndex, setPageIndex] = React.useState(1);
-  const [threshold, setThreshold] = React.useState(10);
+  const [threshold, setThreshold] = React.useState(50);
+  const [verticalOffset, setVerticalOffset] = React.useState(200);
+  const [horizontalOffset, setHorizontalOffset] = React.useState(10);
   const [imageData, setImageData] = React.useState<ImageData | undefined>(undefined);
   const canvasRef = React.useRef<HTMLCanvasElement>();
   const canvasContainerRef = React.useRef<HTMLDivElement>();
@@ -96,10 +100,10 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
     const {
       left: l,
       right: r,
-    } = calcPadding(rawImageData, threshold);
+    } = calcPadding(rawImageData, threshold, verticalOffset, horizontalOffset);
     onSizeChange(l, r);
     setImageData(rawImageData);
-  }, [onSizeChange, bookId, pageIndex, maxPage, threshold]);
+  }, [onSizeChange, bookId, pageIndex, maxPage, threshold, verticalOffset]);
 
   React.useEffect(() => {
     if (!imageData || !canvasRef.current) return;
@@ -119,21 +123,13 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Preview Crop Pages</DialogTitle>
-      <DialogContent>
-        <TextField
-          color="secondary"
-          label={`page(max: ${maxPage})`}
-          type="number"
-          value={pageIndex}
-          onChange={(e) => setPageIndex(Number(e.target.value))}
-        />
-        <TextField
-          color="secondary"
-          label="threshold"
-          type="number"
-          value={threshold}
-          onChange={(e) => setThreshold(Number(e.target.value))}
-        />
+      <DialogContent
+        sx={{
+          '& .MuiTextField-root': { m: 1 },
+          '& .MuiButton-root': { m: 1 },
+        }}
+      >
+        <Typography variant="subtitle2">Padding Size</Typography>
         <TextField
           color="secondary"
           label="Left"
@@ -148,7 +144,37 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
           value={right}
           onChange={(e) => onSizeChange(left, Number(e.target.value))}
         />
-        <Button onClick={onDetectClick}>Detect & Preview</Button>
+
+        <Typography variant="subtitle2">Options</Typography>
+        <TextField
+          color="secondary"
+          label={`Detect page(max: ${maxPage})`}
+          type="number"
+          value={pageIndex}
+          onChange={(e) => setPageIndex(Number(e.target.value))}
+        />
+        <TextField
+          color="secondary"
+          label="Color threshold(0-255)"
+          type="number"
+          value={threshold}
+          onChange={(e) => setThreshold(Number(e.target.value))}
+        />
+        <TextField
+          color="secondary"
+          label="Vertical offset"
+          type="number"
+          value={verticalOffset}
+          onChange={(e) => setVerticalOffset(Number(e.target.value))}
+        />
+        <TextField
+          color="secondary"
+          label="Horizontal offset"
+          type="number"
+          value={horizontalOffset}
+          onChange={(e) => setHorizontalOffset(Number(e.target.value))}
+        />
+        <Button fullWidth onClick={onDetectClick}>Detect & Preview</Button>
         <div
           ref={canvasContainerRef}
           style={{

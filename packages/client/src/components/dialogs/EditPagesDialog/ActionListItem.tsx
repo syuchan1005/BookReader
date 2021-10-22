@@ -303,7 +303,7 @@ const getPadding = async (
 ): Promise<{ left: number, right: number }> => {
   const coverUrl = createBookPageUrl(bookId, pageIndex, maxPage);
   const coverImageData = await urlToImageData(coverUrl);
-  return calcPadding(coverImageData, threshold);
+  return calcPadding(coverImageData, threshold, 150, 10);
 };
 
 export interface EditTypeContent {
@@ -322,7 +322,7 @@ const Templates = {
   ): Promise<EditTypeContent[]> => {
     const [coverPadding, contentsPadding] = await Promise.all([
       getPadding(bookId, maxPage, coverIndex, 200),
-      getPadding(bookId, maxPage, contentPaddingPage, 10),
+      getPadding(bookId, maxPage, contentPaddingPage, 50),
     ]);
     return [
       {
