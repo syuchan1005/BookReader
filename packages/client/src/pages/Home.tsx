@@ -9,7 +9,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useQueryParam, StringParam } from 'use-query-params';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 import {
   HistoryType,
@@ -33,7 +33,7 @@ import {
   genresState,
   bookHistoryState,
   sortOrderState,
-  showBookInfoNameState,
+  showBookInfoNameState, homeLastSeenBookPosition,
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '../Database';
@@ -110,6 +110,13 @@ const Home = (props: HomeProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
 
+  const [lastSeenPosition, setLastSeenPosition] = useRecoilState(homeLastSeenBookPosition);
+  const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] = React.useState(false);
+
+  // eslint-disable-next-line
+  const lastSeenPositionIndex = React.useMemo(() => (lastSeenPosition?.index ?? 0), []);
+
+  const gridRef = React.useRef<HTMLDivElement>();
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
@@ -144,7 +151,7 @@ const Home = (props: HomeProps) => {
   } = useRelayBookInfosQuery({
     skip: isSkipQuery,
     variables: {
-      first: defaultLoadBookInfoCount,
+      first: lastSeenPositionIndex + defaultLoadBookInfoCount,
       option: {
         search: debounceSearch || undefined,
         genres,
@@ -162,6 +169,26 @@ const Home = (props: HomeProps) => {
     () => (data ? data.bookInfos.edges.map((e) => e.node) : []),
     [data],
   );
+
+  React.useEffect(() => {
+    if (!lastSeenPosition) {
+      setLastSeenPositionLoaded(true);
+      return;
+    }
+    if (loading || !gridRef.current || isLastSeenPositionLoaded) {
+      return;
+    }
+    const gridElement = gridRef.current;
+    if (gridElement.children.length > lastSeenPosition.index) {
+      const elem = gridElement.children[lastSeenPosition.index];
+      // @ts-ignore
+      elem.scrollIntoView({ block: lastSeenPosition.block });
+      setLastSeenPositionLoaded(true);
+    } else {
+      gridElement.scrollIntoView({ block: 'end' });
+    }
+  }, [loading, lastSeenPosition, isLastSeenPositionLoaded, infos]);
+
   const handleDeletedBookInfo = React.useCallback((infoId: string, books) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch({ first: infos.length });
@@ -200,6 +227,36 @@ const Home = (props: HomeProps) => {
     setOpenAddBook(infoId);
   }, [setOpenAddBook]);
 
+  const handleVisible = React.useCallback(
+    (i: number, isVisible: boolean, isFirstVisible: boolean) => {
+      if (!isVisible) {
+        return;
+      }
+
+      if (isFirstVisible) {
+        const isLast = i === infos.length - 1;
+        if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+          handleLoadMore();
+        }
+      }
+      if (isLastSeenPositionLoaded) {
+        setLastSeenPosition((current) => {
+          if (current?.index > i) {
+            return {
+              index: i,
+              block: 'start',
+            };
+          }
+          return {
+            index: i,
+            block: 'end',
+          };
+        });
+      }
+    },
+    [data, handleLoadMore, infos.length, isLastSeenPositionLoaded, loading, setLastSeenPosition],
+  );
+
   return (
     <>
       <SearchAndMenuHeader
@@ -218,8 +275,8 @@ const Home = (props: HomeProps) => {
         ) : (
           <>
             {(loading || infos.length > 0) && (
-              <div className={classes.homeGrid}>
-                {infos.map((info, i, arr) => (
+              <div className={classes.homeGrid} ref={gridRef}>
+                {infos.map((info, i) => (
                   <BookInfo
                     key={info.id}
                     {...info}
@@ -229,12 +286,8 @@ const Home = (props: HomeProps) => {
                     thumbnailSize={downXs ? 150 : 200}
                     showName={showBookInfoName}
                     visibleMargin={visibleMargin}
-                    onVisible={() => {
-                      const isLast = i === arr.length - 1;
-                      if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
-                        handleLoadMore();
-                      }
-                    }}
+                    index={i}
+                    onVisible={handleVisible}
                   />
                 ))}
                 {(loading) && (

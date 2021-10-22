@@ -41,7 +41,8 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   onHistoryBookClick?: (infoId: string) => void;
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
   onEdit?: () => void;
-  onVisible?: () => void;
+  index: number;
+  onVisible?: (index: number, isVisible: boolean, isFirstVisible: boolean) => void;
   visibleMargin?: string;
 }
 
@@ -151,10 +152,12 @@ const BookInfo = (props: BookInfoProps) => {
     onHistoryBookClick,
     onDeleted,
     onEdit,
+    index,
     onVisible,
     visibleMargin,
   } = props;
-  const isVisible = useVisible(ref, true, visibleMargin);
+  const isVisible = useVisible(ref, false, visibleMargin);
+  const [keepVisible, setKeepVisible] = React.useState(false);
 
   const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
   const [isShownDeleteDialog, showDeleteDialog,
@@ -173,10 +176,12 @@ const BookInfo = (props: BookInfoProps) => {
     hideDownloadDialog] = useLazyDialog(false);
 
   React.useEffect(() => {
-    if (isVisible && onVisible) {
-      onVisible();
+    onVisible(index, isVisible, isVisible && !keepVisible);
+    if (isVisible) {
+      setKeepVisible(true);
     }
-  }, [onVisible, isVisible]);
+    // eslint-disable-next-line
+  }, [isVisible]);
 
   const [deleteBookInfo, { loading: delLoading }] = useDeleteBookInfoMutation({
     variables: {
@@ -253,7 +258,7 @@ const BookInfo = (props: BookInfoProps) => {
         height: pageAspectRatio(thumbnailSize),
       }}
     >
-      {isVisible && (
+      {keepVisible && (
         <Card className={classes.card} style={style}>
           <CardActions className={classes.headerMenu}>
             <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">

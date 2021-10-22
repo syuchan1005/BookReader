@@ -133,3 +133,12 @@ export const alertDataState = selector<AlertData>({
     set(alertOpenState, !!value);
   },
 });
+
+type Position = { index: number, block: 'start' | 'end' };
+export const homeLastSeenBookPosition = atom<Position | undefined>({
+  key: 'homeLastSeenBookPosition',
+  default: undefined,
+  effects_UNSTABLE: [
+    logEffect(),
+  ],
+});
