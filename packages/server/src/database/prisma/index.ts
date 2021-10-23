@@ -249,6 +249,32 @@ export class PrismaBookDataManager implements IBookDataManager {
     } : undefined;
   }
 
+  @BatchLoading<InfoId, Array<Genre>>(
+    'getBookInfoGenres',
+    async (infoIds) => {
+      const genreMap = await INSTANCE.prismaClient.bookInfo.findMany({
+        where: {
+          id: {
+            in: infoIds,
+          },
+        },
+        include: {
+          genres: {
+            include: {
+              genre: true,
+            },
+          },
+        },
+      }).then((bookInfos) => {
+        const result = {};
+        bookInfos.forEach((info) => {
+          result[info.id] = info?.genres?.map(({ genre }) => genre);
+        });
+        return result;
+      });
+      return infoIds.map((id) => genreMap[id]);
+    },
+  )
   async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre>> {
     const bookInfo = await this.prismaClient.bookInfo.findUnique({
       where: {
@@ -442,6 +468,7 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   @BatchLoadingClear('getBookInfoThumbnail')
+  @BatchLoadingClear('getBookInfoGenres')
   async editBookInfo(
     infoId: InfoId,
     {
@@ -535,6 +562,7 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   @BatchLoadingClear('getBookInfoThumbnail')
+  @BatchLoadingClear('getBookInfoGenres')
   async deleteBookInfo(infoId: InfoId): Promise<void> {
     await this.prismaClient.bookInfo.delete({ where: { id: infoId } });
   }
@@ -549,6 +577,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     return this.prismaClient.genre.findMany();
   }
 
+  @BatchLoadingClearAll('getBookInfoGenres')
   async editGenre(
     genreName: GenreName,
     genre: RequireAtLeastOne<GenreEditableValue>,
@@ -563,6 +592,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     return undefined;
   }
 
+  @BatchLoadingClearAll('getBookInfoGenres')
   async deleteGenre(genreName: GenreName): Promise<DeleteGenreError | undefined> {
     if (defaultGenres.includes(genreName)) {
       return 'DELETE_DEFAULT';
