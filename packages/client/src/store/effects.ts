@@ -5,10 +5,12 @@ export const logEffect = <T>(): AtomEffect<T> => ({
   node,
   onSet,
 }) => {
-  onSet((newValue, oldValue) => {
-    // eslint-disable-next-line no-console
-    console.log(`%cUpdate%c ${node.key}`, 'color: red', 'color: auto', oldValue, newValue);
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    onSet((newValue, oldValue) => {
+      // eslint-disable-next-line no-console
+      console.log(`%cUpdate%c ${node.key}`, 'color: red', 'color: auto', oldValue, newValue);
+    });
+  }
 };
 
 const LOCAL_STORAGE_KEY = 'state-persist';
