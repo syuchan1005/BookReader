@@ -28,6 +28,7 @@
         "@prisma/client": "^3.3.0",
         "apollo-server-koa": "^3.4.0",
         "axios": "^0.23.0",
+        "dataloader": "^2.0.0",
         "debug": "^4.3.2",
         "du": "^1.0.0",
         "fs-extra": "^10.0.0",

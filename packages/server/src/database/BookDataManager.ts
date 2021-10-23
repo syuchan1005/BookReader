@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as querystring from 'querystring';
 import assert from 'assert';
 import { SequelizeBookDataManager } from './sequelize/index';
-import { PrismaBookDataManager } from './prisma';
+import { INSTANCE } from './prisma';
 import {
   Book,
   BookEditableValue,
@@ -103,7 +103,7 @@ export interface IBookDataManager {
   };
 }
 
-const prisma = new PrismaBookDataManager();
+const prisma = INSTANCE;
 const sequelize = new SequelizeBookDataManager();
 
 const removeDate = <T>(obj: T): T | undefined => {

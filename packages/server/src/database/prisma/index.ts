@@ -1,5 +1,5 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_count"] }] */
-import { PrismaClient, BookInfo as PBookInfo } from '@prisma/client';
+import { PrismaClient, BookInfo as PBookInfo, Book as PBook } from '@prisma/client';
 
 import { IBookDataManager, RequireAtLeastOne, SortKey } from '@server/database/BookDataManager';
 import {
@@ -20,6 +20,11 @@ import {
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import { generateId } from '@server/database/models/Id';
 import { FeatureFlag } from '@server/FeatureFlag.js';
+import {
+  BatchLoading,
+  BatchLoadingClear,
+  BatchLoadingClearAll,
+} from '@server/database/BatchLoading';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -67,6 +72,10 @@ export class PrismaBookDataManager implements IBookDataManager {
     return book;
   }
 
+  @BatchLoadingClear<[InputBook]>(
+    'getBookInfoThumbnail',
+    (args) => args[0].infoId,
+  )
   async addBook({
     id,
     infoId,
@@ -102,6 +111,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     return bookId;
   }
 
+  @BatchLoadingClearAll('getBookInfoThumbnail')
   async editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void> {
     await this.prismaClient.book.update({
       where: { id: bookId },
@@ -109,6 +119,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     });
   }
 
+  @BatchLoadingClearAll('getBookInfoThumbnail')
   async deleteBooks(infoId: InfoId, bookIds: Array<BookId>): Promise<void> {
     await this.prismaClient.$transaction([
       this.prismaClient.book.deleteMany({
@@ -126,6 +137,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     ]);
   }
 
+  @BatchLoadingClearAll('getBookInfoThumbnail')
   async moveBooks(bookIds: Array<BookId>, destinationInfoId: InfoId): Promise<void> {
     if (bookIds.length === 0) {
       return;
@@ -200,10 +212,36 @@ export class PrismaBookDataManager implements IBookDataManager {
     };
   }
 
+  @BatchLoading<InfoId, BookInfoThumbnail>(
+    'getBookInfoThumbnail',
+    async (infoIds) => {
+      const bookMap = await INSTANCE.prismaClient.book.findMany({
+        where: {
+          thumbnailById: {
+            in: infoIds,
+          },
+        },
+      }).then((books) => {
+        const result = {};
+        books.forEach((info) => {
+          result[info.thumbnailById] = info;
+        });
+        return result;
+      });
+      return infoIds
+        .map((id) => PrismaBookDataManager.convertBookInfoThumbnail(bookMap[id]));
+    },
+  )
   async getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined> {
     const thumbnailBook = await this.prismaClient.book.findFirst({
       where: { thumbnailById: infoId },
     });
+    return PrismaBookDataManager.convertBookInfoThumbnail(thumbnailBook);
+  }
+
+  private static convertBookInfoThumbnail(
+    thumbnailBook?: PBook,
+  ): BookInfoThumbnail | undefined {
     return thumbnailBook ? {
       bookId: thumbnailBook.id,
       pageCount: thumbnailBook.pageCount,
@@ -403,6 +441,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     await this.prismaClient.$transaction(createMany);
   }
 
+  @BatchLoadingClear('getBookInfoThumbnail')
   async editBookInfo(
     infoId: InfoId,
     {
@@ -495,6 +534,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     });
   }
 
+  @BatchLoadingClear('getBookInfoThumbnail')
   async deleteBookInfo(infoId: InfoId): Promise<void> {
     await this.prismaClient.bookInfo.delete({ where: { id: infoId } });
   }
@@ -544,3 +584,5 @@ export class PrismaBookDataManager implements IBookDataManager {
     };
   }
 }
+
+export const INSTANCE = new PrismaBookDataManager();
