@@ -1,5 +1,4 @@
 const { exec } = require('child_process');
-const { FeatureFlag } = require('../src/FeatureFlag');
 
 const execp = (cmd, opt) => new Promise((resolve, reject) => {
   try {
@@ -26,10 +25,10 @@ const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
   console.log(`[MIGRATION] start env: ${env}`);
 
   await execp('npm run prisma -- migrate resolve --applied 20210807095937_init', {
-    env: { ...process.env, DB_FILE: `file:../${env}${FeatureFlag.prisma.dbFileSuffix}.sqlite` },
+    env: { ...process.env, DB_FILE: `file:../${env}.sqlite` },
   }).catch(() => { /* ignored */ });
 
   await execp('npm run prisma -- migrate deploy', {
-    env: { ...process.env, DB_FILE: `file:../${env}${FeatureFlag.prisma.dbFileSuffix}.sqlite` },
+    env: { ...process.env, DB_FILE: `file:../${env}.sqlite` },
   });
 })();

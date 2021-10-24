@@ -8,13 +8,10 @@ ENV NODE_ENV="production"
 
 RUN npm ci --include=dev
 
-RUN npm run build && npm run script:db-migrate production compile
+RUN npm run build
 RUN mkdir /bookReader \
     && cp -r packages/client/dist /bookReader/public \
     && cp packages/server/dist/index.js /bookReader/ \
-    && mv packages/server/.sequelizerc /bookReader/ \
-    && mv packages/server/sequelize.config.js /bookReader/ \
-    && mv packages/server/build-migrations /bookReader/ \
     && mv packages/server/scripts/ /bookReader/ \
     && mv packages/server/package.json /bookReader/ \
     && mv packages/server/prisma /bookReader/ \

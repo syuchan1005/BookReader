@@ -19,7 +19,6 @@ import {
 } from '@server/database/models/Genre';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import { generateId } from '@server/database/models/Id';
-import { FeatureFlag } from '@server/FeatureFlag.js';
 import {
   BatchLoading,
   BatchLoadingClear,
@@ -48,7 +47,7 @@ export class PrismaBookDataManager implements IBookDataManager {
   private prismaClient: PrismaClient;
 
   async init(databaseUrl?: string): Promise<void> {
-    const url = databaseUrl ?? `file:../${env}${FeatureFlag.prisma.dbFileSuffix}.sqlite`;
+    const url = databaseUrl ?? `file:../${env}.sqlite`;
     this.prismaClient = new PrismaClient({
       datasources: {
         db: { url },

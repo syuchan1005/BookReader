@@ -1,7 +1,3 @@
-import axios from 'axios';
-import * as querystring from 'querystring';
-import assert from 'assert';
-import { SequelizeBookDataManager } from './sequelize/index';
 import { INSTANCE } from './prisma';
 import {
   Book,
@@ -103,60 +99,4 @@ export interface IBookDataManager {
   };
 }
 
-const prisma = INSTANCE;
-const sequelize = new SequelizeBookDataManager();
-
-const removeDate = <T>(obj: T): T | undefined => {
-  if (!obj) {
-    return obj;
-  }
-
-  // @ts-ignore
-  return JSON.parse(
-    JSON.stringify(obj).replace(/,?"(createdAt|updatedAt)":".+Z"/g, ''),
-  );
-};
-
-const queue = [];
-export const BookDataManager: IBookDataManager = new Proxy(sequelize, {
-  get(target, prop, receiver) {
-    const result = Reflect.get(target, prop, receiver);
-    if (typeof prop === 'string' && !['sequelize', 'initModels', 'Debug'].includes(prop)) {
-      const result2 = Reflect.get(prisma, prop, receiver);
-      return async (...args) => {
-        const r = await result2.bind(prisma)(...args);
-        let r2;
-        try {
-          r2 = await result.bind(target)(...args);
-        } catch (e) {
-          r2 = e;
-        }
-        queue.push([prop, args]);
-        if (queue.length > 3) {
-          queue.shift();
-        }
-        try {
-          assert.deepEqual(removeDate(r), removeDate(r2));
-        } catch (e) {
-          const message = `${prop} p -> s\n${e}\n${JSON.stringify(queue, null, 2)}`;
-          console.error(message);
-          if (process.env.LINE_NOTIFY) {
-            axios(
-              {
-                method: 'post',
-                url: 'https://notify-api.line.me/api/notify',
-                headers: {
-                  Authorization: `Bearer ${process.env.LINE_NOTIFY}`,
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                data: querystring.stringify({ message }),
-              },
-            ).catch(() => {});
-          }
-        }
-        return r;
-      };
-    }
-    return result;
-  },
-});
+export const BookDataManager: IBookDataManager = INSTANCE;

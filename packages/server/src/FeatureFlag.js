@@ -10,9 +10,6 @@ function value(rawValue/* string | undefined */, defaultValue/* unknown */) {
 
 const FeatureFlag = {
   useUlidForIds: value(process.env.BOOK_READER_ULID, false),
-  prisma: {
-    dbFileSuffix: value(process.env.BOOK_READER_PRISMA_SUFFIX, '-p'),
-  },
 };
 
 module.exports = { FeatureFlag };
