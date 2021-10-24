@@ -9,8 +9,7 @@ datasource db {
 }
 
 model BookInfo {
-  /// uuidv4
-  id               String  @id // @db.VarChar(36)
+  id               String  @id
   name             String
   historyBookCount Int?
 
@@ -27,16 +26,13 @@ model BookInfo {
 }
 
 model Book {
-  /// uuidv4
-  id            String  @id // @db.VarChar(36)
-  /// uuidv4
-  infoId        String // @db.VarChar(36)
+  id            String  @id
+  infoId        String
   /// zero-indexed page count
   thumbnailPage Int?
   number        String
   pageCount     Int
-  /// uuidv4
-  thumbnailById String? // @db.VarChar(36)
+  thumbnailById String?
 
   createdAt DateTime @default(dbgenerated("(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"))
   updatedAt DateTime @updatedAt
@@ -57,8 +53,7 @@ model Genre {
 }
 
 model BookInfosToGenres {
-  /// uuidv4
-  infoId    String // @db.VarChar(36)
+  infoId    String
   genreName String
 
   bookInfo BookInfo @relation(fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)

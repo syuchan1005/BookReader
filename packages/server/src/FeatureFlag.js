@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function value(rawValue/* string | undefined */, defaultValue/* unknown */) {
   if (typeof defaultValue === 'boolean') {
     return rawValue === 'true';
@@ -8,8 +9,6 @@ function value(rawValue/* string | undefined */, defaultValue/* unknown */) {
   return rawValue;
 }
 
-const FeatureFlag = {
-  useUlidForIds: value(process.env.BOOK_READER_ULID, false),
-};
+const FeatureFlag = {};
 
 module.exports = { FeatureFlag };
