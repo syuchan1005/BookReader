@@ -34,6 +34,16 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     ...theme.typography.h5,
     objectFit: 'contain',
   },
+  planePageLabel: {
+    userSelect: 'none',
+    fontSize: '1.5rem',
+    position: 'absolute',
+    background: theme.palette.common.black,
+    color: theme.palette.common.white,
+    padding: theme.spacing(1),
+    marginTop: '45%',
+    borderRadius: theme.spacing(1),
+  },
 }));
 
 const createSizeUrlSuffix = (width?: number, height?: number) => ((!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`);
@@ -88,6 +98,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     sizeDebounceDelay = 0,
     forceUsePropSize = false,
   } = props;
+  const imageRef = React.useRef<HTMLImageElement>();
 
   const argDebounceWidth = useDebounceValue(argWidth, sizeDebounceDelay);
   const argDebounceHeight = useDebounceValue(argHeight, sizeDebounceDelay);
@@ -189,6 +200,34 @@ const BookPageImage = (props: BookPageImageProps) => {
     return height !== undefined ? '100%' : undefined;
   }, [argHeight, forceUsePropSize, height]);
 
+  const [isPlane, setPlane] = React.useState(false);
+  const handleLoad = React.useCallback(() => {
+    setImageState(ImageState.LOADED);
+    const imageElement = imageRef.current;
+    if (!imageElement) {
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = imageElement.naturalWidth;
+    canvas.height = imageElement.naturalHeight;
+    context.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const threshold = 10;
+    let isPlaneColor = true;
+    for (let i = 4; i < imageData.length; i += 4) {
+      if (
+        Math.abs(imageData[0] - imageData[i]) > threshold
+        || Math.abs(imageData[1] - imageData[i + 1]) > threshold
+        || Math.abs(imageData[2] - imageData[i + 2]) > threshold
+      ) {
+        isPlaneColor = false;
+        break;
+      }
+    }
+    setPlane(isPlaneColor);
+  }, []);
+
   return (
     <picture className={classes.pictureFull}>
       {imageSourceSet.sources.map(({
@@ -198,16 +237,20 @@ const BookPageImage = (props: BookPageImageProps) => {
         <source key={type} type={type} srcSet={srcSet} />
       ))}
       <img
+        ref={imageRef}
         loading={loading}
         className={`${imgClassName} ${forceUsePropSize ? classes.imageFull : ''}`}
         style={{ ...style, maxHeight: imgHeight }}
         src={imageSourceSet.imgSrc}
         alt={alt}
         width={imgWidth}
-        height={imageState == ImageState.LOADED ? undefined : imgHeight}
-        onLoad={() => setImageState(ImageState.LOADED)}
+        height={imageState === ImageState.LOADED ? undefined : imgHeight}
+        onLoad={handleLoad}
         onError={() => setImageState(ImageState.ERROR)}
       />
+      {isPlane && (
+        <div className={classes.planePageLabel}>GO TO NEXT PAGE</div>
+      )}
     </picture>
   );
 };
