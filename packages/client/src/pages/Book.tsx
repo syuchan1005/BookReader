@@ -32,6 +32,7 @@ import {
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
+import useDebounceValue from '@client/hooks/useDebounceValue';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 
@@ -227,6 +228,7 @@ const Book = (props: BookProps) => {
   }, []);
 
   const [page, updatePage] = React.useState(0);
+  const debouncePage = useDebounceValue(page, 300);
   const [queryPage, setQueryPage] = useQueryParam('page', NumberParam);
   const [dbLoading, dbPage, setDbPage] = useDatabasePage(bookId);
   const [isPageSet, setPageSet] = React.useState(false);
@@ -544,6 +546,7 @@ const Book = (props: BookProps) => {
                   className={classes.pageImage}
                   loading="eager"
                   sizeDebounceDelay={300}
+                  skip={Math.abs(index - debouncePage) > slidesPerView}
                 />
               </SwiperSlide>
             ))}

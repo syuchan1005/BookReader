@@ -18,6 +18,8 @@ interface BookPageImageProps {
 
   sizeDebounceDelay?: number;
   forceUsePropSize?: boolean;
+
+  skip?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -97,6 +99,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     noSave = true,
     sizeDebounceDelay = 0,
     forceUsePropSize = false,
+    skip = false,
   } = props;
   const imageRef = React.useRef<HTMLImageElement>();
 
@@ -230,24 +233,26 @@ const BookPageImage = (props: BookPageImageProps) => {
 
   return (
     <picture className={classes.pictureFull}>
-      {imageSourceSet.sources.map(({
+      {!skip && imageSourceSet.sources.map(({
         type,
         srcSet,
       }) => (
         <source key={type} type={type} srcSet={srcSet} />
       ))}
-      <img
-        ref={imageRef}
-        loading={loading}
-        className={`${imgClassName} ${forceUsePropSize ? classes.imageFull : ''}`}
-        style={{ ...style, maxHeight: imgHeight }}
-        src={imageSourceSet.imgSrc}
-        alt={alt}
-        width={imgWidth}
-        height={imageState === ImageState.LOADED ? undefined : imgHeight}
-        onLoad={handleLoad}
-        onError={() => setImageState(ImageState.ERROR)}
-      />
+      {!skip && (
+        <img
+          ref={imageRef}
+          loading={loading}
+          className={`${imgClassName} ${forceUsePropSize ? classes.imageFull : ''}`}
+          style={{ ...style, maxHeight: imgHeight }}
+          src={imageSourceSet.imgSrc}
+          alt={alt}
+          width={imgWidth}
+          height={imageState === ImageState.LOADED ? undefined : imgHeight}
+          onLoad={handleLoad}
+          onError={() => setImageState(ImageState.ERROR)}
+        />
+      )}
       {isPlane && (
         <div className={classes.planePageLabel}>GO TO NEXT PAGE</div>
       )}
