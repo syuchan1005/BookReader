@@ -36,17 +36,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     ...theme.typography.h5,
     objectFit: 'contain',
   },
-  planePageLabel: {
-    userSelect: 'none',
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    position: 'absolute',
-    background: theme.palette.background.default,
-    color: theme.palette.text.disabled,
-    padding: theme.spacing(1),
-    marginTop: '45%',
-    borderRadius: theme.spacing(1),
-  },
 }));
 
 const createSizeUrlSuffix = (width?: number, height?: number) => ((!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`);
@@ -204,36 +193,6 @@ const BookPageImage = (props: BookPageImageProps) => {
     return height !== undefined ? '100%' : undefined;
   }, [argHeight, forceUsePropSize, height]);
 
-  const [isPlane, setPlane] = React.useState(false);
-  const handleLoad = React.useCallback(() => {
-    setImageState(ImageState.LOADED);
-    const imageElement = imageRef.current;
-    if (!imageElement) {
-      return;
-    }
-    setTimeout(() => {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.width = imageElement.naturalWidth;
-      canvas.height = imageElement.naturalHeight;
-      context.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      const threshold = 10;
-      let isPlaneColor = true;
-      for (let i = 4; i < imageData.length; i += 4) {
-        if (
-          Math.abs(imageData[0] - imageData[i]) > threshold
-          || Math.abs(imageData[1] - imageData[i + 1]) > threshold
-          || Math.abs(imageData[2] - imageData[i + 2]) > threshold
-        ) {
-          isPlaneColor = false;
-          break;
-        }
-      }
-      setPlane(isPlaneColor);
-    }, 2);
-  }, []);
-
   return (
     <picture className={classes.pictureFull}>
       {!skip && imageSourceSet.sources.map(({
@@ -252,12 +211,9 @@ const BookPageImage = (props: BookPageImageProps) => {
           alt={alt}
           width={imgWidth}
           height={imageState === ImageState.LOADED ? undefined : imgHeight}
-          onLoad={handleLoad}
+          onLoad={() => setImageState(ImageState.LOADED)}
           onError={() => setImageState(ImageState.ERROR)}
         />
-      )}
-      {isPlane && (
-        <div className={classes.planePageLabel}>EMPTY</div>
       )}
     </picture>
   );
