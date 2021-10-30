@@ -2,7 +2,7 @@ import { resolve } from 'path';
 import fs from 'fs';
 
 import { defineConfig, Plugin } from 'vite';
-import reactRefresh from '@vitejs/plugin-react-refresh';
+import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa';
 import bundleVisualizer from 'rollup-plugin-visualizer';
 
@@ -40,7 +40,7 @@ export default defineConfig({
     brotliSize: false,
   },
   plugins: [
-    reactRefresh(),
+    react(),
     VitePWA({
       strategies: 'injectManifest',
       filename: serviceWorkerFileName,
