@@ -1,6 +1,14 @@
 import React from 'react';
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  TextField,
+  Typography,
 } from '@mui/material';
 import { createBookPageUrl } from '../BookPageImage';
 
@@ -38,6 +46,7 @@ export const calcPadding = (
   threshold: number,
   verticalOffset: number,
   horizontalOffset: number,
+  useCompareWithWhite: boolean,
 ): { left: number, right: number } => {
   const isWhite = (width: number, height: number) => {
     const pixelIndex = width + height * imageData.width;
@@ -48,20 +57,39 @@ export const calcPadding = (
       && (255 - imageData.data[dataIndex + 2]) <= threshold;
   };
 
+  const isSameColor = (w1: number, y1: number, w2: number, y2: number) => {
+    const pixelIndex1 = (w1 + y1 * imageData.width) * 4;
+    const pixelIndex2 = (w2 + y2 * imageData.width) * 4;
+    return Math.abs(imageData.data[pixelIndex1] - imageData.data[pixelIndex2]) <= threshold
+      && Math.abs(imageData.data[pixelIndex1] - imageData.data[pixelIndex2 + 1]) <= threshold
+      && Math.abs(imageData.data[pixelIndex1] - imageData.data[pixelIndex2 + 2]) <= threshold;
+  };
+
   /* eslint-disable no-labels,no-restricted-syntax */
   let left = 0;
+  const compareLeft = useCompareWithWhite
+    ? isWhite
+    : (w: number, h: number) => isSameColor(horizontalOffset - 1, verticalOffset - 1, w, h);
   leftWidth: for (let w = horizontalOffset; w < (imageData.width - horizontalOffset); w += 1) {
     for (let h = verticalOffset; h < (imageData.height - verticalOffset); h += 1) {
-      if (!isWhite(w, h)) {
+      if (!compareLeft(w, h)) {
         left = w;
         break leftWidth;
       }
     }
   }
   let right = 0;
+  const compareRight = useCompareWithWhite
+    ? isWhite
+    : (w: number, h: number) => isSameColor(
+      imageData.width - horizontalOffset - 1,
+      verticalOffset - 1,
+      w,
+      h,
+    );
   rightWidth: for (let w = imageData.width - 1 - horizontalOffset; w >= horizontalOffset; w -= 1) {
     for (let h = verticalOffset; h < (imageData.height - verticalOffset); h += 1) {
-      if (!isWhite(w, h)) {
+      if (!compareRight(w, h)) {
         right = w;
         break rightWidth;
       }
@@ -89,6 +117,7 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
   const [threshold, setThreshold] = React.useState(50);
   const [verticalOffset, setVerticalOffset] = React.useState(200);
   const [horizontalOffset, setHorizontalOffset] = React.useState(10);
+  const [useCompareWithWhite, setCompareWithWhite] = React.useState(false);
   const [imageData, setImageData] = React.useState<ImageData | undefined>(undefined);
   const canvasRef = React.useRef<HTMLCanvasElement>();
   const canvasContainerRef = React.useRef<HTMLDivElement>();
@@ -100,10 +129,19 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
     const {
       left: l,
       right: r,
-    } = calcPadding(rawImageData, threshold, verticalOffset, horizontalOffset);
+    } = calcPadding(rawImageData, threshold, verticalOffset, horizontalOffset, useCompareWithWhite);
     onSizeChange(l, r);
     setImageData(rawImageData);
-  }, [onSizeChange, bookId, pageIndex, maxPage, threshold, verticalOffset]);
+  }, [
+    onSizeChange,
+    bookId,
+    pageIndex,
+    maxPage,
+    threshold,
+    verticalOffset,
+    horizontalOffset,
+    useCompareWithWhite,
+  ]);
 
   React.useEffect(() => {
     if (!imageData || !canvasRef.current) return;
@@ -127,6 +165,7 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
         sx={{
           '& .MuiTextField-root': { m: 1 },
           '& .MuiButton-root': { m: 1 },
+          '& .MuiFormControlLabel-root': { m: 1 },
         }}
       >
         <Typography variant="subtitle2">Padding Size</Typography>
@@ -173,6 +212,15 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
           type="number"
           value={horizontalOffset}
           onChange={(e) => setHorizontalOffset(Number(e.target.value))}
+        />
+        <FormControlLabel
+          control={(
+            <Checkbox
+              checked={useCompareWithWhite}
+              onChange={(e) => setCompareWithWhite(e.target.checked)}
+            />
+          )}
+          label="Compare with white"
         />
         <Button fullWidth onClick={onDetectClick}>Detect & Preview</Button>
         <div
