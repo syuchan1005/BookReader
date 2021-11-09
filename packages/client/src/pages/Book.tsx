@@ -4,13 +4,14 @@ import { Theme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { Virtual } from 'swiper';
+import { Virtual, Keyboard } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/virtual';
+import 'swiper/css/keyboard';
 
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { useKey, useWindowSize } from 'react-use';
+import { useWindowSize } from 'react-use';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { NumberParam, useQueryParam } from 'use-query-params';
 
@@ -274,14 +275,26 @@ const Book = (props: BookProps) => {
     setPageSet(false);
   }, [bookId]);
 
+  React.useEffect(() => {
+    if (openEditDialog) {
+      swiper?.disable();
+    } else {
+      swiper?.enable();
+    }
+    // eslint-disable-next-line
+  }, [openEditDialog]);
+
   const windowSize = useWindowSize();
 
   const updateSwiper = React.useCallback((s) => {
-    if (!s) return;
-    s.on('slideChange', () => updatePage(s.realIndex));
-    s.slideTo(page, 0, false);
+    s?.slideTo(page, 0, false);
     setSwiper(s);
   }, [page]);
+
+  const handleSlideChange = React.useCallback((s) => {
+    updatePage(s.activeIndex);
+    setHideAppBar();
+  }, [setHideAppBar]);
 
   const {
     loading,
@@ -362,37 +375,6 @@ const Book = (props: BookProps) => {
         return undefined;
     }
   }, [effect, effectPercentage]);
-
-  useKey(
-    'ArrowRight',
-    () => {
-      if (openEditDialog) {
-        return;
-      }
-      if (readOrder === ReadOrder.LTR) {
-        increment();
-      } else {
-        decrement();
-      }
-    },
-    undefined,
-    [increment, decrement, readOrder, openEditDialog],
-  );
-  useKey(
-    'ArrowLeft',
-    () => {
-      if (openEditDialog) {
-        return;
-      }
-      if (readOrder === ReadOrder.LTR) {
-        decrement();
-      } else {
-        increment();
-      }
-    },
-    undefined,
-    [increment, decrement, readOrder, openEditDialog],
-  );
 
   const clickPage = React.useCallback((event) => {
     if (openEditDialog) return;
@@ -519,13 +501,15 @@ const Book = (props: BookProps) => {
 
         <Remount remountKey={`${bookId}:${pageStyleKey}:${readOrder}`}>
           <Swiper
-            modules={[Virtual]}
+            modules={[Virtual, Keyboard]}
             onSwiper={updateSwiper}
+            onSlideChange={handleSlideChange}
             dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
             className={classes.pageContainer}
             slidesPerView={slidesPerView}
             slidesPerGroup={slidesPerView}
             virtual
+            keyboard
           >
             {[...new Array(prefixPage).keys()].map((i) => (
               <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
