@@ -51,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   book: {
     width: '100%',
     height: '100%',
+    backgroundColor: theme.palette.grey['900'],
   },
   page: {
     width: '100%',
