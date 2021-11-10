@@ -1,24 +1,28 @@
 FROM node:16.7.0-alpine as build
 
-COPY . /build
+ENV NODE_ENV="production"
 
 WORKDIR /build
 
-ENV NODE_ENV="production"
-
+COPY package*.json ./
+COPY packages/client/package*.json packages/client/
+COPY packages/common/package*.json packages/common/
+COPY packages/graphql/package*.json packages/graphql/
+COPY packages/server/package*.json packages/server/
 RUN npm ci --include=dev
 
+COPY packages/server/package*.json /bookReader/
+RUN cd /bookReader && npm install
+
+COPY . .
 RUN npm run build
-RUN mkdir /bookReader \
-    && cp -r packages/client/dist /bookReader/public \
+
+RUN cp -r packages/client/dist /bookReader/public \
     && cp packages/server/dist/index.js /bookReader/ \
     && mv packages/server/scripts/ /bookReader/ \
-    && mv packages/server/package.json /bookReader/ \
     && mv packages/server/prisma /bookReader/ \
     && mkdir /bookReader/src \
     && mv packages/server/src/FeatureFlag.js /bookReader/src/
-
-RUN cd /bookReader && npm install --force
 
 FROM node:16.7.0-alpine
 
@@ -29,19 +33,17 @@ EXPOSE 80
 
 ENV DEBUG="" NODE_ENV="production"
 
-RUN apk add --no-cache supervisor nginx git p7zip \
-    && mkdir /bookReader
-
-COPY --from=build /bookReader /bookReader
+RUN apk add --no-cache supervisor nginx git p7zip
 
 WORKDIR /bookReader
 
 COPY nginx.conf /etc/nginx/
 COPY supervisord.conf /etc/
-
-COPY docker-entrypoint.sh /bookReader/
+COPY docker-entrypoint.sh ./
 
 RUN chmod +x docker-entrypoint.sh
+
+COPY --from=build /bookReader ./
 
 # "/bookReader/production.sqlite" is file
 VOLUME ["/bookReader/storage"]

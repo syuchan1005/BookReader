@@ -24,6 +24,8 @@ const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
 (async () => {
   console.log(`[MIGRATION] start env: ${env}`);
 
+  await execp('npm run prisma -- generate');
+
   await execp('npm run prisma -- migrate resolve --applied 20210807095937_init', {
     env: { ...process.env, DB_FILE: `file:../${env}.sqlite` },
   }).catch(() => { /* ignored */ });
