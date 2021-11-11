@@ -144,11 +144,11 @@ const useDatabasePage = (
       return Promise.reject();
     }
 
-    // @ts-ignore
     return db.bookReads.put({
       bookId,
       page: p,
-    });
+      updatedAt: new Date(),
+    }).then(() => undefined);
   }, [bookId, loading]);
 
   return [

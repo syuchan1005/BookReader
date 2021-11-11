@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+const VERSION = 2;
+
 interface InfoRead {
   infoId: string;
   bookId: string;
@@ -8,6 +10,8 @@ interface InfoRead {
 interface BookRead {
   bookId: string;
   page: number;
+
+  updatedAt?: Date;
 }
 
 export class StoreWrapper<T> {
@@ -27,6 +31,44 @@ export class StoreWrapper<T> {
       const request = store.get(keyPathValue);
       tx.oncomplete = () => resolve(request.result);
       tx.onerror = (e) => reject(e);
+    });
+  }
+
+  getAll<K extends (keyof T & string)>(
+    limit: number,
+    sort: { key: K, direction: 'next' | 'prev' },
+    after?: T[K],
+  ): Promise<T[]> {
+    if (limit <= 0) {
+      return Promise.resolve([]);
+    }
+
+    return new Promise<T[]>((resolve, reject) => {
+      const tx = this.db.transaction(this.storeName, 'readonly');
+      const store = tx.objectStore(this.storeName);
+      const request = store.index(sort.key).openCursor(null, sort.direction);
+      const results: T[] = [];
+      request.onsuccess = (event) => {
+        // @ts-ignore
+        const cursor = event.target.result;
+        if (!cursor || results.length >= limit) {
+          resolve(results);
+          return
+        }
+
+        if (after) {
+          if (sort.direction === 'next' && cursor.value[sort.key] > after) {
+            results.push(cursor.value);
+          } else if (sort.direction === 'prev' && cursor.value[sort.key] < after) {
+            results.push(cursor.value);
+          }
+        } else {
+          results.push(cursor.value);
+        }
+
+        cursor.continue();
+      };
+      request.onerror = (e) => reject(e);
     });
   }
 
@@ -61,9 +103,22 @@ export class StoreWrapper<T> {
 
       tx.onerror = (e) => reject(e);
       tx.oncomplete = () => resolve();
-    })
+    });
   }
 }
+
+const UpgradeTask = [
+  () => {},
+  (db: IDBDatabase) => {
+    db.createObjectStore('infoReads', { keyPath: 'infoId' });
+    db.createObjectStore('bookReads', { keyPath: 'bookId' });
+  },
+  (db: IDBDatabase, request: IDBOpenDBRequest) => {
+    request.transaction
+      .objectStore('bookReads')
+      .createIndex('updatedAt', 'updatedAt');
+  },
+];
 
 export class Database {
   public readonly dbName: string;
@@ -77,20 +132,25 @@ export class Database {
     this.dbName = dbName;
   }
 
-  get infoReads() { return this._infoReads; }
-  get bookReads() { return this._bookReads; }
+  get infoReads() {
+    return this._infoReads;
+  }
+
+  get bookReads() {
+    return this._bookReads;
+  }
 
   connect(): Promise<IDBDatabase> {
     if (this._db) {
       return Promise.resolve(this._db);
     }
     return new Promise((resolve, reject) => {
-      const request = window.indexedDB.open(this.dbName);
+      const request = window.indexedDB.open(this.dbName, VERSION);
       request.onupgradeneeded = (event) => {
         // @ts-ignore
         this._db = event.target.result;
-        this._db.createObjectStore('infoReads', { keyPath: 'infoId' });
-        this._db.createObjectStore('bookReads', { keyPath: 'bookId' });
+        UpgradeTask.slice(event.oldVersion + 1, event.newVersion + 1)
+          .forEach((task) => task(this._db, request));
       };
       request.onerror = (event) => {
         reject(event);
