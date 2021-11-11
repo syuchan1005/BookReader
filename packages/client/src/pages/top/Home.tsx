@@ -36,13 +36,15 @@ import {
   showBookInfoNameState, homeLastSeenBookPosition,
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
-import db from '../Database';
+import db from '@client/Database';
 
 const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
 interface HomeProps {
   children?: React.ReactElement;
 }
+
+const bottomNavigationHeight = 7;
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   home: {
@@ -74,22 +76,22 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   fab: {
     position: 'fixed',
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2 + bottomNavigationHeight)})`,
     right: theme.spacing(2),
     zIndex: 2,
     fallbacks: {
-      bottom: theme.spacing(2),
+      bottom: theme.spacing(2 + bottomNavigationHeight),
     },
   },
   addButton: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11 + bottomNavigationHeight)})`,
     background: theme.palette.background.paper,
     color: theme.palette.secondary.main,
     zIndex: 2,
     fallbacks: {
-      bottom: theme.spacing(11),
+      bottom: theme.spacing(11 + bottomNavigationHeight),
     },
   },
   loadMoreProgress: {

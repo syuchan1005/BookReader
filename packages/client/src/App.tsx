@@ -26,7 +26,7 @@ import {
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 
-const Home = lazy(() => import('@client/pages/Home'));
+const Top = lazy(() => import('@client/pages/Top'));
 const Info = lazy(() => import('@client/pages/Info'));
 const Book = lazy(() => import('@client/pages/Book'));
 const Setting = lazy(() => import('@client/pages/Setting'));
@@ -136,7 +136,8 @@ const App = () => {
           <QueryParamProvider ReactRouterRoute={Route}>
             <Suspense fallback={<LoadingFullscreen open />}>
               <Switch>
-                <Route exact path="/" component={Home} />
+                <Route exact path="/" component={Top} />
+                <Route exact path="/bookshelf" component={Top} />
                 <Route exact path="/info/:id" component={Info} />
                 <Route exact path="/book/:id" component={Book} />
                 <Route exact path="/setting" component={Setting} />
