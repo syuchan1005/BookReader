@@ -7,7 +7,7 @@ interface InfoRead {
   bookId: string;
 }
 
-interface BookRead {
+export interface BookRead {
   bookId: string;
   page: number;
 

@@ -8,19 +8,25 @@ import {
 } from '@mui/material';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 
+const Favorite = React.lazy(() => import('@client/pages/top/bookshelf/Favorite'));
+const History = React.lazy(() => import('@client/pages/top/bookshelf/History'));
+
 const TabItems = [
   {
     title: 'Favorite',
+    component: Favorite,
   },
   {
     title: 'History',
+    component: History,
   },
 ];
 
 const BookShelf = () => {
   const theme = useTheme();
 
-  const [tabItemI, setTabItem] = React.useState(0);
+  const [tabIndex, setTabIndex] = React.useState(0);
+  const T = TabItems[tabIndex];
 
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -28,8 +34,8 @@ const BookShelf = () => {
     <>
       <AppBar sx={{ color: theme.palette.common.white }}>
         <Tabs
-          value={tabItemI}
-          onChange={(e, value) => setTabItem(value)}
+          value={tabIndex}
+          onChange={(e, value) => setTabIndex(value)}
           centered={downXs}
           variant={downXs ? 'fullWidth' : 'standard'}
           textColor="inherit"
@@ -46,7 +52,7 @@ const BookShelf = () => {
         </Tabs>
       </AppBar>
       <Box component="main" sx={{ py: 7 }}>
-        Not implemented yet
+        <T.component />
       </Box>
     </>
   );
