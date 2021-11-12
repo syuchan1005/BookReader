@@ -37,7 +37,8 @@ const Top = () => {
   }, []);
 
   React.useEffect(() => {
-    if (!location.pathname.startsWith(TabPaths[tabIndex])) {
+    const tabPath = TabPaths[tabIndex];
+    if (tabPath === '/' || !location.pathname.startsWith(tabPath)) {
       history.replace(TabPaths[tabIndex]);
     }
     // eslint-disable-next-line
