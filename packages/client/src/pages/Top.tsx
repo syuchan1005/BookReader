@@ -31,13 +31,16 @@ const Top = () => {
   const [tabIndex, setTabIndex] = React.useState(0);
 
   React.useEffect(() => {
-    const i = TabPaths.findIndex((p) => p === location.pathname);
+    const i = TabPaths.findIndex((p) => p !== '/' && location.pathname.startsWith(p));
     setTabIndex(Math.max(0, i));
     // eslint-disable-next-line
   }, []);
 
   React.useEffect(() => {
-    history.replace(TabPaths[tabIndex]);
+    if (!location.pathname.startsWith(TabPaths[tabIndex])) {
+      history.replace(TabPaths[tabIndex]);
+    }
+    // eslint-disable-next-line
   }, [history, tabIndex]);
 
   const T = TabItems[tabIndex];
