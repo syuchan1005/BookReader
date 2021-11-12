@@ -38,6 +38,8 @@ export interface IBookDataManager {
 
   getBook(bookId: BookId): Promise<Book | undefined>;
 
+  getBooks(bookIds: BookId[]): Promise<Book[]>;
+
   addBook(book: InputBook): Promise<BookId>;
 
   editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void>;

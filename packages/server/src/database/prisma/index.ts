@@ -71,6 +71,21 @@ export class PrismaBookDataManager implements IBookDataManager {
     return book;
   }
 
+  async getBooks(bookIds: BookId[]): Promise<Book[]> {
+    const books = await this.prismaClient.book.findMany({
+      where: { id: { in: bookIds } },
+    });
+    return books.map((book) => {
+      if (!book) {
+        return undefined;
+      }
+
+      // eslint-disable-next-line no-param-reassign
+      delete book.thumbnailById;
+      return book;
+    });
+  }
+
   @BatchLoadingClear<[InputBook]>(
     'getBookInfoThumbnail',
     (args) => args[0].infoId,

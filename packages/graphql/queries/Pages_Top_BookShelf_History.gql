@@ -1,0 +1,14 @@
+query books($ids: [ID!]!) {
+    books(ids: $ids) {
+        id
+        number
+        pages
+        thumbnail
+        updatedAt
+
+        info {
+            id
+            name
+        }
+    }
+}

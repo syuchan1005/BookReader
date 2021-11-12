@@ -1,6 +1,7 @@
 import { promises as fs, rmSync as fsRmSync } from 'fs';
 import path from 'path';
 import { generateId } from '@server/database/models/Id';
+import { Book as DBBook } from '@server/database/models/Book';
 import { withFilter } from 'graphql-subscriptions';
 
 import {
@@ -10,6 +11,7 @@ import {
   ResultWithBookResults,
   SubscriptionResolvers,
   BookInfo,
+  Book as GQLBook,
 } from '@syuchan1005/book-reader-graphql';
 
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
@@ -34,9 +36,29 @@ class Book extends GQLMiddleware {
         }
         return {
           ...book,
+          thumbnail: book.thumbnailPage,
           pages: book.pageCount,
           updatedAt: `${book.updatedAt.getTime()}`,
         };
+      },
+      books: async (parent, { ids }): Promise<Array<GQLBook>> => {
+        const bookMap = (await BookDataManager.getBooks(ids))
+          .reduce((acc, book) => {
+            acc[book.id] = book;
+            return acc;
+          }, {} as Map<string, DBBook>);
+        return ids.map((id) => {
+          const book: DBBook | undefined = bookMap[id];
+          if (!book) {
+            return undefined;
+          }
+          return {
+            ...book,
+            thumbnail: book.thumbnailPage,
+            pages: book.pageCount,
+            updatedAt: `${book.updatedAt.getTime()}`,
+          };
+        });
       },
     };
   }

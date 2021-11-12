@@ -15,6 +15,7 @@ type Query {
 
     ## Book
     book(id: ID!): Book
+    books(ids: [ID!]!): [Book]!
 
     ## Debug
     debug_folderSize: Debug_FolderSizes!
