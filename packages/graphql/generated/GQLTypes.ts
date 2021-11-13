@@ -296,6 +296,7 @@ export type Query = {
   __typename?: 'Query';
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
+  bookInfos: Array<Maybe<BookInfo>>;
   books: Array<Maybe<Book>>;
   debug_folderSize: Debug_FolderSizes;
   genres: Array<Genre>;
@@ -311,6 +312,11 @@ export type QueryBookArgs = {
 
 export type QueryBookInfoArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryBookInfosArgs = {
+  ids: Array<Scalars['ID']>;
 };
 
 
@@ -841,6 +847,7 @@ export type PluginQueriesResolvers<ContextType = any, ParentType extends Resolve
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
   bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
+  bookInfos?: Resolver<Array<Maybe<ResolversTypes['BookInfo']>>, ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'ids'>>;
   books?: Resolver<Array<Maybe<ResolversTypes['Book']>>, ParentType, ContextType, RequireFields<QueryBooksArgs, 'ids'>>;
   debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;

@@ -12,6 +12,7 @@ type Query {
         option: BookInfosOption # If it's null, process with default values.
     ): BookInfoPartialList!
     bookInfo(id: ID!): BookInfo
+    bookInfos(ids: [ID!]!): [BookInfo]!
 
     ## Book
     book(id: ID!): Book

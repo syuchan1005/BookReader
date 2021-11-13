@@ -50,6 +50,8 @@ export interface IBookDataManager {
 
   getBookInfo(infoId: InfoId): Promise<BookInfo | undefined>;
 
+  getBookInfosFromIds(infoIds: InfoId[]): Promise<BookInfo[]>;
+
   getBookInfoFromBookId(bookId: BookId): Promise<BookInfo | undefined>;
 
   getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined>;

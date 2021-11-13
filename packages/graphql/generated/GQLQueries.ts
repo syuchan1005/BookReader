@@ -297,6 +297,7 @@ export type Query = {
   __typename?: 'Query';
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
+  bookInfos: Array<Maybe<BookInfo>>;
   books: Array<Maybe<Book>>;
   debug_folderSize: Debug_FolderSizes;
   genres: Array<Genre>;
@@ -312,6 +313,11 @@ export type QueryBookArgs = {
 
 export type QueryBookInfoArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryBookInfosArgs = {
+  ids: Array<Scalars['ID']>;
 };
 
 

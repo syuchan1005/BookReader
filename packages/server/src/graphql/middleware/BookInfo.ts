@@ -36,6 +36,29 @@ class BookInfo extends GQLMiddleware {
           updatedAt: `${bookInfo.updatedAt.getTime()}`,
         };
       },
+      // @ts-ignore
+      bookInfos: async (parent, {
+        ids: infoIds,
+      }): Promise<Array<Omit<BookInfoGQLModel, BookInfoResolveAttrs>>> => {
+        const bookInfoMap = (await BookDataManager.getBookInfosFromIds(infoIds))
+          .reduce((map, bookInfo) => {
+            // eslint-disable-next-line no-param-reassign
+            map[bookInfo.id] = bookInfo;
+            return map;
+          }, {});
+        return infoIds.map((infoId) => {
+          const bookInfo = bookInfoMap[infoId];
+          if (!bookInfo) {
+            return undefined;
+          }
+          return {
+            ...bookInfo,
+            count: bookInfo.bookCount,
+            history: bookInfo.isHistory,
+            updatedAt: `${bookInfo.updatedAt.getTime()}`,
+          };
+        });
+      },
     };
   }
 

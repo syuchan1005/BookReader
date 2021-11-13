@@ -190,6 +190,20 @@ export class PrismaBookDataManager implements IBookDataManager {
     return PrismaBookDataManager.convertBookInfo(bookInfo);
   }
 
+  async getBookInfosFromIds(infoIds: InfoId[]): Promise<BookInfo[]> {
+    const bookInfos = await this.prismaClient.bookInfo.findMany({
+      where: { id: { in: infoIds } },
+      include: {
+        _count: {
+          select: {
+            books: true,
+          },
+        },
+      },
+    });
+    return bookInfos.map(PrismaBookDataManager.convertBookInfo);
+  }
+
   async getBookInfoFromBookId(bookId: BookId): Promise<BookInfo | undefined> {
     const book = await this.prismaClient.book.findUnique({
       where: { id: bookId },
