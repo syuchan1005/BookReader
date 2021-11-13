@@ -39,6 +39,7 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   thumbnailSize: number;
   showName?: boolean;
   updatedAt?: string;
+  simple?: boolean;
 
   onHistoryBookClick?: (infoId: string) => void;
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
@@ -184,6 +185,7 @@ const BookInfo = (props: BookInfoProps) => {
     index,
     onVisible,
     visibleMargin,
+    simple,
   } = props;
   const isVisible = useVisible(ref, false, visibleMargin);
   const [keepVisible, setKeepVisible] = React.useState(false);
@@ -296,24 +298,26 @@ const BookInfo = (props: BookInfoProps) => {
     >
       {keepVisible && (
         <Card className={classes.card} style={style}>
-          <CardActions className={classes.headerMenu}>
-            <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
-              <Icon>more_vert</Icon>
-            </IconButton>
-            <Menu
-              anchorEl={menuAnchor}
-              open={Boolean(menuAnchor)}
-              onClose={resetMenuAnchor}
-            >
-              <MenuItem onClick={handleFavoriteClick}>
-                {(isFavorite ? 'Remove from favorite' : 'Favorite')}
-              </MenuItem>
-              <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
-              <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
-              <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
-              {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
-            </Menu>
-          </CardActions>
+          {(!simple) && (
+            <CardActions className={classes.headerMenu}>
+              <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
+                <Icon>more_vert</Icon>
+              </IconButton>
+              <Menu
+                anchorEl={menuAnchor}
+                open={Boolean(menuAnchor)}
+                onClose={resetMenuAnchor}
+              >
+                <MenuItem onClick={handleFavoriteClick}>
+                  {(isFavorite ? 'Remove from favorite' : 'Favorite')}
+                </MenuItem>
+                <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
+                <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
+                <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
+                {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
+              </Menu>
+            </CardActions>
+          )}
           <Link
             className={classes.link}
             to={

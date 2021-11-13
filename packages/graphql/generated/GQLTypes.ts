@@ -508,6 +508,13 @@ export type EditGenreMutationVariables = Exact<{
 
 export type EditGenreMutation = { __typename?: 'Mutation', editGenre: { __typename?: 'Result', code?: string | null | undefined, success: boolean, message?: string | null | undefined } };
 
+export type BookInfosQueryVariables = Exact<{
+  ids: Array<Scalars['ID']> | Scalars['ID'];
+}>;
+
+
+export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, history: boolean, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
+
 export type BooksQueryVariables = Exact<{
   ids: Array<Scalars['ID']> | Scalars['ID'];
 }>;

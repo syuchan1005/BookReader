@@ -509,6 +509,13 @@ export type EditGenreMutationVariables = Exact<{
 
 export type EditGenreMutation = { __typename?: 'Mutation', editGenre: { __typename?: 'Result', code?: string | null | undefined, success: boolean, message?: string | null | undefined } };
 
+export type BookInfosQueryVariables = Exact<{
+  ids: Array<Scalars['ID']> | Scalars['ID'];
+}>;
+
+
+export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, history: boolean, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
+
 export type BooksQueryVariables = Exact<{
   ids: Array<Scalars['ID']> | Scalars['ID'];
 }>;
@@ -1213,6 +1220,54 @@ export function useEditGenreMutation(baseOptions?: Apollo.MutationHookOptions<Ed
 export type EditGenreMutationHookResult = ReturnType<typeof useEditGenreMutation>;
 export type EditGenreMutationResult = Apollo.MutationResult<EditGenreMutation>;
 export type EditGenreMutationOptions = Apollo.BaseMutationOptions<EditGenreMutation, EditGenreMutationVariables>;
+export const BookInfosDocument = gql`
+    query bookInfos($ids: [ID!]!) {
+  bookInfos(ids: $ids) {
+    id
+    name
+    count
+    thumbnail {
+      bookId
+      pageIndex
+      bookPageCount
+    }
+    history
+    genres {
+      name
+      invisible
+    }
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useBookInfosQuery__
+ *
+ * To run a query within a React component, call `useBookInfosQuery` and pass it any options that fit your needs.
+ * When your component renders, `useBookInfosQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBookInfosQuery({
+ *   variables: {
+ *      ids: // value for 'ids'
+ *   },
+ * });
+ */
+export function useBookInfosQuery(baseOptions: Apollo.QueryHookOptions<BookInfosQuery, BookInfosQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
+      }
+export function useBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BookInfosQuery, BookInfosQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
+        }
+export type BookInfosQueryHookResult = ReturnType<typeof useBookInfosQuery>;
+export type BookInfosLazyQueryHookResult = ReturnType<typeof useBookInfosLazyQuery>;
+export type BookInfosQueryResult = Apollo.QueryResult<BookInfosQuery, BookInfosQueryVariables>;
 export const BooksDocument = gql`
     query books($ids: [ID!]!) {
   books(ids: $ids) {

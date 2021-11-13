@@ -1,0 +1,18 @@
+query bookInfos($ids: [ID!]!) {
+    bookInfos(ids: $ids) {
+        id
+        name
+        count
+        thumbnail {
+            bookId
+            pageIndex
+            bookPageCount
+        }
+        history
+        genres {
+            name
+            invisible
+        }
+        updatedAt
+    }
+}
