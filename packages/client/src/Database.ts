@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const VERSION = 2;
+const VERSION = 3;
 
 interface InfoRead {
   infoId: string;
@@ -14,6 +14,11 @@ export interface BookRead {
   updatedAt?: Date;
 }
 
+export interface BookInfoFavorite {
+  infoId: string;
+  createdAt: Date;
+}
+
 export class StoreWrapper<T> {
   private readonly storeName: string;
 
@@ -24,7 +29,7 @@ export class StoreWrapper<T> {
     this.db = db;
   }
 
-  get(keyPathValue: string): Promise<T> {
+  get(keyPathValue: string): Promise<T | undefined> {
     return new Promise<T>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
@@ -118,6 +123,10 @@ const UpgradeTask = [
       .objectStore('bookReads')
       .createIndex('updatedAt', 'updatedAt');
   },
+  (db: IDBDatabase) => {
+    const bookInfoFavoriteStore = db.createObjectStore('bookInfoFavorite', { keyPath: 'infoId' });
+    bookInfoFavoriteStore.createIndex('createdAt', 'createdAt');
+  },
 ];
 
 export class Database {
@@ -127,6 +136,7 @@ export class Database {
 
   private _infoReads: StoreWrapper<InfoRead>;
   private _bookReads: StoreWrapper<BookRead>;
+  private _bookInfoFavorite: StoreWrapper<BookInfoFavorite>;
 
   constructor(dbName = 'BookReader--DB') {
     this.dbName = dbName;
@@ -138,6 +148,10 @@ export class Database {
 
   get bookReads() {
     return this._bookReads;
+  }
+
+  get bookInfoFavorite() {
+    return this._bookInfoFavorite;
   }
 
   connect(): Promise<IDBDatabase> {
@@ -160,6 +174,7 @@ export class Database {
         this._db = event.target.result;
         this._infoReads = new StoreWrapper<InfoRead>('infoReads', this._db);
         this._bookReads = new StoreWrapper<BookRead>('bookReads', this._db);
+        this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', this._db);
 
         resolve(this._db);
       };
