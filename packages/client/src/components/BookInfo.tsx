@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { orange as color } from '@mui/material/colors';
+import { orange, yellow } from '@mui/material/colors';
 import { Link } from 'react-router-dom';
 
 import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
@@ -20,6 +20,8 @@ import {
   useDeleteBookInfoMutation,
   useEditBookInfoMutation,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+
+import db from '@client/Database';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
@@ -80,7 +82,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'absolute',
     top: 0,
     left: theme.spacing(1),
-    background: color['800'],
+    background: orange['800'],
     color: theme.palette.common.white,
     padding: theme.spacing(1),
     borderRadius: theme.spacing(1),
@@ -132,6 +134,33 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     textDecoration: 'unset',
   },
 }));
+
+const useFavorite = (infoId: string): [value: boolean, toggle: () => Promise<unknown>] => {
+  const [isFavorite, setFavorite] = React.useState(false);
+  const toggleFavorite = React.useCallback(() => {
+    let p: Promise<unknown>;
+    if (isFavorite) {
+      p = db.bookInfoFavorite.delete(infoId);
+    } else {
+      p = db.bookInfoFavorite.put({
+        infoId,
+        createdAt: new Date(),
+      });
+    }
+    p.then(() => {
+      setFavorite(!isFavorite);
+    });
+    return p;
+  }, [infoId, isFavorite]);
+
+  React.useEffect(() => {
+    db.bookInfoFavorite.get(infoId)
+      .then((r) => setFavorite(!!r))
+      .catch(() => setFavorite(false));
+  }, [infoId]);
+
+  return [isFavorite, toggleFavorite];
+};
 
 const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
@@ -250,6 +279,13 @@ const BookInfo = (props: BookInfoProps) => {
     }
   }, [history, infoId, onHistoryBookClick]);
 
+  const hasInvisibleGenre = React.useMemo(() => genres.some((g) => g.invisible), [genres]);
+  const [isFavorite, toggleFavorite] = useFavorite(infoId);
+  const handleFavoriteClick = React.useCallback(() => {
+    resetMenuAnchor();
+    toggleFavorite();
+  }, [resetMenuAnchor, toggleFavorite]);
+
   return (
     <div
       ref={ref}
@@ -269,6 +305,9 @@ const BookInfo = (props: BookInfoProps) => {
               open={Boolean(menuAnchor)}
               onClose={resetMenuAnchor}
             >
+              <MenuItem onClick={handleFavoriteClick}>
+                {(isFavorite ? 'Remove from favorite' : 'Favorite')}
+              </MenuItem>
               <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
               <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
               <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
@@ -310,9 +349,21 @@ const BookInfo = (props: BookInfoProps) => {
               {(genres.some((g) => g.name === 'Completed') && !showName) ? (
                 <div className={classes.completedLabel}>Completed</div>
               ) : null}
-              {(genres.some((g) => g.invisible)) ? (
+              {(isFavorite) && (
+                <Icon
+                  sx={{
+                    position: 'absolute',
+                    right: (t) => t.spacing(1.5),
+                    bottom: (t) => `calc(2rem + ${t.spacing(hasInvisibleGenre ? 4 : 1)})`,
+                    color: yellow[700],
+                  }}
+                >
+                  star
+                </Icon>
+              )}
+              {(hasInvisibleGenre) && (
                 <Icon className={classes.invisibleLabel}>visibility_off</Icon>
-              ) : null}
+              )}
               {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
                 <Icon className={classes.newLabel}>tips_and_updates</Icon>
               )}
