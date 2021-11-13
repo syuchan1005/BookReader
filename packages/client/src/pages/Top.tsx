@@ -38,6 +38,9 @@ const Top = () => {
 
   React.useEffect(() => {
     const tabPath = TabPaths[tabIndex];
+    if (tabPath === '/' && location.pathname === '/') {
+      return;
+    }
     if (tabPath === '/' || !location.pathname.startsWith(tabPath)) {
       history.replace(TabPaths[tabIndex]);
     }
