@@ -1,23 +1,16 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import {
   Button,
-  Chip,
   CircularProgress,
   Collapse,
-  FormControl,
   Icon,
-  Input,
-  InputLabel,
   ListItem,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
-  Select,
   useTheme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import * as colors from '@mui/material/colors';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
@@ -26,17 +19,15 @@ import {
   BookInfoOrder,
   useDeleteUnusedFoldersMutation,
   useFolderSizesLazyQuery,
-  useGenresQuery,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { workbox } from '@client/registerServiceWorker';
 import { resetStore } from '@client/apollo';
 import ColorTile from '@client/components/ColorTile';
 import {
-  bookHistoryState,
-  genresState,
   primaryColorState,
-  secondaryColorState, showBookInfoNameState,
+  secondaryColorState,
+  showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
 
@@ -50,38 +41,20 @@ const wrapSize = (size: number) => {
   const sizes = ['', 'K', 'M', 'G', 'T'];
   let index = sizes.findIndex((v, i) => size / 10 ** (i * 3) < 1) - 1;
   if (index < 0) index = sizes.length - 1;
-  return `${(size / 10 ** (index * 3)).toString(10).match(/\d+(\.\d{1,2})?/)[0]} [${sizes[index]}B]`;
+  return `${(size / 10 ** (index * 3)).toString(10)
+    .match(/\d+(\.\d{1,2})?/)[0]} [${sizes[index]}B]`;
 };
-
-const useStyles = makeStyles(() => createStyles({
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: 2,
-  },
-  disableHover: {
-    cursor: 'auto',
-    '&:hover': {
-      background: 'inherit',
-    },
-  },
-}));
 
 const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const {
     anchorEl,
     onClose,
   } = props;
-  const classes = useStyles(props);
 
   const history = useHistory();
   const location = useLocation();
-  const [genres, setGenres] = useRecoilState(genresState);
   const [primaryColor, setPrimaryColor] = useRecoilState(primaryColorState);
   const [secondaryColor, setSecondaryColor] = useRecoilState(secondaryColorState);
-  const [bookHistory, setBookHistory] = useRecoilState(bookHistoryState);
   const [sortOrder, setSortOrder] = useRecoilState(sortOrderState);
   const [showBookInfoName, setShowBookInfoName] = useRecoilState(showBookInfoNameState);
   const theme = useTheme();
@@ -94,9 +67,11 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
   const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
 
-  const [historyAnchorEl, setHistoryAnchorEl] = React.useState(null);
-
-  const [getFolderSizes, { refetch, loading, data }] = useFolderSizesLazyQuery();
+  const [getFolderSizes, {
+    refetch,
+    loading,
+    data,
+  }] = useFolderSizesLazyQuery();
 
   const [deleteUnusedFolder, { loading: deleteLoading }] = useDeleteUnusedFoldersMutation({
     onCompleted() {
@@ -104,8 +79,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
       refetch();
     },
   });
-
-  const { data: genreData } = useGenresQuery();
 
   /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
@@ -118,7 +91,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
         new Promise((r) => setTimeout(r, 1000)), // timeout: 1000ms
       ]),
-    ]).finally(() => window.location.reload());
+    ])
+      .finally(() => window.location.reload());
   }, []);
 
   const [vConsole, setVConsole] = React.useState(undefined);
@@ -136,10 +110,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     }
   }, [vConsole]);
 
-  const handleGenresChange = React.useCallback((event) => {
-    setGenres(event.target.value);
-  }, [setGenres]);
-
   return (
     <>
       <Menu
@@ -151,39 +121,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         open={!!anchorEl}
         onClose={() => (onClose && onClose())}
       >
-        <MenuItem disableRipple disableTouchRipple className={classes.disableHover}>
-          <FormControl fullWidth style={{ maxWidth: 170 }}>
-            <InputLabel>Genres</InputLabel>
-            <Select
-              multiple
-              input={<Input />}
-              value={genres}
-              onChange={handleGenresChange}
-              renderValue={(selected) => (
-                <div className={classes.chips}>
-                  {(selected as string[]).map((value) => (
-                    <Chip
-                      key={value}
-                      label={value}
-                      className={classes.chip}
-                    />
-                  ))}
-                </div>
-              )}
-            >
-              {(genreData?.genres?.map((g) => g.name) ?? []).map((name) => (
-                <MenuItem key={name} value={name}>
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </MenuItem>
-        <MenuItem onClick={(e) => setHistoryAnchorEl(e.currentTarget)}>
-          History:
-          {' '}
-          {bookHistory}
-        </MenuItem>
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
           {`Sort: ${sortOrder}`}
         </MenuItem>
@@ -246,7 +183,11 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           </MenuItem>
           <Collapse in={openFolderSize}>
             {(deleteLoading || loading || !data) ? (
-              <MenuItem style={{ display: 'flex', justifyContent: 'center' }}>
+              <MenuItem style={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+              >
                 <CircularProgress color="secondary" />
               </MenuItem>
             ) : (
@@ -291,17 +232,18 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         open={!!sortAnchorEl}
         onClose={() => setSortAnchorEl(null)}
       >
-        {Object.keys(BookInfoOrder).map((order: BookInfoOrder) => (
-          <MenuItem
-            key={order}
-            onClick={() => {
-              setSortOrder(BookInfoOrder[order]);
-              setSortAnchorEl(null);
-            }}
-          >
-            {BookInfoOrder[order]}
-          </MenuItem>
-        ))}
+        {Object.keys(BookInfoOrder)
+          .map((order: BookInfoOrder) => (
+            <MenuItem
+              key={order}
+              onClick={() => {
+                setSortOrder(BookInfoOrder[order]);
+                setSortAnchorEl(null);
+              }}
+            >
+              {BookInfoOrder[order]}
+            </MenuItem>
+          ))}
       </Menu>
       <Menu
         anchorEl={colorAnchorEl}
@@ -314,45 +256,23 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           style: { maxHeight: theme.spacing(7 * 5) },
         }}
       >
-        {Object.keys(colors).map((c) => ((c !== 'common') ? (
-          <MenuItem
-            key={c}
-            onClick={() => {
-              if (colorType === 'primary') {
-                setPrimaryColor(c);
-              } else {
-                setSecondaryColor(c);
-              }
-              setColorType(undefined);
-              setColorAnchorEl(null);
-            }}
-          >
-            <ColorTile color={c} />
-          </MenuItem>
-        ) : null))}
-      </Menu>
-      <Menu
-        anchorEl={historyAnchorEl}
-        anchorOrigin={{
-          horizontal: 'center',
-          vertical: 'bottom',
-        }}
-        open={!!historyAnchorEl}
-        onClose={() => {
-          setHistoryAnchorEl(null);
-        }}
-      >
-        {['SHOW', 'HIDE', 'ALL'].map((s: 'SHOW' | 'HIDE' | 'ALL') => (
-          <MenuItem
-            key={s}
-            onClick={() => {
-              setHistoryAnchorEl(null);
-              setBookHistory(s);
-            }}
-          >
-            {s}
-          </MenuItem>
-        ))}
+        {Object.keys(colors)
+          .map((c) => ((c !== 'common') ? (
+            <MenuItem
+              key={c}
+              onClick={() => {
+                if (colorType === 'primary') {
+                  setPrimaryColor(c);
+                } else {
+                  setSecondaryColor(c);
+                }
+                setColorType(undefined);
+                setColorAnchorEl(null);
+              }}
+            >
+              <ColorTile color={c} />
+            </MenuItem>
+          ) : null))}
       </Menu>
     </>
   );

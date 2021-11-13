@@ -1,20 +1,24 @@
 import React, { ChangeEvent, useCallback } from 'react';
 import {
-  AppBar,
+  AppBar, Chip, FormControl,
   Icon,
   IconButton,
   InputAdornment,
-  InputBase,
+  InputBase, InputLabel, MenuItem, Popover, Select,
   Theme,
   Toolbar,
   useTheme,
 } from '@mui/material';
+import { red } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { alpha } from '@mui/material/styles';
 
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
+import { useRecoilState } from 'recoil';
+import { BookHistory, bookHistoryState, genresState } from '@client/store/atoms';
+import { useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
@@ -66,6 +70,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     marginLeft: theme.spacing(1),
     color: 'white',
   },
+  inputFilter: {
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: 350,
+    },
+  },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 2,
+  },
 }));
 
 const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
@@ -87,6 +104,35 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
 
   const elevation = useAppBarScrollElevation();
 
+  const searchInputRef = React.useRef(null);
+  const [searchFilterPopoverAnchorEl, setSearchFilterPopoverAnchorEl] = React.useState(null);
+  const handleSearchFilterClick = React.useCallback(() => {
+    setSearchFilterPopoverAnchorEl(searchInputRef.current);
+  }, []);
+
+  const [bookHistory, setBookHistory] = useRecoilState(bookHistoryState);
+  const handleHistoryChanged = React.useCallback((event) => {
+    setBookHistory(event.target.value);
+  }, [setBookHistory]);
+
+  const { data: genreData } = useGenresQuery();
+  const [genres, setGenres] = useRecoilState(genresState);
+  const handleGenresChange = React.useCallback((event) => {
+    setGenres(event.target.value);
+  }, [setGenres]);
+  const handleDeleteGenre = React.useCallback((index) => {
+    setGenres((currentGenres) => {
+      const newGenres = [...currentGenres];
+      newGenres.splice(index, 1);
+      return newGenres;
+    });
+  }, [setGenres]);
+
+  const hasSearchFilter = React.useMemo(
+    () => genres.length > 0 || bookHistory !== 'ALL',
+    [bookHistory, genres.length],
+  );
+
   return (
     <AppBar elevation={elevation} className={classes.appBar}>
       <Toolbar>
@@ -96,27 +142,98 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
             <Icon>search</Icon>
           </div>
           <InputBase
+            ref={searchInputRef}
             placeholder="Search…"
             classes={{
               root: classes.inputRoot,
               input: classes.inputInput,
             }}
             inputProps={{ 'aria-label': 'search' }}
-            endAdornment={(searchText) ? (
+            endAdornment={(
               <InputAdornment position="end">
+                {(searchText) && (
+                  <IconButton
+                    size="small"
+                    style={{ color: theme.palette.common.white }}
+                    onClick={clearSearchText}
+                  >
+                    <Icon>clear</Icon>
+                  </IconButton>
+                )}
                 <IconButton
                   size="small"
-                  style={{ color: theme.palette.common.white }}
-                  onClick={clearSearchText}
+                  style={{
+                    color: hasSearchFilter ? red['600'] : theme.palette.common.white,
+                  }}
+                  onClick={handleSearchFilterClick}
                 >
-                  <Icon>clear</Icon>
+                  <Icon>filter_list</Icon>
                 </IconButton>
               </InputAdornment>
-            ) : undefined}
+            )}
             value={searchText}
             onChange={handleSearchText}
           />
         </div>
+
+        <Popover
+          open={Boolean(searchFilterPopoverAnchorEl)}
+          anchorEl={searchFilterPopoverAnchorEl}
+          onClose={() => setSearchFilterPopoverAnchorEl(null)}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          PaperProps={{
+            sx: { p: 1 },
+          }}
+        >
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Genre</InputLabel>
+            <Select
+              multiple
+              label="Genre"
+              margin="dense"
+              value={genres}
+              onChange={handleGenresChange}
+              renderValue={(selected) => (
+                <div className={classes.chips}>
+                  {(selected as string[]).map((value, i) => (
+                    <Chip
+                      key={value}
+                      label={value}
+                      className={classes.chip}
+                      // This is a trick to enable onDelete inside the Select component.
+                      // https://stackoverflow.com/q/59522767
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onDelete={() => handleDeleteGenre(i)}
+                    />
+                  ))}
+                </div>
+              )}
+            >
+              {(genreData?.genres?.map((g) => g.name) ?? []).map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>History</InputLabel>
+            <Select
+              label="History"
+              margin="dense"
+              value={bookHistory}
+              onChange={handleHistoryChanged}
+            >
+              {Object.entries(BookHistory)
+                .map(([key, value]) => (
+                  <MenuItem key={key} value={value}>{key}</MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+        </Popover>
 
         <IconButton
           className={classes.sortIcon}

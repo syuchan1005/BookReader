@@ -11,7 +11,12 @@ export const genresState = atom<string[]>({
   ],
 });
 
-export const bookHistoryState = atom<'SHOW' | 'HIDE' | 'ALL'>({
+export const BookHistory = {
+  Show: 'SHOW',
+  Hide: 'HIDE',
+  All: 'ALL',
+} as const;
+export const bookHistoryState = atom<typeof BookHistory[keyof typeof BookHistory]>({
   key: 'historyState',
   default: 'ALL',
   effects_UNSTABLE: [
