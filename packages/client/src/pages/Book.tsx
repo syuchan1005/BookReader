@@ -294,8 +294,7 @@ const Book = (props: BookProps) => {
 
   const handleSlideChange = React.useCallback((s) => {
     updatePage(s.activeIndex);
-    setHideAppBar();
-  }, [setHideAppBar]);
+  }, []);
 
   const {
     loading,
@@ -505,6 +504,7 @@ const Book = (props: BookProps) => {
             modules={[Virtual, Keyboard]}
             onSwiper={updateSwiper}
             onSlideChange={handleSlideChange}
+            onKeyPress={setHideAppBar}
             dir={readOrder === ReadOrder.LTR ? 'ltr' : 'rtl'}
             className={classes.pageContainer}
             slidesPerView={slidesPerView}
