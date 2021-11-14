@@ -35,7 +35,6 @@ export type BookInfo = {
   books: Array<Book>;
   count: Scalars['Int'];
   genres: Array<Genre>;
-  history: Scalars['Boolean'];
   id: Scalars['ID'];
   name: Scalars['String'];
   thumbnail?: Maybe<BookInfoThumbnail>;
@@ -51,11 +50,6 @@ export type BookInfoEdge = {
   __typename?: 'BookInfoEdge';
   cursor: Scalars['String'];
   node: BookInfo;
-};
-
-export type BookInfoHistory = {
-  count: Scalars['Int'];
-  name: Scalars['String'];
 };
 
 export type BookInfoList = {
@@ -97,7 +91,6 @@ export type BookInfoThumbnail = {
 
 export type BookInfosOption = {
   genres?: Maybe<Array<Scalars['String']>>;
-  history?: Maybe<HistoryType>;
   order?: Maybe<BookInfoOrder>;
   search?: Maybe<Scalars['String']>;
 };
@@ -163,13 +156,6 @@ export type Genre = {
   name: Scalars['ID'];
 };
 
-export const HistoryType = {
-  All: 'ALL',
-  HistoryOnly: 'HISTORY_ONLY',
-  NormalOnly: 'NORMAL_ONLY'
-} as const;
-
-export type HistoryType = typeof HistoryType[keyof typeof HistoryType];
 export type InputBook = {
   file?: Maybe<Scalars['Upload']>;
   number: Scalars['String'];
@@ -179,7 +165,6 @@ export type InputBook = {
 export type Mutation = {
   __typename?: 'Mutation';
   addBookInfo: ResultWithInfoId;
-  addBookInfoHistories: Result;
   addBooks: Array<Result>;
   addCompressBook: ResultWithBookResults;
   bulkEditPage: Result;
@@ -197,11 +182,6 @@ export type Mutation = {
 export type MutationAddBookInfoArgs = {
   genres?: Maybe<Array<Scalars['String']>>;
   name: Scalars['String'];
-};
-
-
-export type MutationAddBookInfoHistoriesArgs = {
-  histories: Array<BookInfoHistory>;
 };
 
 
@@ -420,13 +400,6 @@ export type AddBookInfoMutationVariables = Exact<{
 
 export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined } };
 
-export type AddBookInfoHistoriesMutationVariables = Exact<{
-  histories: Array<BookInfoHistory> | BookInfoHistory;
-}>;
-
-
-export type AddBookInfoHistoriesMutation = { __typename?: 'Mutation', add: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
-
 export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -490,7 +463,7 @@ export type RelayBookInfosQueryVariables = Exact<{
 }>;
 
 
-export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, history: boolean, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
+export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
 
 export type DeleteGenreMutationVariables = Exact<{
   name: Scalars['String'];
@@ -513,7 +486,7 @@ export type BookInfosQueryVariables = Exact<{
 }>;
 
 
-export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, history: boolean, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
+export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
 
 export type BooksQueryVariables = Exact<{
   ids: Array<Scalars['ID']> | Scalars['ID'];
@@ -647,7 +620,6 @@ export type ResolversTypes = {
   Book: ResolverTypeWrapper<Book>;
   BookInfo: ResolverTypeWrapper<BookInfo>;
   BookInfoEdge: ResolverTypeWrapper<BookInfoEdge>;
-  BookInfoHistory: BookInfoHistory;
   BookInfoList: ResolverTypeWrapper<BookInfoList>;
   BookInfoOrder: BookInfoOrder;
   BookInfoPartialList: ResolverTypeWrapper<BookInfoPartialList>;
@@ -663,7 +635,6 @@ export type ResolversTypes = {
   EditAction: EditAction;
   EditType: EditType;
   Genre: ResolverTypeWrapper<Genre>;
-  HistoryType: HistoryType;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   InputBook: InputBook;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -691,7 +662,6 @@ export type ResolversParentTypes = {
   Book: Book;
   BookInfo: BookInfo;
   BookInfoEdge: BookInfoEdge;
-  BookInfoHistory: BookInfoHistory;
   BookInfoList: BookInfoList;
   BookInfoPartialList: BookInfoPartialList;
   BookInfoResult: BookInfoResult;
@@ -742,7 +712,6 @@ export type BookInfoResolvers<ContextType = any, ParentType extends ResolversPar
   books?: Resolver<Array<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<BookInfoBooksArgs, 'order'>>;
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
-  history?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   thumbnail?: Resolver<Maybe<ResolversTypes['BookInfoThumbnail']>, ParentType, ContextType>;
@@ -812,7 +781,6 @@ export interface IntRangeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   addBookInfo?: Resolver<ResolversTypes['ResultWithInfoId'], ParentType, ContextType, RequireFields<MutationAddBookInfoArgs, 'name'>>;
-  addBookInfoHistories?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationAddBookInfoHistoriesArgs, 'histories'>>;
   addBooks?: Resolver<Array<ResolversTypes['Result']>, ParentType, ContextType, RequireFields<MutationAddBooksArgs, 'books' | 'id'>>;
   addCompressBook?: Resolver<ResolversTypes['ResultWithBookResults'], ParentType, ContextType, RequireFields<MutationAddCompressBookArgs, 'id'>>;
   bulkEditPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationBulkEditPageArgs, 'actions' | 'id'>>;

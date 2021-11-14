@@ -3,13 +3,16 @@ import {
   Book,
   BookEditableValue,
   BookId,
-  InputBook, SortableBookProperties,
+  InputBook,
+  SortableBookProperties,
 } from './models/Book';
 import {
-  BookInfo, BookInfoEditableValue,
+  BookInfo,
+  BookInfoEditableValue,
   BookInfoThumbnail,
-  InfoId, InfoType, InputBookHistory,
-  InputBookInfo, SortableBookInfoProperties,
+  InfoId,
+  InputBookInfo,
+  SortableBookInfoProperties,
 } from './models/BookInfo';
 import {
   Genre,
@@ -66,7 +69,6 @@ export interface IBookDataManager {
   getBookInfos(option: {
     limit?: number,
     filter: {
-      infoType?: InfoType,
       genres?: Array<GenreName>,
       name: {
         include?: string,
@@ -79,8 +81,6 @@ export interface IBookDataManager {
   }): Promise<Array<BookInfo>>;
 
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
-
-  addBookHistories(bookHistories: Array<InputBookHistory>): Promise<void>;
 
   editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
 

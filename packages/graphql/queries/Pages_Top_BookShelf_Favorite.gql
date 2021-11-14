@@ -8,7 +8,6 @@ query bookInfos($ids: [ID!]!) {
             pageIndex
             bookPageCount
         }
-        history
         genres {
             name
             invisible

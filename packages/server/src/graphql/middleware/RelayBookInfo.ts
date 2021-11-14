@@ -3,17 +3,14 @@ import {
   QueryResolvers,
   BookInfosOption,
   BookInfoOrder,
-  HistoryType,
-  BookInfo, BookInfo as BookInfoGQLModel,
+  BookInfo as BookInfoGQLModel,
 } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager, SortKey } from '@server/database/BookDataManager';
-import { InfoType } from '@server/database/models/BookInfo';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
 
 const DefaultOptions: BookInfosOption = {
   search: undefined,
   genres: [],
-  history: HistoryType.All,
   order: BookInfoOrder.UpdateNewest,
 };
 
@@ -93,23 +90,9 @@ class RelayBookInfo extends GQLMiddleware {
         const {
           search,
           genres,
-          history,
           order: bookInfoOrder,
         } = option;
 
-        let infoType: InfoType;
-        switch (history) {
-          default:
-          case HistoryType.All:
-            infoType = undefined;
-            break;
-          case HistoryType.HistoryOnly:
-            infoType = 'History';
-            break;
-          case HistoryType.NormalOnly:
-            infoType = 'Normal';
-            break;
-        }
         const [cursorKey, sqlOrder, before, after] = getCursor(bookInfoOrder, argBefore, argAfter);
         let paginationWhere;
         if (after === undefined && before === undefined) {
@@ -126,7 +109,6 @@ class RelayBookInfo extends GQLMiddleware {
         const bookInfos = (await BookDataManager.getBookInfos({
           limit: first !== undefined ? first + 1 : undefined,
           filter: {
-            infoType,
             genres,
             name: {
               include: search,
@@ -167,7 +149,6 @@ class RelayBookInfo extends GQLMiddleware {
             node: {
               ...bookInfo,
               count: bookInfo.bookCount,
-              history: bookInfo.isHistory,
             } as Omit<BookInfoGQLModel, BookInfoResolveAttrs>,
           })),
           pageInfo: {

@@ -32,7 +32,6 @@ class BookInfo extends GQLMiddleware {
         return {
           ...bookInfo,
           count: bookInfo.bookCount,
-          history: bookInfo.isHistory,
           updatedAt: `${bookInfo.updatedAt.getTime()}`,
         };
       },
@@ -54,7 +53,6 @@ class BookInfo extends GQLMiddleware {
           return {
             ...bookInfo,
             count: bookInfo.bookCount,
-            history: bookInfo.isHistory,
             updatedAt: `${bookInfo.updatedAt.getTime()}`,
           };
         });
@@ -119,15 +117,6 @@ class BookInfo extends GQLMiddleware {
             pages: book.thumbnailPage,
             updatedAt: `${book.updatedAt.getTime()}`,
           })),
-        };
-      },
-      addBookInfoHistories: async (parent, { histories }) => {
-        await BookDataManager.addBookHistories(histories.map((history) => ({
-          name: history.name,
-          bookCount: history.count,
-        })));
-        return {
-          success: true,
         };
       },
     };

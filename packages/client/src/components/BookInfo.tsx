@@ -34,14 +34,13 @@ import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDial
 
 const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookInfoDialog'));
 
-interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'history' | 'count' | 'genres'> {
+interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'count' | 'genres'> {
   style?: React.CSSProperties;
   thumbnailSize: number;
   showName?: boolean;
   updatedAt?: string;
   simple?: boolean;
 
-  onHistoryBookClick?: (infoId: string) => void;
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
   onEdit?: () => void;
   index: number;
@@ -78,15 +77,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     position: 'absolute',
     zIndex: 1,
     padding: 0,
-  },
-  historyLabel: {
-    position: 'absolute',
-    top: 0,
-    left: theme.spacing(1),
-    background: orange['800'],
-    color: theme.palette.common.white,
-    padding: theme.spacing(1),
-    borderRadius: theme.spacing(1),
   },
   completedLabel: {
     position: 'absolute',
@@ -175,11 +165,9 @@ const BookInfo = (props: BookInfoProps) => {
     thumbnail,
     name,
     count,
-    history,
     genres,
     updatedAt,
     showName,
-    onHistoryBookClick,
     onDeleted,
     onEdit,
     index,
@@ -274,13 +262,6 @@ const BookInfo = (props: BookInfoProps) => {
     }));
   }, [name]);
 
-  const handleCardClick = React.useCallback((e) => {
-    if (history && onHistoryBookClick) {
-      e.preventDefault();
-      onHistoryBookClick(infoId);
-    }
-  }, [history, infoId, onHistoryBookClick]);
-
   const hasInvisibleGenre = React.useMemo(() => genres.some((g) => g.invisible), [genres]);
   const [isFavorite, toggleFavorite] = useFavorite(infoId);
   const handleFavoriteClick = React.useCallback(() => {
@@ -314,7 +295,7 @@ const BookInfo = (props: BookInfoProps) => {
                 <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
                 <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
                 <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
-                {(!history) && (<MenuItem onClick={clickDownloadBook}>Download</MenuItem>)}
+                <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
               </Menu>
             </CardActions>
           )}
@@ -327,7 +308,7 @@ const BookInfo = (props: BookInfoProps) => {
               })
             }
           >
-            <CardActionArea onClick={handleCardClick}>
+            <CardActionArea>
               <BookPageImage
                 bookId={thumbnail?.bookId}
                 pageIndex={thumbnail?.pageIndex}
@@ -347,9 +328,6 @@ const BookInfo = (props: BookInfoProps) => {
                   <div>{count}</div>
                 </CardContent>
               )}
-              {(history) ? (
-                <div className={classes.historyLabel}>History</div>
-              ) : null}
               {(genres.some((g) => g.name === 'Completed') && !showName) ? (
                 <div className={classes.completedLabel}>Completed</div>
               ) : null}

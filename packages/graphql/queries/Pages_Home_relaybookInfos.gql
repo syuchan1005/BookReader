@@ -11,7 +11,6 @@ query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!) {
                     pageIndex
                     bookPageCount
                 }
-                history
                 genres {
                     name
                     invisible

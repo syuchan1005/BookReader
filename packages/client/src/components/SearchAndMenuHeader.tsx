@@ -17,7 +17,7 @@ import { alpha } from '@mui/material/styles';
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 import { useRecoilState } from 'recoil';
-import { BookHistory, bookHistoryState, genresState } from '@client/store/atoms';
+import { genresState } from '@client/store/atoms';
 import { useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 interface SearchAndMenuHeaderProps {
@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   inputFilter: {
     width: '100%',
+    minWidth: 200,
     [theme.breakpoints.up('sm')]: {
       width: 350,
     },
@@ -110,11 +111,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     setSearchFilterPopoverAnchorEl(searchInputRef.current);
   }, []);
 
-  const [bookHistory, setBookHistory] = useRecoilState(bookHistoryState);
-  const handleHistoryChanged = React.useCallback((event) => {
-    setBookHistory(event.target.value);
-  }, [setBookHistory]);
-
   const { data: genreData } = useGenresQuery();
   const [genres, setGenres] = useRecoilState(genresState);
   const handleGenresChange = React.useCallback((event) => {
@@ -128,10 +124,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     });
   }, [setGenres]);
 
-  const hasSearchFilter = React.useMemo(
-    () => genres.length > 0 || bookHistory !== 'ALL',
-    [bookHistory, genres.length],
-  );
+  const hasSearchFilter = React.useMemo(() => genres.length > 0, [genres.length]);
 
   return (
     <AppBar elevation={elevation} className={classes.appBar}>
@@ -188,7 +181,11 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
             sx: { p: 1 },
           }}
         >
-          <FormControl fullWidth margin="dense">
+          <FormControl
+            fullWidth
+            margin="dense"
+            className={classes.inputFilter}
+          >
             <InputLabel>Genre</InputLabel>
             <Select
               multiple
@@ -217,20 +214,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
                   {name}
                 </MenuItem>
               ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="dense">
-            <InputLabel>History</InputLabel>
-            <Select
-              label="History"
-              margin="dense"
-              value={bookHistory}
-              onChange={handleHistoryChanged}
-            >
-              {Object.entries(BookHistory)
-                .map(([key, value]) => (
-                  <MenuItem key={key} value={value}>{key}</MenuItem>
-                ))}
             </Select>
           </FormControl>
         </Popover>

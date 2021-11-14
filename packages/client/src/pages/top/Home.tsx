@@ -11,10 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
-import {
-  HistoryType,
-  useRelayBookInfosQuery,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useRelayBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
@@ -31,14 +28,11 @@ import useMediaQuery from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
 import {
   genresState,
-  bookHistoryState,
   sortOrderState,
   showBookInfoNameState, homeLastSeenBookPosition,
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '@client/Database';
-
-const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
 interface HomeProps {
   children?: React.ReactElement;
@@ -106,7 +100,6 @@ const defaultLoadBookInfoCount = 20;
 
 const Home = (props: HomeProps) => {
   const genres = useRecoilValue(genresState);
-  const bookHistory = useRecoilValue(bookHistoryState);
   const sortOrder = useRecoilValue(sortOrderState);
   const showBookInfoName = useRecoilValue(showBookInfoNameState);
   const classes = useStyles(props);
@@ -123,9 +116,6 @@ const Home = (props: HomeProps) => {
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
-  const [openAddBook, setOpenAddBook,
-    resetOpenAddBook] = useStateWithReset<string | undefined>(undefined);
-  const canMountAddBook = useDebounceValue(openAddBook, theme.transitions.duration.leavingScreen);
   const [searchText, setSearchText] = useQueryParam('search', StringParam);
   const debounceSearch = useDebounceValue(searchText, 800);
   const handleSearchText = React.useCallback((text?: string) => {
@@ -157,11 +147,6 @@ const Home = (props: HomeProps) => {
       option: {
         search: debounceSearch || undefined,
         genres,
-        history: {
-          SHOW: HistoryType.HistoryOnly,
-          HIDE: HistoryType.NormalOnly,
-          ALL: HistoryType.All,
-        }[bookHistory],
         order: sortOrder,
       },
     },
@@ -225,10 +210,6 @@ const Home = (props: HomeProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleHistoryBookInfoClick = React.useCallback((infoId) => {
-    setOpenAddBook(infoId);
-  }, [setOpenAddBook]);
-
   const handleVisible = React.useCallback(
     (i: number, isVisible: boolean, isFirstVisible: boolean) => {
       if (!isVisible) {
@@ -282,7 +263,6 @@ const Home = (props: HomeProps) => {
                   <BookInfo
                     key={info.id}
                     {...info}
-                    onHistoryBookClick={handleHistoryBookInfoClick}
                     onDeleted={handleDeletedBookInfo}
                     onEdit={refetchAll}
                     thumbnailSize={downXs ? 150 : 200}
@@ -325,15 +305,6 @@ const Home = (props: HomeProps) => {
           onAdded={refetchAll}
           onClose={setClose}
         />
-
-        {(!!openAddBook || !!canMountAddBook) && (
-          <AddBookDialog
-            open={!!openAddBook}
-            infoId={openAddBook}
-            onClose={resetOpenAddBook}
-            onAdded={refetchAll}
-          />
-        )}
       </main>
     </>
   );

@@ -8,7 +8,7 @@ import {
 import {
   BookInfo, BookInfoEditableValue,
   BookInfoThumbnail,
-  InfoId, InfoType, InputBookHistory,
+  InfoId,
   InputBookInfo, SortableBookInfoProperties,
 } from '@server/database/models/BookInfo';
 import {
@@ -104,13 +104,6 @@ export class PrismaBookDataManager implements IBookDataManager {
           ...book,
         },
       });
-      await transactionalPrismaClient.bookInfo.updateMany({
-        where: { id: infoId },
-        data: {
-          historyBookCount: null,
-          updatedAt: new Date(),
-        },
-      });
       try {
         await transactionalPrismaClient.book.update({
           where: { id: bookId },
@@ -169,10 +162,6 @@ export class PrismaBookDataManager implements IBookDataManager {
           thumbnailById: null,
         },
       }),
-      this.prismaClient.bookInfo.update({
-        where: { id: destinationInfoId },
-        data: { historyBookCount: null },
-      }),
     ]);
   }
 
@@ -228,13 +217,10 @@ export class PrismaBookDataManager implements IBookDataManager {
     if (!bookInfo) {
       return undefined;
     }
-    const bookCount = bookInfo._count.books;
-    const isHistory = bookInfo.historyBookCount !== null && bookCount === 0;
     return {
       id: bookInfo.id,
       name: bookInfo.name,
-      isHistory,
-      bookCount: isHistory ? bookInfo.historyBookCount : bookCount,
+      bookCount: bookInfo._count.books,
       createdAt: bookInfo.createdAt,
       updatedAt: bookInfo.updatedAt,
     };
@@ -342,7 +328,6 @@ export class PrismaBookDataManager implements IBookDataManager {
   async getBookInfos(option: {
     limit?: number,
     filter: {
-      infoType?: InfoType,
       genres?: Array<GenreName>,
       name: {
         include?: string,
@@ -356,7 +341,6 @@ export class PrismaBookDataManager implements IBookDataManager {
     const {
       limit,
       filter: {
-        infoType,
         genres,
         name: {
           include,
@@ -401,23 +385,9 @@ export class PrismaBookDataManager implements IBookDataManager {
         },
       };
 
-    let historyFilter: {} | undefined;
-    if (infoType === 'Normal') {
-      historyFilter = {
-        historyBookCount: null,
-      };
-    } else if (infoType === 'History') {
-      historyFilter = {
-        historyBookCount: {
-          not: null,
-        },
-      };
-    }
-
     const bookInfos = await this.prismaClient.bookInfo.findMany({
       take: limit,
       where: {
-        ...historyFilter,
         name: {
           contains: include,
           gt: between?.[0],
@@ -478,21 +448,6 @@ export class PrismaBookDataManager implements IBookDataManager {
       },
     });
     return infoId;
-  }
-
-  async addBookHistories(bookHistories: Array<InputBookHistory>): Promise<void> {
-    const createMany = bookHistories
-      .map(({
-        name,
-        bookCount,
-      }) => this.prismaClient.bookInfo.create({
-        data: {
-          id: generateId(),
-          name,
-          historyBookCount: bookCount,
-        },
-      }));
-    await this.prismaClient.$transaction(createMany);
   }
 
   @BatchLoadingClear('getBookInfoThumbnail')

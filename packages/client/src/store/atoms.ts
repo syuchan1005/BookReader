@@ -11,19 +11,6 @@ export const genresState = atom<string[]>({
   ],
 });
 
-export const BookHistory = {
-  Show: 'SHOW',
-  Hide: 'HIDE',
-  All: 'ALL',
-} as const;
-export const bookHistoryState = atom<typeof BookHistory[keyof typeof BookHistory]>({
-  key: 'historyState',
-  default: 'ALL',
-  effects_UNSTABLE: [
-    logEffect(),
-  ],
-});
-
 export const themeState = atom<'light' | 'dark'>({
   key: 'themeState',
   default: 'light',

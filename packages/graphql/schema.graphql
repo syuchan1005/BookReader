@@ -33,8 +33,6 @@ type Mutation {
     editBookInfo(id: ID!, name: String, thumbnail: ID, genres: [String!]): Result!
     deleteBookInfo(id: ID!): BookInfoResult!
 
-    addBookInfoHistories(histories: [BookInfoHistory!]!): Result!
-
     ## Book
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
     addCompressBook(id: ID!, file: Upload, path: String): ResultWithBookResults!
@@ -78,16 +76,9 @@ enum SplitType {
     HORIZONTAL
 }
 
-enum HistoryType {
-    ALL
-    HISTORY_ONLY
-    NORMAL_ONLY
-}
-
 input BookInfosOption {
     search: String
     genres: [String!] = []
-    history: HistoryType = ALL
     order: BookInfoOrder = Update_Newest
 }
 
@@ -113,7 +104,6 @@ type BookInfo {
     name: String!
     thumbnail: BookInfoThumbnail
     count: Int!
-    history: Boolean!
     genres: [Genre!]!
     updatedAt: String! # milliseconds unix time string
 
@@ -244,11 +234,6 @@ input InputBook {
     number: String!
     file: Upload
     path: String
-}
-
-input BookInfoHistory {
-    name: String!
-    count: Int!
 }
 
 ## DEBUG

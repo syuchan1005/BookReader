@@ -36,7 +36,6 @@ export type BookInfo = {
   books: Array<Book>;
   count: Scalars['Int'];
   genres: Array<Genre>;
-  history: Scalars['Boolean'];
   id: Scalars['ID'];
   name: Scalars['String'];
   thumbnail?: Maybe<BookInfoThumbnail>;
@@ -52,11 +51,6 @@ export type BookInfoEdge = {
   __typename?: 'BookInfoEdge';
   cursor: Scalars['String'];
   node: BookInfo;
-};
-
-export type BookInfoHistory = {
-  count: Scalars['Int'];
-  name: Scalars['String'];
 };
 
 export type BookInfoList = {
@@ -98,7 +92,6 @@ export type BookInfoThumbnail = {
 
 export type BookInfosOption = {
   genres?: Maybe<Array<Scalars['String']>>;
-  history?: Maybe<HistoryType>;
   order?: Maybe<BookInfoOrder>;
   search?: Maybe<Scalars['String']>;
 };
@@ -164,13 +157,6 @@ export type Genre = {
   name: Scalars['ID'];
 };
 
-export const HistoryType = {
-  All: 'ALL',
-  HistoryOnly: 'HISTORY_ONLY',
-  NormalOnly: 'NORMAL_ONLY'
-} as const;
-
-export type HistoryType = typeof HistoryType[keyof typeof HistoryType];
 export type InputBook = {
   file?: Maybe<Scalars['Upload']>;
   number: Scalars['String'];
@@ -180,7 +166,6 @@ export type InputBook = {
 export type Mutation = {
   __typename?: 'Mutation';
   addBookInfo: ResultWithInfoId;
-  addBookInfoHistories: Result;
   addBooks: Array<Result>;
   addCompressBook: ResultWithBookResults;
   bulkEditPage: Result;
@@ -198,11 +183,6 @@ export type Mutation = {
 export type MutationAddBookInfoArgs = {
   genres?: Maybe<Array<Scalars['String']>>;
   name: Scalars['String'];
-};
-
-
-export type MutationAddBookInfoHistoriesArgs = {
-  histories: Array<BookInfoHistory>;
 };
 
 
@@ -421,13 +401,6 @@ export type AddBookInfoMutationVariables = Exact<{
 
 export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined } };
 
-export type AddBookInfoHistoriesMutationVariables = Exact<{
-  histories: Array<BookInfoHistory> | BookInfoHistory;
-}>;
-
-
-export type AddBookInfoHistoriesMutation = { __typename?: 'Mutation', add: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
-
 export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -491,7 +464,7 @@ export type RelayBookInfosQueryVariables = Exact<{
 }>;
 
 
-export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, history: boolean, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
+export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
 
 export type DeleteGenreMutationVariables = Exact<{
   name: Scalars['String'];
@@ -514,7 +487,7 @@ export type BookInfosQueryVariables = Exact<{
 }>;
 
 
-export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, history: boolean, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
+export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
 
 export type BooksQueryVariables = Exact<{
   ids: Array<Scalars['ID']> | Scalars['ID'];
@@ -753,40 +726,6 @@ export function useAddBookInfoMutation(baseOptions?: Apollo.MutationHookOptions<
 export type AddBookInfoMutationHookResult = ReturnType<typeof useAddBookInfoMutation>;
 export type AddBookInfoMutationResult = Apollo.MutationResult<AddBookInfoMutation>;
 export type AddBookInfoMutationOptions = Apollo.BaseMutationOptions<AddBookInfoMutation, AddBookInfoMutationVariables>;
-export const AddBookInfoHistoriesDocument = gql`
-    mutation addBookInfoHistories($histories: [BookInfoHistory!]!) {
-  add: addBookInfoHistories(histories: $histories) {
-    success
-    code
-  }
-}
-    `;
-export type AddBookInfoHistoriesMutationFn = Apollo.MutationFunction<AddBookInfoHistoriesMutation, AddBookInfoHistoriesMutationVariables>;
-
-/**
- * __useAddBookInfoHistoriesMutation__
- *
- * To run a mutation, you first call `useAddBookInfoHistoriesMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useAddBookInfoHistoriesMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [addBookInfoHistoriesMutation, { data, loading, error }] = useAddBookInfoHistoriesMutation({
- *   variables: {
- *      histories: // value for 'histories'
- *   },
- * });
- */
-export function useAddBookInfoHistoriesMutation(baseOptions?: Apollo.MutationHookOptions<AddBookInfoHistoriesMutation, AddBookInfoHistoriesMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<AddBookInfoHistoriesMutation, AddBookInfoHistoriesMutationVariables>(AddBookInfoHistoriesDocument, options);
-      }
-export type AddBookInfoHistoriesMutationHookResult = ReturnType<typeof useAddBookInfoHistoriesMutation>;
-export type AddBookInfoHistoriesMutationResult = Apollo.MutationResult<AddBookInfoHistoriesMutation>;
-export type AddBookInfoHistoriesMutationOptions = Apollo.BaseMutationOptions<AddBookInfoHistoriesMutation, AddBookInfoHistoriesMutationVariables>;
 export const DeleteUnusedFoldersDocument = gql`
     mutation deleteUnusedFolders {
   debug_deleteUnusedFolders {
@@ -1101,7 +1040,6 @@ export const RelayBookInfosDocument = gql`
           pageIndex
           bookPageCount
         }
-        history
         genres {
           name
           invisible
@@ -1231,7 +1169,6 @@ export const BookInfosDocument = gql`
       pageIndex
       bookPageCount
     }
-    history
     genres {
       name
       invisible

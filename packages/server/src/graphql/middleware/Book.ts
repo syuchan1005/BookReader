@@ -315,7 +315,6 @@ class Book extends GQLMiddleware {
           return {
             ...bookInfo,
             count: bookInfo.bookCount,
-            history: bookInfo.isHistory,
             updatedAt: `${bookInfo.updatedAt.getTime()}`,
           };
         },
