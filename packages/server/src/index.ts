@@ -1,28 +1,13 @@
+import './open-telemetry';
+
 import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 
-import { ImageHeader } from '@syuchan1005/book-reader-common';
 import { BookDataManager } from '@server/database/BookDataManager';
-import { getCacheOrConvertImage, obsoleteConvertImage } from './ImageUtil';
+import { obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
-
-const toInt = (value: string | string[]): number | undefined => {
-  let numStr;
-  if (Array.isArray(value)) {
-    // eslint-disable-next-line prefer-destructuring
-    numStr = value[0];
-  } else {
-    numStr = value;
-  }
-  const num = Number(numStr);
-  const intNum = parseInt(numStr, 10);
-  if (num !== intNum || !Number.isFinite(intNum)) {
-    return undefined;
-  }
-  return intNum;
-};
 
 (async () => {
   await createStorageFolders();
