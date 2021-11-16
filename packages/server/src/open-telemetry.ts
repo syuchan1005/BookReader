@@ -17,7 +17,13 @@ type Context = unknown;
 const tracer = opentelemetry.trace.getTracer(serviceName);
 const getSpan = (context: Context): Span | undefined => context?.[OTEL_GRAPHQL_DATA_SYMBOL]?.span;
 
-export const startSpan = (parentSpan: Span, spanName: Lowercase<string>): Span => {
+export const startSpan = (
+  parentSpan: Span | undefined,
+  spanName: Lowercase<string>,
+): Span | undefined => {
+  if (!parentSpan) {
+    return undefined;
+  }
   const ctx = opentelemetry.trace.setSpan(opentelemetry.context.active(), parentSpan);
   return tracer.startSpan(spanName, undefined, ctx);
 };

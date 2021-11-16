@@ -23,6 +23,7 @@ import { purgeImageCache } from '@server/ImageUtil';
 import { createTemporaryFolderPath } from '@server/StorageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
+import { startSpanFromContext } from '@server/open-telemetry';
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -67,14 +68,18 @@ class Book extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       addBooks: async (
-        parent, {
+        parent,
+        {
           id: infoId,
           books,
         },
+        context,
       ) => asyncMap(books, async (book) => {
         const bookId = generateId();
         const bookInfo = await BookDataManager.getBookInfo(infoId);
+        const span = startSpanFromContext(context, 'addBooks');
         if (!bookInfo) {
+          span?.end();
           return {
             success: false,
             code: 'QL0001',
@@ -82,8 +87,9 @@ class Book extends GQLMiddleware {
           };
         }
 
-        const archiveFile = await GQLUtil.saveArchiveFile(book.file, book.path);
+        const archiveFile = await GQLUtil.saveArchiveFile(book.file, book.path, span);
         if (archiveFile.success !== true) {
+          span?.end();
           return archiveFile;
         }
 
@@ -99,7 +105,12 @@ class Book extends GQLMiddleware {
           id: infoId,
           addBooks: `Extract Book (${book.number}) ${percent}%`,
         });
-        await GQLUtil.extractCompressFile(tempPath, archiveFile.archiveFilePath, progressListener)
+        await GQLUtil.extractCompressFile(
+          tempPath,
+          archiveFile.archiveFilePath,
+          progressListener,
+          span,
+        )
           .catch((err) => {
             fsRmSync(archiveFile.archiveFilePath, { force: true });
             fsRmSync(tempPath, {
@@ -112,7 +123,8 @@ class Book extends GQLMiddleware {
           id: infoId,
           addBooks: `Move Book (${book.number}) ...`,
         });
-        return GQLUtil.addBookFromLocalPath(
+
+        const result = await GQLUtil.addBookFromLocalPath(
           tempPath,
           infoId,
           bookId,
@@ -127,16 +139,25 @@ class Book extends GQLMiddleware {
             recursive: true,
             force: true,
           }),
+          span,
         )
           .finally(() => fs.rm(archiveFile.archiveFilePath, { force: true }));
+        span?.end();
+        return result;
       }),
-      addCompressBook: async (parent, {
-        id: infoId,
-        file: compressBooks,
-        path: localPath,
-      }) => {
-        const archiveFile = await GQLUtil.saveArchiveFile(compressBooks, localPath);
+      addCompressBook: async (
+        parent,
+        {
+          id: infoId,
+          file: compressBooks,
+          path: localPath,
+        },
+        context,
+      ) => {
+        const span = startSpanFromContext(context, 'addCompressBook');
+        const archiveFile = await GQLUtil.saveArchiveFile(compressBooks, localPath, span);
         if (archiveFile.success === false) {
+          span?.end();
           return archiveFile as unknown as ResultWithBookResults;
         }
 
@@ -154,6 +175,7 @@ class Book extends GQLMiddleware {
               id: infoId,
               addBooks: `Extract Book ${percent}%`,
             }),
+            span,
           );
         } catch (err) {
           await fs.rm(archiveFile.archiveFilePath, { force: true });
@@ -161,6 +183,7 @@ class Book extends GQLMiddleware {
             recursive: true,
             force: true,
           });
+          span?.end();
           return Promise.reject(err);
         }
 
@@ -169,6 +192,7 @@ class Book extends GQLMiddleware {
           bookFolders,
         } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {
+          span?.end();
           return {
             success: false,
             code: 'QL0006',
@@ -217,8 +241,10 @@ class Book extends GQLMiddleware {
               recursive: true,
               force: true,
             }),
+            span,
           )
             .catch((e) => {
+              span?.end();
               throw e;
             });
         });
@@ -227,6 +253,7 @@ class Book extends GQLMiddleware {
           force: true,
         });
         await fs.rm(archiveFile.archiveFilePath, { force: true });
+        span?.end();
         return {
           success: true,
           bookResults: results,

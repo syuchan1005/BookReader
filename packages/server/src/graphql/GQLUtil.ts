@@ -16,6 +16,7 @@ import {
   createDownloadFilePath, renameFile, userDownloadFolderName,
 } from '@server/StorageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
+import { Span, startSpan } from '@server/open-telemetry';
 import { convertAndSaveJpg } from '../ImageUtil';
 
 const GQLUtil = {
@@ -26,12 +27,15 @@ const GQLUtil = {
     number: string,
     onProgress: (current: number, total: number) => void,
     deleteTempFolder?: () => Promise<void>,
+    parentSpan?: Span,
   ): Promise<Result> {
+    const span = startSpan(parentSpan, 'addBookFromLocalPath');
     let files = await readdirRecursively(tempPath)
       .then((fileList) => fileList.filter(
         (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
       ));
     if (files.length <= 0) {
+      span?.end();
       if (deleteTempFolder) await deleteTempFolder;
       return {
         success: false,
@@ -42,6 +46,8 @@ const GQLUtil = {
     files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
+    let renamedFiles = 0;
+    let convertedFiles = 0;
     await asyncForEach(files, async (f, i) => {
       const fileName = `${i.toString()
         .padStart(pad, '0')}.jpg`;
@@ -49,12 +55,20 @@ const GQLUtil = {
 
       onProgress(i + 1, files.length);
       if (/\.jpe?g$/i.test(f)) {
+        renamedFiles += 1;
         await renameFile(f, dist);
       } else {
+        convertedFiles += 1;
         await convertAndSaveJpg(f, dist);
       }
     })
-      .catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
+      .catch(async (reason) => {
+        span?.end();
+        return (deleteTempFolder ? deleteTempFolder() : reason);
+      });
+    span?.setAttribute('files.count', files.length);
+    span?.setAttribute('files.renamed', renamedFiles);
+    span?.setAttribute('files.converted', convertedFiles);
     if (deleteTempFolder) await deleteTempFolder();
 
     await BookDataManager.addBook({
@@ -64,6 +78,7 @@ const GQLUtil = {
       pageCount: files.length,
       infoId,
     });
+    span?.end();
     return {
       success: true,
     };
@@ -72,7 +87,9 @@ const GQLUtil = {
     tempPath: string,
     archiveFilePath: string,
     onProgress: (percent: number) => void,
+    parentSpan?: Span,
   ): Promise<void> {
+    const span = startSpan(parentSpan, 'extractCompressFile');
     return new Promise((resolve, reject) => {
       const extractStream = extractFull(archiveFilePath, tempPath, {
         recursive: true,
@@ -81,12 +98,25 @@ const GQLUtil = {
       extractStream.on('progress', (event) => {
         onProgress(event.percent);
       });
-      extractStream.on('error', reject);
-      extractStream.on('end', resolve);
+      extractStream.on('error', (...args) => {
+        span?.end();
+        // eslint-disable-next-line prefer-promise-reject-errors
+        reject(...args);
+      });
+      extractStream.on('end', (...args) => {
+        span?.end();
+        resolve(...args);
+      });
     });
   },
-  async saveArchiveFile(file?: Scalars['Upload'], localPath?: string): Promise<({ success: false } & Result) | { success: true, archiveFilePath: string }> {
+  async saveArchiveFile(
+    file?: Scalars['Upload'],
+    localPath?: string,
+    parentSpan?: Span,
+  ): Promise<({ success: false } & Result) | { success: true, archiveFilePath: string }> {
+    const span = startSpan(parentSpan, 'saveArchiveFile');
     if (!file && !localPath) {
+      span?.end();
       return {
         success: false,
         code: 'QL0012',
@@ -96,11 +126,13 @@ const GQLUtil = {
 
     let archiveFilePath: string;
     if (localPath) {
+      span?.setAttribute('type', 'local');
       const downloadPath = userDownloadFolderName;
       const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
       const hasPathTraversal = path.relative(downloadPath, normalizeLocalPath)
         .startsWith('../');
       if (hasPathTraversal) {
+        span?.end();
         return {
           success: false,
           code: 'QL0012',
@@ -109,11 +141,13 @@ const GQLUtil = {
       }
       archiveFilePath = path.resolve(normalizeLocalPath);
     } else if (file) {
+      span?.setAttribute('type', 'download');
       const awaitFile = await file;
       archiveFilePath = createDownloadFilePath(generateId());
       try {
         await fs.writeFile(archiveFilePath, awaitFile.createReadStream());
       } catch (e) {
+        span?.end();
         return {
           success: false,
           code: 'QL0006',
@@ -121,6 +155,11 @@ const GQLUtil = {
         };
       }
     }
+    if (span) {
+      const stat = await fs.stat(archiveFilePath).catch(() => undefined);
+      span?.setAttribute('bytes', stat?.size);
+    }
+    span?.end();
 
     return {
       success: true,
