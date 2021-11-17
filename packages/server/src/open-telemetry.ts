@@ -1,7 +1,7 @@
-import { NodeTracerProvider } from '@opentelemetry/node';
-import { BatchSpanProcessor } from '@opentelemetry/tracing';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { Resource } from '@opentelemetry/resources';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { KoaInstrumentation } from '@opentelemetry/instrumentation-koa';
 import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
@@ -40,14 +40,6 @@ export const startSpanFromContext = (
 
 const zipkinEndpoint = process.env.ZIPKIN_ENDPOINT;
 if (zipkinEndpoint) {
-  registerInstrumentations({
-    instrumentations: [
-      new HttpInstrumentation(),
-      new KoaInstrumentation(),
-      new GraphQLInstrumentation(),
-    ],
-  });
-
   const provider = new NodeTracerProvider({
     resource: Resource.default()
       .merge(new Resource({
@@ -58,10 +50,21 @@ if (zipkinEndpoint) {
   provider.addSpanProcessor(
     new BatchSpanProcessor(
       new ZipkinExporter({
+        serviceName,
         url: zipkinEndpoint,
       }),
     ),
   );
+
+  registerInstrumentations({
+    instrumentations: [
+      new KoaInstrumentation(),
+      // graphql-upload does not working with HttpInstrumentation
+      // new HttpInstrumentation(),
+      new GraphQLInstrumentation(),
+    ],
+    tracerProvider: provider,
+  });
 
   provider.register();
 }
