@@ -78,9 +78,10 @@ export default class GraphQL {
   }
 
   async middleware(app) {
-    app.use(graphqlUploadKoa());
     await this.apolloServer.start();
-    this.apolloServer.applyMiddleware({ app });
+    app
+      .use(graphqlUploadKoa())
+      .use(this.apolloServer.getMiddleware());
   }
 
   useSubscription(httpServer) {
