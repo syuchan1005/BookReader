@@ -1,4 +1,4 @@
-FROM node:16.7.0-alpine as build
+FROM node:17.1.0-alpine as build
 
 ENV NODE_ENV="production"
 
@@ -9,10 +9,9 @@ COPY packages/client/package*.json packages/client/
 COPY packages/common/package*.json packages/common/
 COPY packages/graphql/package*.json packages/graphql/
 COPY packages/server/package*.json packages/server/
-RUN npm ci --include=dev
-
 COPY packages/server/package*.json /bookReader/
-RUN cd /bookReader && npm install
+RUN npm ci --include=dev && \
+    cd /bookReader && npm install
 
 COPY . .
 RUN npm run build
@@ -24,7 +23,7 @@ RUN cp -r packages/client/dist /bookReader/public \
     && mkdir /bookReader/src \
     && mv packages/server/src/FeatureFlag.js /bookReader/src/
 
-FROM node:16.7.0-alpine
+FROM node:17.1.0-alpine
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
