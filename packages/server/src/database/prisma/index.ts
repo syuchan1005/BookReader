@@ -104,6 +104,12 @@ export class PrismaBookDataManager implements IBookDataManager {
           ...book,
         },
       });
+      await transactionalPrismaClient.bookInfo.updateMany({
+        where: { id: infoId },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
       try {
         await transactionalPrismaClient.book.update({
           where: { id: bookId },
