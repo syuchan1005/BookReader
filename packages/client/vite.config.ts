@@ -38,6 +38,26 @@ export default defineConfig({
   },
   build: {
     brotliSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-router-dom', 'react-dom'],
+          apollo: [
+            'graphql',
+            '@apollo/client',
+            'apollo-upload-client',
+            'apollo3-cache-persist',
+            'subscriptions-transport-ws',
+          ],
+          mui: [
+            '@emotion/react',
+            '@emotion/styled',
+            '@mui/material',
+            '@mui/styles',
+          ],
+        },
+      },
+    },
   },
   plugins: [
     react(),
