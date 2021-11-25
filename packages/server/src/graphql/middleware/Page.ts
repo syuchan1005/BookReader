@@ -19,7 +19,6 @@ import {
   purgeImageCache,
   getImageSize,
 } from '../../ImageUtil';
-import { Span, startSpan, startSpanFromContext } from '@server/open-telemetry';
 
 const hasPageCountEffectMap = {
   [EditType.Crop]: false,
@@ -82,14 +81,9 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
 const calculateEditActions = (
   actions: StrictEditAction[],
   initImageEditActions: ImageEditAction[],
-  parentSpan?: Span,
 ): ImageEditAction[] => {
-  const baseSpan = startSpan(parentSpan, 'calculateEditActions');
   let imageEditActions = [...initImageEditActions];
-  actions.forEach((action, index) => {
-    const span = startSpan(baseSpan, 'action');
-    span?.setAttribute('index', index);
-    span?.setAttribute('type', action.editType);
+  actions.forEach((action) => {
     switch (action.editType) {
       case EditType.Crop: {
         const pageRange = flatRange(action.crop.pageRange);
@@ -179,14 +173,10 @@ const calculateEditActions = (
         imageEditActions[action.replace.pageIndex].cropTransforms = undefined;
         break;
       default:
-        span?.end();
-        baseSpan?.end();
         // @ts-ignore
         throw new Error(`Unknown EditType ${action.editType}`);
     }
-    span?.end();
   });
-  baseSpan?.end();
   return imageEditActions;
 };
 
@@ -216,16 +206,11 @@ const executeEditActions = async (
   editFolderPath: string,
   bookId: string,
   bookPages: number,
-  parentSpan?: Span,
 ): Promise<Result> => {
-  const baseSpan = startSpan(parentSpan, 'executeEditActions');
   const bookFolderPath = createBookFolderPath(bookId);
   const promises = editActions
     .filter(({ willDelete }) => !willDelete)
     .map(async ({ pageIndex, image, cropTransforms }, index, arr): Promise<Result> => {
-      const span = startSpan(baseSpan, 'action');
-      span?.setAttribute('pageIndex', pageIndex);
-      span?.setAttribute('index', index);
       const srcFileName = `${pageIndex.toString(10).padStart(bookPages.toString(10).length, '0')}.jpg`;
       const srcFilePath = `${bookFolderPath}/${srcFileName}`;
       const distFileName = `${index.toString(10).padStart(arr.length.toString(10).length, '0')}.jpg`;
@@ -254,8 +239,6 @@ const executeEditActions = async (
           code: 'QL0013',
           message: Errors.QL0013,
         };
-      } finally {
-        span?.end();
       }
     });
   try {
@@ -263,8 +246,6 @@ const executeEditActions = async (
     return { success: true };
   } catch (e) {
     return e;
-  } finally {
-    baseSpan?.end();
   }
 };
 
@@ -272,22 +253,17 @@ class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Mutation(): MutationResolvers {
     return {
-      bulkEditPage: async (_, { id: bookId, actions }, context): Promise<Result> => {
-        const span = startSpanFromContext(context, 'bulkEditPage');
+      bulkEditPage: async (_, { id: bookId, actions }): Promise<Result> => {
         const book = await BookDataManager.getBook(bookId);
         if (!book) {
-          span?.end();
           return {
             success: false,
             code: 'QL0004',
             message: Errors.QL0004,
           };
         }
-        const validateSpan = startSpan(span, 'validateEditActions');
         const strictEditActions = validateEditActions(actions);
-        validateSpan?.end();
         if (strictEditActions === undefined) {
-          span?.end();
           return {
             success: false,
             code: 'QL0012',
@@ -297,7 +273,6 @@ class Page extends GQLMiddleware {
         const editActions = calculateEditActions(
           strictEditActions,
           [...Array(book.pageCount).keys()].map(createImageEditAction),
-          span,
         ).filter(({ willDelete }) => !willDelete);
 
         return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
@@ -306,7 +281,6 @@ class Page extends GQLMiddleware {
             folderPath,
             bookId,
             book.pageCount,
-            span,
           );
           if (!result.success) {
             return result;
@@ -327,7 +301,7 @@ class Page extends GQLMiddleware {
             pageCount: editActions.length,
           });
           return { success: true };
-        }).finally(() => span?.end());
+        });
       },
     };
   }

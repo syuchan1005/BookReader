@@ -1,5 +1,3 @@
-import './open-telemetry';
-
 import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
