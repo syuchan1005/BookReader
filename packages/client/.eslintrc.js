@@ -23,6 +23,12 @@ module.exports = {
         additionalHooks: 'useRecoilCallback',
       },
     ],
+    'react/function-component-definition': [
+      'error', {
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
+      },
+    ],
   },
   settings: {
     'import/resolver': {
