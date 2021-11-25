@@ -171,7 +171,7 @@ export class Database {
       };
       request.onsuccess = (event) => {
         // @ts-ignore
-        this._db = event.target.result;
+        this._db = request.result;
         this._infoReads = new StoreWrapper<InfoRead>('infoReads', this._db);
         this._bookReads = new StoreWrapper<BookRead>('bookReads', this._db);
         this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', this._db);
