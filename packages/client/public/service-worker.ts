@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { skipWaiting, clientsClaim, setCacheNameDetails } from 'workbox-core';
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
@@ -37,8 +38,8 @@ registerRoute(
 );
 
 const cacheNames = {
-  thumbnail: 'bookReader-thumbnails',
-  image: 'bookReader-images',
+  thumbnail: 'bookReader-thumbnail-v1',
+  image: 'bookReader-image-v1',
 };
 registerRoute(
   ({ request }) => request.destination === 'image' && request.url.includes('nosave'),
@@ -68,6 +69,16 @@ registerRoute(
   }),
 );
 
+const oldCacheNames = [
+  'bookReader-thumbnails',
+  'bookReader-images',
+];
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all(oldCacheNames.map((name) => caches.delete(name)))
+  );
+});
+
 addEventListener('message', (event) => {
   // When no response, client cannot resolve Promise.
   const postMessage = (arg = true) => event.ports[0].postMessage(arg);
@@ -78,6 +89,7 @@ addEventListener('message', (event) => {
 
   const onMessage = async () => {
     switch (event.data.type) {
+      // eslint-disable-next-line default-case-last
       default:
       case 'SKIP_WAITING':
         skipWaiting();
