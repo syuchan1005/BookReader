@@ -42,7 +42,8 @@ const cacheNames = {
   image: 'bookReader-image-v1',
 };
 registerRoute(
-  ({ request }) => request.destination === 'image' && request.url.includes('nosave'),
+  ({ request, url }) => request.destination === 'image'
+    && url.searchParams.has('nosave'),
   new StaleWhileRevalidate({
     cacheName: cacheNames.image,
     plugins: [
@@ -58,7 +59,9 @@ registerRoute(
 );
 
 registerRoute(
-  ({ request }) => request.destination === 'image' && !request.url.includes('nosave'),
+  ({ request, url }) => request.destination === 'image'
+    && !url.searchParams.has('nosave')
+    && url.pathname.startsWith('/book/'),
   new StaleWhileRevalidate({
     cacheName: cacheNames.thumbnail,
     plugins: [
