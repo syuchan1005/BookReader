@@ -6,7 +6,10 @@ import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 
-setCacheNameDetails({ prefix: 'bookReader' });
+setCacheNameDetails({
+  prefix: 'bookReader',
+  suffix: 'v1',
+});
 skipWaiting();
 clientsClaim();
 // @ts-ignore
