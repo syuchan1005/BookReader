@@ -142,6 +142,7 @@ const Home = (props: HomeProps) => {
     fetchMore,
   } = useRelayBookInfosQuery({
     skip: isSkipQuery,
+    fetchPolicy: 'cache-and-network',
     variables: {
       first: lastSeenPositionIndex + defaultLoadBookInfoCount,
       option: {
