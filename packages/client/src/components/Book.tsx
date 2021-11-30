@@ -11,7 +11,7 @@ import {
   MenuItem,
   Theme,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -112,6 +112,7 @@ const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const Book = (props: BookProps) => {
   const classes = useStyles(props);
+  const location = useLocation();
   const ref = React.useRef();
   const {
     infoId,
@@ -262,10 +263,8 @@ const Book = (props: BookProps) => {
           )}
           <Link
             className={classes.link}
-            to={(location) => ({
-              pathname: `/book/${bookId}`,
-              state: { referrer: location.pathname },
-            })}
+            state={{ referrer: location.pathname }}
+            to={`/book/${bookId}`}
           >
             <CardActionArea
               {...longTapEvents}

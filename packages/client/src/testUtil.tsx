@@ -1,19 +1,20 @@
 import React from 'react';
-import { Router } from 'react-router-dom';
-import { createMemoryHistory, MemoryHistory } from 'history';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react';
 
-type Option = {
-  history?: MemoryHistory;
-}
-
 // eslint-disable-next-line import/prefer-default-export
-export const renderWithRouter = (ui: React.ReactElement, option?: Option) => {
+export const renderWithRouter = (ui: React.ReactElement) => {
   const Wrapper = ({
     children,
   }: { children: React.ReactNode }) => (
-    <Router history={option?.history ?? createMemoryHistory()}>{children}</Router>
+    <BrowserRouter>
+      <Routes>
+        <Route path="*">
+          {children}
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
   return { ...render(ui, { wrapper: Wrapper }) };
 };

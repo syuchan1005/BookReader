@@ -12,7 +12,7 @@ import {
   useTheme,
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
 import {
@@ -51,7 +51,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     onClose,
   } = props;
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const [primaryColor, setPrimaryColor] = useRecoilState(primaryColorState);
   const [secondaryColor, setSecondaryColor] = useRecoilState(secondaryColorState);
@@ -89,7 +89,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
       (isApollo ? resetStore() : Promise.resolve()),
       Promise.race([
         (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-        new Promise((r) => setTimeout(r, 1000)), // timeout: 1000ms
+        new Promise((r) => { setTimeout(r, 1000); }), // timeout: 1000ms
       ]),
     ])
       .finally(() => window.location.reload());
@@ -145,7 +145,13 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         <MenuItem onClick={() => setShowBookInfoName((v) => !v)}>
           <span>{`${showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
         </MenuItem>
-        <MenuItem onClick={() => history.push('/setting', { referrer: location.pathname })}>
+        <MenuItem
+          onClick={() => navigate('/setting', {
+            state: {
+              referrer: location.pathname,
+            },
+          })}
+        >
           <ListItemIcon><Icon>settings</Icon></ListItemIcon>
           Settings
         </MenuItem>

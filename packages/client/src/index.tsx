@@ -11,7 +11,9 @@ import db from './Database';
 
 import { workbox } from './registerServiceWorker';
 
-if (process.env.NODE_ENV !== 'production') {
+// Disabled. not work properly when use with react-router-dom v6.
+// eslint-disable-next-line no-constant-condition
+if (process.env.NODE_ENV !== 'production' && false) {
   import('@welldone-software/why-did-you-render')
     .then(({ default: whyDidYouRender }) => whyDidYouRender(React, {
       trackAllPureComponents: true,

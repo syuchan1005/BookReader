@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar, Icon, IconButton, Theme, Toolbar, Typography,
 } from '@mui/material';
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const classes = useStyles(props);
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const {
     backRoute,
@@ -52,11 +52,16 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const clickBack = React.useCallback(() => {
     // @ts-ignore
     if (!location.state?.referrer && backRoute) {
-      history.push(backRoute, { referrer: location.pathname });
+      navigate(
+        backRoute,
+        {
+          state: { referrer: location.pathname },
+        },
+      );
     } else {
-      history.goBack();
+      navigate(-1); // go back
     }
-  }, [history, backRoute, location]);
+  }, [navigate, backRoute, location]);
 
   const elevation = useAppBarScrollElevation();
 

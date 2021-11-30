@@ -8,7 +8,6 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useQueryParam, StringParam } from 'use-query-params';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
 import { useRelayBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -33,6 +32,7 @@ import {
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '@client/Database';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 interface HomeProps {
   children?: React.ReactElement;
@@ -116,7 +116,21 @@ const Home = (props: HomeProps) => {
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
-  const [searchText, setSearchText] = useQueryParam('search', StringParam);
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchText = React.useMemo(() => searchParams.get('search'), [searchParams]);
+  const setSearchText = React.useCallback((text?: string, type: 'push' | 'replace' = 'replace') => {
+    const urlSearchParams = new URLSearchParams(searchParams);
+    if (text) {
+      urlSearchParams.set('search', text);
+    } else {
+      urlSearchParams.delete('search');
+    }
+    setSearchParams(urlSearchParams, {
+      replace: type === 'replace',
+      state: location.state,
+    });
+  }, [searchParams, setSearchParams, location]);
   const debounceSearch = useDebounceValue(searchText, 800);
   const handleSearchText = React.useCallback((text?: string) => {
     if (!text) {

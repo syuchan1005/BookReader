@@ -1,7 +1,9 @@
 import React, {
   useEffect, useMemo, lazy, Suspense, useCallback,
 } from 'react';
-import { Route, Router, Switch } from 'react-router-dom';
+import {
+  Route, Routes, BrowserRouter, Outlet, Link,
+} from 'react-router-dom';
 import {
   CssBaseline,
   ThemeProvider,
@@ -11,9 +13,7 @@ import {
 } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import * as colors from '@mui/material/colors';
-import { createBrowserHistory } from 'history';
 import { useApolloClient } from '@apollo/client';
-import { QueryParamProvider } from 'use-query-params';
 
 import { workbox } from '@client/registerServiceWorker';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -27,6 +27,11 @@ import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 
 const Top = lazy(() => import('@client/pages/Top'));
+const Home = lazy(() => import('@client/pages/top/Home'));
+const BookShelf = lazy(() => import('@client/pages/top/BookShelf'));
+const Favorite = lazy(() => import('@client/pages/top/bookshelf/Favorite'));
+const History = lazy(() => import('@client/pages/top/bookshelf/History'));
+
 const Info = lazy(() => import('@client/pages/Info'));
 const Book = lazy(() => import('@client/pages/Book'));
 const Setting = lazy(() => import('@client/pages/Setting'));
@@ -75,8 +80,6 @@ export const commonTheme = {
     }, {}),
 };
 
-const history = createBrowserHistory();
-
 const App = () => {
   const primaryColor = useRecoilValue(primaryColorState);
   const secondaryColor = useRecoilValue(secondaryColorState);
@@ -98,7 +101,11 @@ const App = () => {
   useEffect(() => {
     // @ts-ignore
     apolloClient.snackbar = (message: string, opt: { variant: 'error' }) => {
-      setAlertData({ message, variant: opt.variant, persist: true });
+      setAlertData({
+        message,
+        variant: opt.variant,
+        persist: true,
+      });
     };
 
     const handleUpdate = (event) => {
@@ -132,21 +139,55 @@ const App = () => {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={provideTheme}>
         <CssBaseline />
-        <Router history={history}>
-          <QueryParamProvider ReactRouterRoute={Route}>
-            <Suspense fallback={<LoadingFullscreen open />}>
-              <Switch>
-                <Route exact path="/" component={Top} />
-                <Route exact path="/bookshelf" component={Top} />
-                <Route exact path="/bookshelf/history" component={Top} />
-                <Route exact path="/info/:id" component={Info} />
-                <Route exact path="/book/:id" component={Book} />
-                <Route exact path="/setting" component={Setting} />
-                <Route component={Error} />
-              </Switch>
-            </Suspense>
-          </QueryParamProvider>
-        </Router>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Top />
+                </Suspense>
+              )}
+            >
+              <Route path="bookshelf">
+                <Route path="history" />
+              </Route>
+            </Route>
+
+            <Route
+              path="info/:id"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Info />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="book/:id"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Book />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="setting"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Setting />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="*"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Error />
+                </Suspense>
+              )}
+            />
+          </Routes>
+        </BrowserRouter>
         <Snackbar
           open={openAlert}
           autoHideDuration={alertData?.persist ? undefined : 6000}
@@ -165,4 +206,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default React.memo(App);

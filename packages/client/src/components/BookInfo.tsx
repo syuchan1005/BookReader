@@ -12,8 +12,8 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { orange, yellow } from '@mui/material/colors';
-import { Link } from 'react-router-dom';
+import { yellow } from '@mui/material/colors';
+import { Link, useLocation } from 'react-router-dom';
 
 import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
 import {
@@ -157,6 +157,7 @@ const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const BookInfo = (props: BookInfoProps) => {
   const classes = useStyles(props);
+  const location = useLocation();
   const ref = useRef();
   const {
     style,
@@ -301,12 +302,8 @@ const BookInfo = (props: BookInfoProps) => {
           )}
           <Link
             className={classes.link}
-            to={
-              (location) => ({
-                pathname: `/info/${infoId}`,
-                state: { referrer: location.pathname },
-              })
-            }
+            state={{ referrer: location.pathname }}
+            to={`/info/${infoId}`}
           >
             <CardActionArea>
               <BookPageImage

@@ -10,10 +10,14 @@ import 'swiper/css';
 import 'swiper/css/virtual';
 import 'swiper/css/keyboard';
 
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import {
+  useNavigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import { useWindowSize } from 'react-use';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { NumberParam, useQueryParam } from 'use-query-params';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { defaultTitle } from '@syuchan1005/book-reader-common';
@@ -221,17 +225,17 @@ const Book = (props: BookProps) => {
   const readOrder = useRecoilValue(readOrderState);
   const showOriginalImage = useRecoilValue(showOriginalImageState);
   const classes = useStyles(props);
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const setAlertData = useSetRecoilState(alertDataState);
-  const { id: bookId } = useParams<{ id: string }>();
+  const { id: bookId } = useParams();
   const setTitle = React.useCallback((title) => {
     document.title = typeof title === 'function' ? title(defaultTitle) : title;
   }, []);
 
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 300);
-  const [queryPage, setQueryPage] = useQueryParam('page', NumberParam);
   const [dbLoading, dbPage, setDbPage] = useDatabasePage(bookId);
   const [isPageSet, setPageSet] = React.useState(false);
   React.useEffect(() => {
@@ -239,7 +243,8 @@ const Book = (props: BookProps) => {
       return;
     }
 
-    if (queryPage !== undefined && queryPage !== page) {
+    const queryPage = parseInt(searchParams.get('page'), 10) || -1;
+    if (queryPage >= 0 && queryPage !== page) {
       setPage(queryPage, 0);
     } else if (page !== dbPage) {
       setPage(dbPage, 0);
@@ -333,7 +338,9 @@ const Book = (props: BookProps) => {
     } else if (isPageSet) {
       setDbPage(page)
         .catch((e) => setAlertData({ message: e, variant: 'error' }));
-      setQueryPage(page, 'replace');
+      const copiedSearchParams = new URLSearchParams(searchParams);
+      copiedSearchParams.set('page', page.toString());
+      setSearchParams(copiedSearchParams, { replace: true, state: location.state });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, setAlertData]);
@@ -409,11 +416,14 @@ const Book = (props: BookProps) => {
       bookId: targetBookId,
     })
       .catch((e1) => setAlertData({ message: e1, variant: 'error' }));
-    history.replace(`/book/${targetBookId}`, {
-      // @ts-ignore
-      referrer: location.state?.referrer || location.pathname,
+    navigate(`/book/${targetBookId}`, {
+      state: {
+        // @ts-ignore
+        referrer: location.state?.referrer || location.pathname,
+      },
+      replace: true,
     });
-  }, [setAlertData, history, location]);
+  }, [setAlertData, navigate, location]);
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {

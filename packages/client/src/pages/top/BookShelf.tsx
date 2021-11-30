@@ -7,7 +7,7 @@ import {
   useTheme,
 } from '@mui/material';
 import useMediaQuery from '@client/hooks/useMediaQuery';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Favorite = React.lazy(() => import('@client/pages/top/bookshelf/Favorite'));
 const History = React.lazy(() => import('@client/pages/top/bookshelf/History'));
@@ -30,7 +30,7 @@ const TabPaths = [
 
 const BookShelf = () => {
   const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -42,8 +42,8 @@ const BookShelf = () => {
   }, []);
 
   React.useEffect(() => {
-    history.replace(TabPaths[tabIndex]);
-  }, [history, tabIndex]);
+    navigate(TabPaths[tabIndex], { replace: true });
+  }, [navigate, tabIndex]);
 
   const T = TabItems[tabIndex];
   return (

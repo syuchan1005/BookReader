@@ -2,7 +2,7 @@ import React, { lazy } from 'react';
 import {
   BottomNavigation, BottomNavigationAction, Icon, Paper,
 } from '@mui/material';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Home = lazy(() => import('@client/pages/top/Home'));
 const BookShelf = lazy(() => import('@client/pages/top/BookShelf'));
@@ -26,7 +26,7 @@ const TabPaths = [
 ];
 
 const Top = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const [tabIndex, setTabIndex] = React.useState(0);
 
@@ -42,7 +42,7 @@ const Top = () => {
       return;
     }
     if (tabPath === '/' || !location.pathname.startsWith(tabPath)) {
-      history.replace(TabPaths[tabIndex]);
+      navigate(TabPaths[tabIndex], { replace: true });
     }
     // eslint-disable-next-line
   }, [history, tabIndex]);
