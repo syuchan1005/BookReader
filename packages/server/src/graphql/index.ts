@@ -1,8 +1,9 @@
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { execute, GraphQLSchema, subscribe } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLUpload, graphqlUploadKoa } from 'graphql-upload';
 import { PubSub } from 'graphql-subscriptions';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 
 import { ApolloServer, gql } from 'apollo-server-koa';
 import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
@@ -85,16 +86,14 @@ export default class GraphQL {
   }
 
   useSubscription(httpServer) {
-    const subscriptionServer = SubscriptionServer.create({
-      schema: this.schema,
-      execute,
-      subscribe,
-    }, {
+    const wsServer = new WebSocketServer({
       server: httpServer,
-      path: this.apolloServer.graphqlPath,
+      path: '/graphql',
     });
+    useServer({ schema: this.schema }, wsServer);
+
     ['SIGINT', 'SIGTERM'].forEach((signal) => {
-      process.on(signal, () => subscriptionServer.close());
+      process.on(signal, () => wsServer.close());
     });
   }
 }

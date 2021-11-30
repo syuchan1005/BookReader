@@ -1,6 +1,5 @@
 import { ApolloClient, split } from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
-import { WebSocketLink } from '@apollo/client/link/ws';
 import {
   getMainDefinition,
   relayStylePagination,
@@ -11,6 +10,7 @@ import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
 import createCustomFetcher from '@client/CustomFetcher';
 
 import { BookInfo } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { WebSocketLink } from '@client/apollo/WebSocketLink';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 const schemaVersion = '1.3.1';
@@ -102,11 +102,7 @@ export const apolloClient = new ApolloClient({
       );
     },
     new WebSocketLink({
-      uri: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
-      options: {
-        lazy: true,
-        reconnect: true,
-      },
+      url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
     }),
     createUploadLink({
       uri: `${window.location.protocol}${uri}`,

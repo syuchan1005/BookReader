@@ -47,7 +47,7 @@ export default defineConfig({
             '@apollo/client',
             'apollo-upload-client',
             'apollo3-cache-persist',
-            'subscriptions-transport-ws',
+            'graphql-ws',
           ],
           mui: [
             '@emotion/react',
