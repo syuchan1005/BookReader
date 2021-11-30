@@ -7,45 +7,31 @@ import {
   useTheme,
 } from '@mui/material';
 import useMediaQuery from '@client/hooks/useMediaQuery';
-import { useNavigate, useLocation } from 'react-router-dom';
-
-const Favorite = React.lazy(() => import('@client/pages/top/bookshelf/Favorite'));
-const History = React.lazy(() => import('@client/pages/top/bookshelf/History'));
+import { useLocation, Outlet, Link } from 'react-router-dom';
 
 const TabItems = [
   {
     title: 'Favorite',
-    component: Favorite,
+    path: '/bookshelf',
   },
   {
     title: 'History',
-    component: History,
+    path: '/bookshelf/history',
   },
-];
-
-const TabPaths = [
-  '/bookshelf',
-  '/bookshelf/history',
 ];
 
 const BookShelf = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
   const location = useLocation();
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [tabIndex, setTabIndex] = React.useState(0);
   React.useEffect(() => {
-    const i = TabPaths.findIndex((p) => location.pathname === p);
+    const i = TabItems.findIndex(({ path }) => location.pathname === path);
     setTabIndex(Math.max(0, i));
     // eslint-disable-next-line
   }, []);
 
-  React.useEffect(() => {
-    navigate(TabPaths[tabIndex], { replace: true });
-  }, [navigate, tabIndex]);
-
-  const T = TabItems[tabIndex];
   return (
     <>
       <AppBar sx={{ color: theme.palette.common.white }}>
@@ -63,12 +49,15 @@ const BookShelf = () => {
               key={tabItem.title}
               value={index}
               label={tabItem.title}
+              component={Link}
+              replace
+              to={tabItem.path}
             />
           ))}
         </Tabs>
       </AppBar>
       <Box component="main" sx={{ py: 7 }}>
-        <T.component />
+        <Outlet />
       </Box>
     </>
   );

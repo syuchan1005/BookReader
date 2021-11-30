@@ -1,9 +1,7 @@
 import React, {
   useEffect, useMemo, lazy, Suspense, useCallback,
 } from 'react';
-import {
-  Route, Routes, BrowserRouter, Outlet, Link,
-} from 'react-router-dom';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import {
   CssBaseline,
   ThemeProvider,
@@ -149,8 +147,38 @@ const App = () => {
                 </Suspense>
               )}
             >
-              <Route path="bookshelf">
-                <Route path="history" />
+              <Route
+                index
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <Home />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="bookshelf"
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <BookShelf />
+                  </Suspense>
+                )}
+              >
+                <Route
+                  index
+                  element={(
+                    <Suspense fallback={<LoadingFullscreen open />}>
+                      <Favorite />
+                    </Suspense>
+                  )}
+                />
+                <Route
+                  path="history"
+                  element={(
+                    <Suspense fallback={<LoadingFullscreen open />}>
+                      <History />
+                    </Suspense>
+                  )}
+                />
               </Route>
             </Route>
 

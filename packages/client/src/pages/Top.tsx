@@ -1,56 +1,38 @@
 import React, { lazy } from 'react';
 import {
-  BottomNavigation, BottomNavigationAction, Icon, Paper,
+  BottomNavigation,
+  BottomNavigationAction,
+  Icon,
+  Paper,
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
-
-const Home = lazy(() => import('@client/pages/top/Home'));
-const BookShelf = lazy(() => import('@client/pages/top/BookShelf'));
+import { useLocation, Outlet, Link } from 'react-router-dom';
 
 const TabItems = [
   {
     title: 'Home',
     icon: 'home',
-    component: Home,
+    path: '/',
   },
   {
     title: 'BookShelf',
     icon: 'bookshelf',
-    component: BookShelf,
+    path: '/bookshelf',
   },
 ];
 
-const TabPaths = [
-  '/',
-  '/bookshelf',
-];
-
 const Top = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const [tabIndex, setTabIndex] = React.useState(0);
 
   React.useEffect(() => {
-    const i = TabPaths.findIndex((p) => p !== '/' && location.pathname.startsWith(p));
+    const i = TabItems.findIndex(({ path }) => path !== '/' && location.pathname.startsWith(path));
     setTabIndex(Math.max(0, i));
     // eslint-disable-next-line
   }, []);
 
-  React.useEffect(() => {
-    const tabPath = TabPaths[tabIndex];
-    if (tabPath === '/' && location.pathname === '/') {
-      return;
-    }
-    if (tabPath === '/' || !location.pathname.startsWith(tabPath)) {
-      navigate(TabPaths[tabIndex], { replace: true });
-    }
-    // eslint-disable-next-line
-  }, [history, tabIndex]);
-
-  const T = TabItems[tabIndex];
   return (
     <>
-      <T.component />
+      <Outlet />
       <Paper
         sx={{
           position: 'fixed',
@@ -72,6 +54,9 @@ const Top = () => {
               value={i}
               label={tab.title}
               icon={<Icon>{tab.icon}</Icon>}
+              component={Link}
+              replace
+              to={tab.path}
             />
           ))}
         </BottomNavigation>
