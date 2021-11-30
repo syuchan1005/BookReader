@@ -6,7 +6,6 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 
 import { ApolloServer, gql } from 'apollo-server-koa';
-import { mergeTypeDefs } from 'graphql-tools-merge-typedefs';
 
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
@@ -57,10 +56,10 @@ export default class GraphQL {
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
     this.schema = makeExecutableSchema({
-      typeDefs: mergeTypeDefs([
+      typeDefs: [
         gql(schemaString),
         ...this.plugins.map((pl) => pl.typeDefs),
-      ]),
+      ],
       resolvers: {
         BigInt,
         IntRange,
