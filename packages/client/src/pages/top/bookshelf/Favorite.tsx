@@ -7,6 +7,7 @@ import useMediaQuery from '@client/hooks/useMediaQuery';
 import db, { BookInfoFavorite } from '@client/Database';
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import BookInfo from '@client/components/BookInfo';
+import { useTitle } from '@client/hooks/useTitle';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   grid: {
@@ -27,6 +28,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const defaultLoadBookInfosCount = 20;
 
 const Favorite = () => {
+  useTitle('BookShelf');
   const classes = useStyles();
   const theme = useTheme();
 

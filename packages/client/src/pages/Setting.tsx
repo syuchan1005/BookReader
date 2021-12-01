@@ -28,6 +28,7 @@ import { useDeleteGenreMutation, useEditGenreMutation, useGenresQuery } from '@s
 
 import { defaultGenres, defaultTitle } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import { useTitle } from '@client/hooks/useTitle';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   setting: {
@@ -37,12 +38,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Setting = (props) => {
+  useTitle('Setting');
   const classes = useStyles(props);
   const theme = useTheme();
-
-  React.useEffect(() => {
-    document.title = defaultTitle;
-  }, []);
 
   const {
     data: genreData,

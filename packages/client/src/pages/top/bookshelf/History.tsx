@@ -10,6 +10,7 @@ import createStyles from '@mui/styles/createStyles';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import Book from '@client/components/Book';
 import useMediaQuery from '@client/hooks/useMediaQuery';
+import { useTitle } from '@client/hooks/useTitle';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   grid: {
@@ -30,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const defaultLoadBooksCount = 20;
 
 const History = () => {
+  useTitle('History');
   const classes = useStyles();
   const theme = useTheme();
 

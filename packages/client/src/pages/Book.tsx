@@ -20,7 +20,6 @@ import { useWindowSize } from 'react-use';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-import { defaultTitle } from '@syuchan1005/book-reader-common';
 
 import db from '@client/Database';
 import { commonTheme } from '@client/App';
@@ -38,6 +37,7 @@ import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
 import useDebounceValue from '@client/hooks/useDebounceValue';
+import { useTitle } from '@client/hooks/useTitle';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 
@@ -230,9 +230,6 @@ const Book = (props: BookProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const setAlertData = useSetRecoilState(alertDataState);
   const { id: bookId } = useParams();
-  const setTitle = React.useCallback((title) => {
-    document.title = typeof title === 'function' ? title(defaultTitle) : title;
-  }, []);
 
   const [page, updatePage] = React.useState(0);
   const debouncePage = useDebounceValue(page, 300);
@@ -271,10 +268,6 @@ const Book = (props: BookProps) => {
     normalizeCount,
     prefixPage,
   } = PageStyle[pageStyleKey];
-
-  React.useEffect(() => {
-    document.title = defaultTitle;
-  }, []);
 
   React.useEffect(() => {
     updatePage(0);
@@ -319,11 +312,7 @@ const Book = (props: BookProps) => {
       setShowAppBar();
     },
   });
-  React.useEffect(() => {
-    if (data) {
-      setTitle((t) => `${data.book.info.name} No.${data.book.number} - ${t}`);
-    }
-  }, [data, setTitle]);
+  useTitle(data ? `${data.book.info.name} No.${data.book.number}` : '');
   const maxPage = React.useMemo(() => (data ? data.book.pages : 0), [data]);
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,

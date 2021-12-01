@@ -24,7 +24,7 @@ import { alertDataState, sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import { EmptyScreen } from '@client/components/EmptyScreen';
-import { defaultTitle } from '../../../common';
+import { useTitle } from '@client/hooks/useTitle';
 
 const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
 
@@ -112,7 +112,7 @@ const Info = (props: InfoProps) => {
   const [sortBookOrder, setSortBookOrder] = useRecoilState(sortBookOrderState);
   const classes = useStyles(props);
   const theme = useTheme();
-  const { id: infoId } = useParams<{ id: string }>();
+  const { id: infoId } = useParams();
 
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
@@ -120,10 +120,6 @@ const Info = (props: InfoProps) => {
   const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] = useLazyDialog(false);
   const [mode, setMode] = React.useState<ScreenModeType>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
-
-  const setTitle = React.useCallback((title) => {
-    document.title = typeof title === 'function' ? title(defaultTitle) : title;
-  }, []);
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
   React.useEffect(() => {
@@ -144,9 +140,7 @@ const Info = (props: InfoProps) => {
   });
 
   const bookName = React.useMemo(() => data?.bookInfo?.name ?? '', [data]);
-  React.useEffect(() => {
-    setTitle((t) => `${bookName} - ${t}`);
-  }, [bookName, setTitle]);
+  useTitle(bookName || undefined);
 
   React.useEffect(() => {
     let unMounted = false;

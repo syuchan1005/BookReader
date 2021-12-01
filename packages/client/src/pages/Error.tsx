@@ -5,7 +5,7 @@ import {
 import makeStyles from '@mui/styles/makeStyles';
 import createStyles from '@mui/styles/createStyles';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { defaultTitle } from '@syuchan1005/book-reader-common';
+import { useTitle } from '@client/hooks/useTitle';
 import useTestId from '../hooks/useTestId';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -33,16 +33,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const Error = (props) => {
+  useTitle('Error');
   const classes = useStyles(props);
   const navigate = useNavigate();
   const location = useLocation();
   const svgTestId = useTestId('svg');
   const textTestId = useTestId('text');
   const buttonTestId = useTestId('button');
-
-  React.useEffect(() => {
-    document.title = defaultTitle;
-  }, []);
 
   return (
     <main className={classes.error}>

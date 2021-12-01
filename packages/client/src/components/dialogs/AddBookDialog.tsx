@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Button,
   ButtonGroup,
@@ -27,7 +27,7 @@ import {
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
-import useStateWithReset from '@client/hooks/useStateWithReset';
+import { useTitle } from '@client/hooks/useTitle';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -108,18 +108,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addType]);
-  const [title, setTitle, resetTitle] = useStateWithReset(document.title);
-  useEffect(() => {
-    document.title = title;
-  }, [title]);
-  useEffect(() => {
-    if (!addBookProgress) {
-      resetTitle();
-    } else {
-      const percent = (addBookProgress.loaded / addBookProgress.total) * 100;
-      setTitle((initValue) => `${initValue} - Uploading ${percent}%`);
-    }
-  }, [addBookProgress, resetTitle, setTitle]);
 
   const {
     data,
@@ -148,8 +136,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     setSubscriptionId(undefined);
     setAddType('file');
     setEditContent({});
-    resetTitle();
-  }, [onClose, onAdded, resetTitle]);
+  }, [onClose, onAdded]);
 
   const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
     gql(`
@@ -218,10 +205,17 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     },
   });
 
-  useEffect(() => {
-    if (!subscriptionData) return;
-    setTitle((initValue) => `${initValue} - ${subscriptionData.addBooks}`);
-  }, [setTitle, subscriptionData]);
+  const title = React.useMemo(() => {
+    if (subscriptionData) {
+      return `${subscriptionData.addBooks}`;
+    }
+    if (addBookProgress) {
+      const percent = (addBookProgress.loaded / addBookProgress.total) * 100;
+      return `Uploading ${percent}%`;
+    }
+    return '';
+  }, [addBookProgress, subscriptionData]);
+  useTitle(title, { restoreOnUnmount: true, inheritTitle: true });
 
   const closeDialog = () => {
     if (!loading) {
@@ -266,61 +260,63 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     setAddBooks(books);
   }, [addBooks]);
 
-  const clickAddButton = React.useCallback(async () => {
-    if (!selectedPlugin) {
-      setSubscriptionId(infoId);
-      let count = 1;
-      while (!subscriptionLoading && count <= 2) {
-        // eslint-disable-next-line no-await-in-loop,no-loop-func
-        await new Promise((r) => setTimeout(r, 100 * count));
-        count += 1;
-      }
-      if (addType === 'file_compressed') {
-        addCompressBook({
-          context: {
-            fetchOptions: {
-              useUpload: !!addBooks[0].file,
-              onProgress: (ev: ProgressEvent) => {
-                setAddBookProgress(ev);
-              },
-              onAbortPossible: (abortFunc) => {
-                setAddBookAbort(() => abortFunc);
-              },
-            },
-          },
-        });
-      } else {
-        addBook({
-          context: {
-            fetchOptions: {
-              useUpload: addBooks.filter((b) => b.file).length >= 1,
-              onProgress: (ev: ProgressEvent) => {
-                setAddBookProgress(ev);
-              },
-              onAbortPossible: (abortFunc) => {
-                setAddBookAbort(() => abortFunc);
-              },
-            },
-          },
-        });
-      }
-    } else {
-      if (selectedPlugin.queries.add.subscription) {
+  const clickAddButton = React.useCallback(
+    async () => {
+      if (!selectedPlugin) {
         setSubscriptionId(infoId);
+        let count = 1;
+        while (!subscriptionLoading && count <= 2) {
+        // eslint-disable-next-line no-await-in-loop,no-loop-func,no-promise-executor-return
+          await new Promise((r) => setTimeout(r, 100 * count));
+          count += 1;
+        }
+        if (addType === 'file_compressed') {
+          addCompressBook({
+            context: {
+              fetchOptions: {
+                useUpload: !!addBooks[0].file,
+                onProgress: (ev: ProgressEvent) => {
+                  setAddBookProgress(ev);
+                },
+                onAbortPossible: (abortFunc) => {
+                  setAddBookAbort(() => abortFunc);
+                },
+              },
+            },
+          });
+        } else {
+          addBook({
+            context: {
+              fetchOptions: {
+                useUpload: addBooks.filter((b) => b.file).length >= 1,
+                onProgress: (ev: ProgressEvent) => {
+                  setAddBookProgress(ev);
+                },
+                onAbortPossible: (abortFunc) => {
+                  setAddBookAbort(() => abortFunc);
+                },
+              },
+            },
+          });
+        }
+      } else {
+        if (selectedPlugin.queries.add.subscription) {
+          setSubscriptionId(infoId);
+        }
+        // noinspection JSIgnoredPromiseFromCall
+        addPlugin({
+          variables: {
+            ...editContent,
+            ...(selectedPlugin.queries.add.args.includes('id') ? {
+              id: infoId,
+            } : {}),
+          },
+        });
       }
-      // noinspection JSIgnoredPromiseFromCall
-      addPlugin({
-        variables: {
-          ...editContent,
-          ...(selectedPlugin.queries.add.args.includes('id') ? {
-            id: infoId,
-          } : {}),
-        },
-      });
-    }
-  },
-  [selectedPlugin, infoId, subscriptionLoading, addType,
-    addCompressBook, addBooks, addBook, addPlugin, editContent]);
+    },
+    [selectedPlugin, infoId, subscriptionLoading, addType,
+      addCompressBook, addBooks, addBook, addPlugin, editContent],
+  );
 
   return (
     <Dialog open={open} onClose={closeDialog}>

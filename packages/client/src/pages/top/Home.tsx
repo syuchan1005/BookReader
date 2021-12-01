@@ -33,6 +33,7 @@ import {
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '@client/Database';
 import { useLocation, useSearchParams } from 'react-router-dom';
+import { useTitle } from '@client/hooks/useTitle';
 
 interface HomeProps {
   children?: React.ReactElement;
@@ -99,6 +100,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const defaultLoadBookInfoCount = 20;
 
 const Home = (props: HomeProps) => {
+  useTitle('');
   const genres = useRecoilValue(genresState);
   const sortOrder = useRecoilValue(sortOrderState);
   const showBookInfoName = useRecoilValue(showBookInfoNameState);
@@ -144,7 +146,6 @@ const Home = (props: HomeProps) => {
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
   React.useEffect(() => {
-    document.title = defaultTitle;
     setSkipQuery(false);
   }, []);
 
