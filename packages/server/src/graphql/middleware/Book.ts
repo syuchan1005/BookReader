@@ -3,6 +3,7 @@ import path from 'path';
 import { generateId } from '@server/database/models/Id';
 import { Book as DBBook } from '@server/database/models/Book';
 import { withFilter } from 'graphql-subscriptions';
+import throttle from 'lodash.throttle';
 
 import {
   Book as GQLBook,
@@ -23,6 +24,8 @@ import { purgeImageCache } from '@server/ImageUtil';
 import { createTemporaryFolderPath } from '@server/StorageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
+
+const throttleMs = 500;
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -103,7 +106,7 @@ class Book extends GQLMiddleware {
         await GQLUtil.extractCompressFile(
           tempPath,
           archiveFile.archiveFilePath,
-          progressListener,
+          throttle(progressListener, throttleMs),
         )
           .catch((err) => {
             fsRmSync(archiveFile.archiveFilePath, { force: true });
@@ -123,12 +126,12 @@ class Book extends GQLMiddleware {
           infoId,
           bookId,
           book.number,
-          async (current, total) => {
-            await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          throttle((current, total) => {
+            this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
               id: infoId,
               addBooks: `Move Book (${book.number}) ${current}/${total}`,
             });
-          },
+          }, throttleMs),
           () => fs.rm(tempPath, {
             recursive: true,
             force: true,
@@ -159,10 +162,13 @@ class Book extends GQLMiddleware {
           await GQLUtil.extractCompressFile(
             tempPath,
             archiveFile.archiveFilePath,
-            (percent) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-              id: infoId,
-              addBooks: `Extract Book ${percent}%`,
-            }),
+            throttle(
+              (percent) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+                id: infoId,
+                addBooks: `Extract Book ${percent}%`,
+              }),
+              throttleMs,
+            ),
           );
         } catch (err) {
           await fs.rm(archiveFile.archiveFilePath, { force: true });
@@ -216,12 +222,15 @@ class Book extends GQLMiddleware {
             infoId,
             generateId(),
             nums,
-            (current, total) => {
-              this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-                id: infoId,
-                addBooks: `Move Book (${nums}) ${current}/${total}`,
-              });
-            },
+            throttle(
+              (current, total) => {
+                this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+                  id: infoId,
+                  addBooks: `Move Book (${nums}) ${current}/${total}`,
+                });
+              },
+              throttleMs,
+            ),
             () => fs.rm(folderPath, {
               recursive: true,
               force: true,
