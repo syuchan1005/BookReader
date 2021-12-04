@@ -16,7 +16,6 @@ import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 
-import { defaultTitle } from '@syuchan1005/book-reader-common';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';

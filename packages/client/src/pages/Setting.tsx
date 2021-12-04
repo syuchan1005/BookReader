@@ -26,7 +26,7 @@ import makeStyles from '@mui/styles/makeStyles';
 
 import { useDeleteGenreMutation, useEditGenreMutation, useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-import { defaultGenres, defaultTitle } from '@syuchan1005/book-reader-common';
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { useTitle } from '@client/hooks/useTitle';
 
