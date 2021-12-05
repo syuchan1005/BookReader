@@ -5,6 +5,7 @@ import { ApolloProvider } from '@apollo/client';
 import { RecoilRoot } from 'recoil';
 
 import apolloClient, { setUpApollo } from '@client/apollo/index';
+import { AsyncAuth0Provider } from '@client/components/AsyncAuth0Provider';
 import App from './App';
 
 import db from './Database';
@@ -32,7 +33,9 @@ if (process.env.NODE_ENV !== 'production' && false) {
     (
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
-          <App />
+          <AsyncAuth0Provider>
+            <App />
+          </AsyncAuth0Provider>
         </ApolloProvider>
       </RecoilRoot>
     ),

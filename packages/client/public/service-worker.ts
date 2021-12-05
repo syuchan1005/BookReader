@@ -8,7 +8,7 @@ import { ExpirationPlugin } from 'workbox-expiration';
 
 setCacheNameDetails({
   prefix: 'bookReader',
-  suffix: 'v1',
+  suffix: 'v2',
 });
 skipWaiting();
 clientsClaim();
