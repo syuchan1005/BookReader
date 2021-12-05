@@ -8,7 +8,7 @@ import apolloClient, { setUpApollo } from '@client/apollo/index';
 import { AsyncAuth0Provider } from '@client/components/AsyncAuth0Provider';
 import App from './App';
 
-import db from './Database';
+import db from './indexedDb/Database';
 
 import { workbox } from './registerServiceWorker';
 

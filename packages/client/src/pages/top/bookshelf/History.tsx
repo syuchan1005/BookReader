@@ -3,7 +3,7 @@ import {
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import React from 'react';
-import db, { BookRead } from '@client/Database';
+import db, { BookRead } from '@client/indexedDb/Database';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';

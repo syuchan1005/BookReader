@@ -30,7 +30,7 @@ import {
   showBookInfoNameState, homeLastSeenBookPosition,
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
-import db from '@client/Database';
+import db from '@client/indexedDb/Database';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useTitle } from '@client/hooks/useTitle';
 

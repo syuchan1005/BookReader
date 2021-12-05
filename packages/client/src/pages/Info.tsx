@@ -12,7 +12,7 @@ import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/ge
 
 import { commonTheme } from '@client/App';
 
-import db from '@client/Database';
+import db from '@client/indexedDb/Database';
 
 import Book from '@client/components/Book';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';

@@ -21,7 +21,7 @@ import {
   useEditBookInfoMutation,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-import db from '@client/Database';
+import db from '@client/indexedDb/Database';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';

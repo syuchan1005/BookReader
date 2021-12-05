@@ -21,7 +21,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
-import db from '@client/Database';
+import db from '@client/indexedDb/Database';
 import { commonTheme } from '@client/App';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import useBooleanState from '@client/hooks/useBooleanState';
