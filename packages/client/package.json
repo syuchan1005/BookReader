@@ -42,6 +42,7 @@
       "graphql": "^15.7.2",
       "graphql-ws": "^5.5.5",
       "jszip": "^3.7.1",
+      "lodash.chunk": "^4.2.0",
       "query-string": "^7.0.1",
       "react": "^17.0.2",
       "react-cropper": "^2.1.8",

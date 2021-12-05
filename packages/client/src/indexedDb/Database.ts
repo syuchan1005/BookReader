@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+import { resolve } from 'path';
+
 const VERSION = 4;
 
 interface InfoRead {
@@ -37,6 +39,10 @@ export class StoreWrapper<T> {
     this.db = db;
   }
 
+  existStore(): boolean {
+    return this.db.objectStoreNames.contains(this.storeName);
+  }
+
   get(keyPathValue: string): Promise<T | undefined> {
     return new Promise<T>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readonly');
@@ -49,8 +55,9 @@ export class StoreWrapper<T> {
 
   getAll<K extends (keyof T & string)>(
     limit: number,
-    sort: { key: K, direction: 'next' | 'prev' },
+    sort?: { key: K, direction: 'next' | 'prev' },
     after?: T[K],
+    indexValue: T[K] | undefined,
   ): Promise<T[]> {
     if (limit <= 0) {
       return Promise.resolve([]);
@@ -59,37 +66,44 @@ export class StoreWrapper<T> {
     return new Promise<T[]>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
-      const request = store.index(sort.key).openCursor(null, sort.direction);
-      const results: T[] = [];
-      request.onsuccess = (event) => {
-        // @ts-ignore
-        const cursor = event.target.result;
-        if (!cursor || results.length >= limit) {
-          resolve(results);
-          return;
-        }
+      if (sort) {
+        const query = indexValue ? IDBKeyRange.only(indexValue) : null;
+        const request = store.index(sort.key).openCursor(query, sort.direction);
+        const results: T[] = [];
+        request.onsuccess = (event) => {
+          // @ts-ignore
+          const cursor = event.target.result;
+          if (!cursor || results.length >= limit) {
+            resolve(results);
+            return;
+          }
 
-        if (after) {
-          if (sort.direction === 'next' && cursor.value[sort.key] > after) {
-            results.push(cursor.value);
-          } else if (sort.direction === 'prev' && cursor.value[sort.key] < after) {
+          if (after) {
+            if (sort.direction === 'next' && cursor.value[sort.key] > after) {
+              results.push(cursor.value);
+            } else if (sort.direction === 'prev' && cursor.value[sort.key] < after) {
+              results.push(cursor.value);
+            }
+          } else {
             results.push(cursor.value);
           }
-        } else {
-          results.push(cursor.value);
-        }
 
-        cursor.continue();
-      };
-      request.onerror = (e) => reject(e);
+          cursor.continue();
+        };
+        request.onerror = (e) => reject(e);
+      } else {
+        const request = store.getAll();
+        tx.oncomplete = () => resolve(request.result);
+        tx.onerror = (e) => reject(e);
+      }
     });
   }
 
-  put(value: T): Promise<IDBValidKey> {
+  put(value: T, options: { replace: boolean } = { replace: true }): Promise<IDBValidKey> {
     return new Promise<IDBValidKey>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readwrite');
       const store = tx.objectStore(this.storeName);
-      const request = store.put(value);
+      const request = options.replace ? store.put(value) : store.add(value);
       tx.oncomplete = () => resolve(request.result);
       tx.onerror = (e) => reject(e);
     });
@@ -105,6 +119,24 @@ export class StoreWrapper<T> {
     });
   }
 
+  deleteByIndex(index: keyof T, value: string): Promise<IDBValidKey> {
+    return new Promise<IDBValidKey>((resolve) => {
+      const tx = this.db.transaction(this.storeName, 'readwrite');
+      const store = tx.objectStore(this.storeName);
+      const storeIndex = store.index(index);
+      const request = storeIndex.openCursor(IDBKeyRange.only(value));
+      request.onsuccess = (event) => {
+        const cursor: IDBCursor = event.target.result;
+        if (!cursor) {
+          resolve();
+          return;
+        }
+        store.delete(cursor.primaryKey);
+        cursor.continue();
+      };
+    });
+  }
+
   bulkDelete(keyPathValues: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readwrite');
@@ -114,6 +146,16 @@ export class StoreWrapper<T> {
         store.delete(keyPathValue);
       });
 
+      tx.onerror = (e) => reject(e);
+      tx.oncomplete = () => resolve();
+    });
+  }
+
+  clear(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(this.storeName, 'readwrite');
+      const store = tx.objectStore(this.storeName);
+      store.clear();
       tx.onerror = (e) => reject(e);
       tx.oncomplete = () => resolve();
     });
@@ -157,10 +199,12 @@ export class Database {
     this.dbName = dbName;
   }
 
+  /* deprecated */
   get infoReads() {
     return this._infoReads;
   }
 
+  /* deprecated */
   get bookReads() {
     return this._bookReads;
   }

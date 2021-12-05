@@ -13,6 +13,12 @@ import { createTheme } from '@mui/material/styles';
 import * as colors from '@mui/material/colors';
 import { useApolloClient } from '@apollo/client';
 
+import {
+  MigrationBooksDocument,
+  MigrationBooksQuery,
+  MigrationBooksQueryVariables,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+
 import { workbox } from '@client/registerServiceWorker';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
@@ -23,6 +29,7 @@ import {
 } from '@client/store/atoms';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
+import { startMigration } from '@client/indexedDb/Migration_3_4';
 
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
@@ -133,33 +140,54 @@ const App = () => {
     [isSystemDarkTheme, primaryColor, secondaryColor],
   );
 
+  const [isMigrated, setMigrated] = React.useState(false);
+  React.useEffect(() => {
+    const getter = async (bookIds: string[]) => {
+      if (bookIds.length === 0) {
+        return [];
+      }
+      const { data } = await apolloClient.query<MigrationBooksQuery, MigrationBooksQueryVariables>({
+        query: MigrationBooksDocument,
+        fetchPolicy: 'network-only',
+        variables: {
+          bookIds,
+        },
+      });
+      return data.books
+        .filter((b) => !!b)
+        .map((book) => ({
+          bookId: book.bookId,
+          updatedAt: new Date(parseInt(book.updatedAt, 10)),
+          infoId: book.info.id,
+        }));
+    };
+    // eslint-disable-next-line no-restricted-globals
+    const query = new URLSearchParams(location.search);
+    if (query.has('dryrun')) {
+      const count = parseInt(query.get('dryrun'), 10);
+      startMigration(getter, true, count || 100, console.log)
+        .catch(() => { /* ignored */ })
+        .finally(() => {
+          setMigrated(true);
+        });
+    } else {
+      setMigrated(true);
+    }
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={provideTheme}>
         <CssBaseline />
         <BrowserRouter>
-          <Routes>
-            <Route
-              path="/"
-              element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
-                  <Top />
-                </Suspense>
-              )}
-            >
+          {(isMigrated) && (
+            <Routes>
               <Route
-                index
+                path="/"
                 element={(
                   <Suspense fallback={<LoadingFullscreen open />}>
-                    <Home />
-                  </Suspense>
-                )}
-              />
-              <Route
-                path="bookshelf"
-                element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
-                    <BookShelf />
+                    <Top />
                   </Suspense>
                 )}
               >
@@ -167,54 +195,71 @@ const App = () => {
                   index
                   element={(
                     <Suspense fallback={<LoadingFullscreen open />}>
-                      <Favorite />
+                      <Home />
                     </Suspense>
                   )}
                 />
                 <Route
-                  path="history"
+                  path="bookshelf"
                   element={(
                     <Suspense fallback={<LoadingFullscreen open />}>
-                      <History />
+                      <BookShelf />
                     </Suspense>
                   )}
-                />
+                >
+                  <Route
+                    index
+                    element={(
+                      <Suspense fallback={<LoadingFullscreen open />}>
+                        <Favorite />
+                      </Suspense>
+                    )}
+                  />
+                  <Route
+                    path="history"
+                    element={(
+                      <Suspense fallback={<LoadingFullscreen open />}>
+                        <History />
+                      </Suspense>
+                    )}
+                  />
+                </Route>
               </Route>
-            </Route>
 
-            <Route
-              path="info/:id"
-              element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
-                  <Info />
-                </Suspense>
-              )}
-            />
-            <Route
-              path="book/:id"
-              element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
-                  <Book />
-                </Suspense>
-              )}
-            />
-            <Route
-              path="setting"
-              element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
-                  <Setting />
-                </Suspense>
-              )}
-            />
-            <Route
-              path="*"
-              element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
-                  <Error />
-                </Suspense>
-              )}
-            />
-          </Routes>
+              <Route
+                path="info/:id"
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <Info />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="book/:id"
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <Book />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="setting"
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <Setting />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="*"
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <Error />
+                  </Suspense>
+                )}
+              />
+            </Routes>
+          )}
         </BrowserRouter>
         <Snackbar
           open={openAlert}

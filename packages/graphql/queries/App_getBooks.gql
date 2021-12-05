@@ -1,0 +1,9 @@
+query migrationBooks($bookIds: [ID!]!) {
+    books(ids: $bookIds) {
+        bookId: id
+        updatedAt
+        info {
+            id
+        }
+    }
+}

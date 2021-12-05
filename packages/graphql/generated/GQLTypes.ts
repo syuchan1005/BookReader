@@ -414,6 +414,13 @@ export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never;
 
 export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
 
+export type MigrationBooksQueryVariables = Exact<{
+  bookIds: Array<Scalars['ID']> | Scalars['ID'];
+}>;
+
+
+export type MigrationBooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', updatedAt: string, bookId: string, info?: { __typename?: 'BookInfo', id: string } | null | undefined } | null | undefined> };
+
 export type Auth0QueryVariables = Exact<{ [key: string]: never; }>;
 
 
