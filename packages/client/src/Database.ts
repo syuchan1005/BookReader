@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const VERSION = 3;
+const VERSION = 4;
 
 interface InfoRead {
   infoId: string;
@@ -12,6 +12,14 @@ export interface BookRead {
   page: number;
 
   updatedAt?: Date;
+}
+
+interface Read {
+  infoId: string; /* index */
+  bookId: string; /* keyPath */
+  page: number;
+
+  updatedAt: Date; /* index */
 }
 
 export interface BookInfoFavorite {
@@ -58,7 +66,7 @@ export class StoreWrapper<T> {
         const cursor = event.target.result;
         if (!cursor || results.length >= limit) {
           resolve(results);
-          return
+          return;
         }
 
         if (after) {
@@ -127,6 +135,12 @@ const UpgradeTask = [
     const bookInfoFavoriteStore = db.createObjectStore('bookInfoFavorite', { keyPath: 'infoId' });
     bookInfoFavoriteStore.createIndex('createdAt', 'createdAt');
   },
+  (db: IDBDatabase) => {
+    const readStore = db.createObjectStore('read', { keyPath: 'bookId' });
+    readStore.createIndex('infoId', 'infoId');
+    readStore.createIndex('updatedAt', 'updatedAt');
+    /* Remove bookReads and infoReads if migrated */
+  },
 ];
 
 export class Database {
@@ -137,6 +151,7 @@ export class Database {
   private _infoReads: StoreWrapper<InfoRead>;
   private _bookReads: StoreWrapper<BookRead>;
   private _bookInfoFavorite: StoreWrapper<BookInfoFavorite>;
+  private _read: StoreWrapper<Read>;
 
   constructor(dbName = 'BookReader--DB') {
     this.dbName = dbName;
@@ -154,6 +169,10 @@ export class Database {
     return this._bookInfoFavorite;
   }
 
+  get read() {
+    return this._read;
+  }
+
   connect(): Promise<IDBDatabase> {
     if (this._db) {
       return Promise.resolve(this._db);
@@ -169,12 +188,13 @@ export class Database {
       request.onerror = (event) => {
         reject(event);
       };
-      request.onsuccess = (event) => {
+      request.onsuccess = () => {
         // @ts-ignore
         this._db = request.result;
         this._infoReads = new StoreWrapper<InfoRead>('infoReads', this._db);
         this._bookReads = new StoreWrapper<BookRead>('bookReads', this._db);
         this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', this._db);
+        this._read = new StoreWrapper<Read>('read', this._db);
 
         resolve(this._db);
       };
