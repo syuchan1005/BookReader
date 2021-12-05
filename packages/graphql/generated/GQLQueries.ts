@@ -2,6 +2,7 @@
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
 export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
@@ -19,6 +20,12 @@ export type Scalars = {
   BigInt: BigInt;
   IntRange: IntRange;
   Upload: Upload;
+};
+
+export type Auth0 = {
+  __typename?: 'Auth0';
+  clientId: Scalars['String'];
+  domain: Scalars['String'];
 };
 
 export type Book = {
@@ -44,7 +51,7 @@ export type BookInfo = {
 
 
 export type BookInfoBooksArgs = {
-  order?: Maybe<BookOrder>;
+  order?: InputMaybe<BookOrder>;
 };
 
 export type BookInfoEdge = {
@@ -91,9 +98,9 @@ export type BookInfoThumbnail = {
 };
 
 export type BookInfosOption = {
-  genres?: Maybe<Array<Scalars['String']>>;
-  order?: Maybe<BookInfoOrder>;
-  search?: Maybe<Scalars['String']>;
+  genres?: InputMaybe<Array<Scalars['String']>>;
+  order?: InputMaybe<BookInfoOrder>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 export const BookOrder = {
@@ -112,11 +119,11 @@ export type CommonPluginQuery = {
 };
 
 export type CropEditAction = {
-  bottom?: Maybe<Scalars['Int']>;
-  left?: Maybe<Scalars['Int']>;
+  bottom?: InputMaybe<Scalars['Int']>;
+  left?: InputMaybe<Scalars['Int']>;
   pageRange: Scalars['IntRange'];
-  right?: Maybe<Scalars['Int']>;
-  top?: Maybe<Scalars['Int']>;
+  right?: InputMaybe<Scalars['Int']>;
+  top?: InputMaybe<Scalars['Int']>;
 };
 
 export type Debug_FolderSizes = {
@@ -134,12 +141,12 @@ export type DeleteEditAction = {
 };
 
 export type EditAction = {
-  crop?: Maybe<CropEditAction>;
-  delete?: Maybe<DeleteEditAction>;
+  crop?: InputMaybe<CropEditAction>;
+  delete?: InputMaybe<DeleteEditAction>;
   editType: EditType;
-  put?: Maybe<UploadEditAction>;
-  replace?: Maybe<UploadEditAction>;
-  split?: Maybe<SplitEditAction>;
+  put?: InputMaybe<UploadEditAction>;
+  replace?: InputMaybe<UploadEditAction>;
+  split?: InputMaybe<SplitEditAction>;
 };
 
 export const EditType = {
@@ -158,9 +165,9 @@ export type Genre = {
 };
 
 export type InputBook = {
-  file?: Maybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['Upload']>;
   number: Scalars['String'];
-  path?: Maybe<Scalars['String']>;
+  path?: InputMaybe<Scalars['String']>;
 };
 
 export type Mutation = {
@@ -181,7 +188,7 @@ export type Mutation = {
 
 
 export type MutationAddBookInfoArgs = {
-  genres?: Maybe<Array<Scalars['String']>>;
+  genres?: InputMaybe<Array<Scalars['String']>>;
   name: Scalars['String'];
 };
 
@@ -193,9 +200,9 @@ export type MutationAddBooksArgs = {
 
 
 export type MutationAddCompressBookArgs = {
-  file?: Maybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['Upload']>;
   id: Scalars['ID'];
-  path?: Maybe<Scalars['String']>;
+  path?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -223,22 +230,22 @@ export type MutationDeleteGenreArgs = {
 
 export type MutationEditBookArgs = {
   id: Scalars['ID'];
-  number?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['Int']>;
+  number?: InputMaybe<Scalars['String']>;
+  thumbnail?: InputMaybe<Scalars['Int']>;
 };
 
 
 export type MutationEditBookInfoArgs = {
-  genres?: Maybe<Array<Scalars['String']>>;
+  genres?: InputMaybe<Array<Scalars['String']>>;
   id: Scalars['ID'];
-  name?: Maybe<Scalars['String']>;
-  thumbnail?: Maybe<Scalars['ID']>;
+  name?: InputMaybe<Scalars['String']>;
+  thumbnail?: InputMaybe<Scalars['ID']>;
 };
 
 
 export type MutationEditGenreArgs = {
-  invisible?: Maybe<Scalars['Boolean']>;
-  newName?: Maybe<Scalars['String']>;
+  invisible?: InputMaybe<Scalars['Boolean']>;
+  newName?: InputMaybe<Scalars['String']>;
   oldName: Scalars['String'];
 };
 
@@ -275,6 +282,7 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
+  auth0?: Maybe<Auth0>;
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
@@ -307,11 +315,11 @@ export type QueryBooksArgs = {
 
 
 export type QueryRelayBookInfosArgs = {
-  after?: Maybe<Scalars['String']>;
-  before?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  last?: Maybe<Scalars['Int']>;
-  option?: Maybe<BookInfosOption>;
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  last?: InputMaybe<Scalars['Int']>;
+  option?: InputMaybe<BookInfosOption>;
 };
 
 export type Result = {
@@ -339,7 +347,7 @@ export type ResultWithInfoId = {
 
 export type SplitEditAction = {
   pageRange: Scalars['IntRange'];
-  splitCount?: Maybe<Scalars['Int']>;
+  splitCount?: InputMaybe<Scalars['Int']>;
   splitType: SplitType;
 };
 
@@ -381,8 +389,8 @@ export type AddBooksProgressSubscription = { __typename?: 'Subscription', addBoo
 
 export type AddCompressBookMutationVariables = Exact<{
   id: Scalars['ID'];
-  file?: Maybe<Scalars['Upload']>;
-  path?: Maybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
+  path?: InputMaybe<Scalars['String']>;
 }>;
 
 
@@ -411,6 +419,11 @@ export type FolderSizesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type FolderSizesQuery = { __typename?: 'Query', sizes: { __typename?: 'Debug_FolderSizes', tmp: BigInt, cache: BigInt, book: BigInt, unusedBook: BigInt, bookInfoCount: number, bookCount: number } };
 
+export type Auth0QueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type Auth0Query = { __typename?: 'Query', auth0?: { __typename?: 'Auth0', domain: string, clientId: string } | null | undefined };
+
 export type DeleteBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -420,7 +433,7 @@ export type DeleteBookInfoMutation = { __typename?: 'Mutation', del: { __typenam
 
 export type EditBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
-  name?: Maybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
   genres: Array<Scalars['String']> | Scalars['String'];
 }>;
 
@@ -429,7 +442,7 @@ export type EditBookInfoMutation = { __typename?: 'Mutation', edit: { __typename
 
 export type EditBookMutationVariables = Exact<{
   id: Scalars['ID'];
-  number?: Maybe<Scalars['String']>;
+  number?: InputMaybe<Scalars['String']>;
 }>;
 
 
@@ -458,8 +471,8 @@ export type BookQueryVariables = Exact<{
 export type BookQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, number: string, pages: number, info?: { __typename?: 'BookInfo', id: string, name: string } | null | undefined } | null | undefined };
 
 export type RelayBookInfosQueryVariables = Exact<{
-  first?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  after?: InputMaybe<Scalars['String']>;
   option: BookInfosOption;
 }>;
 
@@ -475,8 +488,8 @@ export type DeleteGenreMutation = { __typename?: 'Mutation', deleteGenre: { __ty
 
 export type EditGenreMutationVariables = Exact<{
   oldName: Scalars['String'];
-  newName?: Maybe<Scalars['String']>;
-  invisible?: Maybe<Scalars['Boolean']>;
+  newName?: InputMaybe<Scalars['String']>;
+  invisible?: InputMaybe<Scalars['Boolean']>;
 }>;
 
 
@@ -514,7 +527,7 @@ export type MoveBooksMutation = { __typename?: 'Mutation', moveBooks: { __typena
 
 export type EditBookInfoThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
-  thumbnail?: Maybe<Scalars['ID']>;
+  thumbnail?: InputMaybe<Scalars['ID']>;
 }>;
 
 
@@ -529,7 +542,7 @@ export type BookPagesQuery = { __typename?: 'Query', book?: { __typename?: 'Book
 
 export type EditBookThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
-  th?: Maybe<Scalars['Int']>;
+  th?: InputMaybe<Scalars['Int']>;
 }>;
 
 
@@ -537,7 +550,7 @@ export type EditBookThumbnailMutation = { __typename?: 'Mutation', edit: { __typ
 
 export type BookInfoQueryVariables = Exact<{
   id: Scalars['ID'];
-  order?: Maybe<BookOrder>;
+  order?: InputMaybe<BookOrder>;
 }>;
 
 
@@ -798,6 +811,41 @@ export function useFolderSizesLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type FolderSizesQueryHookResult = ReturnType<typeof useFolderSizesQuery>;
 export type FolderSizesLazyQueryHookResult = ReturnType<typeof useFolderSizesLazyQuery>;
 export type FolderSizesQueryResult = Apollo.QueryResult<FolderSizesQuery, FolderSizesQueryVariables>;
+export const Auth0Document = gql`
+    query auth0 {
+  auth0 {
+    domain
+    clientId
+  }
+}
+    `;
+
+/**
+ * __useAuth0Query__
+ *
+ * To run a query within a React component, call `useAuth0Query` and pass it any options that fit your needs.
+ * When your component renders, `useAuth0Query` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAuth0Query({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAuth0Query(baseOptions?: Apollo.QueryHookOptions<Auth0Query, Auth0QueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<Auth0Query, Auth0QueryVariables>(Auth0Document, options);
+      }
+export function useAuth0LazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Auth0Query, Auth0QueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<Auth0Query, Auth0QueryVariables>(Auth0Document, options);
+        }
+export type Auth0QueryHookResult = ReturnType<typeof useAuth0Query>;
+export type Auth0LazyQueryHookResult = ReturnType<typeof useAuth0LazyQuery>;
+export type Auth0QueryResult = Apollo.QueryResult<Auth0Query, Auth0QueryVariables>;
 export const DeleteBookInfoDocument = gql`
     mutation deleteBookInfo($id: ID!) {
   del: deleteBookInfo(id: $id) {

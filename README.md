@@ -30,6 +30,15 @@ $ docker run \
   syuchan1005/book_reader
 ```
 
+### Environment
+
+| key                 | type     | default |
+|:--------------------|:---------|:--------|
+| `PORT`              | `number` | `8081`  |
+| `BOOKREADER_PLUGIN` | `string` ||
+| `AUTH0_DOMAIN`      | `string` ||
+| `AUTH0_CLIENT_ID`   | `string` ||
+
 ## develop use
 ```shell script
 $ npm install

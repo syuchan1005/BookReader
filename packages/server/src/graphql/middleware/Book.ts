@@ -310,6 +310,7 @@ class Book extends GQLMiddleware {
     // noinspection JSUnusedGlobalSymbols
     return {
       addBooks: {
+        // @ts-ignore
         subscribe: withFilter(
           () => this.pubsub.asyncIterator([SubscriptionKeys.ADD_BOOKS]),
           (payload, variables) => payload.id === variables.id,

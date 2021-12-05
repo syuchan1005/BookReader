@@ -1,0 +1,6 @@
+query auth0 {
+    auth0 {
+        domain
+        clientId
+    }
+}

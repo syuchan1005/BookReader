@@ -25,6 +25,8 @@ type Query {
 
     ## Genre
     genres: [Genre!]!
+
+    auth0: Auth0
 }
 
 type Mutation {
@@ -184,6 +186,11 @@ type CommonPluginQuery {
 type Genre {
     name: ID!
     invisible: Boolean!
+}
+
+type Auth0 {
+    domain: String!
+    clientId: String!
 }
 
 enum EditType {
