@@ -126,14 +126,10 @@ export type CropEditAction = {
   top?: InputMaybe<Scalars['Int']>;
 };
 
-export type Debug_FolderSizes = {
-  __typename?: 'Debug_FolderSizes';
-  book: Scalars['BigInt'];
+export type Debug_BookCounts = {
+  __typename?: 'Debug_BookCounts';
   bookCount: Scalars['Int'];
   bookInfoCount: Scalars['Int'];
-  cache: Scalars['BigInt'];
-  tmp: Scalars['BigInt'];
-  unusedBook: Scalars['BigInt'];
 };
 
 export type DeleteEditAction = {
@@ -287,7 +283,7 @@ export type Query = {
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
   books: Array<Maybe<Book>>;
-  debug_folderSize: Debug_FolderSizes;
+  debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
   plugins: Array<Plugin>;
   relayBookInfos: BookInfoPartialList;
@@ -409,15 +405,15 @@ export type AddBookInfoMutationVariables = Exact<{
 
 export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined } };
 
+export type DebugBookCountsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DebugBookCountsQuery = { __typename?: 'Query', sizes: { __typename?: 'Debug_BookCounts', bookInfoCount: number, bookCount: number } };
+
 export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
-
-export type FolderSizesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type FolderSizesQuery = { __typename?: 'Query', sizes: { __typename?: 'Debug_FolderSizes', tmp: BigInt, cache: BigInt, book: BigInt, unusedBook: BigInt, bookInfoCount: number, bookCount: number } };
 
 export type Auth0QueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -739,6 +735,41 @@ export function useAddBookInfoMutation(baseOptions?: Apollo.MutationHookOptions<
 export type AddBookInfoMutationHookResult = ReturnType<typeof useAddBookInfoMutation>;
 export type AddBookInfoMutationResult = Apollo.MutationResult<AddBookInfoMutation>;
 export type AddBookInfoMutationOptions = Apollo.BaseMutationOptions<AddBookInfoMutation, AddBookInfoMutationVariables>;
+export const DebugBookCountsDocument = gql`
+    query debugBookCounts {
+  sizes: debug_bookCounts {
+    bookInfoCount
+    bookCount
+  }
+}
+    `;
+
+/**
+ * __useDebugBookCountsQuery__
+ *
+ * To run a query within a React component, call `useDebugBookCountsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDebugBookCountsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDebugBookCountsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useDebugBookCountsQuery(baseOptions?: Apollo.QueryHookOptions<DebugBookCountsQuery, DebugBookCountsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DebugBookCountsQuery, DebugBookCountsQueryVariables>(DebugBookCountsDocument, options);
+      }
+export function useDebugBookCountsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DebugBookCountsQuery, DebugBookCountsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DebugBookCountsQuery, DebugBookCountsQueryVariables>(DebugBookCountsDocument, options);
+        }
+export type DebugBookCountsQueryHookResult = ReturnType<typeof useDebugBookCountsQuery>;
+export type DebugBookCountsLazyQueryHookResult = ReturnType<typeof useDebugBookCountsLazyQuery>;
+export type DebugBookCountsQueryResult = Apollo.QueryResult<DebugBookCountsQuery, DebugBookCountsQueryVariables>;
 export const DeleteUnusedFoldersDocument = gql`
     mutation deleteUnusedFolders {
   debug_deleteUnusedFolders {
@@ -772,45 +803,6 @@ export function useDeleteUnusedFoldersMutation(baseOptions?: Apollo.MutationHook
 export type DeleteUnusedFoldersMutationHookResult = ReturnType<typeof useDeleteUnusedFoldersMutation>;
 export type DeleteUnusedFoldersMutationResult = Apollo.MutationResult<DeleteUnusedFoldersMutation>;
 export type DeleteUnusedFoldersMutationOptions = Apollo.BaseMutationOptions<DeleteUnusedFoldersMutation, DeleteUnusedFoldersMutationVariables>;
-export const FolderSizesDocument = gql`
-    query folderSizes {
-  sizes: debug_folderSize {
-    tmp
-    cache
-    book
-    unusedBook
-    bookInfoCount
-    bookCount
-  }
-}
-    `;
-
-/**
- * __useFolderSizesQuery__
- *
- * To run a query within a React component, call `useFolderSizesQuery` and pass it any options that fit your needs.
- * When your component renders, `useFolderSizesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useFolderSizesQuery({
- *   variables: {
- *   },
- * });
- */
-export function useFolderSizesQuery(baseOptions?: Apollo.QueryHookOptions<FolderSizesQuery, FolderSizesQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<FolderSizesQuery, FolderSizesQueryVariables>(FolderSizesDocument, options);
-      }
-export function useFolderSizesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FolderSizesQuery, FolderSizesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<FolderSizesQuery, FolderSizesQueryVariables>(FolderSizesDocument, options);
-        }
-export type FolderSizesQueryHookResult = ReturnType<typeof useFolderSizesQuery>;
-export type FolderSizesLazyQueryHookResult = ReturnType<typeof useFolderSizesLazyQuery>;
-export type FolderSizesQueryResult = Apollo.QueryResult<FolderSizesQuery, FolderSizesQueryVariables>;
 export const Auth0Document = gql`
     query auth0 {
   auth0 {

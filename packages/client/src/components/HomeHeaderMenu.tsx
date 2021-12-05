@@ -18,7 +18,7 @@ import { useRecoilState } from 'recoil';
 import {
   BookInfoOrder,
   useDeleteUnusedFoldersMutation,
-  useFolderSizesLazyQuery,
+  useDebugBookCountsLazyQuery,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { workbox } from '@client/registerServiceWorker';
@@ -36,15 +36,6 @@ interface HeaderMenuProps {
   onClose?: () => void;
 }
 
-const wrapSize = (size: number) => {
-  if (!size || size === -1) return '0 [B]';
-  const sizes = ['', 'K', 'M', 'G', 'T'];
-  let index = sizes.findIndex((v, i) => size / 10 ** (i * 3) < 1) - 1;
-  if (index < 0) index = sizes.length - 1;
-  return `${(size / 10 ** (index * 3)).toString(10)
-    .match(/\d+(\.\d{1,2})?/)[0]} [${sizes[index]}B]`;
-};
-
 const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const {
     anchorEl,
@@ -61,17 +52,17 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
   const [debugAnchorEl, setDebugAnchorEl] = React.useState(null);
-  const [openFolderSize, setOpenFolderSize] = React.useState(false);
+  const [openBookCounts, setOpenBookCounts] = React.useState(false);
   const [openCacheControl, setOpenCacheControl] = React.useState(null);
 
   const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
   const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
 
-  const [getFolderSizes, {
+  const [getBookCounts, {
     refetch,
     loading,
     data,
-  }] = useFolderSizesLazyQuery();
+  }] = useDebugBookCountsLazyQuery();
 
   const [deleteUnusedFolder, { loading: deleteLoading }] = useDeleteUnusedFoldersMutation({
     onCompleted() {
@@ -180,14 +171,14 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           </Collapse>
           <MenuItem
             onClick={() => {
-              if (!openFolderSize) getFolderSizes();
-              setOpenFolderSize(!openFolderSize);
+              if (!openBookCounts) getBookCounts();
+              setOpenBookCounts(!openBookCounts);
             }}
           >
-            Folder sizes
-            <Icon>{`keyboard_arrow_${openFolderSize ? 'up' : 'down'}`}</Icon>
+            Book counts
+            <Icon>{`keyboard_arrow_${openBookCounts ? 'up' : 'down'}`}</Icon>
           </MenuItem>
-          <Collapse in={openFolderSize}>
+          <Collapse in={openBookCounts}>
             {(deleteLoading || loading || !data) ? (
               <MenuItem style={{
                 display: 'flex',
@@ -209,7 +200,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
                         paddingBottom: 0,
                       }}
                     >
-                      <ListItemText primary={k} secondary={k.endsWith('Count') ? v : wrapSize(v)} />
+                      <ListItemText primary={k} secondary={v} />
                     </ListItem>
                   ))}
                 <ListItem>

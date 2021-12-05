@@ -19,7 +19,7 @@ type Query {
     books(ids: [ID!]!): [Book]!
 
     ## Debug
-    debug_folderSize: Debug_FolderSizes!
+    debug_bookCounts: Debug_BookCounts!
 
     plugins: [Plugin!]!
 
@@ -245,11 +245,7 @@ input InputBook {
 
 ## DEBUG
 
-type Debug_FolderSizes {
-    tmp: BigInt!
-    cache: BigInt!
-    book: BigInt!
-    unusedBook: BigInt!
+type Debug_BookCounts {
     bookInfoCount: Int!
     bookCount: Int!
 }

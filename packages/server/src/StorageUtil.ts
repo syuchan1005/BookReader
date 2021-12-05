@@ -2,7 +2,6 @@ import path from 'path';
 import { promises as fs, createReadStream, createWriteStream } from 'fs';
 import { move } from 'fs-extra';
 import os from 'os';
-import du from 'du';
 
 export const storageBasePath = 'storage';
 export const bookFolderPath = path.join(storageBasePath, 'book');
@@ -61,7 +60,10 @@ export const createStorageFolders = async (): Promise<void> => {
   // `${os.tmp}/bookReader/${bookId|infoId}` processing extracted files.
 };
 
-export const withPageEditFolder = async <T>(bookId: string, block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>): Promise<T> => {
+export const withPageEditFolder = async <T>(
+  bookId: string,
+  block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>,
+): Promise<T> => {
   const oldFolderPath = createBookFolderPath(bookId);
   const folderPath = `${oldFolderPath}_new`;
   await fs.mkdir(folderPath, { recursive: true });
@@ -76,12 +78,14 @@ export const withPageEditFolder = async <T>(bookId: string, block: (folderPath: 
   } catch (e) {
     error = e;
   } finally {
-    for (let i = 0; i < 4; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+    for (let i = 0; i < 4; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => { setTimeout(resolve, 1500); });
       try {
+        // eslint-disable-next-line no-await-in-loop
         await fs.rm(folderPath, { recursive: true, force: true });
         break;
-      } catch (ignored) {}
+      } catch (ignored) { /* ignored */ }
     }
   }
   if (error) {
@@ -108,7 +112,3 @@ export const renameFile = async (srcPath: string, destPath: string, fallback = t
     });
   }
 };
-
-export const getTemporaryFolderSize = (): Promise<number> => du(path.join(os.tmpdir(), 'bookReader')).catch(() => -1);
-export const getBookFolderSize = (bookId: string): Promise<number> => du(path.join(bookFolderPath, bookId)).catch(() => -1);
-export const getCacheFolderSize = (): Promise<number> => du(cacheBookFolderName).catch(() => -1);

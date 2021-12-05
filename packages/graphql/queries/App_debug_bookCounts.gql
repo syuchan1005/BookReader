@@ -1,0 +1,6 @@
+query debugBookCounts {
+    sizes: debug_bookCounts {
+        bookInfoCount
+        bookCount
+    }
+}

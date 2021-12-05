@@ -25,7 +25,6 @@
         "apollo-server-koa": "^3.5.0",
         "dataloader": "^2.0.0",
         "debug": "^4.3.3",
-        "du": "^1.0.0",
         "fs-extra": "^10.0.0",
         "graphql": "^15.7.2",
         "graphql-subscriptions": "^2.0.0",

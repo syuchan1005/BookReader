@@ -125,14 +125,10 @@ export type CropEditAction = {
   top?: InputMaybe<Scalars['Int']>;
 };
 
-export type Debug_FolderSizes = {
-  __typename?: 'Debug_FolderSizes';
-  book: Scalars['BigInt'];
+export type Debug_BookCounts = {
+  __typename?: 'Debug_BookCounts';
   bookCount: Scalars['Int'];
   bookInfoCount: Scalars['Int'];
-  cache: Scalars['BigInt'];
-  tmp: Scalars['BigInt'];
-  unusedBook: Scalars['BigInt'];
 };
 
 export type DeleteEditAction = {
@@ -286,7 +282,7 @@ export type Query = {
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
   books: Array<Maybe<Book>>;
-  debug_folderSize: Debug_FolderSizes;
+  debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
   plugins: Array<Plugin>;
   relayBookInfos: BookInfoPartialList;
@@ -408,15 +404,15 @@ export type AddBookInfoMutationVariables = Exact<{
 
 export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined } };
 
+export type DebugBookCountsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DebugBookCountsQuery = { __typename?: 'Query', sizes: { __typename?: 'Debug_BookCounts', bookInfoCount: number, bookCount: number } };
+
 export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
-
-export type FolderSizesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type FolderSizesQuery = { __typename?: 'Query', sizes: { __typename?: 'Debug_FolderSizes', tmp: BigInt, cache: BigInt, book: BigInt, unusedBook: BigInt, bookInfoCount: number, bookCount: number } };
 
 export type Auth0QueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -644,7 +640,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CommonPluginQuery: ResolverTypeWrapper<CommonPluginQuery>;
   CropEditAction: CropEditAction;
-  Debug_FolderSizes: ResolverTypeWrapper<Debug_FolderSizes>;
+  Debug_BookCounts: ResolverTypeWrapper<Debug_BookCounts>;
   DeleteEditAction: DeleteEditAction;
   EditAction: EditAction;
   EditType: EditType;
@@ -685,7 +681,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   CommonPluginQuery: CommonPluginQuery;
   CropEditAction: CropEditAction;
-  Debug_FolderSizes: Debug_FolderSizes;
+  Debug_BookCounts: Debug_BookCounts;
   DeleteEditAction: DeleteEditAction;
   EditAction: EditAction;
   Genre: Genre;
@@ -780,13 +776,9 @@ export type CommonPluginQueryResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type Debug_FolderSizesResolvers<ContextType = any, ParentType extends ResolversParentTypes['Debug_FolderSizes'] = ResolversParentTypes['Debug_FolderSizes']> = {
-  book?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+export type Debug_BookCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Debug_BookCounts'] = ResolversParentTypes['Debug_BookCounts']> = {
   bookCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   bookInfoCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  cache?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  tmp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  unusedBook?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -846,7 +838,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
   bookInfos?: Resolver<Array<Maybe<ResolversTypes['BookInfo']>>, ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'ids'>>;
   books?: Resolver<Array<Maybe<ResolversTypes['Book']>>, ParentType, ContextType, RequireFields<QueryBooksArgs, 'ids'>>;
-  debug_folderSize?: Resolver<ResolversTypes['Debug_FolderSizes'], ParentType, ContextType>;
+  debug_bookCounts?: Resolver<ResolversTypes['Debug_BookCounts'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
   plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
   relayBookInfos?: Resolver<ResolversTypes['BookInfoPartialList'], ParentType, ContextType, RequireFields<QueryRelayBookInfosArgs, never>>;
@@ -894,7 +886,7 @@ export type Resolvers<ContextType = any> = {
   BookInfoResult?: BookInfoResultResolvers<ContextType>;
   BookInfoThumbnail?: BookInfoThumbnailResolvers<ContextType>;
   CommonPluginQuery?: CommonPluginQueryResolvers<ContextType>;
-  Debug_FolderSizes?: Debug_FolderSizesResolvers<ContextType>;
+  Debug_BookCounts?: Debug_BookCountsResolvers<ContextType>;
   Genre?: GenreResolvers<ContextType>;
   IntRange?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
