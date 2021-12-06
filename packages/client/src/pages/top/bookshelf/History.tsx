@@ -1,5 +1,5 @@
 import {
-  useBooksQuery,
+  useBooksLazyQuery,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import React from 'react';
@@ -34,11 +34,13 @@ const History = () => {
   useTitle('History');
   const classes = useStyles();
   const theme = useTheme();
-
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [historyBooks, setHistoryBooks] = React.useState<BookRead[]>([]);
   const [historyBookLoading, setHistoryBookLoading] = React.useState(false);
+
+  const [getBooks, { loading, data, fetchMore }] = useBooksLazyQuery();
+
   const getHistoryBooks = React.useCallback(() => {
     let after;
     if (historyBooks.length !== 0) {
@@ -50,29 +52,31 @@ const History = () => {
       { key: 'updatedAt', direction: 'prev' },
       after,
     ).then((historyList) => {
-      if (historyList.length > 0) {
-        setHistoryBooks((p) => [...p, ...historyList]);
+      if (historyList.length <= 0) {
+        return;
       }
-    }).catch(() => {
+      if (historyBooks.length === 0) {
+        getBooks({
+          variables: {
+            ids: historyList.map((book) => book.bookId),
+          },
+        });
+      } else {
+        fetchMore({
+          variables: {
+            ids: historyList.map((book) => book.bookId),
+          },
+        });
+      }
+      setHistoryBooks((p) => [...p, ...historyList]);
       setHistoryBookLoading(false);
     });
-  }, [historyBooks]);
+  }, [fetchMore, getBooks, historyBooks]);
+
   React.useEffect(() => {
     getHistoryBooks();
     // eslint-disable-next-line
   }, []);
-  const { loading, data } = useBooksQuery({
-    skip: historyBooks.length === 0,
-    variables: {
-      ids: historyBooks.map((book) => book.bookId),
-    },
-    onCompleted() {
-      setHistoryBookLoading(false);
-    },
-    onError() {
-      setHistoryBookLoading(false);
-    },
-  });
 
   return (
     <div className={classes.grid}>

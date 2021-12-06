@@ -3,6 +3,7 @@ import { InMemoryCache, isReference } from '@apollo/client/cache';
 import {
   getMainDefinition,
   relayStylePagination,
+  concatPagination,
 } from '@apollo/client/utilities';
 import { createUploadLink } from 'apollo-upload-client';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
@@ -73,6 +74,7 @@ const cache = new InMemoryCache({
           (a, b) => a('updatedAt') > b('updatedAt'),
           ['option'],
         ),
+        books: concatPagination(),
       },
     },
     BookInfo: {
