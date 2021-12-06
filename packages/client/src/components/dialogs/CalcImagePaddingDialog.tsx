@@ -178,7 +178,7 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
         />
         <TextField
           color="secondary"
-          label="Right"
+          label={`Right${imageData ? `(diff=${imageData.width - right})` : ''}`}
           type="number"
           value={right}
           onChange={(e) => onSizeChange(left, Number(e.target.value))}
