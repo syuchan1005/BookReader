@@ -39,7 +39,17 @@ const History = () => {
   const [historyBooks, setHistoryBooks] = React.useState<BookRead[]>([]);
   const [historyBookLoading, setHistoryBookLoading] = React.useState(false);
 
-  const [getBooks, { loading, data, fetchMore }] = useBooksLazyQuery();
+  const [getBooks, { loading, data, fetchMore }] = useBooksLazyQuery({
+    fetchPolicy: 'network-only',
+  });
+  const mappedBooks: { [bookId: string]: typeof data.books[number]} = React.useMemo(
+    () => (data?.books ?? []).reduce((map, book) => {
+      // eslint-disable-next-line no-param-reassign
+      map[book.id] = book;
+      return map;
+    }, {}),
+    [data?.books],
+  );
 
   const getHistoryBooks = React.useCallback(() => {
     let after;
@@ -49,8 +59,7 @@ const History = () => {
     setHistoryBookLoading(true);
     db.read.getAll(
       defaultLoadBooksCount,
-      { key: 'updatedAt', direction: 'prev' },
-      after,
+      { key: 'updatedAt', direction: 'prev', after },
     ).then((historyList) => {
       if (historyList.length <= 0) {
         return;
@@ -80,24 +89,28 @@ const History = () => {
 
   return (
     <div className={classes.grid}>
-      {(data?.books ?? []).map((book, index, arr) => (book ? (
-        <Book
-          key={book.id}
-          infoId={book.info.id}
-          simple
-          {...book}
-          name={book.info.name}
-          thumbnailSize={downSm ? 150 : 200}
-          thumbnailNoSave={false}
-          onVisible={() => {
-            if (arr.length - 1 === index && !loading && !historyBookLoading) {
-              getHistoryBooks();
-            }
-          }}
-        />
-      ) : (
-        <div>{`Failed: ${JSON.stringify(historyBooks[index])}`}</div>
-      )))}
+      {historyBooks.map((bookRead, index, arr) => {
+        const book = mappedBooks[bookRead.bookId];
+        if (book) {
+          return (
+            <Book
+              key={book.id}
+              infoId={book.info.id}
+              simple
+              {...book}
+              name={book.info.name}
+              thumbnailSize={downSm ? 150 : 200}
+              thumbnailNoSave={false}
+              onVisible={() => {
+                if (arr.length - 1 === index && !loading && !historyBookLoading) {
+                  getHistoryBooks();
+                }
+              }}
+            />
+          );
+        }
+        return <div key={bookRead.bookId}>{`Failed: ${JSON.stringify(bookRead)}`}</div>;
+      })}
     </div>
   );
 };

@@ -47,8 +47,8 @@ const Favorite = () => {
       {
         key: 'createdAt',
         direction: 'prev',
+        after,
       },
-      after,
     )
       .then((bookInfos) => {
         setFavoriteBookInfos((p) => [...p, ...bookInfos]);

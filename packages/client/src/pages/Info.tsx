@@ -144,7 +144,7 @@ const Info = (props: InfoProps) => {
 
   React.useEffect(() => {
     let unMounted = false;
-    db.read.getAll(Number.MAX_SAFE_INTEGER, { key: 'infoId', direction: 'prev' }, undefined, infoId)
+    db.read.getAll(Number.MAX_SAFE_INTEGER, { key: 'infoId', direction: 'prev' }, infoId)
       .then((reads) => {
         const read = reads.reduce((prev, curr) => (prev.updatedAt > curr.updatedAt ? prev : curr));
         if (read && !unMounted) {

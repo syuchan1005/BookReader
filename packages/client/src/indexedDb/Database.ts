@@ -1,7 +1,5 @@
 /* eslint-disable */
 
-import { resolve } from 'path';
-
 const VERSION = 4;
 
 interface InfoRead {
@@ -55,9 +53,8 @@ export class StoreWrapper<T> {
 
   getAll<K extends (keyof T & string)>(
     limit: number,
-    sort?: { key: K, direction: 'next' | 'prev' },
-    after?: T[K],
-    indexValue: T[K] | undefined,
+    sort?: { key: K, direction: 'next' | 'prev', after?: T[K] },
+    indexValue?: T[K] | undefined,
   ): Promise<T[]> {
     if (limit <= 0) {
       return Promise.resolve([]);
@@ -67,27 +64,26 @@ export class StoreWrapper<T> {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
       if (sort) {
-        const query = indexValue ? IDBKeyRange.only(indexValue) : null;
+        let q;
+        if (sort.after) {
+          if (sort.direction === 'next') {
+            q = IDBKeyRange.lowerBound(sort.after, true);
+          } else {
+            q = IDBKeyRange.upperBound(sort.after, true);
+          }
+        }
+        const query = q || (indexValue ? IDBKeyRange.only(indexValue) : null);
         const request = store.index(sort.key).openCursor(query, sort.direction);
         const results: T[] = [];
         request.onsuccess = (event) => {
           // @ts-ignore
-          const cursor = event.target.result;
+          const cursor: IDBCursorWithValue = event.target.result;
           if (!cursor || results.length >= limit) {
             resolve(results);
             return;
           }
 
-          if (after) {
-            if (sort.direction === 'next' && cursor.value[sort.key] > after) {
-              results.push(cursor.value);
-            } else if (sort.direction === 'prev' && cursor.value[sort.key] < after) {
-              results.push(cursor.value);
-            }
-          } else {
-            results.push(cursor.value);
-          }
-
+          results.push(cursor.value);
           cursor.continue();
         };
         request.onerror = (e) => reject(e);
@@ -119,16 +115,17 @@ export class StoreWrapper<T> {
     });
   }
 
-  deleteByIndex(index: keyof T, value: string): Promise<IDBValidKey> {
+  deleteByIndex<K extends keyof T & string>(index: K, value: string): Promise<IDBValidKey> {
     return new Promise<IDBValidKey>((resolve) => {
       const tx = this.db.transaction(this.storeName, 'readwrite');
       const store = tx.objectStore(this.storeName);
       const storeIndex = store.index(index);
       const request = storeIndex.openCursor(IDBKeyRange.only(value));
       request.onsuccess = (event) => {
-        const cursor: IDBCursor = event.target.result;
+        // @ts-ignore
+        const cursor: IDBCursorWithValue = event.target.result;
         if (!cursor) {
-          resolve();
+          resolve(undefined);
           return;
         }
         store.delete(cursor.primaryKey);

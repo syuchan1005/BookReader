@@ -1,9 +1,9 @@
 import { ApolloClient, split } from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
 import {
+  concatPagination,
   getMainDefinition,
   relayStylePagination,
-  concatPagination,
 } from '@apollo/client/utilities';
 import { createUploadLink } from 'apollo-upload-client';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
