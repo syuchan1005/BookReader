@@ -142,7 +142,7 @@ const App = () => {
 
   const [isMigrated, setMigrated] = React.useState(false);
   React.useEffect(() => {
-    const getter = async (bookIds: string[]) => {
+    const getBooks = async (bookIds: string[]) => {
       if (bookIds.length === 0) {
         return [];
       }
@@ -161,18 +161,11 @@ const App = () => {
           infoId: book.info.id,
         }));
     };
-    // eslint-disable-next-line no-restricted-globals
-    const query = new URLSearchParams(location.search);
-    if (query.has('dryrun')) {
-      const count = parseInt(query.get('dryrun'), 10);
-      startMigration(getter, true, count || 100, console.log)
-        .catch(() => { /* ignored */ })
-        .finally(() => {
-          setMigrated(true);
-        });
-    } else {
-      setMigrated(true);
-    }
+    startMigration(getBooks, /* dryRun = */false)
+      .catch(() => { /* ignored */ })
+      .finally(() => {
+        setMigrated(true);
+      });
     // eslint-disable-next-line
   }, []);
 
@@ -181,7 +174,7 @@ const App = () => {
       <ThemeProvider theme={provideTheme}>
         <CssBaseline />
         <BrowserRouter>
-          {(isMigrated) && (
+          {(isMigrated) ? (
             <Routes>
               <Route
                 path="/"
@@ -259,6 +252,8 @@ const App = () => {
                 )}
               />
             </Routes>
+          ) : (
+            <LoadingFullscreen open />
           )}
         </BrowserRouter>
         <Snackbar

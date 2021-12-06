@@ -6,7 +6,7 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { common } from '@mui/material/colors';
 import { useParams } from 'react-router-dom';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 
 import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
@@ -20,7 +20,7 @@ import SelectBookHeader from '@client/components/SelectBookHeader';
 import { workbox } from '@client/registerServiceWorker';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import { alertDataState, sortBookOrderState } from '@client/store/atoms';
+import { sortBookOrderState } from '@client/store/atoms';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useLazyDialog from '@client/hooks/useLazyDialog';
 import { EmptyScreen } from '@client/components/EmptyScreen';
@@ -144,8 +144,9 @@ const Info = (props: InfoProps) => {
 
   React.useEffect(() => {
     let unMounted = false;
-    db.infoReads.get(infoId)
-      .then((read) => {
+    db.read.getAll(Number.MAX_SAFE_INTEGER, { key: 'infoId', direction: 'prev' }, undefined, infoId)
+      .then((reads) => {
+        const read = reads.reduce((prev, curr) => (prev.updatedAt > curr.updatedAt ? prev : curr));
         if (read && !unMounted) {
           setReadId(read.bookId);
         }
@@ -154,8 +155,6 @@ const Info = (props: InfoProps) => {
       unMounted = true;
     };
   }, [infoId]);
-
-  const setAlertData = useSetRecoilState(alertDataState);
 
   const bookList: typeof data.bookInfo.books = React.useMemo(
     () => (data?.bookInfo?.books ?? []),
@@ -166,7 +165,7 @@ const Info = (props: InfoProps) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch();
     // noinspection JSIgnoredPromiseFromCall
-    db.bookReads.delete(bookId);
+    db.read.delete(bookId);
     workbox?.messageSW({
       type: 'BOOK_REMOVE',
       bookId,
@@ -188,16 +187,17 @@ const Info = (props: InfoProps) => {
 
   const handleBookClick = React.useCallback((event: React.MouseEvent, bookId: string) => {
     if (mode === ScreenMode.NORMAL) {
-      db.infoReads.put({
+      db.read.get(bookId).then((read) => db.read.put({
         infoId,
         bookId,
-      })
-        .catch((e) => setAlertData({ message: e, variant: 'error' }));
+        page: read?.page ?? 0,
+        updatedAt: new Date(),
+      })).catch(() => {});
     } else {
       event.preventDefault();
       toggleSelect(bookId);
     }
-  }, [infoId, mode, setAlertData, toggleSelect]);
+  }, [infoId, mode, toggleSelect]);
 
   const handleBookLongClick = React.useCallback((event, bookId: string) => {
     event.preventDefault();

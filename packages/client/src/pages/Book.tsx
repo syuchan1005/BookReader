@@ -124,6 +124,7 @@ const useDatabasePage = (
   page: number,
   setPage: (
     page: number,
+    infoId: string,
   ) => Promise<void>,
 ] => {
   const [loading, setLoading] = React.useState(true);
@@ -131,7 +132,7 @@ const useDatabasePage = (
 
   React.useEffect(() => {
     setLoading(true);
-    db.bookReads.get(bookId)
+    db.read.get(bookId)
       .then((read) => {
         if (read) {
           updatePageState(read.page);
@@ -143,12 +144,13 @@ const useDatabasePage = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
-  const setPage = React.useCallback((p: number): Promise<void> => {
+  const setPage = React.useCallback((p: number, infoId: string): Promise<void> => {
     if (loading) {
       return Promise.reject();
     }
 
-    return db.bookReads.put({
+    return db.read.put({
+      infoId,
       bookId,
       page: p,
       updatedAt: new Date(),
@@ -325,7 +327,7 @@ const Book = (props: BookProps) => {
         openBook(data.book.info.id, nextBook);
       }
     } else if (isPageSet) {
-      setDbPage(page)
+      setDbPage(page, data.book.info.id)
         .catch((e) => setAlertData({ message: e, variant: 'error' }));
       const copiedSearchParams = new URLSearchParams(searchParams);
       copiedSearchParams.set('page', page.toString());

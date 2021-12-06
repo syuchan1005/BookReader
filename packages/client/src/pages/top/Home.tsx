@@ -195,9 +195,7 @@ const Home = (props: HomeProps) => {
     // noinspection JSIgnoredPromiseFromCall
     refetch({ first: infos.length });
     // noinspection JSIgnoredPromiseFromCall
-    db.infoReads.delete(infoId);
-    // noinspection JSIgnoredPromiseFromCall
-    db.bookReads.bulkDelete(books.map((b) => b.id));
+    db.read.bulkDelete(books.map((b) => b.id));
     if (workbox) {
       books.map(({
         id: bookId,

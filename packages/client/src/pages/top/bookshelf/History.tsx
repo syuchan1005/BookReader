@@ -45,12 +45,11 @@ const History = () => {
       after = historyBooks[historyBooks.length - 1].updatedAt;
     }
     setHistoryBookLoading(true);
-    db.bookReads.getAll(
+    db.read.getAll(
       defaultLoadBooksCount,
       { key: 'updatedAt', direction: 'prev' },
       after,
-    ).then((list) => {
-      const historyList = list.filter((item) => !!item.updatedAt);
+    ).then((historyList) => {
       if (historyList.length > 0) {
         setHistoryBooks((p) => [...p, ...historyList]);
       }
