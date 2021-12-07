@@ -7,7 +7,6 @@ import { auth0State } from '@client/store/atoms';
 export const AsyncAuth0Provider = ({ children }: { children: React.ReactElement }) => {
   const setAuth0 = useSetRecoilState(auth0State);
   const { data } = useAuth0Query({
-    fetchPolicy: 'cache-and-network',
     onCompleted({ auth0 }) {
       setAuth0(auth0);
     },
