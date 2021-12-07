@@ -21,6 +21,7 @@ import { genresState, hasAuth0State } from '@client/store/atoms';
 import { useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { useAuth0 } from '@auth0/auth0-react';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
+import { useLocation } from 'react-router-dom';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
@@ -131,9 +132,12 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const {
     loginWithRedirect,
     isAuthenticated,
-    logout,
+    logout: logoutAuth0,
     user,
   } = useAuth0();
+  const logout = React.useCallback(() => {
+    logoutAuth0({ returnTo: window.location.origin });
+  }, [logoutAuth0]);
   const hasAuth0 = useRecoilValue(hasAuth0State);
   const [anchor, setAnchor, clearAnchor] = useMenuAnchor();
 
