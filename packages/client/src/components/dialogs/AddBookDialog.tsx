@@ -19,6 +19,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { gql, useMutation } from '@apollo/client';
+import { useBeforeUnload } from 'react-use';
 
 import { Result } from '@syuchan1005/book-reader-graphql';
 import {
@@ -109,6 +110,9 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addType]);
 
+  const [isBlockUnload, setBlockUnload] = React.useState(false);
+  useBeforeUnload(isBlockUnload, 'In Process. Changes may not be saved.');
+
   const {
     data,
   } = usePluginsQuery();
@@ -136,6 +140,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     setSubscriptionId(undefined);
     setAddType('file');
     setEditContent({});
+    setBlockUnload(false);
   }, [onClose, onAdded]);
 
   const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
@@ -279,7 +284,10 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                   setAddBookProgress(ev);
                 },
                 onAbortPossible: (abortFunc) => {
-                  setAddBookAbort(() => abortFunc);
+                  setAddBookAbort(() => () => {
+                    abortFunc();
+                    setBlockUnload(false);
+                  });
                 },
               },
             },
@@ -293,7 +301,10 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                   setAddBookProgress(ev);
                 },
                 onAbortPossible: (abortFunc) => {
-                  setAddBookAbort(() => abortFunc);
+                  setAddBookAbort(() => () => {
+                    abortFunc();
+                    setBlockUnload(false);
+                  });
                 },
               },
             },
@@ -313,6 +324,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
           },
         });
       }
+      setBlockUnload(true);
     },
     [selectedPlugin, infoId, subscriptionLoading, addType,
       addCompressBook, addBooks, addBook, addPlugin, editContent],
