@@ -261,11 +261,9 @@ const Home = (props: HomeProps) => {
       />
       <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
       <main className={classes.home}>
-        {(loading || (error && !data)) ? (
+        {(error && !data) ? (
           <div className={classes.loading}>
-            {loading && 'Loading'}
-            {error && `${error.toString()
-              .replace(/:\s*/g, '\n')}`}
+            {`${error.toString().replace(/:\s*/g, '\n')}`}
           </div>
         ) : (
           <>
@@ -284,7 +282,7 @@ const Home = (props: HomeProps) => {
                     onVisible={handleVisible}
                   />
                 ))}
-                {(loading) && (
+                {(loading && infos.length === 0) && (
                   <div className={classes.loadMoreProgress}>
                     <CircularProgress color="secondary" />
                   </div>
