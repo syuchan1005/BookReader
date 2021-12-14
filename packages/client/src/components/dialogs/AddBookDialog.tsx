@@ -216,7 +216,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     }
     if (addBookProgress) {
       const percent = (addBookProgress.loaded / addBookProgress.total) * 100;
-      return `Uploading ${percent}%`;
+      return `Uploading ${percent.toFixed(2)}%`;
     }
     return '';
   }, [addBookProgress, subscriptionData]);
