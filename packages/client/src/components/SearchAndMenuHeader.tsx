@@ -1,12 +1,18 @@
 import React, { ChangeEvent, useCallback } from 'react';
 import {
-  AppBar, Avatar, Chip, FormControl,
+  AppBar,
+  Chip,
+  FormControl,
   Icon,
   IconButton,
   InputAdornment,
-  InputBase, InputLabel, ListItemIcon, Menu, MenuItem, Popover, Select,
+  InputBase,
+  InputLabel,
+  MenuItem,
+  Popover,
+  Select,
   Theme,
-  Toolbar, Tooltip,
+  Toolbar,
   useTheme,
 } from '@mui/material';
 import { red } from '@mui/material/colors';
@@ -16,12 +22,10 @@ import { alpha } from '@mui/material/styles';
 
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { genresState, hasAuth0State } from '@client/store/atoms';
+import { useRecoilState } from 'recoil';
+import { genresState } from '@client/store/atoms';
 import { useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-import { useAuth0 } from '@auth0/auth0-react';
-import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import { useLocation } from 'react-router-dom';
+import { UserMenuButton } from '@client/components/UserMenuButton';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
@@ -129,18 +133,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
 
   const hasSearchFilter = React.useMemo(() => genres.length > 0, [genres.length]);
 
-  const {
-    loginWithRedirect,
-    isAuthenticated,
-    logout: logoutAuth0,
-    user,
-  } = useAuth0();
-  const logout = React.useCallback(() => {
-    logoutAuth0({ returnTo: window.location.origin });
-  }, [logoutAuth0]);
-  const hasAuth0 = useRecoilValue(hasAuth0State);
-  const [anchor, setAnchor, clearAnchor] = useMenuAnchor();
-
   return (
     <AppBar elevation={elevation} className={classes.appBar}>
       <Toolbar>
@@ -242,69 +234,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
           <Icon>sort</Icon>
         </IconButton>
 
-        {hasAuth0 && (isAuthenticated ? (
-          <>
-            <Avatar
-              alt={user?.name}
-              src={user?.picture}
-              onClick={setAnchor}
-            />
-
-            <Menu
-              anchorEl={anchor}
-              open={!!anchor}
-              onClose={clearAnchor}
-              onClick={clearAnchor}
-              PaperProps={{
-                elevation: 0,
-                sx: {
-                  overflow: 'visible',
-                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                  mt: 1.5,
-                  '& .MuiAvatar-root': {
-                    width: 32,
-                    height: 32,
-                    ml: -0.5,
-                    mr: 1,
-                  },
-                  '&:before': {
-                    content: '""',
-                    display: 'block',
-                    position: 'absolute',
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: 'background.paper',
-                    transform: 'translateY(-50%) rotate(45deg)',
-                    zIndex: 0,
-                  },
-                },
-              }}
-              transformOrigin={{
-                horizontal: 'right',
-                vertical: 'top',
-              }}
-              anchorOrigin={{
-                horizontal: 'right',
-                vertical: 'bottom',
-              }}
-            >
-              <MenuItem onClick={() => logout()}>
-                <ListItemIcon>
-                  <Icon fontSize="small">logout</Icon>
-                </ListItemIcon>
-                Logout
-              </MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Tooltip title="Login">
-            <IconButton sx={{ color: 'common.white' }} onClick={() => loginWithRedirect()}>
-              <Icon>login</Icon>
-            </IconButton>
-          </Tooltip>
-        ))}
+        <UserMenuButton />
       </Toolbar>
     </AppBar>
   );
