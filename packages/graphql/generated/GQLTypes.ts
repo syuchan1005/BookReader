@@ -165,6 +165,13 @@ export type InputBook = {
   path?: InputMaybe<Scalars['String']>;
 };
 
+export type InputRead = {
+  bookId: Scalars['ID'];
+  infoId: Scalars['ID'];
+  page: Scalars['Int'];
+  updatedAt: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addBookInfo: ResultWithInfoId;
@@ -179,6 +186,7 @@ export type Mutation = {
   editBookInfo: Result;
   editGenre: Result;
   moveBooks: Result;
+  putReadList: Revision;
 };
 
 
@@ -250,6 +258,11 @@ export type MutationMoveBooksArgs = {
   infoId: Scalars['ID'];
 };
 
+
+export type MutationPutReadListArgs = {
+  readList: Array<InputRead>;
+};
+
 export type PageInfo = {
   __typename?: 'PageInfo';
   endCursor: Scalars['String'];
@@ -285,6 +298,7 @@ export type Query = {
   debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
   plugins: Array<Plugin>;
+  readList?: Maybe<ReadList>;
   relayBookInfos: BookInfoPartialList;
 };
 
@@ -309,12 +323,31 @@ export type QueryBooksArgs = {
 };
 
 
+export type QueryReadListArgs = {
+  beforeRevisionCount?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryRelayBookInfosArgs = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
   option?: InputMaybe<BookInfosOption>;
+};
+
+export type Read = {
+  __typename?: 'Read';
+  bookId: Scalars['ID'];
+  infoId: Scalars['ID'];
+  page: Scalars['Int'];
+  updatedAt: Scalars['String'];
+};
+
+export type ReadList = {
+  __typename?: 'ReadList';
+  latestRevision: Revision;
+  readList: Array<Read>;
 };
 
 export type Result = {
@@ -338,6 +371,12 @@ export type ResultWithInfoId = {
   infoId?: Maybe<Scalars['ID']>;
   message?: Maybe<Scalars['String']>;
   success: Scalars['Boolean'];
+};
+
+export type Revision = {
+  __typename?: 'Revision';
+  count: Scalars['Int'];
+  syncedAt: Scalars['String'];
 };
 
 export type SplitEditAction = {
@@ -654,6 +693,7 @@ export type ResolversTypes = {
   Genre: ResolverTypeWrapper<Genre>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   InputBook: InputBook;
+  InputRead: InputRead;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   IntRange: ResolverTypeWrapper<Scalars['IntRange']>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -662,9 +702,12 @@ export type ResolversTypes = {
   PluginInfo: ResolverTypeWrapper<PluginInfo>;
   PluginQueries: ResolverTypeWrapper<PluginQueries>;
   Query: ResolverTypeWrapper<{}>;
+  Read: ResolverTypeWrapper<Read>;
+  ReadList: ResolverTypeWrapper<ReadList>;
   Result: ResolverTypeWrapper<Result>;
   ResultWithBookResults: ResolverTypeWrapper<ResultWithBookResults>;
   ResultWithInfoId: ResolverTypeWrapper<ResultWithInfoId>;
+  Revision: ResolverTypeWrapper<Revision>;
   SplitEditAction: SplitEditAction;
   SplitType: SplitType;
   String: ResolverTypeWrapper<Scalars['String']>;
@@ -694,6 +737,7 @@ export type ResolversParentTypes = {
   Genre: Genre;
   ID: Scalars['ID'];
   InputBook: InputBook;
+  InputRead: InputRead;
   Int: Scalars['Int'];
   IntRange: Scalars['IntRange'];
   Mutation: {};
@@ -702,15 +746,24 @@ export type ResolversParentTypes = {
   PluginInfo: PluginInfo;
   PluginQueries: PluginQueries;
   Query: {};
+  Read: Read;
+  ReadList: ReadList;
   Result: Result;
   ResultWithBookResults: ResultWithBookResults;
   ResultWithInfoId: ResultWithInfoId;
+  Revision: Revision;
   SplitEditAction: SplitEditAction;
   String: Scalars['String'];
   Subscription: {};
   Upload: Scalars['Upload'];
   UploadEditAction: UploadEditAction;
 };
+
+export type AuthDirectiveArgs = {
+  permissions?: Array<Scalars['String']>;
+};
+
+export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type Auth0Resolvers<ContextType = any, ParentType extends ResolversParentTypes['Auth0'] = ResolversParentTypes['Auth0']> = {
   clientId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -812,6 +865,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   editBookInfo?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookInfoArgs, 'id'>>;
   editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>;
   moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'ids' | 'infoId'>>;
+  putReadList?: Resolver<ResolversTypes['Revision'], ParentType, ContextType, RequireFields<MutationPutReadListArgs, 'readList'>>;
 };
 
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
@@ -848,7 +902,22 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   debug_bookCounts?: Resolver<ResolversTypes['Debug_BookCounts'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
   plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
+  readList?: Resolver<Maybe<ResolversTypes['ReadList']>, ParentType, ContextType, RequireFields<QueryReadListArgs, never>>;
   relayBookInfos?: Resolver<ResolversTypes['BookInfoPartialList'], ParentType, ContextType, RequireFields<QueryRelayBookInfosArgs, never>>;
+};
+
+export type ReadResolvers<ContextType = any, ParentType extends ResolversParentTypes['Read'] = ResolversParentTypes['Read']> = {
+  bookId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  infoId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  page?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ReadListResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReadList'] = ResolversParentTypes['ReadList']> = {
+  latestRevision?: Resolver<ResolversTypes['Revision'], ParentType, ContextType>;
+  readList?: Resolver<Array<ResolversTypes['Read']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['Result'] = ResolversParentTypes['Result']> = {
@@ -871,6 +940,12 @@ export type ResultWithInfoIdResolvers<ContextType = any, ParentType extends Reso
   infoId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type RevisionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Revision'] = ResolversParentTypes['Revision']> = {
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  syncedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -902,10 +977,16 @@ export type Resolvers<ContextType = any> = {
   PluginInfo?: PluginInfoResolvers<ContextType>;
   PluginQueries?: PluginQueriesResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Read?: ReadResolvers<ContextType>;
+  ReadList?: ReadListResolvers<ContextType>;
   Result?: ResultResolvers<ContextType>;
   ResultWithBookResults?: ResultWithBookResultsResolvers<ContextType>;
   ResultWithInfoId?: ResultWithInfoIdResolvers<ContextType>;
+  Revision?: RevisionResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Upload?: GraphQLScalarType;
 };
 
+export type DirectiveResolvers<ContextType = any> = {
+  auth?: AuthDirectiveResolver<any, any, ContextType>;
+};

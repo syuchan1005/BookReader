@@ -1,8 +1,12 @@
 import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
+import cors from '@koa/cors';
+import jwt from 'koa-jwt';
+import jwksRsa from 'jwks-rsa';
 
 import { BookDataManager } from '@server/database/BookDataManager';
+import { getAuthInfo } from '@server/AuthRepository';
 import { obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
@@ -12,6 +16,23 @@ import GraphQL from './graphql/index';
 
   const app = new Koa();
   const graphql = new GraphQL();
+
+  app.use(cors());
+  const authInfo = getAuthInfo();
+  if (authInfo) {
+    app.use(jwt({
+      secret: jwksRsa.koaJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: `https://${authInfo.domain}/.well-known/jwks.json`,
+      }),
+      audience: authInfo.audience,
+      issuer: `https://${authInfo.domain}/`,
+      algorithms: ['RS256'],
+      passthrough: true,
+    }));
+  }
 
   app.use(Serve(storageBasePath));
 
@@ -44,7 +65,10 @@ import GraphQL from './graphql/index';
       {
         ext: extension,
         // @ts-ignore
-        size: sizeExists ? { width: Number(width), height: Number(height) } : undefined,
+        size: sizeExists ? {
+          width: Number(width),
+          height: Number(height),
+        } : undefined,
       },
       !isNotSave,
     );

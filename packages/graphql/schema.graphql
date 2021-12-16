@@ -2,6 +2,8 @@ scalar Upload
 scalar BigInt
 scalar IntRange
 
+directive @auth(permissions: [String!]! = []) on FIELD_DEFINITION
+
 type Query {
     ## BookInfo
     relayBookInfos(
@@ -27,6 +29,9 @@ type Query {
     genres: [Genre!]!
 
     auth0: Auth0
+
+    ## Read
+    readList(beforeRevisionCount: Int): ReadList @auth(permissions: ["read:readList"])
 }
 
 type Mutation {
@@ -51,6 +56,9 @@ type Mutation {
 
     ## Debug
     debug_deleteUnusedFolders: Result!
+
+    ## Read
+    putReadList(readList: [InputRead!]!): Revision! @auth(permissions: ["write:readList"])
 }
 
 type Subscription {
@@ -193,6 +201,23 @@ type Auth0 {
     clientId: String!
 }
 
+type ReadList {
+    latestRevision: Revision!
+    readList: [Read!]!
+}
+
+type Revision {
+    count: Int!
+    syncedAt: String! # milliseconds unix time string
+}
+
+type Read {
+    infoId: ID!
+    bookId: ID!
+    page: Int!
+    updatedAt: String! # milliseconds unix time string
+}
+
 enum EditType {
     # intermediate operations
     Crop
@@ -241,6 +266,13 @@ input InputBook {
     number: String!
     file: Upload
     path: String
+}
+
+input InputRead {
+    infoId: ID!
+    bookId: ID!
+    page: Int!
+    updatedAt: String! # milliseconds unix time string
 }
 
 ## DEBUG

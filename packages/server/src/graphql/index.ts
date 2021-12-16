@@ -18,6 +18,7 @@ import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 import GQLUtil from './GQLUtil';
 import { convertAndSaveJpg } from '../ImageUtil';
 import internalMiddlewares from './middleware/index';
+import authDirective from './directive/auth';
 
 export const SubscriptionKeys = {
   ADD_BOOKS: 'ADD_BOOKS',
@@ -55,7 +56,7 @@ export default class GraphQL {
         return fun ? fun.bind(this)(BookDataManager, this, SubscriptionKeys, util) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
-    this.schema = makeExecutableSchema({
+    const baseSchema = makeExecutableSchema({
       typeDefs: [
         gql(schemaString),
         ...this.plugins.map((pl) => pl.typeDefs),
@@ -74,7 +75,11 @@ export default class GraphQL {
         ...middlewareOps('Resolver'),
       },
     });
-    this.apolloServer = new ApolloServer({ schema: this.schema });
+    this.schema = authDirective(baseSchema, 'auth');
+    this.apolloServer = new ApolloServer({
+      schema: this.schema,
+      context: ({ ctx }) => ({ ctx }),
+    });
   }
 
   async middleware(app) {

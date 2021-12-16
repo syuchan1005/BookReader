@@ -166,6 +166,13 @@ export type InputBook = {
   path?: InputMaybe<Scalars['String']>;
 };
 
+export type InputRead = {
+  bookId: Scalars['ID'];
+  infoId: Scalars['ID'];
+  page: Scalars['Int'];
+  updatedAt: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addBookInfo: ResultWithInfoId;
@@ -180,6 +187,7 @@ export type Mutation = {
   editBookInfo: Result;
   editGenre: Result;
   moveBooks: Result;
+  putReadList: Revision;
 };
 
 
@@ -251,6 +259,11 @@ export type MutationMoveBooksArgs = {
   infoId: Scalars['ID'];
 };
 
+
+export type MutationPutReadListArgs = {
+  readList: Array<InputRead>;
+};
+
 export type PageInfo = {
   __typename?: 'PageInfo';
   endCursor: Scalars['String'];
@@ -286,6 +299,7 @@ export type Query = {
   debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
   plugins: Array<Plugin>;
+  readList?: Maybe<ReadList>;
   relayBookInfos: BookInfoPartialList;
 };
 
@@ -310,12 +324,31 @@ export type QueryBooksArgs = {
 };
 
 
+export type QueryReadListArgs = {
+  beforeRevisionCount?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryRelayBookInfosArgs = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
   option?: InputMaybe<BookInfosOption>;
+};
+
+export type Read = {
+  __typename?: 'Read';
+  bookId: Scalars['ID'];
+  infoId: Scalars['ID'];
+  page: Scalars['Int'];
+  updatedAt: Scalars['String'];
+};
+
+export type ReadList = {
+  __typename?: 'ReadList';
+  latestRevision: Revision;
+  readList: Array<Read>;
 };
 
 export type Result = {
@@ -339,6 +372,12 @@ export type ResultWithInfoId = {
   infoId?: Maybe<Scalars['ID']>;
   message?: Maybe<Scalars['String']>;
   success: Scalars['Boolean'];
+};
+
+export type Revision = {
+  __typename?: 'Revision';
+  count: Scalars['Int'];
+  syncedAt: Scalars['String'];
 };
 
 export type SplitEditAction = {

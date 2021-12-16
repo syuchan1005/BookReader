@@ -24,6 +24,9 @@ import {
   BatchLoadingClear,
   BatchLoadingClearAll,
 } from '@server/database/BatchLoading';
+import { SubjectId } from '@server/database/models/SubjectId';
+import { Revision, RevisionReads } from '@server/database/models/Revision';
+import { Read } from '@server/database/models/Read';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -41,6 +44,7 @@ const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
 
 const PrismaErrorCode = {
   UniqueConstraintFailed: 'P2002',
+  ForeignKeyConstraintFailed: 'P2003',
 } as const;
 
 export class PrismaBookDataManager implements IBookDataManager {
@@ -241,13 +245,14 @@ export class PrismaBookDataManager implements IBookDataManager {
             in: infoIds,
           },
         },
-      }).then((books) => {
-        const result = {};
-        books.forEach((info) => {
-          result[info.thumbnailById] = info;
+      })
+        .then((books) => {
+          const result = {};
+          books.forEach((info) => {
+            result[info.thumbnailById] = info;
+          });
+          return result;
         });
-        return result;
-      });
       return infoIds
         .map((id) => PrismaBookDataManager.convertBookInfoThumbnail(bookMap[id]));
     },
@@ -285,13 +290,14 @@ export class PrismaBookDataManager implements IBookDataManager {
             },
           },
         },
-      }).then((bookInfos) => {
-        const result = {};
-        bookInfos.forEach((info) => {
-          result[info.id] = info?.genres?.map(({ genre }) => genre);
+      })
+        .then((bookInfos) => {
+          const result = {};
+          bookInfos.forEach((info) => {
+            result[info.id] = info?.genres?.map(({ genre }) => genre);
+          });
+          return result;
         });
-        return result;
-      });
       return infoIds.map((id) => genreMap[id]);
     },
   )
@@ -588,6 +594,139 @@ export class PrismaBookDataManager implements IBookDataManager {
     }
     await this.prismaClient.genre.delete({ where: { name: genreName } });
     return undefined;
+  }
+
+  async getRevisionReads(
+    subjectId: SubjectId,
+    beforeRevisionCount: number | undefined,
+  ): Promise<RevisionReads | undefined> {
+    const [revision, reads] = await this.prismaClient.$transaction([
+      this.prismaClient.revision.findFirst({
+        where: { subjectId },
+        orderBy: { count: 'desc' },
+      }),
+      this.prismaClient.read.findMany({
+        where: {
+          subjectId,
+          revisionCount: beforeRevisionCount >= 0 ? { gt: beforeRevisionCount } : undefined,
+        },
+        include: {
+          book: true,
+        },
+      }),
+    ]);
+    if (!revision) {
+      return undefined;
+    }
+    const readList = reads.map((read) => ({
+      subjectId: read.subjectId,
+      infoId: read.book.infoId,
+      bookId: read.bookId,
+      page: read.page,
+      updatedAt: read.clientUpdatedAt,
+    }));
+    return {
+      revision,
+      readList,
+    };
+  }
+
+  async addReads(subjectId: SubjectId, reads: Array<Omit<Read, 'subjectId'>>): Promise<Revision> {
+    return this.prismaClient.$transaction(async (transactionalPrismaClient) => {
+      const revision = await transactionalPrismaClient.revision.findFirst({
+        where: { subjectId },
+        orderBy: { count: 'desc' },
+      });
+      const readMap: { [bookId: string]: Pick<Read, 'bookId' | 'updatedAt'> } = await transactionalPrismaClient.read.findMany({
+        select: {
+          bookId: true,
+          clientUpdatedAt: true,
+        },
+        where: {
+          subjectId,
+          bookId: {
+            in: reads.map((read) => read.bookId),
+          },
+        },
+      })
+        .then((serverReads) => serverReads.reduce((map, read) => {
+          // eslint-disable-next-line no-param-reassign
+          map[read.bookId] = {
+            bookId: read.bookId,
+            updatedAt: read.clientUpdatedAt,
+          };
+          return map;
+        }, {}));
+      const {
+        createReads,
+        updateReads,
+      } = reads.reduce((map, read) => {
+        if (!readMap[read.bookId]) {
+          map.createReads.push(read);
+        } else if (readMap[read.bookId].updatedAt < read.updatedAt) {
+          map.updateReads.push(read);
+        }
+        return map;
+      }, {
+        createReads: [] as typeof reads,
+        updateReads: [] as typeof reads,
+      });
+
+      if (createReads.length === 0 && updateReads.length === 0) {
+        return revision;
+      }
+
+      const newRevision = await transactionalPrismaClient.revision.create({
+        data: {
+          subjectId,
+          count: revision ? revision.count + 1 : 1,
+          syncedAt: new Date(),
+        },
+      });
+
+      await Promise.all(updateReads.map((read) => transactionalPrismaClient.read.update({
+        where: {
+          subjectId_bookId: {
+            subjectId,
+            bookId: read.bookId,
+          },
+        },
+        data: {
+          page: read.page,
+          clientUpdatedAt: read.updatedAt,
+          revisionCount: newRevision.count,
+        },
+      })));
+
+      const existsBookIds = await transactionalPrismaClient.book.findMany({
+        select: {
+          id: true,
+        },
+        where: {
+          id: {
+            in: createReads.map((read) => read.bookId),
+          },
+        },
+      })
+        .then((books) => books.map((book) => book.id));
+      await Promise.all(
+        createReads
+          .filter((read) => existsBookIds.includes(read.bookId))
+          .map(
+            (read) => transactionalPrismaClient.read.create({
+              data: {
+                subjectId,
+                bookId: read.bookId,
+                page: read.page,
+                clientUpdatedAt: read.updatedAt,
+                revisionCount: newRevision.count,
+              },
+            }),
+          ),
+      );
+
+      return newRevision;
+    });
   }
 
   get Debug() {

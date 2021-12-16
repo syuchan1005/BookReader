@@ -20,6 +20,9 @@ import {
   DeleteGenreError,
   GenreEditableValue,
 } from './models/Genre';
+import { Revision, RevisionReads } from '@server/database/models/Revision';
+import { SubjectId } from '@server/database/models/SubjectId';
+import { Read } from '@server/database/models/Read';
 
 export type RequireAtLeastOne<ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
@@ -96,6 +99,13 @@ export interface IBookDataManager {
   ): Promise<DeleteGenreError>;
 
   deleteGenre(genreName: GenreName): Promise<DeleteGenreError | undefined>;
+
+  getRevisionReads(
+    subjectId: SubjectId,
+    beforeRevisionCount: number | undefined,
+  ): Promise<RevisionReads | undefined>;
+
+  addReads(subjectId: SubjectId, reads: Array<Omit<Read, 'subjectId'>>): Promise<Revision>;
 
   Debug: {
     getBookIds(): Promise<Array<BookId>>;

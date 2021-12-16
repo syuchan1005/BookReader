@@ -1,19 +1,16 @@
 import { GQLMiddleware } from '@server/graphql/GQLPlugin';
 import { QueryResolvers } from '@syuchan1005/book-reader-graphql';
+import { getAuthInfo } from '@server/AuthRepository';
 
 class Auth0 extends GQLMiddleware {
   Query(): QueryResolvers {
     return {
       auth0: () => {
-        const domain = process.env.AUTH0_DOMAIN;
-        const clientId = process.env.AUTH0_CLIENT_ID;
-        if (!domain || !clientId) {
-          return undefined;
-        }
-        return {
-          domain,
-          clientId,
-        };
+        const authInfo = getAuthInfo();
+        return authInfo ? {
+          domain: authInfo.domain,
+          clientId: authInfo.clientId,
+        } : undefined;
       },
     };
   }
