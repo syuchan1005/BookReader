@@ -551,6 +551,20 @@ export type BooksQueryVariables = Exact<{
 
 export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null | undefined, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null | undefined } | null | undefined> };
 
+export type PutReadListMutationVariables = Exact<{
+  readList: Array<InputRead> | InputRead;
+}>;
+
+
+export type PutReadListMutation = { __typename?: 'Mutation', putReadList: { __typename?: 'Revision', count: number, syncedAt: string } };
+
+export type ReadListQueryVariables = Exact<{
+  revisionCount?: InputMaybe<Scalars['Int']>;
+}>;
+
+
+export type ReadListQuery = { __typename?: 'Query', readList?: { __typename?: 'ReadList', latestRevision: { __typename?: 'Revision', count: number, syncedAt: string }, readList: Array<{ __typename?: 'Read', infoId: string, bookId: string, page: number, updatedAt: string }> } | null | undefined };
+
 export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
   ids: Array<Scalars['ID']> | Scalars['ID'];
@@ -1373,6 +1387,84 @@ export function useBooksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Book
 export type BooksQueryHookResult = ReturnType<typeof useBooksQuery>;
 export type BooksLazyQueryHookResult = ReturnType<typeof useBooksLazyQuery>;
 export type BooksQueryResult = Apollo.QueryResult<BooksQuery, BooksQueryVariables>;
+export const PutReadListDocument = gql`
+    mutation putReadList($readList: [InputRead!]!) {
+  putReadList(readList: $readList) {
+    count
+    syncedAt
+  }
+}
+    `;
+export type PutReadListMutationFn = Apollo.MutationFunction<PutReadListMutation, PutReadListMutationVariables>;
+
+/**
+ * __usePutReadListMutation__
+ *
+ * To run a mutation, you first call `usePutReadListMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePutReadListMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [putReadListMutation, { data, loading, error }] = usePutReadListMutation({
+ *   variables: {
+ *      readList: // value for 'readList'
+ *   },
+ * });
+ */
+export function usePutReadListMutation(baseOptions?: Apollo.MutationHookOptions<PutReadListMutation, PutReadListMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<PutReadListMutation, PutReadListMutationVariables>(PutReadListDocument, options);
+      }
+export type PutReadListMutationHookResult = ReturnType<typeof usePutReadListMutation>;
+export type PutReadListMutationResult = Apollo.MutationResult<PutReadListMutation>;
+export type PutReadListMutationOptions = Apollo.BaseMutationOptions<PutReadListMutation, PutReadListMutationVariables>;
+export const ReadListDocument = gql`
+    query readList($revisionCount: Int) {
+  readList(beforeRevisionCount: $revisionCount) {
+    latestRevision {
+      count
+      syncedAt
+    }
+    readList {
+      infoId
+      bookId
+      page
+      updatedAt
+    }
+  }
+}
+    `;
+
+/**
+ * __useReadListQuery__
+ *
+ * To run a query within a React component, call `useReadListQuery` and pass it any options that fit your needs.
+ * When your component renders, `useReadListQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useReadListQuery({
+ *   variables: {
+ *      revisionCount: // value for 'revisionCount'
+ *   },
+ * });
+ */
+export function useReadListQuery(baseOptions?: Apollo.QueryHookOptions<ReadListQuery, ReadListQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ReadListQuery, ReadListQueryVariables>(ReadListDocument, options);
+      }
+export function useReadListLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ReadListQuery, ReadListQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ReadListQuery, ReadListQueryVariables>(ReadListDocument, options);
+        }
+export type ReadListQueryHookResult = ReturnType<typeof useReadListQuery>;
+export type ReadListLazyQueryHookResult = ReturnType<typeof useReadListLazyQuery>;
+export type ReadListQueryResult = Apollo.QueryResult<ReadListQuery, ReadListQueryVariables>;
 export const DeleteBooksDocument = gql`
     mutation deleteBooks($infoId: ID!, $ids: [ID!]!) {
   deleteBooks(infoId: $infoId, ids: $ids) {

@@ -1,0 +1,14 @@
+query readList($revisionCount: Int) {
+    readList(beforeRevisionCount: $revisionCount) {
+        latestRevision {
+            count
+            syncedAt
+        }
+        readList {
+            infoId
+            bookId
+            page
+            updatedAt
+        }
+    }
+}

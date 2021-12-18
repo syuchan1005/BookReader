@@ -1,0 +1,6 @@
+mutation putReadList($readList: [InputRead!]!) {
+    putReadList(readList: $readList) {
+        count
+        syncedAt
+    }
+}

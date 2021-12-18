@@ -114,6 +114,12 @@ export const apolloClient = new ApolloClient({
         if (options.useUpload) {
           f = createCustomFetcher(options.onProgress, options.onAbortPossible);
         }
+        // eslint-disable-next-line no-param-reassign
+        options.headers = {
+          ...options.headers,
+          // eslint-disable-next-line no-underscore-dangle
+          ...options._headers,
+        };
         return f(url, options);
       },
     }),

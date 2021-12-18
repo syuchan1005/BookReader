@@ -550,6 +550,20 @@ export type BooksQueryVariables = Exact<{
 
 export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null | undefined, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null | undefined } | null | undefined> };
 
+export type PutReadListMutationVariables = Exact<{
+  readList: Array<InputRead> | InputRead;
+}>;
+
+
+export type PutReadListMutation = { __typename?: 'Mutation', putReadList: { __typename?: 'Revision', count: number, syncedAt: string } };
+
+export type ReadListQueryVariables = Exact<{
+  revisionCount?: InputMaybe<Scalars['Int']>;
+}>;
+
+
+export type ReadListQuery = { __typename?: 'Query', readList?: { __typename?: 'ReadList', latestRevision: { __typename?: 'Revision', count: number, syncedAt: string }, readList: Array<{ __typename?: 'Read', infoId: string, bookId: string, page: number, updatedAt: string }> } | null | undefined };
+
 export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
   ids: Array<Scalars['ID']> | Scalars['ID'];
