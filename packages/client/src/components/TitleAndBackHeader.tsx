@@ -7,6 +7,7 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 import { commonTheme } from '../App';
+import { UserMenuButton } from '@client/components/UserMenuButton';
 
 interface TitleAndBackHeaderProps {
   backRoute?: string;
@@ -82,6 +83,8 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
           {subTitle}
         </div>
         {children}
+
+        <UserMenuButton />
       </Toolbar>
     </AppBar>
   );
