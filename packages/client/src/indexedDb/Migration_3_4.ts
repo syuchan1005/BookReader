@@ -77,6 +77,7 @@ export const startMigration = async (
           infoId: infoRead.infoId,
           bookId,
           page: bookRead.page,
+          isDirty: true,
           updatedAt: bookRead.updatedAt,
         }, { replace: false }).catch(() => {}),
         dryRun ? Promise.resolve() : db.infoReads.delete(infoRead.infoId).catch(() => {}),
@@ -127,6 +128,7 @@ export const startMigration = async (
             infoId: book.infoId,
             bookId,
             page: bookRead.page,
+            isDirty: true,
             updatedAt: bookRead.updatedAt || book.updatedAt,
           }, { replace: false })
             .catch(() => {
@@ -152,6 +154,7 @@ export const startMigration = async (
             infoId: book.infoId,
             bookId,
             page: 0,
+            isDirty: true,
             updatedAt: book.updatedAt,
           }, { replace: false })
             .catch(() => {

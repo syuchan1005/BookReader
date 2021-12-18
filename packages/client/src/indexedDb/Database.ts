@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const VERSION = 4;
+const VERSION = 5;
 
 interface InfoRead {
   infoId: string;
@@ -14,10 +14,11 @@ export interface BookRead {
   updatedAt?: Date;
 }
 
-interface Read {
+export interface Read {
   infoId: string; /* index */
   bookId: string; /* keyPath */
   page: number;
+  isDirty: boolean;
 
   updatedAt: Date; /* index */
 }
@@ -27,13 +28,22 @@ export interface BookInfoFavorite {
   createdAt: Date;
 }
 
+export interface Revision {
+  count: number; /* id */
+  localSyncedAt: Date;
+  serverSyncedAt: Date;
+}
+
 export class StoreWrapper<T> {
   private readonly storeName: string;
 
+  private readonly keyPath: string;
+
   private readonly db: IDBDatabase;
 
-  constructor(storeName: string, db: IDBDatabase) {
+  constructor(storeName: string, keyPath: string, db: IDBDatabase) {
     this.storeName = storeName;
+    this.keyPath = keyPath;
     this.db = db;
   }
 
@@ -53,7 +63,7 @@ export class StoreWrapper<T> {
 
   getAll<K extends (keyof T & string)>(
     limit: number,
-    sort?: { key: K, direction: 'next' | 'prev', after?: T[K] },
+    sort?: { key: K, direction?: 'next' | 'prev', after?: T[K] },
     indexValue?: T[K] | undefined,
   ): Promise<T[]> {
     if (limit <= 0) {
@@ -68,12 +78,17 @@ export class StoreWrapper<T> {
         if (sort.after) {
           if (sort.direction === 'next') {
             q = IDBKeyRange.lowerBound(sort.after, true);
-          } else {
+          } else if (sort.direction === 'prev') {
             q = IDBKeyRange.upperBound(sort.after, true);
           }
         }
         const query = q || (indexValue ? IDBKeyRange.only(indexValue) : null);
-        const request = store.index(sort.key).openCursor(query, sort.direction);
+        let request: IDBRequest;
+        if (this.keyPath === sort.key) {
+          request = store.openCursor(query, sort.direction);
+        } else {
+          request = store.index(sort.key).openCursor(query, sort.direction);
+        }
         const results: T[] = [];
         request.onsuccess = (event) => {
           // @ts-ignore
@@ -95,6 +110,29 @@ export class StoreWrapper<T> {
     });
   }
 
+  getAllWithFilter(predicate: (t: T) => boolean): Promise<T[]> {
+    return new Promise<T[]>((resolve, reject) => {
+      const tx = this.db.transaction(this.storeName, 'readonly');
+      const store = tx.objectStore(this.storeName);
+      const request = store.openCursor();
+      const results: T[] = [];
+      request.onsuccess = (event) => {
+        // @ts-ignore
+        const cursor: IDBCursorWithValue = event.target.result;
+        if (!cursor) {
+          resolve(results);
+          return;
+        }
+
+        const value = cursor.value;
+        if (predicate(value)) {
+          results.push(value);
+        }
+        cursor.continue();
+      };
+    });
+  }
+
   put(value: T, options: { replace: boolean } = { replace: true }): Promise<IDBValidKey> {
     return new Promise<IDBValidKey>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readwrite');
@@ -102,6 +140,26 @@ export class StoreWrapper<T> {
       const request = options.replace ? store.put(value) : store.add(value);
       tx.oncomplete = () => resolve(request.result);
       tx.onerror = (e) => reject(e);
+    });
+  }
+
+  bulkUpdate(transform: (current: T) => T): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const tx = this.db.transaction(this.storeName, 'readwrite');
+      const store = tx.objectStore(this.storeName);
+      const request = store.openCursor();
+      request.onsuccess = (event) => {
+        // @ts-ignore
+        const cursor: IDBCursorWithValue = event.target.result;
+        if (!cursor) {
+          resolve();
+          return;
+        }
+
+        cursor.update(transform(cursor.value));
+        cursor.continue();
+      };
+      request.onerror = (e) => reject(e);
     });
   }
 
@@ -180,6 +238,23 @@ const UpgradeTask = [
     readStore.createIndex('updatedAt', 'updatedAt');
     /* Remove bookReads and infoReads if migrated */
   },
+  (db: IDBDatabase, request: IDBOpenDBRequest) => {
+    db.createObjectStore('revision', { keyPath: 'count' });
+    const readStore = request.transaction.objectStore('read');
+    const cursorRequest = readStore.openCursor();
+    cursorRequest.onsuccess = (event) => {
+      // @ts-ignore
+      const cursor: IDBCursorWithValue = event.target.result;
+      if (!cursor) {
+        return;
+      }
+      cursor.update({
+        ...cursor.value,
+        isDirty: true,
+      });
+      cursor.continue();
+    };
+  },
 ];
 
 export class Database {
@@ -191,6 +266,7 @@ export class Database {
   private _bookReads: StoreWrapper<BookRead>;
   private _bookInfoFavorite: StoreWrapper<BookInfoFavorite>;
   private _read: StoreWrapper<Read>;
+  private _revision: StoreWrapper<Revision>;
 
   constructor(dbName = 'BookReader--DB') {
     this.dbName = dbName;
@@ -214,6 +290,10 @@ export class Database {
     return this._read;
   }
 
+  get revision(): StoreWrapper<Revision> {
+    return this._revision;
+  }
+
   connect(): Promise<IDBDatabase> {
     if (this._db) {
       return Promise.resolve(this._db);
@@ -232,10 +312,11 @@ export class Database {
       request.onsuccess = () => {
         // @ts-ignore
         this._db = request.result;
-        this._infoReads = new StoreWrapper<InfoRead>('infoReads', this._db);
-        this._bookReads = new StoreWrapper<BookRead>('bookReads', this._db);
-        this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', this._db);
-        this._read = new StoreWrapper<Read>('read', this._db);
+        this._infoReads = new StoreWrapper<InfoRead>('infoReads', 'infoId', this._db);
+        this._bookReads = new StoreWrapper<BookRead>('bookReads', 'bookId', this._db);
+        this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', 'infoId', this._db);
+        this._read = new StoreWrapper<Read>('read', 'bookId', this._db);
+        this._revision = new StoreWrapper<Revision>('revision', 'count', this._db);
 
         resolve(this._db);
       };

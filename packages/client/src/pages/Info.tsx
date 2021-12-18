@@ -186,18 +186,11 @@ const Info = (props: InfoProps) => {
   const [sortEl, setSortEl, resetSortEl] = useMenuAnchor();
 
   const handleBookClick = React.useCallback((event: React.MouseEvent, bookId: string) => {
-    if (mode === ScreenMode.NORMAL) {
-      db.read.get(bookId).then((read) => db.read.put({
-        infoId,
-        bookId,
-        page: read?.page ?? 0,
-        updatedAt: new Date(),
-      })).catch(() => {});
-    } else {
+    if (mode === ScreenMode.SELECT) {
       event.preventDefault();
       toggleSelect(bookId);
     }
-  }, [infoId, mode, toggleSelect]);
+  }, [mode, toggleSelect]);
 
   const handleBookLongClick = React.useCallback((event, bookId: string) => {
     event.preventDefault();
