@@ -18,13 +18,13 @@ export const obsoleteConvertImage = async (
   isSave: boolean,
 ): Promise<{
   success: true,
-  type: string,
-  body: any,
+  type: 'image/jpeg' | 'image/webp',
+  body: Buffer | ReadableStream,
+  byteLength: number,
   lastModified: string,
-  // eslint-disable-next-line consistent-return
 } | {
   success: false,
-  body?: any,
+  body?: string | Error,
 }> => {
   const originalFilePath = `storage/book/${bookId}/${pageNum}.jpg`;
   const sizeString = info.size ? `_${info.size.width}x${info.size.height}` : '';
@@ -39,6 +39,7 @@ export const obsoleteConvertImage = async (
         success: true,
         type,
         body: createReadStream(cacheFilePath),
+        byteLength: cacheStats.size,
         lastModified: cacheStats.mtime.toUTCString(),
       };
     }
@@ -93,6 +94,7 @@ export const obsoleteConvertImage = async (
     success: true,
     type,
     body: imageBuffer,
+    byteLength: imageBuffer.byteLength,
     lastModified: stats.mtime.toUTCString(),
   };
 };

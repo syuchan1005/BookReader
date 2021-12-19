@@ -76,6 +76,7 @@ import GraphQL from './graphql/index';
       ctx.status = 200;
       ctx.type = result.type;
       ctx.body = result.body;
+      ctx.length = result.byteLength;
 
       if (!ctx.response.get('Last-Modified') && result.lastModified) {
         ctx.set('Last-Modified', result.lastModified);
