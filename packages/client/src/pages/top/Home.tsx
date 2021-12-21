@@ -95,8 +95,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-// INFO: This value must be at least half the number displayed on viewport.
-const defaultLoadBookInfoCount = 20;
+const defaultLoadBookInfoCount = 60;
 
 const Home = (props: HomeProps) => {
   useTitle('');
