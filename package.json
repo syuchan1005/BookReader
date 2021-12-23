@@ -14,10 +14,12 @@
       "serve:client:prod": "npm run serve:prod --workspace=\"packages/client\"",
       "build:client": "npm run build --workspace=\"packages/client\"",
       "test:client": "npm run test --workspace=\"packages/client\"",
+      "serve:storybook": "npm run storybook --workspace=\"packages/client\"",
+      "build:storybook": "npm run build-storybook --workspace=\"packages/client\"",
       "serve:server": "npm run serve --workspace=\"packages/server\"",
       "build:server": "npm run build --workspace=\"packages/server\"",
       "test:server": "npm run test --workspace=\"packages/server\"",
-      "build": "npm run build:client && npm run build:server",
+      "build": "npm run build:client && npm run build:storybook && npm run build:server",
       "start": "node dist/server",
       "script:prisma-migrate": "npm run prisma-migrate --workspace=\"packages/server\"",
       "gql-gen": "npm run gql-gen --workspace=\"packages/graphql\""
