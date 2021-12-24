@@ -3,7 +3,7 @@ import { ListItem } from '@mui/material';
 import * as colors from '@mui/material/colors';
 import { ComponentMeta } from '@storybook/react';
 
-import ColorTile from './ColorTile';
+import ColorTile from '../ColorTile';
 
 export default {
   title: 'Components/ColorTile',
