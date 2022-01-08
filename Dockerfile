@@ -13,7 +13,7 @@ COPY packages/server/package*.json /bookReader/
 RUN npm ci --include=dev && \
     cd /bookReader && npm install
 
-COPY . .
+COPY packages packages
 RUN npm run build
 
 RUN cp -r packages/client/dist /bookReader/public \
