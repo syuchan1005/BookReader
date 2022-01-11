@@ -1,8 +1,9 @@
 import React from 'react';
 import { ComponentMeta } from '@storybook/react';
-import { Auth0Context } from '@auth0/auth0-react';
 import { MockedProvider } from '@apollo/client/testing';
+import { MockedAuth0Provider, RecoilValue } from '@client/components/stories/Util';
 
+import { auth0State } from '@client/store/atoms';
 import { UserMenuButton } from '../UserMenuButton';
 
 export default {
@@ -11,29 +12,55 @@ export default {
     onLogin: { action: 'onLogin' },
     onLogout: { action: 'onLogout' },
   },
+  decorators: [
+    (Story) => (
+      <MockedProvider>
+        <Story />
+      </MockedProvider>
+    ),
+    (Story) => (
+      <RecoilValue atom={auth0State} value={{ domain: 'domain', clientId: 'clientId' }}>
+        <Story />
+      </RecoilValue>
+    ),
+    (Story) => (
+      <div
+        style={{
+          width: 'fit-content',
+          padding: 8,
+          background: 'grey',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
 } as ComponentMeta<typeof UserMenuButton>;
 
 const Template = (args) => (
-  <MockedProvider>
-    <Auth0Context.Provider
-      // @ts-ignore
-      value={{
-        // eslint-disable-next-line react/destructuring-assignment
-        loginWithRedirect: args.onLogin(),
-        // eslint-disable-next-line react/destructuring-assignment
-        logout: args.onLogout(),
-        isAuthenticated: false,
-        user: {
-          name: 'TestName',
-          picture: 'https://placehold.jp/36/ababab/ffffff/120x120.png?text=Test',
-        },
-        getAccessTokenSilently: (): Promise<string> => { throw new Error('Mocked'); },
-        isLoading: true,
-      }}
-    >
-      <UserMenuButton {...args} />
-    </Auth0Context.Provider>
-  </MockedProvider>
+  <MockedAuth0Provider {...args}>
+    <UserMenuButton {...args} />
+  </MockedAuth0Provider>
 );
 
-export const Default = Template.bind({});
+export const Loading = Template.bind({});
+Loading.args = {
+  auth0: {
+    isLoading: true,
+  },
+};
+
+export const NotLoggedIn = Template.bind({});
+NotLoggedIn.args = {
+  auth0: {
+    isAuthenticated: false,
+    isLoading: false,
+  },
+};
+
+export const LoggedIn = Template.bind({});
+LoggedIn.args = {
+  auth0: {
+    isAuthenticated: true,
+  },
+};

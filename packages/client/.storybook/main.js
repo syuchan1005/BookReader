@@ -11,12 +11,10 @@ module.exports = {
   ],
   framework: '@storybook/react',
   core: {
-    builder: 'storybook-builder-vite',
+    builder: "webpack5",
   },
-  features: { storyStoreV7: true },
-  async viteFinal(config) {
+  async webpackFinal(config) {
     config.resolve.alias['@client'] = path.resolve(__dirname, '../src');
-    config.base = './';
     return config;
   },
   previewHead: (head) => (`${head}
