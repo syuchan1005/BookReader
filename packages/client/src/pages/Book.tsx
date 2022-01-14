@@ -564,11 +564,14 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   const [swiper, setSwiper] = React.useState(null);
   const debouncePage = useDebounceValue(page, 300);
 
+  const requestRef = React.useRef<typeof pageUpdateRequest>();
   React.useEffect(() => {
-    if (pageUpdateRequest) {
-      swiper?.slideTo(pageUpdateRequest.page, pageUpdateRequest.time, false);
+    if (pageUpdateRequest && swiper) {
+      requestRef.current = pageUpdateRequest;
+      swiper.slideTo(pageUpdateRequest.page, pageUpdateRequest.time, false);
     }
-  }, [pageUpdateRequest, swiper]);
+    // eslint-disable-next-line
+  }, [pageUpdateRequest]);
 
   React.useEffect(() => {
     if (openEditDialog) {
@@ -585,7 +588,11 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   }, [page]);
 
   const handleSlideChange = React.useCallback((s) => {
-    onPageUpdated(s.activeIndex);
+    if (requestRef.current?.page !== s.activeIndex) {
+      onPageUpdated(s.activeIndex);
+    } else {
+      requestRef.current = undefined;
+    }
   }, [onPageUpdated]);
 
   return (
