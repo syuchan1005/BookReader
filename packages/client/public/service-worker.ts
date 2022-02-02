@@ -104,8 +104,7 @@ addEventListener('message', (event) => {
         skipWaiting();
         break;
       case 'PURGE_CACHE': {
-        const ks = await caches.keys();
-        await Promise.all(ks.map((k) => caches.delete(k)));
+        await Promise.all(Object.values(cacheNames).map((k) => caches.delete(k)));
         break;
       }
     }
