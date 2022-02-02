@@ -108,18 +108,6 @@ addEventListener('message', (event) => {
         await Promise.all(ks.map((k) => caches.delete(k)));
         break;
       }
-      case 'REMOVE_BOOK_CACHE': {
-        const imageFolderPath = new RegExp(`/book/${event.data.bookId}`);
-        const deleteCaches = Object.values(cacheNames).map(async (cacheName) => {
-          const cache = await caches.open(cacheName);
-          const cacheRequests = await cache.keys();
-          const deleteRequests = cacheRequests
-            .filter(({ url }) => url.match(imageFolderPath));
-          return Promise.all(deleteRequests.map((request) => cache.delete(request)));
-        });
-        await Promise.all(deleteCaches);
-        break;
-      }
     }
 
     postMessage();
