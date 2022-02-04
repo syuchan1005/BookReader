@@ -4,6 +4,14 @@ ENV NODE_ENV="production"
 
 WORKDIR /build
 
+RUN apk add --no-cache \
+      build-base \
+      g++ \
+      cairo-dev \
+      jpeg-dev \
+      pango-dev \
+      giflib-dev
+
 COPY package*.json ./
 COPY packages/client/package*.json packages/client/
 COPY packages/common/package*.json packages/common/
@@ -18,8 +26,9 @@ RUN npm run build
 
 RUN cp -r packages/client/dist /bookReader/public \
     && cp packages/server/dist/index.js /bookReader/ \
-    && mv packages/server/scripts/ /bookReader/ \
+    && mv packages/server/scripts /bookReader/ \
     && mv packages/server/prisma /bookReader/ \
+    && mv packages/server/assets /bookReader/ \
     && mkdir /bookReader/src \
     && mv packages/server/src/FeatureFlag.js /bookReader/src/
 
@@ -32,7 +41,9 @@ EXPOSE 80
 
 ENV DEBUG="" NODE_ENV="production"
 
-RUN apk add --no-cache supervisor nginx git p7zip
+RUN apk add --no-cache supervisor nginx git p7zip \
+# node-canvas deps
+    cairo-dev jpeg-dev pango-dev giflib-dev
 
 WORKDIR /bookReader
 

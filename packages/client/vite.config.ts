@@ -125,6 +125,12 @@ export default defineConfig({
           port: 8081,
         },
       },
+      '^(/(book|info)/[^/]+|)/image$': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
       '/graphql': {
         target: {
           host: 'localhost',

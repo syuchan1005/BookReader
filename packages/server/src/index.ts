@@ -10,6 +10,7 @@ import { getAuthInfo } from '@server/AuthRepository';
 import { obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
+import { OGPImageRoute } from '@server/OGPImageRoute';
 
 (async () => {
   await createStorageFolders();
@@ -86,6 +87,8 @@ import GraphQL from './graphql/index';
       ctx.body = result.body;
     }
   });
+
+  app.use(OGPImageRoute);
 
   if (process.env.NODE_ENV === 'production') {
     app.use(Serve('dist/client'));
