@@ -25,7 +25,7 @@ module.exports = {
 <link rel="stylesheet" media="print" onload="this.media='all'"
       href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
 <link rel="stylesheet" media="print" onload="this.media='all'"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+      href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" />
 `),
   managerHead: (head, { configType }) => configType === 'PRODUCTION' ? `${head}<base href="/storybook/">` : head,
 };
