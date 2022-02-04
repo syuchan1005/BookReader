@@ -156,6 +156,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
                     size="small"
                     style={{ color: theme.palette.common.white }}
                     onClick={clearSearchText}
+                    aria-label="clear"
                   >
                     <Icon>clear</Icon>
                   </IconButton>
@@ -166,6 +167,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
                     color: hasSearchFilter ? red['600'] : theme.palette.common.white,
                   }}
                   onClick={handleSearchFilterClick}
+                  aria-label="filter genres"
                 >
                   <Icon>filter_list</Icon>
                 </IconButton>
