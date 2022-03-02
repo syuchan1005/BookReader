@@ -1,9 +1,11 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 
 import { generateId } from '@server/database/models/Id';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
+import pLimit from 'p-limit';
 
 import {
   Result,
@@ -17,6 +19,8 @@ import {
 } from '@server/StorageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
 import { convertAndSaveJpg } from '../ImageUtil';
+
+const limit = pLimit(os.cpus().length);
 
 const GQLUtil = {
   async addBookFromLocalPath(
@@ -42,18 +46,22 @@ const GQLUtil = {
     files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
     const pad = files.length.toString(10).length;
     await fs.mkdir(`storage/book/${bookId}`);
-    await asyncForEach(files, async (f, i) => {
+    let count = 0;
+    onProgress(count, files.length);
+    const promises = files.map((f, i) => limit(async () => {
       const fileName = `${i.toString()
         .padStart(pad, '0')}.jpg`;
       const dist = `storage/book/${bookId}/${fileName}`;
 
-      onProgress(i + 1, files.length);
+      count += 1;
+      onProgress(count, files.length);
       if (/\.jpe?g$/i.test(f)) {
         await renameFile(f, dist);
       } else {
         await convertAndSaveJpg(f, dist);
       }
-    })
+    }));
+    await Promise.all(promises)
       .catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
     if (deleteTempFolder) await deleteTempFolder();
 

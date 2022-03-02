@@ -43,6 +43,7 @@
         "lodash.chunk": "^4.2.0",
         "lodash.throttle": "^4.1.1",
         "node-7z": "^3.0.0",
+        "p-limit": "^3.0.0",
         "prisma": "^3.6.0",
         "sharp": "^0.29.3",
         "ulid": "^2.3.0",
