@@ -39,23 +39,21 @@ LABEL name="BookReader"
 
 EXPOSE 80
 
-ENV DEBUG="" NODE_ENV="production"
+ENV DEBUG="" NODE_ENV="production" PORT=80
 
-RUN apk add --no-cache supervisor nginx git p7zip \
+RUN apk add --no-cache p7zip tini \
 # node-canvas deps
     cairo-dev jpeg-dev pango-dev giflib-dev
 
 WORKDIR /bookReader
 
-COPY nginx.conf /etc/nginx/
-COPY supervisord.conf /etc/
+COPY --from=build /bookReader ./
+
 COPY docker-entrypoint.sh ./
 
 RUN chmod +x docker-entrypoint.sh
 
-COPY --from=build /bookReader ./
-
 # "/bookReader/production.sqlite" is file
 VOLUME ["/bookReader/storage"]
 
-ENTRYPOINT ["/bookReader/docker-entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/bookReader/docker-entrypoint.sh"]

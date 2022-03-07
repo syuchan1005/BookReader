@@ -6,4 +6,4 @@ fi
 
 npm run prisma-migrate
 
-/usr/bin/supervisord
+node index.js

@@ -7,10 +7,10 @@ import jwksRsa from 'jwks-rsa';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { getAuthInfo } from '@server/AuthRepository';
+import { OGPImageRoute } from '@server/OGPImageRoute';
 import { obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
-import { OGPImageRoute } from '@server/OGPImageRoute';
 
 (async () => {
   await createStorageFolders();
@@ -90,15 +90,13 @@ import { OGPImageRoute } from '@server/OGPImageRoute';
 
   app.use(OGPImageRoute);
 
-  if (process.env.NODE_ENV === 'production') {
-    app.use(Serve('dist/client'));
-  }
-
   await BookDataManager.init();
 
   await graphql.middleware(app);
 
   app.use(historyApiFallback({}));
+
+  app.use(Serve('public'));
 
   const port = process.env.PORT || 8081;
   const server = app.listen(port, () => {
