@@ -53,6 +53,18 @@ export const obsoleteConvertImage = async (
     };
   }
 
+  if (process.platform === 'win32') {
+    // sharp has a known issue on Windows: https://sharp.pixelplumbing.com/install#canvas-and-windows
+    // So we provide original image instead of converted one
+    return {
+      success: true,
+      type,
+      body: createReadStream(originalFilePath),
+      byteLength: stats.size,
+      lastModified: stats.mtime.toUTCString(),
+    };
+  }
+
   let sharpInstance = await sharp(originalFilePath);
   if (info.size) {
     sharpInstance = sharpInstance.resize({
