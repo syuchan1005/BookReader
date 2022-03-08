@@ -46,3 +46,7 @@ $ npm install
 $ npm run db:migrate
 $ npm run serve
 ```
+
+
+## Note
+last version with Sequelize: 1.3.1-rc39
