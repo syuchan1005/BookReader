@@ -441,7 +441,7 @@ export type AddBookInfoMutationVariables = Exact<{
 }>;
 
 
-export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined } };
+export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined, infoId?: string | null | undefined } };
 
 export type DebugBookCountsQueryVariables = Exact<{ [key: string]: never; }>;
 

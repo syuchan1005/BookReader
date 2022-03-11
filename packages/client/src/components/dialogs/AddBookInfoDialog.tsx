@@ -19,7 +19,7 @@ import GenresSelect from '../GenresSelect';
 interface AddBookInfoDialogProps {
   open: boolean;
   name?: string;
-  onAdded?: () => void;
+  onAdded?: (infoId: string) => void;
   onClose?: () => void;
 }
 
@@ -91,7 +91,7 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
     onCompleted(d) {
       if (!d) return;
       closeDialog();
-      if (d.add.success && onAdded) onAdded();
+      if (d.add.success && onAdded) onAdded(d.add.infoId);
     },
   });
 

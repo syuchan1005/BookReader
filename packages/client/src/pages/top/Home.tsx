@@ -31,7 +31,7 @@ import {
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '@client/indexedDb/Database';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTitle } from '@client/hooks/useTitle';
 
 interface HomeProps {
@@ -116,6 +116,7 @@ const Home = (props: HomeProps) => {
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
   const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchText = React.useMemo(() => searchParams.get('search'), [searchParams]);
@@ -251,6 +252,12 @@ const Home = (props: HomeProps) => {
     [data, handleLoadMore, infos.length, isLastSeenPositionLoaded, loading, setLastSeenPosition],
   );
 
+  const openInfoPage = React.useCallback((infoId) => navigate(`/info/${infoId}`, {
+    state: {
+      referrer: location.pathname,
+    },
+  }), [navigate, location.pathname]);
+
   return (
     <>
       <SearchAndMenuHeader
@@ -311,7 +318,7 @@ const Home = (props: HomeProps) => {
         <AddBookInfoDialog
           open={open}
           name={infos.length === 0 ? searchText : undefined}
-          onAdded={refetchAll}
+          onAdded={openInfoPage}
           onClose={setClose}
         />
       </main>
