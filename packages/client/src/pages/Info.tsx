@@ -5,7 +5,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { common } from '@mui/material/colors';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
 import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -113,6 +113,7 @@ const Info = (props: InfoProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
   const { id: infoId } = useParams();
+  const [searchParams] = useSearchParams();
 
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
@@ -124,6 +125,11 @@ const Info = (props: InfoProps) => {
   const [isSkipQuery, setSkipQuery] = React.useState(true);
   React.useEffect(() => {
     setSkipQuery(false);
+
+    if (searchParams.has('add')) {
+      showAddDialog();
+    }
+    // eslint-disable-next-line
   }, []);
 
   const {

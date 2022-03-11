@@ -252,7 +252,7 @@ const Home = (props: HomeProps) => {
     [data, handleLoadMore, infos.length, isLastSeenPositionLoaded, loading, setLastSeenPosition],
   );
 
-  const openInfoPage = React.useCallback((infoId) => navigate(`/info/${infoId}`, {
+  const openInfoPage = React.useCallback((infoId) => navigate(`/info/${infoId}?add`, {
     state: {
       referrer: location.pathname,
     },
