@@ -6,7 +6,6 @@ module.exports = {
   plugins: [
     '@typescript-eslint',
     'import',
-    'graphql',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -52,4 +51,22 @@ module.exports = {
       },
     },
   },
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx', '*.js', '*.jsx', '*.mjs'],
+      processor: '@graphql-eslint/graphql',
+    },
+    {
+      files: ['*.graphql'],
+      parser: '@graphql-eslint/eslint-plugin',
+      plugins: ['@graphql-eslint'],
+      rules: {
+        '@graphql-eslint/known-type-names': 'error',
+      },
+      parserOptions: {
+        operations: './packages/graphql/queries/**/*.gql',
+        schema: './packages/graphql/schema.graphql',
+      },
+    },
+  ],
 };
