@@ -260,6 +260,13 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
               }}
             >
               <Slider
+                componentsProps={{
+                  thumb: {
+                    style: {
+                      transform: 'translate(0, -50%)',
+                    },
+                  },
+                }}
                 color="secondary"
                 valueLabelDisplay="auto"
                 max={maxPages}
