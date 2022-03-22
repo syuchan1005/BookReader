@@ -508,7 +508,7 @@ const Book = (props: BookProps) => {
           className={classes.pageProgress}
           style={{ justifyContent: `flex-${readOrder === ReadOrder.LTR ? 'start' : 'end'}` }}
         >
-          <div style={{ width: `${(page / maxPage) * 100}%` }} />
+          <div style={{ width: `${(page / (maxPage - 1)) * 100}%` }} />
         </div>
       </main>
     </>

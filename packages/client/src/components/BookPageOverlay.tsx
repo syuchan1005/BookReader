@@ -269,7 +269,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                 }}
                 color="secondary"
                 valueLabelDisplay="auto"
-                max={maxPages}
+                max={maxPages - 1}
                 min={1}
                 step={pageStyle.slidesPerView}
                 value={currentPage + 1}
