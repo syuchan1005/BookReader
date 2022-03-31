@@ -7,7 +7,6 @@ import jwksRsa from 'jwks-rsa';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { getAuthInfo } from '@server/AuthRepository';
-import { OGPImageRoute } from '@server/OGPImageRoute';
 import { obsoleteConvertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
@@ -88,8 +87,6 @@ import GraphQL from './graphql/index';
       ctx.body = result.body;
     }
   });
-
-  app.use(OGPImageRoute);
 
   await BookDataManager.init();
 
