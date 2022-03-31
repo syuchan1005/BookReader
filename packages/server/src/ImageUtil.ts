@@ -59,7 +59,7 @@ export const obsoleteConvertImage = async (
       width: info.size.width > 0 ? info.size.width : undefined,
       height: info.size.height > 0 ? info.size.height : undefined,
       withoutEnlargement: true,
-      fit: 'contain',
+      fit: 'cover',
     });
   }
 
