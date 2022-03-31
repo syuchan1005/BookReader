@@ -1,13 +1,10 @@
-import React, { useEffect } from 'react';
+import React  from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { MockedProvider } from '@apollo/client/testing';
 import { Icon, IconButton } from '@mui/material';
-import { Auth0ContextInterface } from '@auth0/auth0-react/src/auth0-context';
-import { Auth0Context } from '@auth0/auth0-react';
 
 import TitleAndBackHeader from '../TitleAndBackHeader';
-import { RecoilState, useSetRecoilState } from 'recoil';
 import { auth0State } from '@client/store/atoms';
 import { MockedAuth0Provider, RecoilValue } from '@client/components/stories/Util';
 
