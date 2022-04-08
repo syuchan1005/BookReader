@@ -140,6 +140,16 @@ const App = () => {
     [isSystemDarkTheme, primaryColor, secondaryColor],
   );
 
+  useEffect(() => {
+    document.querySelector('meta[name="theme-color"]')
+      ?.setAttribute(
+        'content',
+        isSystemDarkTheme
+          ? provideTheme.palette.background.default
+          : provideTheme.palette.primary.main,
+      );
+  }, [isSystemDarkTheme, provideTheme]);
+
   const [isMigrated, setMigrated] = React.useState(false);
   React.useEffect(() => {
     const getBooks = async (bookIds: string[]) => {
@@ -162,7 +172,8 @@ const App = () => {
         }));
     };
     startMigration(getBooks, /* dryRun = */false)
-      .catch(() => { /* ignored */ })
+      .catch(() => { /* ignored */
+      })
       .finally(() => {
         setMigrated(true);
       });
