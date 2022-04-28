@@ -42,24 +42,7 @@ registerRoute(
 
 const cacheNames = {
   thumbnail: 'bookReader-thumbnail-v1',
-  image: 'bookReader-image-v1',
 };
-registerRoute(
-  ({ request, url }) => request.destination === 'image'
-    && url.searchParams.has('nosave'),
-  new StaleWhileRevalidate({
-    cacheName: cacheNames.image,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxEntries: 60,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
-      }),
-    ],
-  }),
-);
 
 registerRoute(
   ({ request, url }) => request.destination === 'image'
@@ -81,6 +64,7 @@ registerRoute(
 const oldCacheNames = [
   'bookReader-thumbnails',
   'bookReader-images',
+  'bookReader-image-v1',
 ];
 self.addEventListener('activate', (event) => {
   event.waitUntil(
