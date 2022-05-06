@@ -11,7 +11,8 @@ export const AsyncAuth0Provider = ({ children }: { children: React.ReactElement 
       setAuth0(auth0);
     },
   });
-  if (data?.auth0) {
+
+  if (window.crypto?.subtle && data?.auth0) {
     return (
       <Auth0Provider
         domain={data.auth0.domain}
