@@ -606,7 +606,9 @@ const SwiperSlider = (props: SwiperSliderProp) => {
         className={classes.pageContainer}
         slidesPerView={slidesPerView}
         slidesPerGroup={slidesPerView}
-        virtual
+        virtual={{
+          addSlidesAfter: slidesPerView * 2,
+        }}
         keyboard
       >
         {[...new Array(prefixPage).keys()].map((i) => (
