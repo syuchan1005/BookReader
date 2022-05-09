@@ -79,6 +79,21 @@ export const showOriginalImageState = atom<boolean>({
   ],
 });
 
+export const pageImageEffectState = atom<PageImageEffect>({
+  key: 'pageImageEffectState',
+  default: undefined,
+  effects_UNSTABLE: [
+    logEffect(),
+    localStorageEffect('pageImageEffectState'),
+  ],
+});
+
+export type PageImageEffectType = 'paper' | 'dark';
+export type PageImageEffect = {
+  type: PageImageEffectType,
+  percent: number, // 0-100
+}
+
 export const showBookInfoNameState = atom<boolean>({
   key: 'showBookInfoNameState',
   default: false,

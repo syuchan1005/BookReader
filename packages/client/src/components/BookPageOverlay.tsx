@@ -17,8 +17,13 @@ import { useRecoilState } from 'recoil';
 
 import { commonTheme } from '@client/App';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import { PageEffect, PageStyleType } from '@client/pages/Book';
-import { ReadOrder, readOrderState, showOriginalImageState } from '@client/store/atoms';
+import { PageStyleType } from '@client/pages/Book';
+import {
+  pageImageEffectState, PageImageEffectType,
+  ReadOrder,
+  readOrderState,
+  showOriginalImageState,
+} from '@client/store/atoms';
 
 interface BookPageOverlayProps {
   currentPage: number;
@@ -26,10 +31,6 @@ interface BookPageOverlayProps {
   maxPages: number | undefined;
   pageStyle: PageStyleType;
   onPageStyleClick: () => void;
-  pageEffect: PageEffect | undefined;
-  onPageEffectChanged: (pageEffect: PageEffect | undefined) => void;
-  pageEffectPercentage: number;
-  onPageEffectPercentage: (percent: number) => void;
   setHideAppBar: () => void;
   goNextBook: () => void | undefined;
   goPreviousBook: () => void | undefined;
@@ -98,20 +99,17 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     currentPage,
     maxPages,
     pageStyle,
-    pageEffect,
-    pageEffectPercentage,
     setHideAppBar,
     goNextBook,
     goPreviousBook,
     onPageStyleClick,
     onEditClick,
-    onPageEffectChanged,
-    onPageEffectPercentage,
     onPageSliderChanged,
   } = props;
 
   const [readOrder, setReadOrder] = useRecoilState(readOrderState);
   const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
+  const [pageImageEffect, setPageImageEffect] = useRecoilState(pageImageEffectState);
   const [settingsMenuAnchor, setSettingsMenuAnchor, resetSettingMenuAnchor] = useMenuAnchor();
   const [effectMenuAnchor, setEffectMenuAnchor, resetEffectMenuAnchor] = useMenuAnchor();
 
@@ -119,10 +117,17 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     setShowOriginalImage((v) => !v);
   }, [setShowOriginalImage]);
 
-  const clickEffect = React.useCallback((eff) => {
-    onPageEffectChanged(eff);
+  const clickEffect = React.useCallback((type: PageImageEffectType | undefined) => {
+    if (type) {
+      setPageImageEffect((e) => ({
+        type,
+        percent: e?.percent || 0,
+      }));
+    } else {
+      setPageImageEffect(undefined);
+    }
     resetEffectMenuAnchor();
-  }, [onPageEffectChanged, resetEffectMenuAnchor]);
+  }, [setPageImageEffect, resetEffectMenuAnchor]);
 
   const clickJumpPrevBook = React.useCallback((e) => {
     e.stopPropagation();
@@ -241,7 +246,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           onClick={setEffectMenuAnchor}
           style={{ color: 'white' }}
         >
-          {pageEffect || 'normal'}
+          {pageImageEffect?.type || 'normal'}
         </Button>
         <Menu
           anchorEl={effectMenuAnchor}
@@ -278,7 +283,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
             </ThemeProvider>
           </StyledEngineProvider>
         </div>
-        {(pageEffect) && (
+        {(pageImageEffect) && (
           <div className={classes.bottomSlider}>
             <StyledEngineProvider injectFirst>
               <ThemeProvider
@@ -297,8 +302,10 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                   valueLabelDisplay="auto"
                   max={100}
                   min={0}
-                  value={pageEffectPercentage}
-                  onChange={(e, v: number) => onPageEffectPercentage(v)}
+                  value={pageImageEffect.percent}
+                  onChange={(e, percent: number) => setPageImageEffect(
+                    { ...pageImageEffect, percent },
+                  )}
                 />
               </ThemeProvider>
             </StyledEngineProvider>

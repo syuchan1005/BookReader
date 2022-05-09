@@ -28,7 +28,7 @@ import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import {
-  alertDataState,
+  alertDataState, pageImageEffectState,
   ReadOrder,
   readOrderState,
   showOriginalImageState,
@@ -223,11 +223,10 @@ const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
   FullSpreadPlusOne: 'SinglePage',
 };
 
-export type PageEffect = 'paper' | 'dark';
-
 const Book = (props: BookProps) => {
   const readOrder = useRecoilValue(readOrderState);
   const showOriginalImage = useRecoilValue(showOriginalImageState);
+  const pageImageEffect = useRecoilValue(pageImageEffectState);
   const classes = useStyles(props);
   const navigate = useNavigate();
   const location = useLocation();
@@ -258,8 +257,6 @@ const Book = (props: BookProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbLoading]);
 
-  const [effect, setEffect] = React.useState<PageEffect | undefined>(undefined);
-  const [effectPercentage, setEffectPercentage] = React.useState(0);
   const [openEditDialog, canMountEditDialog,
     setOpenEditDialog, setCloseEditDialog] = useLazyDialog(false);
   const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
@@ -345,19 +342,19 @@ const Book = (props: BookProps) => {
   }, [page, setHideAppBar, setPage, slidesPerView]);
 
   const effectBackGround = React.useMemo(() => {
-    switch (effect) {
+    switch (pageImageEffect?.type) {
       case 'dark':
         return {
-          filter: `brightness(${100 - effectPercentage}%)`,
+          filter: `brightness(${100 - pageImageEffect.percent}%)`,
         };
       case 'paper':
         return {
-          filter: `sepia(${effectPercentage}%)`,
+          filter: `sepia(${pageImageEffect.percent}%)`,
         };
       default:
         return undefined;
     }
-  }, [effect, effectPercentage]);
+  }, [pageImageEffect]);
 
   const clickPage = React.useCallback((event) => {
     if (openEditDialog) return;
@@ -477,10 +474,6 @@ const Book = (props: BookProps) => {
             maxPages={maxPage}
             pageStyle={PageStyle[pageStyleKey]}
             onPageStyleClick={setNextPageStyle}
-            pageEffect={effect}
-            onPageEffectChanged={setEffect}
-            pageEffectPercentage={effectPercentage}
-            onPageEffectPercentage={setEffectPercentage}
             setHideAppBar={setHideAppBar}
             goNextBook={goNextBook}
             goPreviousBook={goPreviousBook}
