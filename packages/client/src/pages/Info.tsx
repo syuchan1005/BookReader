@@ -12,7 +12,7 @@ import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/ge
 
 import { commonTheme } from '@client/App';
 
-import db from '@client/indexedDb/Database';
+import db, { Read } from '@client/indexedDb/Database';
 
 import Book from '@client/components/Book';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
@@ -118,7 +118,6 @@ const Info = (props: InfoProps) => {
 
   const visibleMargin = React
     .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
-  const [readId, setReadId] = React.useState('');
   const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] = useLazyDialog(false);
   const [mode, setMode] = React.useState<ScreenModeType>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
@@ -156,24 +155,41 @@ const Info = (props: InfoProps) => {
   const bookName = React.useMemo(() => data?.bookInfo?.name ?? '', [data]);
   useTitle(bookName || undefined);
 
-  React.useEffect(() => {
-    let unMounted = false;
-    db.read.getAll(Number.MAX_SAFE_INTEGER, { key: 'infoId', direction: 'prev' }, infoId)
-      .then((reads) => {
-        const read = reads.reduce((prev, curr) => (prev.updatedAt > curr.updatedAt ? prev : curr));
-        if (read && !unMounted) {
-          setReadId(read.bookId);
-        }
-      });
-    return () => {
-      unMounted = true;
-    };
-  }, [infoId]);
-
-  const bookList: typeof data.bookInfo.books = React.useMemo(
+  const bookList = React.useMemo(
     () => (data?.bookInfo?.books ?? []),
     [data],
   );
+
+  const [sortedReadBooks, setSortedReadBooks] = React.useState<Read[]>([]);
+  React.useEffect(() => {
+    let cancelled = false;
+    db.read.getAll(Number.MAX_SAFE_INTEGER, { key: 'infoId', direction: 'prev' }, infoId)
+      .then((reads) => {
+        if (cancelled) {
+          return;
+        }
+
+        setSortedReadBooks(
+          reads.sort(
+            (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+          ),
+        );
+      });
+    return () => { cancelled = true; };
+  }, [infoId]);
+
+  const readId: string = React.useMemo(() => {
+    if (sortedReadBooks.length === 0) {
+      return '';
+    }
+    if (bookList.length === 0) {
+      return sortedReadBooks[0].bookId;
+    }
+    const existBookIds = bookList.map((book) => book.id);
+    return sortedReadBooks
+      .find((read) => existBookIds.includes(read.bookId))
+      .bookId || '';
+  }, [bookList, sortedReadBooks]);
 
   const onDeletedBook = React.useCallback((bookId: string, pages: number) => {
     // noinspection JSIgnoredPromiseFromCall
