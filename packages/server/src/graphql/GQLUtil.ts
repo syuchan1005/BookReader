@@ -49,9 +49,9 @@ const GQLUtil = {
         .padStart(pad, '0')}.jpg`;
       const dist = `storage/book/${bookId}/${fileName}`;
 
+      await convertAndSaveJpg(f, dist);
       count += 1;
       onProgress(count, files.length);
-      await convertAndSaveJpg(f, dist);
     });
     await Promise.all(promises)
       .catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
