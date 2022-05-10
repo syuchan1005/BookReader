@@ -384,14 +384,6 @@ const Book = (props: BookProps) => {
   }, [readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
 
   const openBook = React.useCallback((infoId: string, targetBookId: string) => {
-    db.infoReads.put({
-      infoId,
-      bookId: targetBookId,
-    })
-      .catch((e1) => setAlertData({
-        message: e1,
-        variant: 'error',
-      }));
     navigate(`/book/${targetBookId}`, {
       state: {
         // @ts-ignore
@@ -399,7 +391,7 @@ const Book = (props: BookProps) => {
       },
       replace: true,
     });
-  }, [setAlertData, navigate, location]);
+  }, [navigate, location]);
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {

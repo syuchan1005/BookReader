@@ -13,12 +13,6 @@ import { createTheme } from '@mui/material/styles';
 import * as colors from '@mui/material/colors';
 import { useApolloClient } from '@apollo/client';
 
-import {
-  MigrationBooksDocument,
-  MigrationBooksQuery,
-  MigrationBooksQueryVariables,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-
 import { workbox } from '@client/registerServiceWorker';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
@@ -29,7 +23,6 @@ import {
 } from '@client/store/atoms';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
-import { startMigration } from '@client/indexedDb/Migration_3_4';
 
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
@@ -150,48 +143,33 @@ const App = () => {
       );
   }, [isSystemDarkTheme, provideTheme]);
 
-  const [isMigrated, setMigrated] = React.useState(false);
-  React.useEffect(() => {
-    const getBooks = async (bookIds: string[]) => {
-      if (bookIds.length === 0) {
-        return [];
-      }
-      const { data } = await apolloClient.query<MigrationBooksQuery, MigrationBooksQueryVariables>({
-        query: MigrationBooksDocument,
-        fetchPolicy: 'network-only',
-        variables: {
-          bookIds,
-        },
-      });
-      return data.books
-        .filter((b) => !!b)
-        .map((book) => ({
-          bookId: book.bookId,
-          updatedAt: new Date(parseInt(book.updatedAt, 10)),
-          infoId: book.info.id,
-        }));
-    };
-    startMigration(getBooks, /* dryRun = */false)
-      .catch(() => { /* ignored */
-      })
-      .finally(() => {
-        setMigrated(true);
-      });
-    // eslint-disable-next-line
-  }, []);
-
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={provideTheme}>
         <CssBaseline />
         <BrowserRouter>
-          {(isMigrated) ? (
-            <Routes>
+          <Routes>
+            <Route
+              path="/"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Top />
+                </Suspense>
+              )}
+            >
               <Route
-                path="/"
+                index
                 element={(
                   <Suspense fallback={<LoadingFullscreen open />}>
-                    <Top />
+                    <Home />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="bookshelf"
+                element={(
+                  <Suspense fallback={<LoadingFullscreen open />}>
+                    <BookShelf />
                   </Suspense>
                 )}
               >
@@ -199,73 +177,54 @@ const App = () => {
                   index
                   element={(
                     <Suspense fallback={<LoadingFullscreen open />}>
-                      <Home />
+                      <Favorite />
                     </Suspense>
                   )}
                 />
                 <Route
-                  path="bookshelf"
+                  path="history"
                   element={(
                     <Suspense fallback={<LoadingFullscreen open />}>
-                      <BookShelf />
+                      <History />
                     </Suspense>
                   )}
-                >
-                  <Route
-                    index
-                    element={(
-                      <Suspense fallback={<LoadingFullscreen open />}>
-                        <Favorite />
-                      </Suspense>
-                    )}
-                  />
-                  <Route
-                    path="history"
-                    element={(
-                      <Suspense fallback={<LoadingFullscreen open />}>
-                        <History />
-                      </Suspense>
-                    )}
-                  />
-                </Route>
+                />
               </Route>
+            </Route>
 
-              <Route
-                path="info/:id"
-                element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
-                    <Info />
-                  </Suspense>
-                )}
-              />
-              <Route
-                path="book/:id"
-                element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
-                    <Book />
-                  </Suspense>
-                )}
-              />
-              <Route
-                path="setting"
-                element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
-                    <Setting />
-                  </Suspense>
-                )}
-              />
-              <Route
-                path="*"
-                element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
-                    <Error />
-                  </Suspense>
-                )}
-              />
-            </Routes>
-          ) : (
-            <LoadingFullscreen open />
-          )}
+            <Route
+              path="info/:id"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Info />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="book/:id"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Book />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="setting"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Setting />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="*"
+              element={(
+                <Suspense fallback={<LoadingFullscreen open />}>
+                  <Error />
+                </Suspense>
+              )}
+            />
+          </Routes>
         </BrowserRouter>
         <Snackbar
           open={openAlert}

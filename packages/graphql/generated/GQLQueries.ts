@@ -9,7 +9,7 @@ export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Mayb
 export type BigInt = number;
 export type IntRange = (number | [number, number])[];
 export type Upload = File;
-const defaultOptions =  {}
+const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -413,7 +413,7 @@ export type AddBooksMutationVariables = Exact<{
 }>;
 
 
-export type AddBooksMutation = { __typename?: 'Mutation', adds: Array<{ __typename?: 'Result', success: boolean, code?: string | null | undefined }> };
+export type AddBooksMutation = { __typename?: 'Mutation', adds: Array<{ __typename?: 'Result', success: boolean, code?: string | null }> };
 
 export type AddBooksProgressSubscriptionVariables = Exact<{
   id: Scalars['ID'];
@@ -429,12 +429,12 @@ export type AddCompressBookMutationVariables = Exact<{
 }>;
 
 
-export type AddCompressBookMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithBookResults', success: boolean, code?: string | null | undefined } };
+export type AddCompressBookMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithBookResults', success: boolean, code?: string | null } };
 
 export type PluginsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PluginsQuery = { __typename?: 'Query', plugins: Array<{ __typename?: 'Plugin', info: { __typename?: 'PluginInfo', name: string }, queries: { __typename?: 'PluginQueries', add: { __typename?: 'CommonPluginQuery', name: string, args: Array<string>, subscription?: boolean | null | undefined } } }> };
+export type PluginsQuery = { __typename?: 'Query', plugins: Array<{ __typename?: 'Plugin', info: { __typename?: 'PluginInfo', name: string }, queries: { __typename?: 'PluginQueries', add: { __typename?: 'CommonPluginQuery', name: string, args: Array<string>, subscription?: boolean | null } } }> };
 
 export type AddBookInfoMutationVariables = Exact<{
   name: Scalars['String'];
@@ -442,7 +442,7 @@ export type AddBookInfoMutationVariables = Exact<{
 }>;
 
 
-export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null | undefined, infoId?: string | null | undefined } };
+export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null, infoId?: string | null } };
 
 export type DebugBookCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -452,26 +452,19 @@ export type DebugBookCountsQuery = { __typename?: 'Query', sizes: { __typename?:
 export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
-
-export type MigrationBooksQueryVariables = Exact<{
-  bookIds: Array<Scalars['ID']> | Scalars['ID'];
-}>;
-
-
-export type MigrationBooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', updatedAt: string, bookId: string, info?: { __typename?: 'BookInfo', id: string } | null | undefined } | null | undefined> };
+export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type Auth0QueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type Auth0Query = { __typename?: 'Query', auth0?: { __typename?: 'Auth0', domain: string, clientId: string } | null | undefined };
+export type Auth0Query = { __typename?: 'Query', auth0?: { __typename?: 'Auth0', domain: string, clientId: string } | null };
 
 export type DeleteBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type DeleteBookInfoMutation = { __typename?: 'Mutation', del: { __typename?: 'BookInfoResult', success: boolean, code?: string | null | undefined, books: Array<{ __typename?: 'Book', id: string, pages: number }> } };
+export type DeleteBookInfoMutation = { __typename?: 'Mutation', del: { __typename?: 'BookInfoResult', success: boolean, code?: string | null, books: Array<{ __typename?: 'Book', id: string, pages: number }> } };
 
 export type EditBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -480,7 +473,7 @@ export type EditBookInfoMutationVariables = Exact<{
 }>;
 
 
-export type EditBookInfoMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
+export type EditBookInfoMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type EditBookMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -488,14 +481,14 @@ export type EditBookMutationVariables = Exact<{
 }>;
 
 
-export type EditBookMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
+export type EditBookMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type DownloadBookInfosQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type DownloadBookInfosQuery = { __typename?: 'Query', bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, books: Array<{ __typename?: 'Book', id: string, number: string, pages: number }> } | null | undefined };
+export type DownloadBookInfosQuery = { __typename?: 'Query', bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, books: Array<{ __typename?: 'Book', id: string, number: string, pages: number }> } | null };
 
 export type BulkEditPagesMutationVariables = Exact<{
   bookId: Scalars['ID'];
@@ -503,14 +496,14 @@ export type BulkEditPagesMutationVariables = Exact<{
 }>;
 
 
-export type BulkEditPagesMutation = { __typename?: 'Mutation', bulkEditPage: { __typename?: 'Result', success: boolean, code?: string | null | undefined, message?: string | null | undefined } };
+export type BulkEditPagesMutation = { __typename?: 'Mutation', bulkEditPage: { __typename?: 'Result', success: boolean, code?: string | null, message?: string | null } };
 
 export type BookQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type BookQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, number: string, pages: number, info?: { __typename?: 'BookInfo', id: string, name: string } | null | undefined } | null | undefined };
+export type BookQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, number: string, pages: number, info?: { __typename?: 'BookInfo', id: string, name: string } | null } | null };
 
 export type RelayBookInfosQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']>;
@@ -519,14 +512,14 @@ export type RelayBookInfosQueryVariables = Exact<{
 }>;
 
 
-export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
+export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
 
 export type DeleteGenreMutationVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type DeleteGenreMutation = { __typename?: 'Mutation', deleteGenre: { __typename?: 'Result', code?: string | null | undefined, success: boolean, message?: string | null | undefined } };
+export type DeleteGenreMutation = { __typename?: 'Mutation', deleteGenre: { __typename?: 'Result', code?: string | null, success: boolean, message?: string | null } };
 
 export type EditGenreMutationVariables = Exact<{
   oldName: Scalars['String'];
@@ -535,21 +528,21 @@ export type EditGenreMutationVariables = Exact<{
 }>;
 
 
-export type EditGenreMutation = { __typename?: 'Mutation', editGenre: { __typename?: 'Result', code?: string | null | undefined, success: boolean, message?: string | null | undefined } };
+export type EditGenreMutation = { __typename?: 'Mutation', editGenre: { __typename?: 'Result', code?: string | null, success: boolean, message?: string | null } };
 
 export type BookInfosQueryVariables = Exact<{
   ids: Array<Scalars['ID']> | Scalars['ID'];
 }>;
 
 
-export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null | undefined, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null | undefined> };
+export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null> };
 
 export type BooksQueryVariables = Exact<{
   ids: Array<Scalars['ID']> | Scalars['ID'];
 }>;
 
 
-export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null | undefined, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null | undefined } | null | undefined> };
+export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null } | null> };
 
 export type PutReadListMutationVariables = Exact<{
   readList: Array<InputRead> | InputRead;
@@ -563,7 +556,7 @@ export type ReadListQueryVariables = Exact<{
 }>;
 
 
-export type ReadListQuery = { __typename?: 'Query', readList?: { __typename?: 'ReadList', latestRevision: { __typename?: 'Revision', count: number, syncedAt: string }, readList: Array<{ __typename?: 'Read', infoId: string, bookId: string, page: number, updatedAt: string }> } | null | undefined };
+export type ReadListQuery = { __typename?: 'Query', readList?: { __typename?: 'ReadList', latestRevision: { __typename?: 'Revision', count: number, syncedAt: string }, readList: Array<{ __typename?: 'Read', infoId: string, bookId: string, page: number, updatedAt: string }> } | null };
 
 export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
@@ -571,7 +564,7 @@ export type DeleteBooksMutationVariables = Exact<{
 }>;
 
 
-export type DeleteBooksMutation = { __typename?: 'Mutation', deleteBooks: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
+export type DeleteBooksMutation = { __typename?: 'Mutation', deleteBooks: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type MoveBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
@@ -579,7 +572,7 @@ export type MoveBooksMutationVariables = Exact<{
 }>;
 
 
-export type MoveBooksMutation = { __typename?: 'Mutation', moveBooks: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
+export type MoveBooksMutation = { __typename?: 'Mutation', moveBooks: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type EditBookInfoThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -587,14 +580,14 @@ export type EditBookInfoThumbnailMutationVariables = Exact<{
 }>;
 
 
-export type EditBookInfoThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
+export type EditBookInfoThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type BookPagesQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type BookPagesQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, pages: number } | null | undefined };
+export type BookPagesQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, pages: number } | null };
 
 export type EditBookThumbnailMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -602,7 +595,7 @@ export type EditBookThumbnailMutationVariables = Exact<{
 }>;
 
 
-export type EditBookThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null | undefined } };
+export type EditBookThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type BookInfoQueryVariables = Exact<{
   id: Scalars['ID'];
@@ -610,7 +603,7 @@ export type BookInfoQueryVariables = Exact<{
 }>;
 
 
-export type BookInfoQuery = { __typename?: 'Query', bookInfo?: { __typename?: 'BookInfo', id: string, name: string, books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null | undefined, updatedAt: string, info?: { __typename?: 'BookInfo', id: string } | null | undefined }> } | null | undefined };
+export type BookInfoQuery = { __typename?: 'Query', bookInfo?: { __typename?: 'BookInfo', id: string, name: string, books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null, updatedAt: string, info?: { __typename?: 'BookInfo', id: string } | null }> } | null };
 
 export type GenresQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -864,45 +857,6 @@ export function useDeleteUnusedFoldersMutation(baseOptions?: Apollo.MutationHook
 export type DeleteUnusedFoldersMutationHookResult = ReturnType<typeof useDeleteUnusedFoldersMutation>;
 export type DeleteUnusedFoldersMutationResult = Apollo.MutationResult<DeleteUnusedFoldersMutation>;
 export type DeleteUnusedFoldersMutationOptions = Apollo.BaseMutationOptions<DeleteUnusedFoldersMutation, DeleteUnusedFoldersMutationVariables>;
-export const MigrationBooksDocument = gql`
-    query migrationBooks($bookIds: [ID!]!) {
-  books(ids: $bookIds) {
-    bookId: id
-    updatedAt
-    info {
-      id
-    }
-  }
-}
-    `;
-
-/**
- * __useMigrationBooksQuery__
- *
- * To run a query within a React component, call `useMigrationBooksQuery` and pass it any options that fit your needs.
- * When your component renders, `useMigrationBooksQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useMigrationBooksQuery({
- *   variables: {
- *      bookIds: // value for 'bookIds'
- *   },
- * });
- */
-export function useMigrationBooksQuery(baseOptions: Apollo.QueryHookOptions<MigrationBooksQuery, MigrationBooksQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<MigrationBooksQuery, MigrationBooksQueryVariables>(MigrationBooksDocument, options);
-      }
-export function useMigrationBooksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MigrationBooksQuery, MigrationBooksQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<MigrationBooksQuery, MigrationBooksQueryVariables>(MigrationBooksDocument, options);
-        }
-export type MigrationBooksQueryHookResult = ReturnType<typeof useMigrationBooksQuery>;
-export type MigrationBooksLazyQueryHookResult = ReturnType<typeof useMigrationBooksLazyQuery>;
-export type MigrationBooksQueryResult = Apollo.QueryResult<MigrationBooksQuery, MigrationBooksQueryVariables>;
 export const Auth0Document = gql`
     query auth0 {
   auth0 {
