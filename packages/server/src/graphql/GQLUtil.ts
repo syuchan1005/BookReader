@@ -13,7 +13,7 @@ import {
 import Errors from '@server/Errors';
 import { asyncForEach, readdirRecursively } from '@server/Util';
 import {
-  createDownloadFilePath, userDownloadFolderName,
+  createDownloadFilePath, renameFile, userDownloadFolderName,
 } from '@server/StorageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
 import { convertAndSaveJpg } from '../ImageUtil';
@@ -49,7 +49,11 @@ const GQLUtil = {
         .padStart(pad, '0')}.jpg`;
       const dist = `storage/book/${bookId}/${fileName}`;
 
-      await convertAndSaveJpg(f, dist);
+      if (/\.jpe?g$/i.test(f)) {
+        await renameFile(f, dist);
+      } else {
+        await convertAndSaveJpg(f, dist);
+      }
       count += 1;
       onProgress(count, files.length);
     });

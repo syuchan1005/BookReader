@@ -1,5 +1,5 @@
 import path from 'path';
-import { promises as fs } from 'fs';
+import { promises as fs, createReadStream, createWriteStream } from 'fs';
 import { move } from 'fs-extra';
 import os from 'os';
 
@@ -92,5 +92,23 @@ export const withPageEditFolder = async <T>(
     throw error;
   } else {
     return result;
+  }
+};
+
+export const renameFile = async (srcPath: string, destPath: string, fallback = true) => {
+  try {
+    await fs.rename(srcPath, destPath);
+  } catch (e) {
+    if (!e) return;
+    if (e.code !== 'EXDEV' || !fallback) throw e;
+
+    const srcStream = createReadStream(srcPath);
+    const destStream = createWriteStream(destPath);
+    await new Promise((resolve) => {
+      destStream.once('close', () => {
+        fs.unlink(srcPath).then(resolve);
+      });
+      srcStream.pipe(destStream);
+    });
   }
 };
