@@ -188,7 +188,7 @@ const Info = (props: InfoProps) => {
     const existBookIds = bookList.map((book) => book.id);
     return sortedReadBooks
       .find((read) => existBookIds.includes(read.bookId))
-      .bookId || '';
+      ?.bookId || '';
   }, [bookList, sortedReadBooks]);
 
   const onDeletedBook = React.useCallback((bookId: string, pages: number) => {
