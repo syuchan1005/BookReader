@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Box,
   Button,
   Card,
   FormControl,
@@ -15,7 +16,7 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  TextField,
+  TextField, Typography,
   useTheme,
 } from '@mui/material';
 
@@ -23,6 +24,7 @@ import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
 import IntRangeInputField from '@client/components/IntRangeInputField';
 import FileField from '@client/components/FileField';
 import { createBookPageUrl } from '@client/components/BookPageImage';
+import CropImageDialog from '@client/components/dialogs/EditPagesDialog/CropImageDialog';
 import CalcImagePaddingDialog, {
   calcPadding,
   urlToImageData,
@@ -208,10 +210,14 @@ const ListItems = {
   }),
   [EditType.Put]: React.forwardRef((props: ListItemProps, ref) => {
     const {
+      bookId,
       maxPage,
       content,
       setContent,
     } = props;
+
+    const [isOpen, setOpen] = React.useState(false);
+
     return (
       <ListItemCard ref={ref} {...props} menuText="Put">
         <TextField
@@ -221,10 +227,33 @@ const ListItems = {
           value={content.pageIndex + 1}
           onChange={(e) => setContent('pageIndex', Number(e.target.value) - 1)}
         />
-        <FileField
-          file={content.image}
-          onChange={(f) => setContent('image', f)}
-        />
+        <Box>
+          <Typography component="span" variant="subtitle1">
+            {content.image ? 'Selected' : 'Not selected'}
+          </Typography>
+          <FileField
+            acceptType="image"
+            onChange={(f) => setContent('image', f)}
+          />
+          <span>or</span>
+          <Button
+            sx={{ m: 1 }}
+            onClick={() => setOpen(true)}
+          >
+            Crop image
+          </Button>
+          <CropImageDialog
+            open={isOpen}
+            onClose={(blob) => {
+              setOpen(false);
+              if (blob) {
+                setContent('image', blob);
+              }
+            }}
+            bookId={bookId}
+            maxPage={maxPage}
+          />
+        </Box>
       </ListItemCard>
     );
   }),
