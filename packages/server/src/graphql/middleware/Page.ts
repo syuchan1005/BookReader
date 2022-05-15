@@ -201,6 +201,15 @@ const calculateCropTransforms = (
   bottom: imageHeight,
 } as CropValue);
 
+const streamToBuffer = (
+  stream: NodeJS.ReadableStream,
+): Promise<Buffer> => new Promise((resolve, reject) => {
+  const buffer = [];
+  stream.on('data', (chunk) => buffer.push(chunk));
+  stream.on('end', () => resolve(Buffer.concat(buffer)));
+  stream.on('error', (err) => reject(err));
+});
+
 const executeEditActions = async (
   editActions: ImageEditAction[],
   editFolderPath: string,
@@ -217,7 +226,10 @@ const executeEditActions = async (
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
         if (image) {
-          await fs.writeFile(distFilePath, (await image).createReadStream());
+          const buffer = await image
+            .then(({ createReadStream }) => createReadStream())
+            .then(streamToBuffer);
+          await sharp(buffer).toFile(distFilePath);
         } else if (cropTransforms) {
           const size = await getImageSize(srcFilePath);
           const cropValue = calculateCropTransforms(cropTransforms, size.width, size.height);
