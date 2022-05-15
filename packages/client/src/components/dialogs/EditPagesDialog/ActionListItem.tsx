@@ -57,7 +57,7 @@ export const createInitValue = (editType: EditType) => {
     case EditType.Replace:
     case EditType.Put:
       return {
-        pageIndex: 1,
+        pageIndex: 0,
         image: undefined,
       };
     case EditType.Delete:
@@ -179,8 +179,8 @@ const ListItems = {
           type="number"
           label={`page (max: ${maxPage})`}
           color="secondary"
-          value={content.pageIndex}
-          onChange={(e) => setContent('pageIndex', Number(e.target.value))}
+          value={content.pageIndex + 1}
+          onChange={(e) => setContent('pageIndex', Number(e.target.value) - 1)}
         />
         <FileField
           file={content.image}
@@ -218,8 +218,8 @@ const ListItems = {
           type="number"
           label={`page (max: ${maxPage})`}
           color="secondary"
-          value={content.pageIndex}
-          onChange={(e) => setContent('pageIndex', Number(e.target.value))}
+          value={content.pageIndex + 1}
+          onChange={(e) => setContent('pageIndex', Number(e.target.value) - 1)}
         />
         <FileField
           file={content.image}
