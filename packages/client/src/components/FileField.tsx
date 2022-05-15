@@ -6,7 +6,10 @@ import makeStyles from '@mui/styles/makeStyles';
 
 import { archiveTypes } from '@syuchan1005/book-reader-common';
 
+export type AcceptType = 'archive' | 'image';
+
 interface FileFieldProps {
+  acceptType?: AcceptType;
   file?: File;
   onChange?: Function;
   style?: React.CSSProperties;
@@ -29,7 +32,12 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const FileField = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const inputRef = React.useRef(null);
-  const { file, onChange, style } = props;
+  const {
+    acceptType = 'archive',
+    file,
+    onChange,
+    style,
+  } = props;
 
   const onFilePicked = (event) => {
     const { files } = event.target;
@@ -38,7 +46,16 @@ const FileField = (props: FileFieldProps) => {
     }
   };
 
-  const acceptType = `${Object.keys(archiveTypes).join(',')},${[...new Set(Object.values(archiveTypes))].map((a) => `.${a}`).join(',')}`;
+  let acceptTypeText;
+  switch (acceptType) {
+    case 'image':
+      acceptTypeText = 'image/jpeg,image/png,image/webp';
+      break;
+    case 'archive':
+    default:
+      acceptTypeText = `${Object.keys(archiveTypes).join(',')},${[...new Set(Object.values(archiveTypes))].map((a) => `.${a}`).join(',')}`;
+      break;
+  }
   return (
     <Button
       onClick={() => inputRef.current.click()}
@@ -51,7 +68,7 @@ const FileField = (props: FileFieldProps) => {
       <input
         hidden
         type="file"
-        accept={acceptType}
+        accept={acceptTypeText}
         ref={inputRef}
         onChange={onFilePicked}
       />
