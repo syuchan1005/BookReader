@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { createBookPageUrl } from '../BookPageImage';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface CalcImagePaddingDialogProps {
   open: boolean;

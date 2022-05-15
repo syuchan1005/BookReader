@@ -22,11 +22,11 @@ import {
 import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
 import IntRangeInputField from '@client/components/IntRangeInputField';
 import FileField from '@client/components/FileField';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 import CalcImagePaddingDialog, {
   calcPadding,
   urlToImageData,
-} from '@client/components/dialogs/CalcImagePaddingDialog';
-import { createBookPageUrl } from '@client/components/BookPageImage';
+} from './CalcImagePaddingDialog';
 
 interface ListItemProps {
   draggableProps: any;

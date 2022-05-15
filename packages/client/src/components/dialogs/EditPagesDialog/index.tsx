@@ -57,7 +57,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
       resetStore(),
       Promise.race([
         (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-        new Promise((r) => setTimeout(r, 1000)), // timeout: 1000ms
+        new Promise((r) => { setTimeout(r, 1000); }), // timeout: 1000ms
       ]),
     ]).finally(() => window.location.reload());
   }, []);
