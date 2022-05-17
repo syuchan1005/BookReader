@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-  Button,
+  Box,
+  Button, CircularProgress,
   Dialog,
   DialogActions,
   DialogTitle,
@@ -11,7 +12,6 @@ import {
 import { List as MovableList, arrayMove } from 'react-movable';
 
 import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import { resetStore } from '@client/apollo';
 import { workbox } from '@client/registerServiceWorker';
 import {
@@ -57,9 +57,12 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
       resetStore(),
       Promise.race([
         (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-        new Promise((r) => { setTimeout(r, 1000); }), // timeout: 1000ms
+        new Promise((r) => {
+          setTimeout(r, 1000);
+        }), // timeout: 1000ms
       ]),
-    ]).finally(() => window.location.reload());
+    ])
+      .finally(() => window.location.reload());
   }, []);
 
   const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
@@ -84,67 +87,84 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     <Dialog open={open} fullWidth>
       <DialogTitle>Edit Pages</DialogTitle>
 
-      {(actions.length === 0) ? (
-        <List>
-          <AddTemplateListItem
-            bookId={bookId}
-            maxPage={maxPage}
-            onAdded={setActions}
-          />
-          <ListItem>
-            <ListItemText primary="or" style={{ textAlign: 'center' }} />
-          </ListItem>
-          <AddItemListItem onAdded={(editType) => {
-            setActions([
-              ...actions,
-              {
-                id: `${Date.now()}`,
-                editType,
-                content: createInitValue(editType),
-              },
-            ]);
-          }}
-          />
-        </List>
+      {/* eslint-disable-next-line no-nested-ternary */}
+      {(loading) ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress color="secondary" size={50} />
+        </Box>
       ) : (
-        <>
-          <MovableList
-            transitionDuration={150}
-            values={actions}
-            onChange={({ oldIndex, newIndex }) => setActions(
-              arrayMove(actions, oldIndex, newIndex),
-            )}
-            renderList={({ children, props: listProps }) => (
-              <List {...listProps}>
-                {children}
-              </List>
-            )}
-            renderItem={({ value, index, props: itemProps }) => (
-              <ActionListItem
-                key={value.id}
-                draggableProps={itemProps}
-                dragHandleProps={{ 'data-movable-handle': true }}
-                editType={value.editType}
-                maxPage={maxPage}
-                bookId={bookId}
-                content={value.content}
-                setContent={(k, c) => setContentValue(index, k, c)}
-                onDelete={() => handleDeleteAction(index)}
-              />
-            )}
-          />
-          <AddItemListItem onAdded={(editType) => {
-            setActions([
-              ...actions,
-              {
-                id: `${Date.now()}`,
-                editType,
-                content: createInitValue(editType),
-              },
-            ]);
-          }}
-          />
-        </>
+        (actions.length === 0) ? (
+          <List>
+            <AddTemplateListItem
+              bookId={bookId}
+              maxPage={maxPage}
+              onAdded={setActions}
+            />
+            <ListItem>
+              <ListItemText primary="or" style={{ textAlign: 'center' }} />
+            </ListItem>
+            <AddItemListItem onAdded={(editType) => {
+              setActions([
+                ...actions,
+                {
+                  id: `${Date.now()}`,
+                  editType,
+                  content: createInitValue(editType),
+                },
+              ]);
+            }}
+            />
+          </List>
+        ) : (
+          <>
+            <MovableList
+              transitionDuration={150}
+              values={actions}
+              onChange={({
+                oldIndex,
+                newIndex,
+              }) => setActions(
+                arrayMove(actions, oldIndex, newIndex),
+              )}
+              renderList={({
+                children,
+                props: listProps,
+              }) => (
+                <List {...listProps}>
+                  {children}
+                </List>
+              )}
+              renderItem={({
+                value,
+                index,
+                props: itemProps,
+              }) => (
+                <ActionListItem
+                  key={value.id}
+                  draggableProps={itemProps}
+                  dragHandleProps={{ 'data-movable-handle': true }}
+                  editType={value.editType}
+                  maxPage={maxPage}
+                  bookId={bookId}
+                  content={value.content}
+                  setContent={(k, c) => setContentValue(index, k, c)}
+                  onDelete={() => handleDeleteAction(index)}
+                />
+              )}
+            />
+            <AddItemListItem onAdded={(editType) => {
+              setActions([
+                ...actions,
+                {
+                  id: `${Date.now()}`,
+                  editType,
+                  content: createInitValue(editType),
+                },
+              ]);
+            }}
+            />
+          </>
+        )
       )}
 
       <DialogActions>
@@ -153,6 +173,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
             onClose();
             setActions([]);
           }}
+          disabled={loading}
         >
           Cancel
         </Button>
@@ -160,11 +181,10 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
           variant="contained"
           color="secondary"
           onClick={handleEdit}
-          disabled={actions.length === 0}
+          disabled={actions.length === 0 || loading}
         >
           Edit
         </Button>
-        <LoadingFullscreen open={loading} />
       </DialogActions>
     </Dialog>
   );
