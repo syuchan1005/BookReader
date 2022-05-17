@@ -12,12 +12,10 @@ interface BookPageImageProps {
   height: number;
   loading?: 'eager' | 'lazy';
   alt?: string;
-  className?: any;
   style?: any;
   noSave?: boolean;
 
   sizeDebounceDelay?: number;
-  forceUsePropSize?: boolean;
 
   skip?: boolean;
 }
@@ -28,12 +26,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     height: '100%',
   },
   imageFull: {
+    ...theme.typography.h5,
     width: '100%',
     height: '100%',
     display: 'block',
-  },
-  img: {
-    ...theme.typography.h5,
     objectFit: 'contain',
   },
 }));
@@ -84,11 +80,9 @@ const BookPageImage = (props: BookPageImageProps) => {
     height: argHeight,
     loading = 'lazy',
     alt: argAlt,
-    className,
     style,
     noSave = true,
     sizeDebounceDelay = 0,
-    forceUsePropSize = false,
     skip = false,
   } = props;
   const imageRef = React.useRef<HTMLImageElement>();
@@ -96,11 +90,11 @@ const BookPageImage = (props: BookPageImageProps) => {
   const argDebounceWidth = useDebounceValue(argWidth, sizeDebounceDelay);
   const argDebounceHeight = useDebounceValue(argHeight, sizeDebounceDelay);
 
-  const width = React.useMemo(
+  const requestImageWidth = React.useMemo(
     () => (argDebounceWidth < argDebounceHeight ? argDebounceWidth : undefined),
     [argDebounceWidth, argDebounceHeight],
   );
-  const height = React.useMemo(
+  const requestImageHeight = React.useMemo(
     () => (argDebounceWidth < argDebounceHeight ? undefined : argDebounceHeight),
     [argDebounceWidth, argDebounceHeight],
   );
@@ -119,21 +113,21 @@ const BookPageImage = (props: BookPageImageProps) => {
         bookId,
         pageIndex,
         bookPageCount,
-        width,
-        height,
+        requestImageWidth,
+        requestImageHeight,
         'jpg',
       );
 
       const sources = [];
-      if (width !== undefined || height !== undefined) {
+      if (requestImageWidth !== undefined || requestImageHeight !== undefined) {
         const sizeRatio = [1, 1.5, 2, 3];
         const webpSrcSet = sizeRatio.map((ratio) => {
           const src = createBookPageUrl(
             bookId,
             pageIndex,
             bookPageCount,
-            width !== undefined ? Math.ceil(width * ratio) : undefined,
-            height !== undefined ? Math.ceil(height * ratio) : undefined,
+            requestImageWidth !== undefined ? Math.ceil(requestImageWidth * ratio) : undefined,
+            requestImageHeight !== undefined ? Math.ceil(requestImageHeight * ratio) : undefined,
             'webp',
           );
           return `${src}${suffix} ${ratio}x`;
@@ -149,12 +143,7 @@ const BookPageImage = (props: BookPageImageProps) => {
         sources,
       };
     },
-    [bookId, pageIndex, bookPageCount, width, height, noSave],
-  );
-
-  const imgClassName = React.useMemo(
-    () => (className ? `${classes.img} ${className}` : classes.img),
-    [className, classes.img],
+    [bookId, pageIndex, bookPageCount, requestImageWidth, requestImageHeight, noSave],
   );
 
   const [imageState, setImageState] = React.useState<ImageStateType>(ImageState.LOADING);
@@ -172,26 +161,12 @@ const BookPageImage = (props: BookPageImageProps) => {
         return `Loading ${argAlt}`;
       case ImageState.ERROR:
         return `Error ${argAlt}`;
-      default:
       case ImageState.UNSET:
       case ImageState.LOADED:
+      default:
         return argAlt;
     }
   }, [argAlt, imageState]);
-
-  const imgWidth = React.useMemo(() => {
-    if (forceUsePropSize) {
-      return argWidth;
-    }
-    return width !== undefined ? '100%' : undefined;
-  }, [argWidth, forceUsePropSize, width]);
-
-  const imgHeight = React.useMemo(() => {
-    if (forceUsePropSize) {
-      return argHeight;
-    }
-    return height !== undefined ? '100%' : undefined;
-  }, [argHeight, forceUsePropSize, height]);
 
   return (
     <picture className={classes.pictureFull}>
@@ -205,12 +180,12 @@ const BookPageImage = (props: BookPageImageProps) => {
         <img
           ref={imageRef}
           loading={loading}
-          className={`${imgClassName} ${forceUsePropSize ? classes.imageFull : ''}`}
-          style={{ ...style, maxHeight: imgHeight }}
+          style={style}
+          className={classes.imageFull}
           src={imageSourceSet.imgSrc}
           alt={alt}
-          width={imgWidth}
-          height={imageState === ImageState.LOADED ? undefined : imgHeight}
+          width={argWidth}
+          height={argHeight}
           onLoad={() => setImageState(ImageState.LOADED)}
           onError={() => setImageState(ImageState.ERROR)}
         />

@@ -279,7 +279,7 @@ const BookInfo = (props: BookInfoProps) => {
       }}
     >
       {keepVisible && (
-        <Card className={classes.card} style={style}>
+        <Card className={classes.card} style={style} sx={{ height: '100%' }}>
           {(!simple) && (
             <CardActions className={classes.headerMenu}>
               <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
@@ -305,7 +305,7 @@ const BookInfo = (props: BookInfoProps) => {
             state={{ referrer: location.pathname }}
             to={`/info/${infoId}`}
           >
-            <CardActionArea>
+            <CardActionArea sx={{ height: '100%' }}>
               <BookPageImage
                 bookId={thumbnail?.bookId}
                 pageIndex={thumbnail?.pageIndex}
@@ -314,7 +314,6 @@ const BookInfo = (props: BookInfoProps) => {
                 width={thumbnailSize}
                 height={pageAspectRatio(thumbnailSize)}
                 noSave={false}
-                forceUsePropSize
               />
               {showName ? (
                 <CardContent className={classes.cardContent}>

@@ -22,7 +22,6 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import db from '@client/indexedDb/Database';
-import { commonTheme } from '@client/App';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';
 import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
@@ -86,12 +85,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     '& .swiper-slide.end > *': {
       justifyContent: 'flex-end',
     },
-  },
-  pageImage: {
-    paddingTop: commonTheme.safeArea.top,
-    '-webkit-touch-callout': 'none',
-    'user-select': 'none',
-    maxWidth: '100%',
   },
   loading: {
     width: '100%',
@@ -515,7 +508,6 @@ type SwiperSliderProp = {
   openEditDialog: boolean;
   classes: {
     pageContainer: string;
-    pageImage: string;
   },
 
   pageUpdateRequest: { page: number, time: number } | undefined;
@@ -612,7 +604,6 @@ const SwiperSlider = (props: SwiperSliderProp) => {
               bookPageCount={maxPage}
               {...imageSize}
               alt={(i + 1).toString(10)}
-              className={classes.pageImage}
               loading="eager"
               sizeDebounceDelay={300}
               skip={Math.abs(index - debouncePage) > slidesPerView}

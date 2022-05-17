@@ -236,7 +236,7 @@ const Book = (props: BookProps) => {
       }}
     >
       {isVisible && (
-        <Card className={`${classes.card} ${overlayClassName || ''}`}>
+        <Card className={`${classes.card} ${overlayClassName || ''}`} sx={{ height: '100%' }}>
           {/* eslint-disable-next-line no-nested-ternary */}
           {(simple) ? (
             (children) ? (
@@ -270,6 +270,7 @@ const Book = (props: BookProps) => {
               {...longTapEvents}
               onClick={handleBookClicked}
               disableRipple={disableRipple}
+              sx={{ height: '100%' }}
             >
 
               <BookPageImage
@@ -279,7 +280,6 @@ const Book = (props: BookProps) => {
                 width={thumbnailSize}
                 height={pageAspectRatio(thumbnailSize)}
                 noSave={thumbnailNoSave}
-                forceUsePropSize
               />
               <CardContent className={classes.cardContent}>
                 <div>{simple ? `${number}` : `${number} (p.${pages})`}</div>
