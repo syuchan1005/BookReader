@@ -23,6 +23,7 @@ import {
 } from '@client/store/atoms';
 import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
+import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
 
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
@@ -152,7 +153,7 @@ const App = () => {
             <Route
               path="/"
               element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
+                <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Top />
                 </Suspense>
               )}
@@ -160,7 +161,7 @@ const App = () => {
               <Route
                 index
                 element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
+                  <Suspense fallback={<HeaderWithBookListSkeleton />}>
                     <Home />
                   </Suspense>
                 )}
@@ -168,7 +169,7 @@ const App = () => {
               <Route
                 path="bookshelf"
                 element={(
-                  <Suspense fallback={<LoadingFullscreen open />}>
+                  <Suspense fallback={<HeaderWithBookListSkeleton />}>
                     <BookShelf />
                   </Suspense>
                 )}
@@ -176,7 +177,7 @@ const App = () => {
                 <Route
                   index
                   element={(
-                    <Suspense fallback={<LoadingFullscreen open />}>
+                    <Suspense fallback={<HeaderWithBookListSkeleton />}>
                       <Favorite />
                     </Suspense>
                   )}
@@ -184,7 +185,7 @@ const App = () => {
                 <Route
                   path="history"
                   element={(
-                    <Suspense fallback={<LoadingFullscreen open />}>
+                    <Suspense fallback={<HeaderWithBookListSkeleton />}>
                       <History />
                     </Suspense>
                   )}
@@ -195,7 +196,7 @@ const App = () => {
             <Route
               path="info/:id"
               element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
+                <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Info />
                 </Suspense>
               )}
@@ -203,7 +204,7 @@ const App = () => {
             <Route
               path="book/:id"
               element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
+                <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Book />
                 </Suspense>
               )}
@@ -211,7 +212,7 @@ const App = () => {
             <Route
               path="setting"
               element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
+                <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Setting />
                 </Suspense>
               )}
@@ -219,7 +220,7 @@ const App = () => {
             <Route
               path="*"
               element={(
-                <Suspense fallback={<LoadingFullscreen open />}>
+                <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Error />
                 </Suspense>
               )}
