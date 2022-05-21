@@ -39,14 +39,6 @@ export const removeBookCache = async (
   }
 };
 
-export const createStorageFolders = async (): Promise<void> => {
-  await fs.mkdir(bookFolderPath, { recursive: true });
-  await fs.mkdir(cacheBookFolderName, { recursive: true });
-  await fs.mkdir(downloadFolderName, { recursive: true });
-  await fs.mkdir(userDownloadFolderName, { recursive: true });
-  // `${os.tmp}/bookReader/${bookId|infoId}` processing extracted files.
-};
-
 export const withPageEditFolder = async <T>(
   bookId: string,
   block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>,

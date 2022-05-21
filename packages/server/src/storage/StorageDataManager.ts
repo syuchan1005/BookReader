@@ -1,7 +1,13 @@
 import { Buffer } from 'buffer';
+import Koa from 'koa';
+
 import { LocalStorageDataManager } from './local';
 
 export interface IStorageDataManager {
+  init(): Promise<void>;
+
+  middleware(app: Koa);
+
   getOriginalPageData(
     metadata: Pick<PageMetadata, 'bookId' | 'pageNumber'>,
   ): Promise<PageData | undefined>;

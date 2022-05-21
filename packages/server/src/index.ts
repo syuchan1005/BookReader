@@ -6,13 +6,13 @@ import jwt from 'koa-jwt';
 import jwksRsa from 'jwks-rsa';
 
 import { BookDataManager } from '@server/database/BookDataManager';
+import { StorageDataManager } from '@server/storage/StorageDataManager';
 import { getAuthInfo } from '@server/AuthRepository';
 import { convertImage } from './ImageUtil';
-import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
 
 (async () => {
-  await createStorageFolders();
+  await StorageDataManager.init();
 
   const app = new Koa();
   const graphql = new GraphQL();
@@ -34,9 +34,7 @@ import GraphQL from './graphql/index';
     }));
   }
 
-  app.use(Serve(storageBasePath));
-
-  app.use(Serve(cacheFolderPath));
+  StorageDataManager.middleware(app);
 
   /* image serve with options in image name */
   app.use(async (ctx, next) => {

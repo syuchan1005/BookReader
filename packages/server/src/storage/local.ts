@@ -1,17 +1,38 @@
 import { promises as fs } from 'fs';
 import { Buffer } from 'buffer';
 import { join, dirname } from 'path';
+
+import Koa from 'koa';
+import Serve from 'koa-static';
+
 import {
   getContentType, IStorageDataManager, PageData, PageMetadata,
 } from './StorageDataManager';
 
 const storageBasePath = 'storage';
 const bookFolderPath = join(storageBasePath, 'book');
+const cacheFolderPath = join(storageBasePath, 'cache');
 const cacheBookFolderName = join(storageBasePath, 'cache', 'book');
+const downloadFolderName = join(storageBasePath, 'downloads');
+const userDownloadFolderName = 'downloads';
 
 const IgnoreErrorFunc = () => undefined;
 
 export class LocalStorageDataManager implements IStorageDataManager {
+  init(): Promise<void> {
+    return Promise.all([
+      fs.mkdir(bookFolderPath, { recursive: true }),
+      fs.mkdir(cacheBookFolderName, { recursive: true }),
+      fs.mkdir(downloadFolderName, { recursive: true }),
+      fs.mkdir(userDownloadFolderName, { recursive: true }),
+    ]).then(() => {});
+  }
+
+  middleware(app: Koa) {
+    app.use(Serve(storageBasePath));
+    app.use(Serve(cacheFolderPath));
+  }
+
   getOriginalPageData(
     { bookId, pageNumber }: Pick<PageMetadata, 'bookId' | 'pageNumber'>,
   ): Promise<PageData | undefined> {
