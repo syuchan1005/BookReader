@@ -127,6 +127,10 @@ export class LocalStorageDataManager implements IStorageDataManager {
     ]).then(() => {});
   }
 
+  getStoredBookIds(): Promise<Array<string>> {
+    return fs.readdir(bookFolderPath);
+  }
+
   private static toFilePath(metadata: CacheablePageMetadata): string {
     const pageName = typeof metadata.pageNumber === 'string'
       ? metadata.pageNumber

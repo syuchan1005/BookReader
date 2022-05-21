@@ -23,6 +23,8 @@ export interface IStorageDataManager {
 
   removeBookWithCache(bookId: string): Promise<void>;
 
+  getStoredBookIds(): Promise<Array<string>>;
+
   getUserStoredArchive(fileName: string): Promise<Buffer | undefined>;
 }
 

@@ -1,11 +1,8 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { promises as fs } from 'fs';
 import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
-import {
-  bookFolderPath,
-  removeBook,
-} from '@server/StorageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
+import { StorageDataManager } from '@server/storage/StorageDataManager';
 
 class Debug extends GQLMiddleware {
   Query(): QueryResolvers {
@@ -26,10 +23,10 @@ class Debug extends GQLMiddleware {
     return {
       debug_deleteUnusedFolders: async () => {
         const dbBookIds = await BookDataManager.Debug.getBookIds();
-        const fsBookIds = await fs.readdir(bookFolderPath);
+        const fsBookIds = await StorageDataManager.getStoredBookIds();
         const removePromises = fsBookIds
           .filter((id) => !dbBookIds.includes(id))
-          .map((id) => removeBook(id));
+          .map((id) => StorageDataManager.removeBookWithCache(id));
         await Promise.allSettled(removePromises);
 
         return {
