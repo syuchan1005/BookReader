@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { Buffer } from 'buffer';
 
-import { generateId } from '@server/database/models/Id';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
 
@@ -12,10 +12,13 @@ import {
 
 import Errors from '@server/Errors';
 import { asyncForEach, readdirRecursively } from '@server/Util';
-import {
-  createDownloadFilePath, renameFile, userDownloadFolderName,
-} from '@server/StorageUtil';
 import { BookDataManager } from '@server/database/BookDataManager';
+import {
+  readFile,
+  StorageDataManager,
+  streamToBuffer,
+  withTemporaryFolder,
+} from '@server/storage/StorageDataManager';
 import { convertAndSaveJpg } from '../ImageUtil';
 
 const GQLUtil = {
@@ -45,12 +48,21 @@ const GQLUtil = {
     let count = 0;
     onProgress(count, files.length);
     const promises = files.map(async (f, i) => {
-      const fileName = `${i.toString()
-        .padStart(pad, '0')}.jpg`;
+      const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
       const dist = `storage/book/${bookId}/${fileName}`;
 
       if (/\.jpe?g$/i.test(f)) {
-        await renameFile(f, dist);
+        await StorageDataManager.writeOriginalPage(
+          {
+            bookId,
+            pageNumber: {
+              pageIndex: i,
+              totalPageCount: files.length,
+            },
+          },
+          await readFile(f),
+          false,
+        );
       } else {
         await convertAndSaveJpg(f, dist);
       }
@@ -74,27 +86,30 @@ const GQLUtil = {
   },
   extractCompressFile(
     tempPath: string,
-    archiveFilePath: string,
+    archiveFileData: Buffer,
     onProgress: (percent: number) => void,
   ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const extractStream = extractFull(archiveFilePath, tempPath, {
-        recursive: true,
-        $progress: true,
-      });
-      extractStream.on('progress', (event) => {
-        onProgress(event.percent);
-      });
-      extractStream.on('error', reject);
-      extractStream.on('end', (...args) => {
-        resolve(...args);
+    return withTemporaryFolder(async (writeFile) => {
+      const filePath = await writeFile('archive.zip', archiveFileData);
+      return new Promise((resolve, reject) => {
+        const extractStream = extractFull(filePath, tempPath, {
+          recursive: true,
+          $progress: true,
+        });
+        extractStream.on('progress', (event) => {
+          onProgress(event.percent);
+        });
+        extractStream.on('error', reject);
+        extractStream.on('end', (...args) => {
+          resolve(...args);
+        });
       });
     });
   },
-  async saveArchiveFile(
+  async getArchiveFile(
     file?: Scalars['Upload'],
     localPath?: string,
-  ): Promise<({ success: false } & Result) | { success: true, archiveFilePath: string }> {
+  ): Promise<({ success: false } & Result) | { success: true, data: Buffer }> {
     if (!file && !localPath) {
       return {
         success: false,
@@ -103,37 +118,23 @@ const GQLUtil = {
       };
     }
 
-    let archiveFilePath: string;
+    let buffer: Buffer;
     if (localPath) {
-      const downloadPath = userDownloadFolderName;
-      const normalizeLocalPath = path.normalize(path.join(downloadPath, localPath));
-      const hasPathTraversal = path.relative(downloadPath, normalizeLocalPath)
-        .startsWith('../');
-      if (hasPathTraversal) {
-        return {
-          success: false,
-          code: 'QL0012',
-          message: Errors.QL0012,
-        };
-      }
-      archiveFilePath = path.resolve(normalizeLocalPath);
+      buffer = await StorageDataManager.getUserStoredArchive(localPath);
     } else if (file) {
-      const awaitFile = await file;
-      archiveFilePath = createDownloadFilePath(generateId());
-      try {
-        await fs.writeFile(archiveFilePath, awaitFile.createReadStream());
-      } catch (e) {
-        return {
-          success: false,
-          code: 'QL0006',
-          message: Errors.QL0006,
-        };
-      }
+      buffer = await streamToBuffer((await file).createReadStream());
     }
 
+    if (!buffer) {
+      return {
+        success: false,
+        code: 'QL0012',
+        message: Errors.QL0012,
+      };
+    }
     return {
       success: true,
-      archiveFilePath,
+      data: buffer,
     };
   },
   async searchBookFolders(tempPath: string) {

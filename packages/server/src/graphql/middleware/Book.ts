@@ -86,7 +86,7 @@ class Book extends GQLMiddleware {
           };
         }
 
-        const archiveFile = await GQLUtil.saveArchiveFile(book.file, book.path);
+        const archiveFile = await GQLUtil.getArchiveFile(book.file, book.path);
         if (archiveFile.success !== true) {
           return archiveFile;
         }
@@ -105,11 +105,10 @@ class Book extends GQLMiddleware {
         });
         await GQLUtil.extractCompressFile(
           tempPath,
-          archiveFile.archiveFilePath,
+          archiveFile.data,
           throttle(progressListener, throttleMs),
         )
           .catch((err) => {
-            fsRmSync(archiveFile.archiveFilePath, { force: true });
             fsRmSync(tempPath, {
               recursive: true,
               force: true,
@@ -136,8 +135,7 @@ class Book extends GQLMiddleware {
             recursive: true,
             force: true,
           }),
-        )
-          .finally(() => fs.rm(archiveFile.archiveFilePath, { force: true }));
+        );
       }),
       addCompressBook: async (
         parent,
@@ -147,7 +145,7 @@ class Book extends GQLMiddleware {
           path: localPath,
         },
       ) => {
-        const archiveFile = await GQLUtil.saveArchiveFile(compressBooks, localPath);
+        const archiveFile = await GQLUtil.getArchiveFile(compressBooks, localPath);
         if (archiveFile.success === false) {
           return archiveFile as unknown as ResultWithBookResults;
         }
@@ -161,7 +159,7 @@ class Book extends GQLMiddleware {
         try {
           await GQLUtil.extractCompressFile(
             tempPath,
-            archiveFile.archiveFilePath,
+            archiveFile.data,
             throttle(
               (percent) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
                 id: infoId,
@@ -171,7 +169,6 @@ class Book extends GQLMiddleware {
             ),
           );
         } catch (err) {
-          await fs.rm(archiveFile.archiveFilePath, { force: true });
           await fs.rm(tempPath, {
             recursive: true,
             force: true,
@@ -241,7 +238,6 @@ class Book extends GQLMiddleware {
           recursive: true,
           force: true,
         });
-        await fs.rm(archiveFile.archiveFilePath, { force: true });
         return {
           success: true,
           bookResults: results,

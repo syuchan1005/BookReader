@@ -6,7 +6,7 @@ import Koa from 'koa';
 import Serve from 'koa-static';
 
 import {
-  getContentType, IStorageDataManager, PageData, PageMetadata,
+  getContentType, IStorageDataManager, PageData, CacheablePageMetadata, PageMetadata,
 } from './StorageDataManager';
 
 const storageBasePath = 'storage';
@@ -33,9 +33,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
     app.use(Serve(cacheFolderPath));
   }
 
-  getOriginalPageData(
-    { bookId, pageNumber }: Pick<PageMetadata, 'bookId' | 'pageNumber'>,
-  ): Promise<PageData | undefined> {
+  getOriginalPageData({ bookId, pageNumber }: PageMetadata): Promise<PageData | undefined> {
     return this.getPageData({
       bookId,
       pageNumber,
@@ -45,7 +43,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
     });
   }
 
-  async getPageData(metadata: PageMetadata): Promise<PageData | undefined> {
+  async getPageData(metadata: CacheablePageMetadata): Promise<PageData | undefined> {
     const filePath = LocalStorageDataManager.toFilePath(metadata);
     const stat = await fs.stat(filePath).catch(() => undefined);
     if (!stat?.isFile()) {
@@ -65,7 +63,29 @@ export class LocalStorageDataManager implements IStorageDataManager {
     };
   }
 
-  async writePage(metadata: PageMetadata, data: Buffer, overwrite: boolean): Promise<void> {
+  writeOriginalPage(
+    { bookId, pageNumber }: PageMetadata,
+    data: Buffer,
+    overwrite: boolean,
+  ): Promise<void> {
+    return this.writePage(
+      {
+        bookId,
+        pageNumber,
+        width: 0,
+        height: 0,
+        extension: 'jpg',
+      },
+      data,
+      overwrite,
+    );
+  }
+
+  async writePage(
+    metadata: CacheablePageMetadata,
+    data: Buffer,
+    overwrite: boolean,
+  ): Promise<void> {
     const filePath = LocalStorageDataManager.toFilePath(metadata);
     if (!overwrite && (await LocalStorageDataManager.existFile(filePath))) {
       return Promise.resolve();
@@ -78,7 +98,12 @@ export class LocalStorageDataManager implements IStorageDataManager {
     return fs.stat(filePath).then((s) => s.isFile()).catch(() => false);
   }
 
-  private static toFilePath(metadata: PageMetadata): string {
+  getUserStoredArchive(fileName: string): Promise<Buffer | undefined> {
+    const filePath = join(userDownloadFolderName, fileName);
+    return fs.readFile(filePath).catch(IgnoreErrorFunc);
+  }
+
+  private static toFilePath(metadata: CacheablePageMetadata): string {
     const pageName = typeof metadata.pageNumber === 'string'
       ? metadata.pageNumber
       : metadata.pageNumber.pageIndex.toString(10)
@@ -98,7 +123,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
     );
   }
 
-  private static isCachePageMetadata(metadata: PageMetadata): boolean {
+  private static isCachePageMetadata(metadata: CacheablePageMetadata): boolean {
     return metadata.extension === 'jpg'
       && metadata.width === 0
       && metadata.height === 0;
