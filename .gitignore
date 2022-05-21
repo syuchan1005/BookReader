@@ -1,7 +1,7 @@
 .idea
 dist
 node_modules
-storage
+packages/server/storage
 downloads
 *.iml
 *.sqlite

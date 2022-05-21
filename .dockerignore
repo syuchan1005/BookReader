@@ -2,7 +2,7 @@
 **/dist
 node_modules
 **/node_modules
-**/storage
+packages/server/storage
 *.iml
 **/*.sqlite
 **/*.sqlite-journal
