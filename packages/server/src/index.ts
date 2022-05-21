@@ -7,7 +7,7 @@ import jwksRsa from 'jwks-rsa';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { getAuthInfo } from '@server/AuthRepository';
-import { obsoleteConvertImage } from './ImageUtil';
+import { convertImage } from './ImageUtil';
 import { cacheFolderPath, createStorageFolders, storageBasePath } from './StorageUtil';
 import GraphQL from './graphql/index';
 
@@ -46,6 +46,7 @@ import GraphQL from './graphql/index';
       await next();
       return;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_full, bookId, pageNum, sizeExists, width, height, ext, isNotSave] = match;
     let extension;
     if (ext === 'jpg') {
@@ -59,7 +60,7 @@ import GraphQL from './graphql/index';
       return;
     }
 
-    const result = await obsoleteConvertImage(
+    const result = await convertImage(
       bookId,
       pageNum,
       {
@@ -79,8 +80,8 @@ import GraphQL from './graphql/index';
       ctx.length = result.byteLength;
       ctx.cacheControl = 'max-age=0';
 
-      if (!ctx.response.get('Last-Modified') && result.lastModified) {
-        ctx.set('Last-Modified', result.lastModified);
+      if (result.lastModified) {
+        ctx.lastModified = result.lastModified;
       }
     } else {
       ctx.status = 503;
