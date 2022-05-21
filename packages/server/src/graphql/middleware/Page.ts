@@ -1,19 +1,18 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
-import { promises as fs } from 'fs';
 import sharp from 'sharp';
 
 import {
   MutationResolvers, Result, SplitType, EditAction, Scalars, EditType,
 } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
-import {
-  withPageEditFolder,
-  createBookFolderPath,
-  removeBookCache,
-} from '@server/StorageUtil';
 import Errors from '@server/Errors';
 import { BookDataManager } from '@server/database/BookDataManager';
+import {
+  StorageDataManager,
+  withPageEditFolder,
+  writeFile,
+} from '@server/storage/StorageDataManager';
 import { flatRange } from '../scalar/IntRange';
 import {
   purgeImageCache,
@@ -216,12 +215,16 @@ const executeEditActions = async (
   bookId: string,
   bookPages: number,
 ): Promise<Result> => {
-  const bookFolderPath = createBookFolderPath(bookId);
   const promises = editActions
     .filter(({ willDelete }) => !willDelete)
     .map(async ({ pageIndex, image, cropTransforms }, index, arr): Promise<Result> => {
-      const srcFileName = `${pageIndex.toString(10).padStart(bookPages.toString(10).length, '0')}.jpg`;
-      const srcFilePath = `${bookFolderPath}/${srcFileName}`;
+      const srcFileData = await StorageDataManager.getOriginalPageData({
+        bookId,
+        pageNumber: {
+          pageIndex,
+          totalPageCount: bookPages,
+        },
+      });
       const distFileName = `${index.toString(10).padStart(arr.length.toString(10).length, '0')}.jpg`;
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
@@ -231,9 +234,9 @@ const executeEditActions = async (
             .then(streamToBuffer);
           await sharp(buffer).toFile(distFilePath);
         } else if (cropTransforms) {
-          const size = await getImageSize(srcFilePath);
+          const size = await getImageSize(srcFileData.data);
           const cropValue = calculateCropTransforms(cropTransforms, size.width, size.height);
-          await sharp(srcFilePath)
+          await sharp(srcFileData.data)
             .extract({
               top: cropValue.top,
               left: cropValue.left,
@@ -242,7 +245,7 @@ const executeEditActions = async (
             })
             .toFile(distFilePath);
         } else {
-          await fs.copyFile(srcFilePath, distFilePath);
+          await writeFile(distFilePath, srcFileData.data);
         }
         return { success: true };
       } catch (e) {
@@ -299,7 +302,7 @@ class Page extends GQLMiddleware {
           }
 
           try {
-            await removeBookCache(bookId).catch(() => { /* ignored */ });
+            await StorageDataManager.removeBook(bookId, true).catch(() => { /* ignored */ });
             purgeImageCache();
             await replaceNewFiles();
           } catch (e) {

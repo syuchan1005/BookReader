@@ -108,7 +108,7 @@ class BookInfo extends GQLMiddleware {
         await BookDataManager.deleteBookInfo(infoId);
 
         await Promise.allSettled(
-          books.map(({ id }) => StorageDataManager.removeBookWithCache(id)),
+          books.map(({ id }) => StorageDataManager.removeBook(id, false)),
         );
         purgeImageCache();
 

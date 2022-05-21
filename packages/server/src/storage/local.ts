@@ -116,11 +116,15 @@ export class LocalStorageDataManager implements IStorageDataManager {
       .catch(IgnoreErrorFunc);
   }
 
-  removeBookWithCache(bookId: string): Promise<void> {
+  removeBook(bookId: string, cacheOnly: boolean): Promise<void> {
+    const cacheRemovePromise = fs.rm(join(cacheBookFolderName, bookId), {
+      recursive: true,
+    });
+    if (cacheOnly) {
+      return cacheRemovePromise;
+    }
     return Promise.all([
-      fs.rm(join(cacheBookFolderName, bookId), {
-        recursive: true,
-      }),
+      cacheRemovePromise,
       fs.rm(join(bookFolderPath, bookId), {
         recursive: true,
       }),

@@ -5,7 +5,9 @@ import { join } from 'path';
 import os from 'os';
 
 import Koa from 'koa';
+import { move } from 'fs-extra';
 
+import { createBookFolderPath } from '@server/StorageUtil';
 import { LocalStorageDataManager } from './local';
 
 export interface IStorageDataManager {
@@ -21,7 +23,7 @@ export interface IStorageDataManager {
 
   writePage(metadata: CacheablePageMetadata, data: Buffer, overwrite: boolean): Promise<void>;
 
-  removeBookWithCache(bookId: string): Promise<void>;
+  removeBook(bookId: string, cacheOnly: boolean): Promise<void>;
 
   getStoredBookIds(): Promise<Array<string>>;
 
@@ -63,7 +65,42 @@ export const withTemporaryFolder = async <T>(
   return result;
 };
 
-export const { readFile } = fs;
+export const withPageEditFolder = async <T>(
+  bookId: string,
+  block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>,
+): Promise<T> => {
+  const oldFolderPath = createBookFolderPath(bookId);
+  const folderPath = `${oldFolderPath}_new`;
+  await fs.mkdir(folderPath, { recursive: true });
+  const replaceNewFiles = async () => {
+    await fs.rm(oldFolderPath, { recursive: true });
+    await move(folderPath, oldFolderPath, { overwrite: true });
+  };
+  let result;
+  let error;
+  try {
+    result = await block(folderPath, replaceNewFiles);
+  } catch (e) {
+    error = e;
+  } finally {
+    for (let i = 0; i < 4; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => { setTimeout(resolve, 1500); });
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await fs.rm(folderPath, { recursive: true, force: true });
+        break;
+      } catch (ignored) { /* ignored */ }
+    }
+  }
+  if (error) {
+    throw error;
+  } else {
+    return result;
+  }
+};
+
+export const { readFile, writeFile } = fs;
 
 export type PageMetadata = {
   bookId: string;

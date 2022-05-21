@@ -26,7 +26,7 @@ class Debug extends GQLMiddleware {
         const fsBookIds = await StorageDataManager.getStoredBookIds();
         const removePromises = fsBookIds
           .filter((id) => !dbBookIds.includes(id))
-          .map((id) => StorageDataManager.removeBookWithCache(id));
+          .map((id) => StorageDataManager.removeBook(id, false));
         await Promise.allSettled(removePromises);
 
         return {
