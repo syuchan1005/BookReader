@@ -1,4 +1,4 @@
-import { promises as fs, rmSync as fsRmSync } from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 import { generateId } from '@server/database/models/Id';
 import { Book as DBBook } from '@server/database/models/Book';
@@ -21,9 +21,9 @@ import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
 import { asyncForEach, asyncMap } from '@server/Util';
 import { purgeImageCache } from '@server/ImageUtil';
-import { createTemporaryFolderPath } from '@server/StorageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
+import { withTemporaryFolder } from '@server/storage/StorageDataManager';
 
 const throttleMs = 500;
 
@@ -96,46 +96,41 @@ class Book extends GQLMiddleware {
           addBooks: `Extract Book (${book.number}) ...`,
         });
         // extract
-        const tempPath = createTemporaryFolderPath(bookId);
-        const progressListener = (
-          percent: number,
-        ) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-          id: infoId,
-          addBooks: `Extract Book (${book.number}) ${percent}%`,
-        });
-        await GQLUtil.extractCompressFile(
-          tempPath,
-          archiveFile.data,
-          throttle(progressListener, throttleMs),
-        )
-          .catch((err) => {
-            fsRmSync(tempPath, {
+        return withTemporaryFolder(async (_, tempPath) => {
+          const progressListener = (
+            percent: number,
+          ) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+            id: infoId,
+            addBooks: `Extract Book (${book.number}) ${percent}%`,
+          });
+          await GQLUtil.extractCompressFile(
+            tempPath,
+            archiveFile.data,
+            throttle(progressListener, throttleMs),
+          )
+            .catch((err) => Promise.reject(err));
+          await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+            id: infoId,
+            addBooks: `Move Book (${book.number}) ...`,
+          });
+
+          return GQLUtil.addBookFromLocalPath(
+            tempPath,
+            infoId,
+            bookId,
+            book.number,
+            throttle((current, total) => {
+              this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+                id: infoId,
+                addBooks: `Move Book (${book.number}) ${current}/${total}`,
+              });
+            }, throttleMs),
+            () => fs.rm(tempPath, {
               recursive: true,
               force: true,
-            });
-            return Promise.reject(err);
-          });
-        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-          id: infoId,
-          addBooks: `Move Book (${book.number}) ...`,
+            }),
+          );
         });
-
-        return GQLUtil.addBookFromLocalPath(
-          tempPath,
-          infoId,
-          bookId,
-          book.number,
-          throttle((current, total) => {
-            this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-              id: infoId,
-              addBooks: `Move Book (${book.number}) ${current}/${total}`,
-            });
-          }, throttleMs),
-          () => fs.rm(tempPath, {
-            recursive: true,
-            force: true,
-          }),
-        );
       }),
       addCompressBook: async (
         parent,
@@ -155,8 +150,7 @@ class Book extends GQLMiddleware {
           addBooks: 'Extract Book...',
         });
 
-        const tempPath = createTemporaryFolderPath(infoId);
-        try {
+        return withTemporaryFolder(async (_, tempPath) => {
           await GQLUtil.extractCompressFile(
             tempPath,
             archiveFile.data,
@@ -168,80 +162,70 @@ class Book extends GQLMiddleware {
               throttleMs,
             ),
           );
-        } catch (err) {
-          await fs.rm(tempPath, {
-            recursive: true,
-            force: true,
-          });
-          return Promise.reject(err);
-        }
 
-        const {
-          booksFolderPath,
-          bookFolders,
-        } = await GQLUtil.searchBookFolders(tempPath);
-        if (bookFolders.length === 0) {
-          return {
-            success: false,
-            code: 'QL0006',
-            message: Errors.QL0006,
-          };
-        }
-
-        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-          id: infoId,
-          addBooks: 'Move Book...',
-        });
-
-        const addedNums = [];
-        const results = await asyncMap(bookFolders, async (p, i) => {
-          const folderPath = path.join(tempPath, booksFolderPath, p);
-          let nums = p.match(/\d+/g);
-          if (nums) {
-            nums = Number(nums[nums.length - 1])
-              .toString(10);
-          } else {
-            nums = `${i + 1}`;
-          }
-
-          if (addedNums.includes(nums)) {
-            nums = `[DUP]${nums}: ${p}`;
+          const {
+            booksFolderPath,
+            bookFolders,
+          } = await GQLUtil.searchBookFolders(tempPath);
+          if (bookFolders.length === 0) {
+            return {
+              success: false,
+              code: 'QL0006',
+              message: Errors.QL0006,
+            };
           }
 
           await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
             id: infoId,
-            addBooks: `Move Book (${nums}) ...`,
+            addBooks: 'Move Book...',
           });
 
-          addedNums.push(nums);
-          return GQLUtil.addBookFromLocalPath(
-            folderPath,
-            infoId,
-            generateId(),
-            nums,
-            throttle(
-              (current, total) => {
-                this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-                  id: infoId,
-                  addBooks: `Move Book (${nums}) ${current}/${total}`,
-                });
-              },
-              throttleMs,
-            ),
-            () => fs.rm(folderPath, {
-              recursive: true,
-              force: true,
-            }),
-          );
+          const addedNums = [];
+          const results = await asyncMap(bookFolders, async (p, i) => {
+            const folderPath = path.join(tempPath, booksFolderPath, p);
+            let nums = p.match(/\d+/g);
+            if (nums) {
+              nums = Number(nums[nums.length - 1])
+                .toString(10);
+            } else {
+              nums = `${i + 1}`;
+            }
+
+            if (addedNums.includes(nums)) {
+              nums = `[DUP]${nums}: ${p}`;
+            }
+
+            await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+              id: infoId,
+              addBooks: `Move Book (${nums}) ...`,
+            });
+
+            addedNums.push(nums);
+            return GQLUtil.addBookFromLocalPath(
+              folderPath,
+              infoId,
+              generateId(),
+              nums,
+              throttle(
+                (current, total) => {
+                  this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+                    id: infoId,
+                    addBooks: `Move Book (${nums}) ${current}/${total}`,
+                  });
+                },
+                throttleMs,
+              ),
+              () => fs.rm(folderPath, {
+                recursive: true,
+                force: true,
+              }),
+            );
+          });
+          return {
+            success: true,
+            bookResults: results,
+          };
         });
-        await fs.rm(tempPath, {
-          recursive: true,
-          force: true,
-        });
-        return {
-          success: true,
-          bookResults: results,
-        };
       },
       editBook: async (parent, {
         id: bookId,

@@ -7,8 +7,7 @@ import os from 'os';
 import Koa from 'koa';
 import { move } from 'fs-extra';
 
-import { createBookFolderPath } from '@server/StorageUtil';
-import { LocalStorageDataManager } from './local';
+import { LocalStorageDataManager, bookFolderPath } from './local';
 
 export interface IStorageDataManager {
   init(): Promise<void>;
@@ -46,6 +45,7 @@ export const streamToBuffer = (stream: Stream): Promise<Buffer> => new Promise(
 export const withTemporaryFolder = async <T>(
   block: (
     writeFile: (fileName: string, data: Buffer) => Promise<string>,
+    folderPath: string,
   ) => Promise<T>,
 ) => {
   let folderPath: string;
@@ -58,9 +58,10 @@ export const withTemporaryFolder = async <T>(
         await fs.writeFile(filePath, d);
         return filePath;
       },
+      folderPath,
     );
   } finally {
-    await fs.rm(folderPath, { recursive: true });
+    await fs.rm(folderPath, { recursive: true, force: true });
   }
   return result;
 };
@@ -69,7 +70,7 @@ export const withPageEditFolder = async <T>(
   bookId: string,
   block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>,
 ): Promise<T> => {
-  const oldFolderPath = createBookFolderPath(bookId);
+  const oldFolderPath = join(bookFolderPath, bookId);
   const folderPath = `${oldFolderPath}_new`;
   await fs.mkdir(folderPath, { recursive: true });
   const replaceNewFiles = async () => {

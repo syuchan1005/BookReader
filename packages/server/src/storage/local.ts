@@ -10,7 +10,7 @@ import {
 } from './StorageDataManager';
 
 const storageBasePath = 'storage';
-const bookFolderPath = join(storageBasePath, 'book');
+export const bookFolderPath = join(storageBasePath, 'book');
 const cacheFolderPath = join(storageBasePath, 'cache');
 const cacheBookFolderName = join(storageBasePath, 'cache', 'book');
 const downloadFolderName = join(storageBasePath, 'downloads');
@@ -37,7 +37,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
 
   getOriginalPageData({
     bookId,
-    pageNumber
+    pageNumber,
   }: PageMetadata): Promise<PageData | undefined> {
     return this.getPageData({
       bookId,
@@ -73,7 +73,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
   writeOriginalPage(
     {
       bookId,
-      pageNumber
+      pageNumber,
     }: PageMetadata,
     data: Buffer,
     overwrite: boolean,
@@ -119,6 +119,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
   removeBook(bookId: string, cacheOnly: boolean): Promise<void> {
     const cacheRemovePromise = fs.rm(join(cacheBookFolderName, bookId), {
       recursive: true,
+      force: true,
     });
     if (cacheOnly) {
       return cacheRemovePromise;
@@ -127,6 +128,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
       cacheRemovePromise,
       fs.rm(join(bookFolderPath, bookId), {
         recursive: true,
+        force: true,
       }),
     ]).then(() => {});
   }
