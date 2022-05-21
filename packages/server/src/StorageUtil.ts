@@ -11,11 +11,6 @@ export const cacheBookFolderName = path.join(cacheFolderPath, 'book');
 export const createBookFolderPath = (bookId: string): string => path.join(bookFolderPath, bookId);
 export const createTemporaryFolderPath = (folderName: string) => path.join(os.tmpdir(), folderName);
 
-export const removeBook = async (bookId: string): Promise<void> => {
-  await fs.rm(path.join(cacheBookFolderName, bookId), { recursive: true, force: true });
-  await fs.rm(path.join(bookFolderPath, bookId), { recursive: true, force: true });
-};
-
 export const removeBookCache = async (
   bookId?: string,
   page?: number,

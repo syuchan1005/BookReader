@@ -13,8 +13,8 @@ import {
 import Errors from '@server/Errors';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
-import { removeBook } from '@server/StorageUtil';
 import { generateId } from '@server/database/models/Id';
+import { StorageDataManager } from '@server/storage/StorageDataManager';
 
 export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
 
@@ -107,7 +107,9 @@ class BookInfo extends GQLMiddleware {
         const books = await BookDataManager.getBookInfoBooks(infoId, []);
         await BookDataManager.deleteBookInfo(infoId);
 
-        await Promise.allSettled(books.map(({ id }) => removeBook(id)));
+        await Promise.allSettled(
+          books.map(({ id }) => StorageDataManager.removeBookWithCache(id)),
+        );
         purgeImageCache();
 
         return {

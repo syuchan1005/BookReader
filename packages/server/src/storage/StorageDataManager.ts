@@ -21,6 +21,8 @@ export interface IStorageDataManager {
 
   writePage(metadata: CacheablePageMetadata, data: Buffer, overwrite: boolean): Promise<void>;
 
+  removeBookWithCache(bookId: string): Promise<void>;
+
   getUserStoredArchive(fileName: string): Promise<Buffer | undefined>;
 }
 

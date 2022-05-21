@@ -25,7 +25,9 @@ export class LocalStorageDataManager implements IStorageDataManager {
       fs.mkdir(cacheBookFolderName, { recursive: true }),
       fs.mkdir(downloadFolderName, { recursive: true }),
       fs.mkdir(userDownloadFolderName, { recursive: true }),
-    ]).then(() => {});
+    ])
+      .then(() => {
+      });
   }
 
   middleware(app: Koa) {
@@ -33,7 +35,10 @@ export class LocalStorageDataManager implements IStorageDataManager {
     app.use(Serve(cacheFolderPath));
   }
 
-  getOriginalPageData({ bookId, pageNumber }: PageMetadata): Promise<PageData | undefined> {
+  getOriginalPageData({
+    bookId,
+    pageNumber
+  }: PageMetadata): Promise<PageData | undefined> {
     return this.getPageData({
       bookId,
       pageNumber,
@@ -45,12 +50,14 @@ export class LocalStorageDataManager implements IStorageDataManager {
 
   async getPageData(metadata: CacheablePageMetadata): Promise<PageData | undefined> {
     const filePath = LocalStorageDataManager.toFilePath(metadata);
-    const stat = await fs.stat(filePath).catch(() => undefined);
+    const stat = await fs.stat(filePath)
+      .catch(() => undefined);
     if (!stat?.isFile()) {
       return undefined;
     }
 
-    const data = await fs.readFile(filePath).catch(IgnoreErrorFunc);
+    const data = await fs.readFile(filePath)
+      .catch(IgnoreErrorFunc);
     if (!data) {
       return undefined;
     }
@@ -64,7 +71,10 @@ export class LocalStorageDataManager implements IStorageDataManager {
   }
 
   writeOriginalPage(
-    { bookId, pageNumber }: PageMetadata,
+    {
+      bookId,
+      pageNumber
+    }: PageMetadata,
     data: Buffer,
     overwrite: boolean,
   ): Promise<void> {
@@ -95,12 +105,26 @@ export class LocalStorageDataManager implements IStorageDataManager {
   }
 
   private static existFile(filePath: string): Promise<boolean> {
-    return fs.stat(filePath).then((s) => s.isFile()).catch(() => false);
+    return fs.stat(filePath)
+      .then((s) => s.isFile())
+      .catch(() => false);
   }
 
   getUserStoredArchive(fileName: string): Promise<Buffer | undefined> {
     const filePath = join(userDownloadFolderName, fileName);
-    return fs.readFile(filePath).catch(IgnoreErrorFunc);
+    return fs.readFile(filePath)
+      .catch(IgnoreErrorFunc);
+  }
+
+  removeBookWithCache(bookId: string): Promise<void> {
+    return Promise.all([
+      fs.rm(join(cacheBookFolderName, bookId), {
+        recursive: true,
+      }),
+      fs.rm(join(bookFolderPath, bookId), {
+        recursive: true,
+      }),
+    ]).then(() => {});
   }
 
   private static toFilePath(metadata: CacheablePageMetadata): string {
