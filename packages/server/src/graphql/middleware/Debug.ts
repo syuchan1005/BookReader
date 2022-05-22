@@ -1,5 +1,4 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
-import { promises as fs } from 'fs';
 import { MutationResolvers, QueryResolvers } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';

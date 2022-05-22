@@ -1,4 +1,3 @@
-import { promises as fs } from 'fs';
 import path from 'path';
 import { generateId } from '@server/database/models/Id';
 import { Book as DBBook } from '@server/database/models/Book';
@@ -19,11 +18,11 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import Errors from '@server/Errors';
 import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
-import { asyncForEach, asyncMap } from '@server/Util';
+import { asyncMap } from '@server/Util';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
-import { withTemporaryFolder } from '@server/storage/StorageDataManager';
+import { StorageDataManager, withTemporaryFolder } from '@server/storage/StorageDataManager';
 
 const throttleMs = 500;
 
@@ -125,10 +124,6 @@ class Book extends GQLMiddleware {
                 addBooks: `Move Book (${book.number}) ${current}/${total}`,
               });
             }, throttleMs),
-            () => fs.rm(tempPath, {
-              recursive: true,
-              force: true,
-            }),
           );
         });
       }),
@@ -215,10 +210,6 @@ class Book extends GQLMiddleware {
                 },
                 throttleMs,
               ),
-              () => fs.rm(folderPath, {
-                recursive: true,
-                force: true,
-              }),
             );
           });
           return {
@@ -259,16 +250,9 @@ class Book extends GQLMiddleware {
         ids: bookIds,
       }) => {
         await BookDataManager.deleteBooks(infoId, bookIds);
-        await asyncForEach(bookIds, async (bookId) => {
-          await fs.rm(`storage/cache/book/${bookId}`, {
-            recursive: true,
-            force: true,
-          });
-          await fs.rm(`storage/book/${bookId}`, {
-            recursive: true,
-            force: true,
-          });
-        });
+        await Promise.all(
+          bookIds.map((bookId) => StorageDataManager.removeBook(bookId, false)),
+        );
         purgeImageCache();
         return {
           success: true,

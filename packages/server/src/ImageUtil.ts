@@ -94,6 +94,10 @@ export const convertAndSaveJpg = async (src: string | Buffer, dist: string) => {
   await sharp(src).jpeg().toFile(dist);
 };
 
+export const convertToJpg = (
+  srcBuffer: Buffer,
+): Promise<Buffer | undefined> => sharp(srcBuffer).jpeg().toBuffer();
+
 export const getImageSize = async (data: Buffer): Promise<{ width: number, height: number }> => {
   const { width, height } = await sharp(data).metadata();
   return { width, height };

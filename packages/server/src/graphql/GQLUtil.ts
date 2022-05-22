@@ -11,7 +11,7 @@ import {
 } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
-import { asyncForEach, readdirRecursively } from '@server/Util';
+import { asyncForEach } from '@server/Util';
 import { BookDataManager } from '@server/database/BookDataManager';
 import {
   readFile,
@@ -19,7 +19,21 @@ import {
   streamToBuffer,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
-import { convertAndSaveJpg } from '../ImageUtil';
+import { convertToJpg } from '../ImageUtil';
+
+const readdirRecursively = async (dir, files: string[] = []): Promise<string[]> => {
+  const dirents = await fs.readdir(dir, { withFileTypes: true });
+  const dirs = [];
+  dirents.forEach((dirent) => {
+    if (dirent.isDirectory()) dirs.push(`${dir}/${dirent.name}`);
+    if (dirent.isFile()) files.push(`${dir}/${dirent.name}`);
+  });
+  await asyncForEach(dirs, async (d) => {
+    // eslint-disable-next-line no-param-reassign
+    files = await readdirRecursively(d, files);
+  });
+  return Promise.resolve(files);
+};
 
 const GQLUtil = {
   async addBookFromLocalPath(
@@ -28,14 +42,12 @@ const GQLUtil = {
     bookId: string,
     number: string,
     onProgress: (current: number, total: number) => void,
-    deleteTempFolder?: () => Promise<void>,
   ): Promise<Result> {
     let files = await readdirRecursively(tempPath)
       .then((fileList) => fileList.filter(
         (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
       ));
     if (files.length <= 0) {
-      if (deleteTempFolder) await deleteTempFolder;
       return {
         success: false,
         code: 'QL0003',
@@ -43,35 +55,28 @@ const GQLUtil = {
       };
     }
     files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
-    const pad = files.length.toString(10).length;
-    await fs.mkdir(`storage/book/${bookId}`);
     let count = 0;
     onProgress(count, files.length);
     const promises = files.map(async (f, i) => {
-      const fileName = `${i.toString().padStart(pad, '0')}.jpg`;
-      const dist = `storage/book/${bookId}/${fileName}`;
-
+      let imageBuffer = await readFile(f);
       if (/\.jpe?g$/i.test(f)) {
-        await StorageDataManager.writeOriginalPage(
-          {
-            bookId,
-            pageNumber: {
-              pageIndex: i,
-              totalPageCount: files.length,
-            },
-          },
-          await readFile(f),
-          false,
-        );
-      } else {
-        await convertAndSaveJpg(f, dist);
+        imageBuffer = await convertToJpg(imageBuffer);
       }
+      await StorageDataManager.writeOriginalPage(
+        {
+          bookId,
+          pageNumber: {
+            pageIndex: i,
+            totalPageCount: files.length,
+          },
+        },
+        imageBuffer,
+        false,
+      );
       count += 1;
       onProgress(count, files.length);
     });
-    await Promise.all(promises)
-      .catch(async (reason) => (deleteTempFolder ? deleteTempFolder() : reason));
-    if (deleteTempFolder) await deleteTempFolder();
+    await Promise.all(promises).catch(() => {});
 
     await BookDataManager.addBook({
       id: bookId,
