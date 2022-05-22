@@ -1,11 +1,14 @@
 import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import sharp from 'sharp';
+import throttle from 'lodash.throttle';
+import { withFilter } from 'graphql-subscriptions';
 
 import {
-  MutationResolvers, Result, SplitType, EditAction, Scalars, EditType,
+  MutationResolvers, Result, SplitType, EditAction, Scalars, EditType, SubscriptionResolvers,
 } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
+import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
 import { BookDataManager } from '@server/database/BookDataManager';
 import {
@@ -18,6 +21,8 @@ import {
   purgeImageCache,
   getImageSize,
 } from '../../ImageUtil';
+
+const throttleMs = 500;
 
 const hasPageCountEffectMap = {
   [EditType.Crop]: false,
@@ -214,9 +219,12 @@ const executeEditActions = async (
   editFolderPath: string,
   bookId: string,
   bookPages: number,
+  log: (string) => void,
 ): Promise<Result> => {
-  const promises = editActions
-    .filter(({ willDelete }) => !willDelete)
+  const executableEditActions = editActions.filter(({ willDelete }) => !willDelete);
+
+  let count = 0;
+  const promises = executableEditActions
     .map(async ({ pageIndex, image, cropTransforms }, index, arr): Promise<Result> => {
       const srcFileData = await StorageDataManager.getOriginalPageData({
         bookId,
@@ -254,6 +262,9 @@ const executeEditActions = async (
           code: 'QL0013',
           message: Errors.QL0013,
         };
+      } finally {
+        count += 1;
+        log(`${count} / ${executableEditActions.length}`);
       }
     });
   try {
@@ -277,6 +288,16 @@ class Page extends GQLMiddleware {
             message: Errors.QL0004,
           };
         }
+
+        const log = throttle(
+          (message: string) => this.pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
+            id: bookId,
+            bulkEditPage: message,
+          }),
+          throttleMs,
+        );
+
+        log('Validate edit actions');
         const strictEditActions = validateEditActions(actions);
         if (strictEditActions === undefined) {
           return {
@@ -285,22 +306,26 @@ class Page extends GQLMiddleware {
             message: Errors.QL0012,
           };
         }
+        log('Calculate edit actions');
         const editActions = calculateEditActions(
           strictEditActions,
           [...Array(book.pageCount).keys()].map(createImageEditAction),
         ).filter(({ willDelete }) => !willDelete);
 
         return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
+          log('Processing edit actions');
           const result = await executeEditActions(
             editActions,
             folderPath,
             bookId,
             book.pageCount,
+            (str) => log(`Processing ${str}`),
           );
           if (!result.success) {
             return result;
           }
 
+          log('Move processed images');
           try {
             await StorageDataManager.removeBook(bookId, true).catch(() => { /* ignored */ });
             purgeImageCache();
@@ -312,11 +337,24 @@ class Page extends GQLMiddleware {
               message: Errors.QL0013,
             };
           }
+          log('Update database');
           await BookDataManager.editBook(bookId, {
             pageCount: editActions.length,
           });
           return { success: true };
         });
+      },
+    };
+  }
+
+  Subscription(): SubscriptionResolvers {
+    return {
+      bulkEditPage: {
+        // @ts-ignore
+        subscribe: withFilter(
+          () => this.pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
+          (payload, variables) => payload.id === variables.id,
+        ),
       },
     };
   }

@@ -395,10 +395,16 @@ export type SplitType = typeof SplitType[keyof typeof SplitType];
 export type Subscription = {
   __typename?: 'Subscription';
   addBooks: Scalars['String'];
+  bulkEditPage: Scalars['String'];
 };
 
 
 export type SubscriptionAddBooksArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type SubscriptionBulkEditPageArgs = {
   id: Scalars['ID'];
 };
 
@@ -497,6 +503,13 @@ export type BulkEditPagesMutationVariables = Exact<{
 
 
 export type BulkEditPagesMutation = { __typename?: 'Mutation', bulkEditPage: { __typename?: 'Result', success: boolean, code?: string | null, message?: string | null } };
+
+export type BulkEditPageProgressSubscriptionVariables = Exact<{
+  bookId: Scalars['ID'];
+}>;
+
+
+export type BulkEditPageProgressSubscription = { __typename?: 'Subscription', bulkEditPage: string };
 
 export type BookQueryVariables = Exact<{
   id: Scalars['ID'];
@@ -1079,6 +1092,34 @@ export function useBulkEditPagesMutation(baseOptions?: Apollo.MutationHookOption
 export type BulkEditPagesMutationHookResult = ReturnType<typeof useBulkEditPagesMutation>;
 export type BulkEditPagesMutationResult = Apollo.MutationResult<BulkEditPagesMutation>;
 export type BulkEditPagesMutationOptions = Apollo.BaseMutationOptions<BulkEditPagesMutation, BulkEditPagesMutationVariables>;
+export const BulkEditPageProgressDocument = gql`
+    subscription BulkEditPageProgress($bookId: ID!) {
+  bulkEditPage(id: $bookId)
+}
+    `;
+
+/**
+ * __useBulkEditPageProgressSubscription__
+ *
+ * To run a query within a React component, call `useBulkEditPageProgressSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useBulkEditPageProgressSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBulkEditPageProgressSubscription({
+ *   variables: {
+ *      bookId: // value for 'bookId'
+ *   },
+ * });
+ */
+export function useBulkEditPageProgressSubscription(baseOptions: Apollo.SubscriptionHookOptions<BulkEditPageProgressSubscription, BulkEditPageProgressSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<BulkEditPageProgressSubscription, BulkEditPageProgressSubscriptionVariables>(BulkEditPageProgressDocument, options);
+      }
+export type BulkEditPageProgressSubscriptionHookResult = ReturnType<typeof useBulkEditPageProgressSubscription>;
+export type BulkEditPageProgressSubscriptionResult = Apollo.SubscriptionResult<BulkEditPageProgressSubscription>;
 export const BookDocument = gql`
     query book($id: ID!) {
   book(id: $id) {

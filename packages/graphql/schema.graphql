@@ -63,6 +63,8 @@ type Mutation {
 
 type Subscription {
     addBooks(id: ID!): String!
+
+    bulkEditPage(id: ID!): String!
 }
 
 enum BookInfoOrder {

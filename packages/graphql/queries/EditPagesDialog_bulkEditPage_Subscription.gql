@@ -1,0 +1,3 @@
+subscription BulkEditPageProgress($bookId: ID!) {
+    bulkEditPage(id: $bookId)
+}

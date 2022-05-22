@@ -394,10 +394,16 @@ export type SplitType = typeof SplitType[keyof typeof SplitType];
 export type Subscription = {
   __typename?: 'Subscription';
   addBooks: Scalars['String'];
+  bulkEditPage: Scalars['String'];
 };
 
 
 export type SubscriptionAddBooksArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type SubscriptionBulkEditPageArgs = {
   id: Scalars['ID'];
 };
 
@@ -496,6 +502,13 @@ export type BulkEditPagesMutationVariables = Exact<{
 
 
 export type BulkEditPagesMutation = { __typename?: 'Mutation', bulkEditPage: { __typename?: 'Result', success: boolean, code?: string | null, message?: string | null } };
+
+export type BulkEditPageProgressSubscriptionVariables = Exact<{
+  bookId: Scalars['ID'];
+}>;
+
+
+export type BulkEditPageProgressSubscription = { __typename?: 'Subscription', bulkEditPage: string };
 
 export type BookQueryVariables = Exact<{
   id: Scalars['ID'];
@@ -958,6 +971,7 @@ export type RevisionResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   addBooks?: SubscriptionResolver<ResolversTypes['String'], "addBooks", ParentType, ContextType, RequireFields<SubscriptionAddBooksArgs, 'id'>>;
+  bulkEditPage?: SubscriptionResolver<ResolversTypes['String'], "bulkEditPage", ParentType, ContextType, RequireFields<SubscriptionBulkEditPageArgs, 'id'>>;
 };
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {

@@ -7,11 +7,14 @@ import {
   DialogTitle,
   List,
   ListItem,
-  ListItemText,
+  ListItemText, Typography,
 } from '@mui/material';
 import { List as MovableList, arrayMove } from 'react-movable';
 
-import { useBulkEditPagesMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  useBulkEditPageProgressSubscription,
+  useBulkEditPagesMutation
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { resetStore } from '@client/apollo';
 import { workbox } from '@client/registerServiceWorker';
 import {
@@ -35,6 +38,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     bookId,
   } = props;
   const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>([]);
+  const [subscriptionId, setSubscriptionId] = React.useState<string>(undefined);
 
   const handleDeleteAction = React.useCallback((index: number) => {
     setActions((a) => {
@@ -67,21 +71,32 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
 
   const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
     onCompleted(data) {
+      setSubscriptionId(undefined);
       if (data.bulkEditPage.success) {
         reload();
       }
     },
   });
 
-  const handleEdit = React.useCallback(() => doBulkEditPages({
+  const handleEdit = React.useCallback(() => {
+    setSubscriptionId(bookId);
+    doBulkEditPages({
+      variables: {
+        bookId,
+        editActions: actions.map((action) => ({
+          editType: action.editType,
+          [action.editType.toLowerCase()]: action.content,
+        })),
+      },
+    });
+  }, [actions, bookId, doBulkEditPages]);
+
+  const { data: subscriptionData } = useBulkEditPageProgressSubscription({
+    skip: !subscriptionId,
     variables: {
-      bookId,
-      editActions: actions.map((action) => ({
-        editType: action.editType,
-        [action.editType.toLowerCase()]: action.content,
-      })),
+      bookId: subscriptionId,
     },
-  }), [actions, bookId, doBulkEditPages]);
+  });
 
   return (
     <Dialog open={open} fullWidth>
@@ -89,8 +104,11 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
 
       {/* eslint-disable-next-line no-nested-ternary */}
       {(loading) ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
           <CircularProgress color="secondary" size={50} />
+          <Typography variant="subtitle1" sx={{ mt: 1 }}>
+            {subscriptionData?.bulkEditPage}
+          </Typography>
         </Box>
       ) : (
         (actions.length === 0) ? (

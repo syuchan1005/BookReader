@@ -22,6 +22,7 @@ import authDirective from './directive/auth';
 
 export const SubscriptionKeys = {
   ADD_BOOKS: 'ADD_BOOKS',
+  BULK_EDIT_PAGE: 'BULK_EDIT_PAGE',
 };
 
 export default class GraphQL {
