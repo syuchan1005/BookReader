@@ -1,7 +1,7 @@
 {
   "name": "Book Reader",
   "short_name": "Book Reader",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fafafa",
   "start_url": "/",
