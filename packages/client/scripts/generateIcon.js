@@ -1,18 +1,44 @@
 /* eslint-disable no-console */
-const { execSync } = require('child_process');
+const { promises: fs } = require('fs');
+const { join } = require('path');
 
-[
-  '16',
-  '32',
-  '48',
-  '72',
-  '120',
-  '144',
-  '152',
-  '192',
-  '512',
-].forEach((size) => {
-  console.log(`==x${size}.png==`);
-  execSync(`inkscape -z -e ./public/icons/x${size}.png -w ${size} -h ${size} ./public/icons/icon.svg`);
+const sharp = require('sharp');
+const pngToIco = require('png-to-ico');
+
+const publicPath = join(__dirname, '..', 'public');
+const iconsPath = join(publicPath, 'icons');
+const baseSvgPath = join(iconsPath, 'icon.svg');
+
+const sizes = [
+  16,
+  32,
+  48,
+  72,
+  120,
+  144,
+  152,
+  192,
+  512,
+];
+
+const createIconPngPath = (size) => join(iconsPath, `x${size}.png`);
+
+let count = 0;
+const promises = sizes.map(async (size) => {
+  await sharp(baseSvgPath)
+    .resize(size)
+    .png()
+    .toFile(createIconPngPath(size));
+  count += 1;
+  console.log(`${count} / ${sizes.length}`);
 });
-console.log('==END==');
+
+(async () => {
+  await Promise.all(promises);
+
+  console.log('==FAVICON==');
+  const icoBuffer = await pngToIco(sizes.slice(0, 3).map(createIconPngPath));
+  await fs.writeFile(join(publicPath, 'favicon.ico'), icoBuffer);
+
+  console.log('==END==');
+})();
