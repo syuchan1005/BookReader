@@ -187,7 +187,6 @@ export type Mutation = {
   editBookInfo: Result;
   editGenre: Result;
   moveBooks: Result;
-  putReadList: Revision;
 };
 
 
@@ -259,11 +258,6 @@ export type MutationMoveBooksArgs = {
   infoId: Scalars['ID'];
 };
 
-
-export type MutationPutReadListArgs = {
-  readList: Array<InputRead>;
-};
-
 export type PageInfo = {
   __typename?: 'PageInfo';
   endCursor: Scalars['String'];
@@ -291,7 +285,6 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
-  auth0?: Maybe<Auth0>;
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
@@ -299,7 +292,6 @@ export type Query = {
   debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
   plugins: Array<Plugin>;
-  readList?: Maybe<ReadList>;
   relayBookInfos: BookInfoPartialList;
 };
 
@@ -321,11 +313,6 @@ export type QueryBookInfosArgs = {
 
 export type QueryBooksArgs = {
   ids: Array<Scalars['ID']>;
-};
-
-
-export type QueryReadListArgs = {
-  beforeRevisionCount?: InputMaybe<Scalars['Int']>;
 };
 
 

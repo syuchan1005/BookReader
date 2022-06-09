@@ -39,8 +39,6 @@ model Book {
   bookInfo    BookInfo  @relation("Books", fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   thumbnailBy BookInfo? @relation("ThumbnailBook", fields: [thumbnailById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  Read Read[]
-
   @@unique([infoId, number], name: "Book_infoId_number_unique")
   @@unique([thumbnailById], name: "Book_thumbnailById_unique")
   @@index([infoId, updatedAt], name: "Book_infoId_updatedAt_index")
@@ -63,27 +61,3 @@ model BookInfosToGenres {
   @@id([infoId, genreName])
 }
 
-model Revision {
-  /// userId
-  subjectId String
-  count     Int
-  syncedAt  DateTime
-
-  Read Read[]
-
-  @@id([subjectId, count])
-}
-
-model Read {
-  /// userId
-  subjectId       String
-  bookId          String
-  page            Int
-  clientUpdatedAt DateTime
-  revisionCount   Int
-
-  book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  revision Revision @relation(fields: [subjectId, revisionCount], references: [subjectId, count], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([subjectId, bookId])
-}

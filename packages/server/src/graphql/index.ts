@@ -18,7 +18,6 @@ import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 import GQLUtil from './GQLUtil';
 import { convertAndSaveJpg } from '../ImageUtil';
 import internalMiddlewares from './middleware/index';
-import authDirective from './directive/auth';
 
 export const SubscriptionKeys = {
   ADD_BOOKS: 'ADD_BOOKS',
@@ -57,7 +56,7 @@ export default class GraphQL {
         return fun ? fun.bind(this)(BookDataManager, this, SubscriptionKeys, util) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
-    const baseSchema = makeExecutableSchema({
+    this.schema = makeExecutableSchema({
       typeDefs: [
         gql(schemaString),
         ...this.plugins.map((pl) => pl.typeDefs),
@@ -76,7 +75,6 @@ export default class GraphQL {
         ...middlewareOps('Resolver'),
       },
     });
-    this.schema = authDirective(baseSchema, 'auth');
     this.apolloServer = new ApolloServer({
       schema: this.schema,
       context: ({ ctx }) => ({ ctx }),
@@ -95,6 +93,7 @@ export default class GraphQL {
       server: httpServer,
       path: '/graphql',
     });
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useServer({ schema: this.schema }, wsServer);
 
     ['SIGINT', 'SIGTERM'].forEach((signal) => {

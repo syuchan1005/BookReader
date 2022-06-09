@@ -2,8 +2,6 @@ scalar Upload
 scalar BigInt
 scalar IntRange
 
-directive @auth(permissions: [String!]! = []) on FIELD_DEFINITION
-
 type Query {
     ## BookInfo
     relayBookInfos(
@@ -27,11 +25,6 @@ type Query {
 
     ## Genre
     genres: [Genre!]!
-
-    auth0: Auth0
-
-    ## Read
-    readList(beforeRevisionCount: Int): ReadList @auth(permissions: ["read:readList"])
 }
 
 type Mutation {
@@ -56,9 +49,6 @@ type Mutation {
 
     ## Debug
     debug_deleteUnusedFolders: Result!
-
-    ## Read
-    putReadList(readList: [InputRead!]!): Revision! @auth(permissions: ["write:readList"])
 }
 
 type Subscription {

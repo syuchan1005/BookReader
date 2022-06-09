@@ -2,12 +2,9 @@ import Koa from 'koa';
 import Serve from 'koa-static';
 import { historyApiFallback } from 'koa2-connect-history-api-fallback';
 import cors from '@koa/cors';
-import jwt from 'koa-jwt';
-import jwksRsa from 'jwks-rsa';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
-import { getAuthInfo } from '@server/AuthRepository';
 import { convertImage } from './ImageUtil';
 import GraphQL from './graphql/index';
 
@@ -18,21 +15,6 @@ import GraphQL from './graphql/index';
   const graphql = new GraphQL();
 
   app.use(cors());
-  const authInfo = getAuthInfo();
-  if (authInfo) {
-    app.use(jwt({
-      secret: jwksRsa.koaJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: `https://${authInfo.domain}/.well-known/jwks.json`,
-      }),
-      audience: authInfo.audience,
-      issuer: `https://${authInfo.domain}/`,
-      algorithms: ['RS256'],
-      passthrough: true,
-    }));
-  }
 
   StorageDataManager.middleware(app);
 

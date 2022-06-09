@@ -186,7 +186,6 @@ export type Mutation = {
   editBookInfo: Result;
   editGenre: Result;
   moveBooks: Result;
-  putReadList: Revision;
 };
 
 
@@ -258,11 +257,6 @@ export type MutationMoveBooksArgs = {
   infoId: Scalars['ID'];
 };
 
-
-export type MutationPutReadListArgs = {
-  readList: Array<InputRead>;
-};
-
 export type PageInfo = {
   __typename?: 'PageInfo';
   endCursor: Scalars['String'];
@@ -290,7 +284,6 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
-  auth0?: Maybe<Auth0>;
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
@@ -298,7 +291,6 @@ export type Query = {
   debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
   plugins: Array<Plugin>;
-  readList?: Maybe<ReadList>;
   relayBookInfos: BookInfoPartialList;
 };
 
@@ -320,11 +312,6 @@ export type QueryBookInfosArgs = {
 
 export type QueryBooksArgs = {
   ids: Array<Scalars['ID']>;
-};
-
-
-export type QueryReadListArgs = {
-  beforeRevisionCount?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -760,12 +747,6 @@ export type ResolversParentTypes = {
   UploadEditAction: UploadEditAction;
 };
 
-export type AuthDirectiveArgs = {
-  permissions?: Array<Scalars['String']>;
-};
-
-export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
-
 export type Auth0Resolvers<ContextType = any, ParentType extends ResolversParentTypes['Auth0'] = ResolversParentTypes['Auth0']> = {
   clientId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   domain?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -866,7 +847,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   editBookInfo?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditBookInfoArgs, 'id'>>;
   editGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationEditGenreArgs, 'oldName'>>;
   moveBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationMoveBooksArgs, 'ids' | 'infoId'>>;
-  putReadList?: Resolver<ResolversTypes['Revision'], ParentType, ContextType, RequireFields<MutationPutReadListArgs, 'readList'>>;
 };
 
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
@@ -895,7 +875,6 @@ export type PluginQueriesResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  auth0?: Resolver<Maybe<ResolversTypes['Auth0']>, ParentType, ContextType>;
   book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
   bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
   bookInfos?: Resolver<Array<Maybe<ResolversTypes['BookInfo']>>, ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'ids'>>;
@@ -903,7 +882,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   debug_bookCounts?: Resolver<ResolversTypes['Debug_BookCounts'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
   plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
-  readList?: Resolver<Maybe<ResolversTypes['ReadList']>, ParentType, ContextType, Partial<QueryReadListArgs>>;
   relayBookInfos?: Resolver<ResolversTypes['BookInfoPartialList'], ParentType, ContextType, Partial<QueryRelayBookInfosArgs>>;
 };
 
@@ -989,6 +967,3 @@ export type Resolvers<ContextType = any> = {
   Upload?: GraphQLScalarType;
 };
 
-export type DirectiveResolvers<ContextType = any> = {
-  auth?: AuthDirectiveResolver<any, any, ContextType>;
-};
