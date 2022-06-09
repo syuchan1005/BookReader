@@ -1,12 +1,10 @@
-import React  from 'react';
+import React from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { MockedProvider } from '@apollo/client/testing';
 import { Icon, IconButton } from '@mui/material';
 
 import TitleAndBackHeader from '../TitleAndBackHeader';
-import { auth0State } from '@client/store/atoms';
-import { MockedAuth0Provider, RecoilValue } from '@client/components/stories/Util';
 
 export default {
   title: 'Components/TitleAndBackHeader',
@@ -34,11 +32,6 @@ export default {
         <Story />
       </MockedProvider>
     ),
-    (Story) => (
-      <MockedAuth0Provider auth0={{ isAuthenticated: false, isLoading: false }}>
-        <Story />
-      </MockedAuth0Provider>
-    ),
   ],
 } as ComponentMeta<typeof TitleAndBackHeader>;
 
@@ -51,20 +44,6 @@ Default.args = {
   subTitle: 'Subtitle',
 };
 
-export const AuthEnabled = Template.bind({});
-AuthEnabled.args = {
-  backRoute: '/',
-  title: 'Title',
-  subTitle: 'Subtitle',
-};
-AuthEnabled.decorators = [
-  (Story) => (
-    <RecoilValue atom={auth0State} value={{ domain: 'domain', clientId: 'clientId' }}>
-      <Story />
-    </RecoilValue>
-  ),
-];
-
 export const WithChildren = Template.bind({});
 WithChildren.args = {
   backRoute: '/',
@@ -73,9 +52,5 @@ WithChildren.args = {
   children: (<IconButton sx={{ color: 'white' }}><Icon>sort</Icon></IconButton>),
 };
 WithChildren.decorators = [
-  (Story) => (
-    <RecoilValue atom={auth0State} value={{ domain: 'domain', clientId: 'clientId' }}>
-      <Story />
-    </RecoilValue>
-  ),
+  (Story) => (<Story />),
 ];

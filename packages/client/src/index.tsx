@@ -5,7 +5,6 @@ import { ApolloProvider } from '@apollo/client';
 import { RecoilRoot } from 'recoil';
 
 import apolloClient, { setUpApollo } from '@client/apollo/index';
-import { AsyncAuth0Provider } from '@client/components/AsyncAuth0Provider';
 import App from './App';
 
 import db from './indexedDb/Database';
@@ -16,6 +15,7 @@ import { workbox } from './registerServiceWorker';
 // eslint-disable-next-line no-constant-condition
 if (process.env.NODE_ENV !== 'production' && false) {
   import('@welldone-software/why-did-you-render')
+    // @ts-ignore
     .then(({ default: whyDidYouRender }) => whyDidYouRender(React, {
       trackAllPureComponents: true,
       exclude: [
@@ -33,9 +33,7 @@ if (process.env.NODE_ENV !== 'production' && false) {
     (
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
-          <AsyncAuth0Provider>
-            <App />
-          </AsyncAuth0Provider>
+          <App />
         </ApolloProvider>
       </RecoilRoot>
     ),

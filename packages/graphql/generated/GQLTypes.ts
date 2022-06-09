@@ -459,11 +459,6 @@ export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never;
 
 export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null } };
 
-export type Auth0QueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type Auth0Query = { __typename?: 'Query', auth0?: { __typename?: 'Auth0', domain: string, clientId: string } | null };
-
 export type DeleteBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -555,20 +550,6 @@ export type BooksQueryVariables = Exact<{
 
 
 export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null } | null> };
-
-export type PutReadListMutationVariables = Exact<{
-  readList: Array<InputRead> | InputRead;
-}>;
-
-
-export type PutReadListMutation = { __typename?: 'Mutation', putReadList: { __typename?: 'Revision', count: number, syncedAt: string } };
-
-export type ReadListQueryVariables = Exact<{
-  revisionCount?: InputMaybe<Scalars['Int']>;
-}>;
-
-
-export type ReadListQuery = { __typename?: 'Query', readList?: { __typename?: 'ReadList', latestRevision: { __typename?: 'Revision', count: number, syncedAt: string }, readList: Array<{ __typename?: 'Read', infoId: string, bookId: string, page: number, updatedAt: string }> } | null };
 
 export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];

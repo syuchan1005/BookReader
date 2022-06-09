@@ -21,7 +21,6 @@ import {
   primaryColorState,
   secondaryColorState,
 } from '@client/store/atoms';
-import LoadingFullscreen from '@client/components/LoadingFullscreen';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
 

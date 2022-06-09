@@ -149,16 +149,3 @@ export const homeLastSeenBookPosition = atom<Position | undefined>({
     logEffect(),
   ],
 });
-
-export const auth0State = atom<{ domain: string, clientId: string } | undefined>({
-  key: 'auth0State',
-  default: undefined,
-});
-
-export const hasAuth0State = selector<boolean>({
-  key: 'hasAuth0State',
-  get: ({ get }) => {
-    const auth0 = get(auth0State);
-    return !!auth0 && !!auth0.domain && !!auth0.clientId;
-  },
-});

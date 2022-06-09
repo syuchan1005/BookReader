@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const VERSION = 6;
+const VERSION = 7;
 
 interface InfoRead {
   infoId: string;
@@ -18,7 +18,6 @@ export interface Read {
   infoId: string; /* index */
   bookId: string; /* keyPath */
   page: number;
-  isDirty: boolean;
 
   updatedAt: Date; /* index */
 }
@@ -259,6 +258,22 @@ const UpgradeTask = [
     db.deleteObjectStore('infoReads');
     db.deleteObjectStore('bookReads');
   },
+  (db: IDBDatabase, request: IDBOpenDBRequest) => {
+    db.deleteObjectStore('revision');
+    const readStore = request.transaction.objectStore('read');
+    const cursorRequest = readStore.openCursor();
+    cursorRequest.onsuccess = (event) => {
+      // @ts-ignore
+      const cursor: IDBCursorWithValue = event.target.result;
+      if (!cursor) {
+        return;
+      }
+      const value = { ...cursor.value };
+      delete value.isDirty;
+      cursor.update(value);
+      cursor.continue();
+    };
+  },
 ];
 
 export class Database {
@@ -268,7 +283,6 @@ export class Database {
 
   private _bookInfoFavorite: StoreWrapper<BookInfoFavorite>;
   private _read: StoreWrapper<Read>;
-  private _revision: StoreWrapper<Revision>;
 
   constructor(dbName = 'BookReader--DB') {
     this.dbName = dbName;
@@ -280,10 +294,6 @@ export class Database {
 
   get read() {
     return this._read;
-  }
-
-  get revision(): StoreWrapper<Revision> {
-    return this._revision;
   }
 
   connect(): Promise<IDBDatabase> {
@@ -306,7 +316,6 @@ export class Database {
         this._db = request.result;
         this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', 'infoId', this._db);
         this._read = new StoreWrapper<Read>('read', 'bookId', this._db);
-        this._revision = new StoreWrapper<Revision>('revision', 'count', this._db);
 
         resolve(this._db);
       };

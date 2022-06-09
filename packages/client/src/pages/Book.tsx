@@ -146,7 +146,6 @@ const useDatabasePage = (
       infoId,
       bookId,
       page: p,
-      isDirty: true,
       updatedAt: new Date(),
     })
       .then(() => undefined);

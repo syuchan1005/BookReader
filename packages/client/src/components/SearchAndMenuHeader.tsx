@@ -25,7 +25,6 @@ import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation
 import { useRecoilState } from 'recoil';
 import { genresState } from '@client/store/atoms';
 import { useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-import { UserMenuButton } from '@client/components/UserMenuButton';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
@@ -235,8 +234,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
         >
           <Icon>sort</Icon>
         </IconButton>
-
-        <UserMenuButton />
       </Toolbar>
     </AppBar>
   );
