@@ -2,9 +2,6 @@ import { promises as fs } from 'fs';
 import { Buffer } from 'buffer';
 import { join, dirname } from 'path';
 
-import Koa from 'koa';
-import Serve from 'koa-static';
-
 import {
   getContentType, IStorageDataManager, PageData, CacheablePageMetadata, PageMetadata,
 } from './StorageDataManager';
@@ -30,9 +27,8 @@ export class LocalStorageDataManager implements IStorageDataManager {
       });
   }
 
-  middleware(app: Koa) {
-    app.use(Serve(storageBasePath));
-    app.use(Serve(cacheFolderPath));
+  getStaticFolders(): string[] {
+    return [storageBasePath, cacheFolderPath];
   }
 
   getOriginalPageData({

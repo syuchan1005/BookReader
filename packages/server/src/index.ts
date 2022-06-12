@@ -16,7 +16,9 @@ import GraphQL from './graphql/index';
 
   app.use(cors());
 
-  StorageDataManager.middleware(app);
+  StorageDataManager.getStaticFolders().forEach((folderPath) => {
+    app.use(Serve(folderPath));
+  });
 
   /* image serve with options in image name */
   app.use(async (ctx, next) => {

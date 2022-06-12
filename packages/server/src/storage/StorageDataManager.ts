@@ -4,7 +4,6 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import os from 'os';
 
-import Koa from 'koa';
 import { move } from 'fs-extra';
 
 import { LocalStorageDataManager, bookFolderPath } from './local';
@@ -12,7 +11,7 @@ import { LocalStorageDataManager, bookFolderPath } from './local';
 export interface IStorageDataManager {
   init(): Promise<void>;
 
-  middleware(app: Koa);
+  getStaticFolders(): string[];
 
   getOriginalPageData(metadata: PageMetadata): Promise<PageData | undefined>;
 
