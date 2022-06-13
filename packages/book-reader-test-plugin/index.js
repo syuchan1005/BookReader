@@ -1,5 +1,5 @@
 /* eslint-disable-next-line import/no-extraneous-dependencies */
-const { gql } = require('apollo-server-koa');
+const { gql } = require('apollo-server-core');
 
 module.exports = {
   typeDefs: gql('type Mutation { addTest(id: ID! number: String! url: String!): Result!}'),

@@ -1,7 +1,7 @@
-import Koa from 'koa';
-import Serve from 'koa-static';
-import { historyApiFallback } from 'koa2-connect-history-api-fallback';
-import cors from '@koa/cors';
+import http from 'http';
+import express from 'express';
+import history from 'connect-history-api-fallback';
+import cors from 'cors';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
@@ -11,25 +11,26 @@ import GraphQL from './graphql/index';
 (async () => {
   await StorageDataManager.init();
 
-  const app = new Koa();
-  const graphql = new GraphQL();
+  const app = express();
+  const httpServer = http.createServer(app);
+  const graphql = new GraphQL(httpServer);
 
   app.use(cors());
 
   StorageDataManager.getStaticFolders().forEach((folderPath) => {
-    app.use(Serve(folderPath));
+    app.use(express.static(folderPath));
   });
 
   /* image serve with options in image name */
-  app.use(async (ctx, next) => {
-    const { url } = ctx.req;
-    const match = url.match(/^\/book\/([^/]+)\/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
+  app.get('/book/:bookId/:fileName', async (req, res, next) => {
+    const match = req.params.fileName
+      .match(/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
     if (!match) {
       await next();
       return;
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_full, bookId, pageNum, sizeExists, width, height, ext, isNotSave] = match;
+    const [_full, pageNum, sizeExists, width, height, ext, isNotSave] = match;
     let extension;
     if (ext === 'jpg') {
       extension = 'jpg';
@@ -43,7 +44,7 @@ import GraphQL from './graphql/index';
     }
 
     const result = await convertImage(
-      bookId,
+      req.params.bookId,
       pageNum,
       {
         ext: extension,
@@ -56,18 +57,12 @@ import GraphQL from './graphql/index';
       !isNotSave,
     );
     if (result.success) {
-      ctx.status = 200;
-      ctx.type = result.type;
-      ctx.body = result.body;
-      ctx.length = result.byteLength;
-      ctx.cacheControl = 'max-age=0';
-
-      if (result.lastModified) {
-        ctx.lastModified = result.lastModified;
-      }
+      res.setHeader('Content-Type', result.type);
+      res.setHeader('Content-Length', result.byteLength.toString());
+      res.setHeader('Last-Modified', result.lastModified.toUTCString());
+      res.send(result.body);
     } else {
-      ctx.status = 503;
-      ctx.body = result.body;
+      res.status(503).send(result.body);
     }
   });
 
@@ -75,16 +70,16 @@ import GraphQL from './graphql/index';
 
   await graphql.middleware(app);
 
-  app.use(historyApiFallback({}));
+  app.use(history());
 
-  app.use(Serve('public'));
+  app.use(express.static('public'));
 
   const port = process.env.PORT || 8081;
-  const server = app.listen(port, () => {
+  httpServer.listen(port, () => {
     /* eslint-disable no-console */
     console.log(`👔 listen  at: http://localhost:${port}`);
     console.log(`🚀 graphql at: http://localhost:${port}${graphql.apolloServer.graphqlPath}`);
   });
 
-  graphql.useSubscription(server);
+  graphql.useSubscription(httpServer);
 })();

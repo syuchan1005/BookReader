@@ -1,5 +1,5 @@
 import { PubSub } from 'graphql-subscriptions';
-import { ApolloServer } from 'apollo-server-koa';
+import { ApolloServerBase } from 'apollo-server-core';
 import * as Util from '@server/Util';
 import GQLUtil from '@server/graphql/GQLUtil';
 import {
@@ -14,7 +14,7 @@ import { SubscriptionKeys } from './index';
 export default class GQLMiddleware {
   readonly util: { saveImage: (dist: string, buf: Buffer) => Promise<any> };
 
-  readonly server: ApolloServer;
+  readonly server: ApolloServerBase;
 
   readonly pubsub: PubSub;
 

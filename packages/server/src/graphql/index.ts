@@ -1,11 +1,11 @@
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { GraphQLUpload, graphqlUploadKoa } from 'graphql-upload';
+import { GraphQLUpload, graphqlUploadExpress } from 'graphql-upload';
 import { PubSub } from 'graphql-subscriptions';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
-
-import { ApolloServer, gql } from 'apollo-server-koa';
+import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
@@ -37,7 +37,7 @@ export default class GraphQL {
 
   private readonly middlewares: { [key: string]: GQLMiddleware };
 
-  constructor() {
+  constructor(httpServer) {
     this.pubsub = new PubSub();
     this.plugins = loadPlugins();
 
@@ -77,14 +77,16 @@ export default class GraphQL {
     });
     this.apolloServer = new ApolloServer({
       schema: this.schema,
-      context: ({ ctx }) => ({ ctx }),
+      plugins: [
+        ApolloServerPluginDrainHttpServer({ httpServer }),
+      ],
     });
   }
 
   async middleware(app) {
     await this.apolloServer.start();
     app
-      .use(graphqlUploadKoa())
+      .use(graphqlUploadExpress())
       .use(this.apolloServer.getMiddleware());
   }
 
