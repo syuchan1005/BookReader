@@ -13,10 +13,8 @@ import { List as MovableList, arrayMove } from 'react-movable';
 
 import {
   useBulkEditPageProgressSubscription,
-  useBulkEditPagesMutation
+  useBulkEditPagesMutation,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
-import { resetStore } from '@client/apollo';
-import { workbox } from '@client/registerServiceWorker';
 import {
   ActionListItem, AddItemListItem,
   AddTemplateListItem, createInitValue,
@@ -28,6 +26,7 @@ interface EditPagesDialogProps {
   onClose: () => void;
   maxPage: number;
   bookId: string;
+  onSuccess: () => void;
 }
 
 const EditPagesDialog = (props: EditPagesDialogProps) => {
@@ -36,6 +35,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     onClose,
     maxPage,
     bookId,
+    onSuccess,
   } = props;
   const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>([]);
   const [subscriptionId, setSubscriptionId] = React.useState<string>(undefined);
@@ -56,24 +56,11 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     });
   }, []);
 
-  const reload = React.useCallback(() => {
-    Promise.all([
-      resetStore(),
-      Promise.race([
-        (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-        new Promise((r) => {
-          setTimeout(r, 1000);
-        }), // timeout: 1000ms
-      ]),
-    ])
-      .finally(() => window.location.reload());
-  }, []);
-
   const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
     onCompleted(data) {
       setSubscriptionId(undefined);
       if (data.bulkEditPage.success) {
-        reload();
+        onSuccess();
       }
     },
   });

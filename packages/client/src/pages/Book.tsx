@@ -37,6 +37,8 @@ import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import { useTitle } from '@client/hooks/useTitle';
+import { resetStore } from '@client/apollo';
+import { workbox } from '@client/registerServiceWorker';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
 
@@ -319,7 +321,10 @@ const Book = (props: BookProps) => {
       validatedPage = Math.min(validatedPage, normalizeCount(maxPageCount));
     }
     validatedPage = normalizeCount(validatedPage);
-    setPageUpdateRequest({ page: validatedPage, time });
+    setPageUpdateRequest({
+      page: validatedPage,
+      time,
+    });
     updatePage(validatedPage);
   }, [maxPage, normalizeCount, nextBook]);
 
@@ -414,6 +419,24 @@ const Book = (props: BookProps) => {
 
   const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
 
+  const [showSliderImage, setShowSliderImage] = React.useState(true);
+  const purgeCache = React.useCallback(() => {
+    setShowSliderImage(false);
+    Promise.all([
+      resetStore(),
+      Promise.race([
+        (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+        new Promise((r) => {
+          setTimeout(r, 2000);
+        }), // timeout: 1000ms
+      ]),
+    ])
+      .finally(() => {
+        setCloseEditDialog();
+        setShowSliderImage(true);
+      });
+  }, [setCloseEditDialog]);
+
   if (loading || (error && !data)) {
     return (
       <>
@@ -449,6 +472,7 @@ const Book = (props: BookProps) => {
             onClose={setCloseEditDialog}
             maxPage={maxPage}
             bookId={bookId}
+            onSuccess={purgeCache}
           />
         )}
         {showAppBar && (
@@ -479,6 +503,7 @@ const Book = (props: BookProps) => {
           pageUpdateRequest={pageUpdateRequest}
           onPageUpdated={updatePage}
           onKeyPress={setHideAppBar}
+          showSliderImage={showSliderImage}
         />
 
         <div
@@ -513,6 +538,8 @@ type SwiperSliderProp = {
 
   onPageUpdated: (page: number) => void;
   onKeyPress: () => void;
+
+  showSliderImage: boolean;
 };
 
 const SwiperSlider = (props: SwiperSliderProp) => {
@@ -530,6 +557,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     pageUpdateRequest,
     onPageUpdated,
     onKeyPress,
+    showSliderImage,
   } = props;
   const {
     slidesPerView,
@@ -596,17 +624,19 @@ const SwiperSlider = (props: SwiperSliderProp) => {
             virtualIndex={index + prefixPage}
             className={pageClass(index)}
           >
-            <BookPageImage
-              style={effectBackGround}
-              bookId={bookId}
-              pageIndex={i}
-              bookPageCount={maxPage}
-              {...imageSize}
-              alt={(i + 1).toString(10)}
-              loading="eager"
-              sizeDebounceDelay={300}
-              skip={Math.abs(index - debouncePage) > slidesPerView}
-            />
+            {showSliderImage && (
+              <BookPageImage
+                style={effectBackGround}
+                bookId={bookId}
+                pageIndex={i}
+                bookPageCount={maxPage}
+                {...imageSize}
+                alt={(i + 1).toString(10)}
+                loading="eager"
+                sizeDebounceDelay={300}
+                skip={Math.abs(index - debouncePage) > slidesPerView}
+              />
+            )}
           </SwiperSlide>
         ))}
         {[...new Array(((maxPage + prefixPage) % slidesPerView)).keys()].map((i) => (
