@@ -37,7 +37,6 @@ import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import { useTitle } from '@client/hooks/useTitle';
-import { resetStore } from '@client/apollo';
 import { workbox } from '@client/registerServiceWorker';
 
 const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
@@ -271,6 +270,7 @@ const Book = (props: BookProps) => {
     loading,
     error,
     data,
+    refetch,
   } = useBookQuery({
     variables: {
       id: bookId,
@@ -420,10 +420,12 @@ const Book = (props: BookProps) => {
   const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
 
   const [showSliderImage, setShowSliderImage] = React.useState(true);
-  const purgeCache = React.useCallback(() => {
-    setShowSliderImage(false);
+  React.useEffect(() => {
+    if (showSliderImage) {
+      return;
+    }
     Promise.all([
-      resetStore(),
+      refetch(),
       Promise.race([
         (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
         new Promise((r) => {
@@ -435,7 +437,11 @@ const Book = (props: BookProps) => {
         setCloseEditDialog();
         setShowSliderImage(true);
       });
-  }, [setCloseEditDialog]);
+    // eslint-disable-next-line
+  }, [showSliderImage]);
+  const purgeCache = React.useCallback(() => {
+    setShowSliderImage(false);
+  }, []);
 
   if (loading || (error && !data)) {
     return (
@@ -578,13 +584,17 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   }, [pageUpdateRequest]);
 
   React.useEffect(() => {
+    if (!swiper?.params) {
+      return;
+    }
+
     if (openEditDialog) {
       swiper?.disable();
     } else {
       swiper?.enable();
     }
     // eslint-disable-next-line
-  }, [openEditDialog]);
+  }, [openEditDialog, swiper]);
 
   const updateSwiper = React.useCallback((s) => {
     s?.slideTo(page, 0, false);
