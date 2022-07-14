@@ -40,6 +40,7 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   showName?: boolean;
   updatedAt?: string;
   simple?: boolean;
+  isReading?: boolean;
 
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
   onEdit?: () => void;
@@ -124,6 +125,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     color: 'unset',
     textDecoration: 'unset',
   },
+  labelContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    display: 'flex',
+  },
+  readLabel: {
+    marginLeft: theme.spacing(1),
+    background: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+  },
 }));
 
 const useFavorite = (infoId: string): [value: boolean, toggle: () => Promise<unknown>] => {
@@ -175,6 +189,7 @@ const BookInfo = (props: BookInfoProps) => {
     onVisible,
     visibleMargin,
     simple,
+    isReading,
   } = props;
   const isVisible = useVisible(ref, false, visibleMargin);
   const [keepVisible, setKeepVisible] = React.useState(false);
@@ -345,6 +360,9 @@ const BookInfo = (props: BookInfoProps) => {
               {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
                 <Icon className={classes.newLabel}>tips_and_updates</Icon>
               )}
+              {(isReading && !simple) ? (
+                <div className={`${classes.labelContainer} ${classes.readLabel}`}>Reading</div>
+              ) : null}
             </CardActionArea>
           </Link>
 

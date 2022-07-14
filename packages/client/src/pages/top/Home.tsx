@@ -258,6 +258,25 @@ const Home = (props: HomeProps) => {
     },
   }), [navigate, location.pathname]);
 
+  const [readingInfoId, setReadingInfoId] = React.useState('');
+  React.useEffect(() => {
+    let cancelled = false;
+    db.read.getAll(1, {
+      key: 'updatedAt',
+      direction: 'prev'
+    })
+      .then((reads) => {
+        if (cancelled) {
+          return;
+        }
+
+        setReadingInfoId(reads[0]?.infoId ?? '');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
       <SearchAndMenuHeader
@@ -286,6 +305,7 @@ const Home = (props: HomeProps) => {
                     visibleMargin={visibleMargin}
                     index={i}
                     onVisible={handleVisible}
+                    isReading={info.id === readingInfoId}
                   />
                 ))}
                 {(loading && infos.length === 0) && (
