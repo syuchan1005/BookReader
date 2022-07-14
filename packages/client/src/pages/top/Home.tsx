@@ -316,10 +316,13 @@ const Home = (props: HomeProps) => {
               </div>
             )}
             {(!loading && infos.length === 0) && (<EmptyScreen />)}
+
+            {/* eslint-disable-next-line jsx-a11y/no-access-key */}
             <Fab
               className={classes.addButton}
               onClick={setOpen}
               aria-label="add"
+              accessKey="a"
             >
               <Icon>add</Icon>
             </Fab>
