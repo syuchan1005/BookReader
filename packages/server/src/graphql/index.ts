@@ -1,6 +1,9 @@
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { GraphQLUpload, graphqlUploadExpress } from 'graphql-upload';
+/* eslint-disable import/extensions */
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
+/* eslint-enable import/extensions */
 import { PubSub } from 'graphql-subscriptions';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';

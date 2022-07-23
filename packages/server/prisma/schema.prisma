@@ -9,55 +9,46 @@ datasource db {
 }
 
 model BookInfo {
-  id   String @id
-  name String
-
-  createdAt DateTime @default(dbgenerated("(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"))
-  updatedAt DateTime @updatedAt
-
-  thumbnailBook Book?               @relation(name: "ThumbnailBook")
-  books         Book[]              @relation(name: "Books")
+  id            String              @id
+  name          String              @unique
+  createdAt     DateTime            @default(dbgenerated("strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"))
+  updatedAt     DateTime            @updatedAt
+  thumbnailBook Book?               @relation("ThumbnailBook")
+  books         Book[]              @relation("Books")
   genres        BookInfosToGenres[]
 
-  @@unique([name], name: "BookInfo_name_unique")
-  @@index([createdAt], name: "BookInfo_createdAt_index")
-  @@index([updatedAt], name: "BookInfo_updatedAt_index")
+  @@index([createdAt], map: "BookInfo_createdAt_index")
+  @@index([updatedAt], map: "BookInfo_updatedAt_index")
 }
 
 model Book {
-  id            String  @id
+  id            String    @id
   infoId        String
   /// zero-indexed page count
   thumbnailPage Int?
   number        String
   pageCount     Int
-  thumbnailById String?
-
-  createdAt DateTime @default(dbgenerated("(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"))
-  updatedAt DateTime @updatedAt
-
-  bookInfo    BookInfo  @relation("Books", fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  thumbnailBy BookInfo? @relation("ThumbnailBook", fields: [thumbnailById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  thumbnailById String?   @unique
+  createdAt     DateTime  @default(dbgenerated("strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"))
+  updatedAt     DateTime  @updatedAt
+  thumbnailBy   BookInfo? @relation("ThumbnailBook", fields: [thumbnailById], references: [id])
+  bookInfo      BookInfo  @relation("Books", fields: [infoId], references: [id], onDelete: Cascade)
 
   @@unique([infoId, number], name: "Book_infoId_number_unique")
-  @@unique([thumbnailById], name: "Book_thumbnailById_unique")
-  @@index([infoId, updatedAt], name: "Book_infoId_updatedAt_index")
+  @@index([infoId, updatedAt], map: "Book_infoId_updatedAt_index")
 }
 
 model Genre {
-  name        String  @id
-  isInvisible Boolean @default(false)
-
-  bookInfos BookInfosToGenres[]
+  name        String              @id
+  isInvisible Boolean             @default(false)
+  bookInfos   BookInfosToGenres[]
 }
 
 model BookInfosToGenres {
   infoId    String
   genreName String
-
-  bookInfo BookInfo @relation(fields: [infoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  genre    Genre    @relation(fields: [genreName], references: [name], onDelete: Cascade, onUpdate: Cascade)
+  genre     Genre    @relation(fields: [genreName], references: [name], onDelete: Cascade)
+  bookInfo  BookInfo @relation(fields: [infoId], references: [id], onDelete: Cascade)
 
   @@id([infoId, genreName])
 }
-
