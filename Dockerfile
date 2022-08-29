@@ -1,4 +1,4 @@
-FROM node:17.1.0-alpine as build
+FROM node:18.8.0-alpine as build
 
 ENV NODE_ENV="production"
 
@@ -23,7 +23,7 @@ RUN cp -r packages/client/dist /bookReader/public \
     && mkdir /bookReader/src \
     && mv packages/server/src/FeatureFlag.js /bookReader/src/
 
-FROM node:17.1.0-alpine
+FROM node:18.8.0-alpine
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
