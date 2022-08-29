@@ -45,7 +45,7 @@ const GQLUtil = {
   ): Promise<Result> {
     let files = await readdirRecursively(tempPath)
       .then((fileList) => fileList.filter(
-        (f) => /^(?!.*__MACOSX).*\.(jpe?g|png)$/i.test(f),
+        (f) => /^(?!.*__MACOSX).*\.(jpe?g|png|webp)$/i.test(f),
       ));
     if (files.length <= 0) {
       return {
@@ -59,7 +59,7 @@ const GQLUtil = {
     onProgress(count, files.length);
     const promises = files.map(async (f, i) => {
       let imageBuffer = await readFile(f);
-      if (/\.jpe?g$/i.test(f)) {
+      if (!/\.jpe?g$/i.test(f)) {
         imageBuffer = await convertToJpg(imageBuffer);
       }
       await StorageDataManager.writeOriginalPage(
