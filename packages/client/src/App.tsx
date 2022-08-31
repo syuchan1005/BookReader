@@ -57,16 +57,20 @@ export const commonTheme = {
           }],
         ];
       }
-      return [
-        [key, {
-          // @ts-ignore
-          [styleName]: `calc(${commonTheme.safeArea.top} + ${val.minHeight}px${calcOption || ''})`,
-          fallbacks: {
+      // @ts-ignore
+      if (val.minHeight !== undefined) {
+        return [
+          [key, {
             // @ts-ignore
-            [styleName]: (calcOption) ? `calc(${val.minHeight}px${calcOption})` : val.minHeight,
-          },
-        }],
-      ];
+            [styleName]: `calc(${commonTheme.safeArea.top} + ${val.minHeight}px${calcOption || ''})`,
+            fallbacks: {
+              // @ts-ignore
+              [styleName]: (calcOption) ? `calc(${val.minHeight}px${calcOption})` : val.minHeight,
+            },
+          }],
+        ];
+      }
+      return [];
     })
     .reduce((o, props) => {
       props.forEach(([k, v]) => {
