@@ -5,14 +5,17 @@ import express from 'express';
 import morgan from 'morgan';
 import history from 'connect-history-api-fallback';
 import cors from 'cors';
+import session from 'express-session';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import { convertImage } from './ImageUtil';
 import GraphQL from './graphql/index';
+import { init as initAuth, initRoutes as initAuthRoutes } from './auth';
 
 (async () => {
   await StorageDataManager.init();
+  initAuth();
 
   const app = express();
   const httpServer = http.createServer(app);
@@ -47,6 +50,21 @@ import GraphQL from './graphql/index';
   }));
 
   app.use(cors());
+
+  app.use(
+    session({
+      secret: process.env.BOOKREADER_SESSION_SECRET || 'book-reader',
+      resave: false,
+      saveUninitialized: false,
+      rolling: true,
+      cookie: {
+        httpOnly: true,
+        secure: 'auto',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      },
+    }),
+  );
+  initAuthRoutes(app);
 
   StorageDataManager.getStaticFolders().forEach((folderPath) => {
     app.use(express.static(folderPath));
