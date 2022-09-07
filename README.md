@@ -32,15 +32,16 @@ $ docker run \
 
 ### Environment
 
-| key                             | type          | default       | note                                       |
-|:--------------------------------|:--------------|:--------------|:-------------------------------------------|
-| `PORT`                          | `number`      | `8081`        |                                            |
-| `BOOKREADER_PLUGIN`             | `string`      | ``            |                                            |
-| `BOOKREADER_TRACE_SERVICE_NAME` | `string`      | `book-reader` |                                            |
-| `BOOKREADER_TRACE_URL`          | `string`      | ``            |                                            |
-| `BOOKREADER_TRACE_CONSOLE`      | `boolean`     | ``            |                                            |
-| `BOOKREADER_SESSION_SECRET`     | `string`      | `book-reader` | Must specify a value                       |
-| `BOOKREADER_OIDC`               | `json-string` | ``            | If not empty, authentication is activated. |
+| key                             | type          | default                | note                                                                |
+|:--------------------------------|:--------------|:-----------------------|:--------------------------------------------------------------------|
+| `PORT`                          | `number`      | `8081`                 |                                                                     |
+| `BOOKREADER_PLUGIN`             | `string`      | ``                     |                                                                     |
+| `BOOKREADER_TRACE_SERVICE_NAME` | `string`      | `book-reader`          |                                                                     |
+| `BOOKREADER_TRACE_URL`          | `string`      | ``                     |                                                                     |
+| `BOOKREADER_TRACE_CONSOLE`      | `boolean`     | ``                     |                                                                     |
+| `BOOKREADER_SESSION_SECRET`     | `string`      | `book-reader`          | Must specify a value                                                |
+| `BOOKREADER_SESSION_STORE`      | `json-string` | `{ "type": "memory" }` | `{ "type": "redis", "host": "", "port": 6379, "password": "XXXX" }` |
+| `BOOKREADER_OIDC`               | `json-string` | ``                     | If not empty, authentication is activated.                          |
 
 ## develop use
 ```shell script

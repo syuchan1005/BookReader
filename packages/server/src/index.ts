@@ -6,6 +6,8 @@ import morgan from 'morgan';
 import history from 'connect-history-api-fallback';
 import cors from 'cors';
 import session from 'express-session';
+import connectRedis from 'connect-redis';
+import Redis from 'ioredis';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
@@ -51,9 +53,26 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
 
   app.use(cors());
 
+  let sessionStoreOption;
+  try {
+    sessionStoreOption = JSON.parse(process.env.BOOKREADER_SESSION_STORE);
+  } catch (e) {
+    sessionStoreOption = undefined;
+  }
+  let sessionStore;
+  if (sessionStoreOption && sessionStoreOption.type === 'redis') {
+    const RedisStore = connectRedis(session);
+    const redisClient = new Redis({
+      port: 6379,
+      ...sessionStoreOption,
+    });
+    sessionStore = new RedisStore({ client: redisClient });
+  }
+
   app.use(
     session({
       secret: process.env.BOOKREADER_SESSION_SECRET || 'book-reader',
+      name: 'session',
       resave: false,
       saveUninitialized: false,
       rolling: true,
@@ -62,6 +81,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
         secure: 'auto',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       },
+      store: sessionStore,
     }),
   );
   initAuthRoutes(app);
