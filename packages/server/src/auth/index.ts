@@ -53,3 +53,11 @@ const createAuthRouter = () => {
   }
   return router;
 };
+
+export const isAuthenticatedMiddleware = (req, res, next) => {
+  if (!oidcConfig || req.isAuthenticated()) {
+    return next();
+  }
+  res.sendStatus(401);
+  return undefined;
+};

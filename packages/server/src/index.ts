@@ -11,7 +11,7 @@ import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import { convertImage } from './ImageUtil';
 import GraphQL from './graphql/index';
-import { init as initAuth, initRoutes as initAuthRoutes } from './auth';
+import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddleware } from './auth';
 
 (async () => {
   await StorageDataManager.init();
@@ -66,12 +66,13 @@ import { init as initAuth, initRoutes as initAuthRoutes } from './auth';
   );
   initAuthRoutes(app);
 
+  const requireAuthRouter = express.Router();
   StorageDataManager.getStaticFolders().forEach((folderPath) => {
-    app.use(express.static(folderPath));
+    requireAuthRouter.use(express.static(folderPath));
   });
 
   /* image serve with options in image name */
-  app.get('/book/:bookId/:fileName', async (req, res, next) => {
+  requireAuthRouter.get('/book/:bookId/:fileName', async (req, res, next) => {
     const match = req.params.fileName
       .match(/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
     if (!match) {
@@ -117,7 +118,9 @@ import { init as initAuth, initRoutes as initAuthRoutes } from './auth';
 
   await BookDataManager.init();
 
-  await graphql.middleware(app);
+  await graphql.middleware(requireAuthRouter);
+
+  app.use('/', isAuthenticatedMiddleware, requireAuthRouter);
 
   app.use(history());
 
