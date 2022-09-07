@@ -33,7 +33,7 @@ export const setup = () => {
 
   const otlpTraceExporter = new OTLPTraceExporter({ url: exportUrl });
   provider.addSpanProcessor(new BatchSpanProcessor(otlpTraceExporter));
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && process.env.BOOKREADER_TRACE_CONSOLE === 'true') {
     provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   }
 
