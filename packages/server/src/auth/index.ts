@@ -42,12 +42,24 @@ const createAuthRouter = () => {
   });
 
   if (oidcConfig) {
-    router.get('/oidc', passport.authenticate('openidconnect'));
+    router.get(
+      '/oidc',
+      (req, res, next) => {
+        // @ts-ignore
+        req.session.redirectTo = req.query.r;
+        return next();
+      },
+      passport.authenticate('openidconnect'),
+    );
     router.get(
       '/oidc/callback',
-      passport.authenticate('openidconnect', { failureRedirect: 'oidc' }),
+      passport.authenticate(
+        'openidconnect',
+        { failureRedirect: 'oidc', keepSessionInfo: true },
+      ),
       (req, res) => {
-        res.redirect('/');
+        // @ts-ignore
+        res.redirect(req.session.redirectTo || '/');
       },
     );
   }
