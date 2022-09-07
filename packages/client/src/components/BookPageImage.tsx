@@ -2,7 +2,9 @@ import React from 'react';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import useDebounceValue from '@client/hooks/useDebounceValue';
+import { Remount } from '@client/components/Remount';
 import { Theme } from '@mui/material';
+import { goToAuthPage } from '@client/auth';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -167,30 +169,47 @@ const BookPageImage = (props: BookPageImageProps) => {
         return argAlt;
     }
   }, [argAlt, imageState]);
+  const [isRetried, setRetried] = React.useState(false);
+
+  const checkAuthenticate = React.useCallback(() => {
+    fetch('/auth').then((res) => {
+      if (res.status === 401) {
+        goToAuthPage();
+      }
+    });
+  }, []);
 
   return (
-    <picture className={classes.pictureFull}>
-      {!skip && imageSourceSet.sources.map(({
-        type,
-        srcSet,
-      }) => (
-        <source key={type} type={type} srcSet={srcSet} />
-      ))}
-      {!skip && (
-        <img
-          ref={imageRef}
-          loading={loading}
-          style={style}
-          className={classes.imageFull}
-          src={imageSourceSet.imgSrc}
-          alt={alt}
-          width={argWidth}
-          height={argHeight}
-          onLoad={() => setImageState(ImageState.LOADED)}
-          onError={() => setImageState(ImageState.ERROR)}
-        />
-      )}
-    </picture>
+    <Remount remountKey={`${isRetried}`}>
+      <picture className={classes.pictureFull}>
+        {!skip && imageSourceSet.sources.map(({
+          type,
+          srcSet,
+        }) => (
+          <source key={type} type={type} srcSet={srcSet} />
+        ))}
+        {!skip && (
+          <img
+            ref={imageRef}
+            loading={loading}
+            style={style}
+            className={classes.imageFull}
+            src={imageSourceSet.imgSrc}
+            alt={alt}
+            width={argWidth}
+            height={argHeight}
+            onLoad={() => setImageState(ImageState.LOADED)}
+            onError={() => {
+              setImageState(ImageState.ERROR);
+              if (isRetried) {
+                checkAuthenticate();
+              }
+              setRetried(true);
+            }}
+          />
+        )}
+      </picture>
+    </Remount>
   );
 };
 

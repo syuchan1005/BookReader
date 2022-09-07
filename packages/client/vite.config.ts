@@ -112,6 +112,12 @@ export default defineConfig({
         },
         ws: true,
       },
+      '/auth': {
+        target: {
+          host: 'localhost',
+          port: 8081,
+        },
+      },
     },
   },
 });

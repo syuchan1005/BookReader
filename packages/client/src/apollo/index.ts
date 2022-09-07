@@ -1,4 +1,4 @@
-import { ApolloClient, split } from '@apollo/client';
+import { ApolloClient, split, from } from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
 import {
   concatPagination,
@@ -12,6 +12,8 @@ import createCustomFetcher from '@client/CustomFetcher';
 
 import { BookInfo } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import { WebSocketLink } from '@client/apollo/WebSocketLink';
+import { onError } from '@apollo/client/link/error';
+import { goToAuthPage } from '@client/auth';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 const schemaVersion = '1.3.1';
@@ -95,48 +97,59 @@ const cachePersistor = new CachePersistor({
 });
 
 export const apolloClient = new ApolloClient({
-  link: split(
-    ({ query }) => {
-      const definition = getMainDefinition(query);
-      return (
-        definition.kind === 'OperationDefinition'
-        && definition.operation === 'subscription'
-      );
-    },
-    new WebSocketLink({
-      url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
-    }),
-    createUploadLink({
-      uri: `${window.location.protocol}${uri}`,
-      // credentials: "same-origin",
-      fetch: (url, options) => {
-        let f = fetch;
-        if (options.useUpload) {
-          f = createCustomFetcher(options.onProgress, options.onAbortPossible);
-        }
-        // eslint-disable-next-line no-param-reassign
-        options.headers = {
-          ...options.headers,
-          // eslint-disable-next-line no-underscore-dangle
-          ...options._headers,
-        };
-        return f(url, options);
-      },
-    }),
-  ).setOnError(({ graphQLErrors, networkError }) => {
-    const log = (message) => {
+  link: from([
+    onError(({ graphQLErrors, networkError }) => {
       // @ts-ignore
-      if (apolloClient.snackbar) apolloClient.snackbar(message, { variant: 'error' });
-      // eslint-disable-next-line
-      console.log(message);
-    };
-    if (graphQLErrors) {
-      graphQLErrors.forEach(({ message, locations, path }) => log(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-      ));
-    }
-    if (networkError) log(`[Network error]: ${networkError}`);
-  }),
+      if (networkError?.statusCode === 401) {
+        goToAuthPage();
+        return;
+      }
+
+      const log = (message) => {
+        // @ts-ignore
+        if (apolloClient.snackbar) apolloClient.snackbar(message, { variant: 'error' });
+        // eslint-disable-next-line
+        console.log(message);
+      };
+      if (graphQLErrors) {
+        graphQLErrors.forEach(({ message, locations, path }) => log(
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        ));
+      }
+      if (networkError) {
+        log(`[Network error]: ${networkError}`);
+      }
+    }),
+    split(
+      ({ query }) => {
+        const definition = getMainDefinition(query);
+        return (
+          definition.kind === 'OperationDefinition'
+          && definition.operation === 'subscription'
+        );
+      },
+      new WebSocketLink({
+        url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
+      }),
+      createUploadLink({
+        uri: `${window.location.protocol}${uri}`,
+        // credentials: "same-origin",
+        fetch: (url, options) => {
+          let f = fetch;
+          if (options.useUpload) {
+            f = createCustomFetcher(options.onProgress, options.onAbortPossible);
+          }
+          // eslint-disable-next-line no-param-reassign
+          options.headers = {
+            ...options.headers,
+            // eslint-disable-next-line no-underscore-dangle
+            ...options._headers,
+          };
+          return f(url, options);
+        },
+      }),
+    ),
+  ]),
   defaultOptions: {
     watchQuery: {
       fetchPolicy: 'cache-and-network',
