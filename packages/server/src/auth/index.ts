@@ -41,6 +41,11 @@ const createAuthRouter = () => {
     }
   });
 
+  router.get('/logout', (req, res) => {
+    req.logout(() => {});
+    res.sendStatus(200);
+  });
+
   if (oidcConfig) {
     router.get(
       '/oidc',

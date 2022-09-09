@@ -140,11 +140,11 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
 
   await graphql.middleware(requireAuthRouter);
 
-  app.use('/', isAuthenticatedMiddleware, requireAuthRouter);
-
   app.use(history());
 
   app.use(express.static('public'));
+
+  app.use(isAuthenticatedMiddleware, requireAuthRouter);
 
   const port = process.env.PORT || 8081;
   httpServer.listen(port, () => {
