@@ -25,6 +25,8 @@ type Query {
 
     ## Genre
     genres: [Genre!]!
+
+    availableSearchModes: [SearchMode!]!
 }
 
 type Mutation {
@@ -49,6 +51,7 @@ type Mutation {
 
     ## Debug
     debug_deleteUnusedFolders: Result!
+    debug_rebuildMeiliSearch: Result!
 }
 
 type Subscription {
@@ -78,8 +81,14 @@ enum SplitType {
     HORIZONTAL
 }
 
+enum SearchMode {
+    DATABASE,
+    MEILISEARCH
+}
+
 input BookInfosOption {
     search: String
+    searchMode: SearchMode = DATABASE
     genres: [String!] = []
     order: BookInfoOrder = Update_Newest
 }

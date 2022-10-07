@@ -100,6 +100,7 @@ export type BookInfosOption = {
   genres?: InputMaybe<Array<Scalars['String']>>;
   order?: InputMaybe<BookInfoOrder>;
   search?: InputMaybe<Scalars['String']>;
+  searchMode?: InputMaybe<SearchMode>;
 };
 
 export const BookOrder = {
@@ -179,6 +180,7 @@ export type Mutation = {
   addCompressBook: ResultWithBookResults;
   bulkEditPage: Result;
   debug_deleteUnusedFolders: Result;
+  debug_rebuildMeiliSearch: Result;
   deleteBookInfo: BookInfoResult;
   deleteBooks: Result;
   deleteGenre: Result;
@@ -284,6 +286,7 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
+  availableSearchModes: Array<SearchMode>;
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
@@ -366,6 +369,12 @@ export type Revision = {
   syncedAt: Scalars['String'];
 };
 
+export const SearchMode = {
+  Database: 'DATABASE',
+  Meilisearch: 'MEILISEARCH'
+} as const;
+
+export type SearchMode = typeof SearchMode[keyof typeof SearchMode];
 export type SplitEditAction = {
   pageRange: Scalars['IntRange'];
   splitCount?: InputMaybe<Scalars['Int']>;
@@ -696,6 +705,7 @@ export type ResolversTypes = {
   ResultWithBookResults: ResolverTypeWrapper<ResultWithBookResults>;
   ResultWithInfoId: ResolverTypeWrapper<ResultWithInfoId>;
   Revision: ResolverTypeWrapper<Revision>;
+  SearchMode: SearchMode;
   SplitEditAction: SplitEditAction;
   SplitType: SplitType;
   String: ResolverTypeWrapper<Scalars['String']>;
@@ -840,6 +850,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addCompressBook?: Resolver<ResolversTypes['ResultWithBookResults'], ParentType, ContextType, RequireFields<MutationAddCompressBookArgs, 'id'>>;
   bulkEditPage?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationBulkEditPageArgs, 'actions' | 'id'>>;
   debug_deleteUnusedFolders?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
+  debug_rebuildMeiliSearch?: Resolver<ResolversTypes['Result'], ParentType, ContextType>;
   deleteBookInfo?: Resolver<ResolversTypes['BookInfoResult'], ParentType, ContextType, RequireFields<MutationDeleteBookInfoArgs, 'id'>>;
   deleteBooks?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteBooksArgs, 'ids' | 'infoId'>>;
   deleteGenre?: Resolver<ResolversTypes['Result'], ParentType, ContextType, RequireFields<MutationDeleteGenreArgs, 'genre'>>;
@@ -875,6 +886,7 @@ export type PluginQueriesResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  availableSearchModes?: Resolver<Array<ResolversTypes['SearchMode']>, ParentType, ContextType>;
   book?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryBookArgs, 'id'>>;
   bookInfo?: Resolver<Maybe<ResolversTypes['BookInfo']>, ParentType, ContextType, RequireFields<QueryBookInfoArgs, 'id'>>;
   bookInfos?: Resolver<Array<Maybe<ResolversTypes['BookInfo']>>, ParentType, ContextType, RequireFields<QueryBookInfosArgs, 'ids'>>;

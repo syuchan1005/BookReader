@@ -101,6 +101,7 @@ export type BookInfosOption = {
   genres?: InputMaybe<Array<Scalars['String']>>;
   order?: InputMaybe<BookInfoOrder>;
   search?: InputMaybe<Scalars['String']>;
+  searchMode?: InputMaybe<SearchMode>;
 };
 
 export const BookOrder = {
@@ -180,6 +181,7 @@ export type Mutation = {
   addCompressBook: ResultWithBookResults;
   bulkEditPage: Result;
   debug_deleteUnusedFolders: Result;
+  debug_rebuildMeiliSearch: Result;
   deleteBookInfo: BookInfoResult;
   deleteBooks: Result;
   deleteGenre: Result;
@@ -285,6 +287,7 @@ export type PluginQueries = {
 
 export type Query = {
   __typename?: 'Query';
+  availableSearchModes: Array<SearchMode>;
   book?: Maybe<Book>;
   bookInfo?: Maybe<BookInfo>;
   bookInfos: Array<Maybe<BookInfo>>;
@@ -367,6 +370,12 @@ export type Revision = {
   syncedAt: Scalars['String'];
 };
 
+export const SearchMode = {
+  Database: 'DATABASE',
+  Meilisearch: 'MEILISEARCH'
+} as const;
+
+export type SearchMode = typeof SearchMode[keyof typeof SearchMode];
 export type SplitEditAction = {
   pageRange: Scalars['IntRange'];
   splitCount?: InputMaybe<Scalars['Int']>;
