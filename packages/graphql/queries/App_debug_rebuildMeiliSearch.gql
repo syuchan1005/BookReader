@@ -1,0 +1,5 @@
+mutation rebuildMeiliSearch {
+    debug_rebuildMeiliSearch {
+        success
+    }
+}

@@ -456,6 +456,11 @@ export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never;
 
 export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null } };
 
+export type RebuildMeiliSearchMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RebuildMeiliSearchMutation = { __typename?: 'Mutation', debug_rebuildMeiliSearch: { __typename?: 'Result', success: boolean } };
+
 export type DeleteBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -847,6 +852,38 @@ export function useDeleteUnusedFoldersMutation(baseOptions?: Apollo.MutationHook
 export type DeleteUnusedFoldersMutationHookResult = ReturnType<typeof useDeleteUnusedFoldersMutation>;
 export type DeleteUnusedFoldersMutationResult = Apollo.MutationResult<DeleteUnusedFoldersMutation>;
 export type DeleteUnusedFoldersMutationOptions = Apollo.BaseMutationOptions<DeleteUnusedFoldersMutation, DeleteUnusedFoldersMutationVariables>;
+export const RebuildMeiliSearchDocument = gql`
+    mutation rebuildMeiliSearch {
+  debug_rebuildMeiliSearch {
+    success
+  }
+}
+    `;
+export type RebuildMeiliSearchMutationFn = Apollo.MutationFunction<RebuildMeiliSearchMutation, RebuildMeiliSearchMutationVariables>;
+
+/**
+ * __useRebuildMeiliSearchMutation__
+ *
+ * To run a mutation, you first call `useRebuildMeiliSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRebuildMeiliSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [rebuildMeiliSearchMutation, { data, loading, error }] = useRebuildMeiliSearchMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRebuildMeiliSearchMutation(baseOptions?: Apollo.MutationHookOptions<RebuildMeiliSearchMutation, RebuildMeiliSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RebuildMeiliSearchMutation, RebuildMeiliSearchMutationVariables>(RebuildMeiliSearchDocument, options);
+      }
+export type RebuildMeiliSearchMutationHookResult = ReturnType<typeof useRebuildMeiliSearchMutation>;
+export type RebuildMeiliSearchMutationResult = Apollo.MutationResult<RebuildMeiliSearchMutation>;
+export type RebuildMeiliSearchMutationOptions = Apollo.BaseMutationOptions<RebuildMeiliSearchMutation, RebuildMeiliSearchMutationVariables>;
 export const DeleteBookInfoDocument = gql`
     mutation deleteBookInfo($id: ID!) {
   del: deleteBookInfo(id: $id) {

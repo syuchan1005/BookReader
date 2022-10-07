@@ -374,13 +374,6 @@ export class PrismaBookDataManager implements IBookDataManager {
             },
           },
         },
-        include: {
-          genres: {
-            include: {
-              genre: true,
-            },
-          },
-        },
       }
       : {
         where: {
@@ -414,7 +407,11 @@ export class PrismaBookDataManager implements IBookDataManager {
       },
       orderBy: sort.map(([key, order]) => ({ [key]: order })),
       include: {
-        ...genreFilter.include,
+        genres: {
+          include: {
+            genre: true,
+          },
+        },
         _count: {
           select: {
             books: true,
@@ -603,6 +600,50 @@ export class PrismaBookDataManager implements IBookDataManager {
         .then((books) => books.map(({ id }) => id)),
 
       getBookInfoCount: (): Promise<number> => this.prismaClient.bookInfo.count(),
+
+      getBookInfos: (): Promise<(BookInfo & { genres: Genre[] })[]> => this.prismaClient.bookInfo
+        .findMany({
+          include: {
+            _count: {
+              select: {
+                books: true,
+              },
+            },
+            genres: {
+              include: {
+                genre: true,
+              },
+            },
+          },
+        })
+        .then((bookInfos) => bookInfos.map((info) => ({
+          ...PrismaBookDataManager.convertBookInfo(info),
+          genres: info.genres.map((g) => g.genre),
+        }))),
+
+      getBookInfo: (infoId: string): Promise<(BookInfo & { genres: Genre[] }) | undefined> => this
+        .prismaClient.bookInfo
+        .findUnique({
+          where: {
+            id: infoId,
+          },
+          include: {
+            _count: {
+              select: {
+                books: true,
+              },
+            },
+            genres: {
+              include: {
+                genre: true,
+              },
+            },
+          },
+        })
+        .then((info) => (info ? {
+          ...PrismaBookDataManager.convertBookInfo(info),
+          genres: info.genres.map((g) => g.genre),
+        } : undefined)),
     };
   }
 }

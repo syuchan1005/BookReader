@@ -455,6 +455,11 @@ export type DeleteUnusedFoldersMutationVariables = Exact<{ [key: string]: never;
 
 export type DeleteUnusedFoldersMutation = { __typename?: 'Mutation', debug_deleteUnusedFolders: { __typename?: 'Result', success: boolean, code?: string | null } };
 
+export type RebuildMeiliSearchMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RebuildMeiliSearchMutation = { __typename?: 'Mutation', debug_rebuildMeiliSearch: { __typename?: 'Result', success: boolean } };
+
 export type DeleteBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;

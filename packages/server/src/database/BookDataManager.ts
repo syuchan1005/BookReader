@@ -100,6 +100,8 @@ export interface IBookDataManager {
   Debug: {
     getBookIds(): Promise<Array<BookId>>;
     getBookInfoCount(): Promise<number>;
+    getBookInfos(): Promise<(BookInfo & { genres: Genre[] })[]>;
+    getBookInfo(infoId: string): Promise<(BookInfo & { genres: Genre[] }) | undefined>;
   };
 }
 

@@ -4,6 +4,7 @@ import Debug from './Debug';
 import Genre from './Genre';
 import Page from './Page';
 import RelayBookInfo from './RelayBookInfo';
+import MeiliSearch from './MeiliSearch';
 
 export default {
   Book: new Book(),
@@ -12,4 +13,5 @@ export default {
   Genre: new Genre(),
   Page: new Page(),
   RelayBookInfo: new RelayBookInfo(),
+  MeiliSearch: new MeiliSearch(),
 };
