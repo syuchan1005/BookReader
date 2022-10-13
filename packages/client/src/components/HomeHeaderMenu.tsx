@@ -31,6 +31,7 @@ import {
   showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
+import { exportDbJson, importDbJson } from '@client/indexedDb/DBFileController';
 
 interface HeaderMenuProps {
   anchorEl: Element;
@@ -55,6 +56,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const [debugAnchorEl, setDebugAnchorEl] = React.useState(null);
   const [openBookCounts, setOpenBookCounts] = React.useState(false);
   const [openCacheControl, setOpenCacheControl] = React.useState(null);
+  const [openIndexedDBMenu, setOpenIndexedDBMenu] = React.useState(null);
 
   const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
   const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
@@ -217,6 +219,18 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
                 </ListItem>
               </>
             )}
+          </Collapse>
+          <MenuItem onClick={() => setOpenIndexedDBMenu(!openIndexedDBMenu)}>
+            IndexedDB
+            <Icon>{`keyboard_arrow_${openIndexedDBMenu ? 'up' : 'down'}`}</Icon>
+          </MenuItem>
+          <Collapse in={openIndexedDBMenu}>
+            <MenuItem onClick={() => exportDbJson()}>
+              Export indexedDB
+            </MenuItem>
+            <MenuItem onClick={() => importDbJson()}>
+              Import indexedDB (merge & overwrite)
+            </MenuItem>
           </Collapse>
           <MenuItem onClick={() => { rebuildMeiliSearchMutation(); }} disabled={rebuilding}>
             Rebuild MeiliSearch indexes

@@ -276,6 +276,8 @@ const UpgradeTask = [
   },
 ];
 
+export const DB_NAME = 'BookReader--DB';
+
 export class Database {
   public readonly dbName: string;
 
@@ -284,7 +286,7 @@ export class Database {
   private _bookInfoFavorite: StoreWrapper<BookInfoFavorite>;
   private _read: StoreWrapper<Read>;
 
-  constructor(dbName = 'BookReader--DB') {
+  constructor(dbName = DB_NAME) {
     this.dbName = dbName;
   }
 
