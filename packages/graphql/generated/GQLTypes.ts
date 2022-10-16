@@ -552,6 +552,11 @@ export type BooksQueryVariables = Exact<{
 
 export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null } | null> };
 
+export type AvailableSearchModesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AvailableSearchModesQuery = { __typename?: 'Query', availableSearchModes: Array<SearchMode> };
+
 export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
   ids: Array<Scalars['ID']> | Scalars['ID'];

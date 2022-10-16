@@ -10,7 +10,10 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
-import { useRelayBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  SearchMode,
+  useRelayBookInfosQuery,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
@@ -133,7 +136,8 @@ const Home = (props: HomeProps) => {
     });
   }, [searchParams, setSearchParams, location]);
   const debounceSearch = useDebounceValue(searchText, 800);
-  const handleSearchText = React.useCallback((text?: string) => {
+  const [searchMode, setSearchMode] = React.useState<SearchMode>(SearchMode.Database);
+  const handleSearchText = React.useCallback((text: string, mode: SearchMode) => {
     if (!text) {
       setSearchText(undefined);
     } else if (searchText === undefined) {
@@ -141,6 +145,7 @@ const Home = (props: HomeProps) => {
     } else {
       setSearchText(text, 'replace');
     }
+    setSearchMode(mode);
   }, [searchText, setSearchText]);
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
@@ -160,6 +165,7 @@ const Home = (props: HomeProps) => {
       first: lastSeenPositionIndex + defaultLoadBookInfoCount,
       option: {
         search: debounceSearch || undefined,
+        searchMode,
         genres,
         order: sortOrder,
       },
@@ -263,7 +269,7 @@ const Home = (props: HomeProps) => {
     let cancelled = false;
     db.read.getAll(1, {
       key: 'updatedAt',
-      direction: 'prev'
+      direction: 'prev',
     })
       .then((reads) => {
         if (cancelled) {

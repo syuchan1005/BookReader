@@ -24,12 +24,16 @@ import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 import { useRecoilState } from 'recoil';
 import { genresState } from '@client/store/atoms';
-import { useGenresQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  SearchMode,
+  useAvailableSearchModesQuery,
+  useGenresQuery,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
   searchText?: string;
-  onChangeSearchText?: (text: string) => void;
+  onChangeSearchText?: (text: string, searchMode: SearchMode) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -101,12 +105,26 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     onChangeSearchText,
   } = props;
 
+  const { data } = useAvailableSearchModesQuery();
+  const [searchMode, setSearchMode] = React.useState(SearchMode.Database);
+  const handleSearchModeChange = useCallback((e) => {
+    const selectedSearchMode = e.target.value;
+    if (!Object.values(SearchMode).includes(selectedSearchMode)) {
+      setSearchMode(SearchMode.Database);
+    } else {
+      setSearchMode(selectedSearchMode);
+    }
+  }, []);
+
   const handleSearchText = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    onChangeSearchText?.(event.target.value);
+    onChangeSearchText?.(event.target.value, searchMode);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onChangeSearchText]);
 
   const clearSearchText = useCallback(() => {
-    onChangeSearchText?.('');
+    onChangeSearchText?.('', searchMode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onChangeSearchText]);
 
   const elevation = useAppBarScrollElevation();
@@ -118,6 +136,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   }, []);
 
   const { data: genreData } = useGenresQuery();
+  // TODO: Update genres state in caller side
   const [genres, setGenres] = useRecoilState(genresState);
   const handleGenresChange = React.useCallback((event) => {
     setGenres(event.target.value);
@@ -186,9 +205,29 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
             horizontal: 'left',
           }}
           PaperProps={{
-            sx: { p: 1 },
+            sx: { p: 1, display: 'flex', flexDirection: 'column' },
           }}
         >
+          <FormControl
+            fullWidth
+            margin="dense"
+            size="small"
+            className={classes.inputFilter}
+          >
+            <InputLabel>SearchMode</InputLabel>
+            <Select
+              label="SearchMode"
+              margin="dense"
+              value={searchMode}
+              onChange={handleSearchModeChange}
+            >
+              {(data?.availableSearchModes ?? ['DATABASE']).map((mode) => (
+                <MenuItem key={mode} value={mode}>
+                  {mode}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <FormControl
             fullWidth
             margin="dense"

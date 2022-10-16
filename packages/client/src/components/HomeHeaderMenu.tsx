@@ -19,6 +19,7 @@ import {
   BookInfoOrder,
   useDeleteUnusedFoldersMutation,
   useDebugBookCountsLazyQuery,
+  useRebuildMeiliSearchMutation,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import { workbox } from '@client/registerServiceWorker';
@@ -100,6 +101,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
       setVConsole(undefined);
     }
   }, [vConsole]);
+
+  const [rebuildMeiliSearchMutation, { loading: rebuilding }] = useRebuildMeiliSearchMutation();
 
   return (
     <>
@@ -215,6 +218,9 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
               </>
             )}
           </Collapse>
+          <MenuItem onClick={() => { rebuildMeiliSearchMutation(); }} disabled={rebuilding}>
+            Rebuild MeiliSearch indexes
+          </MenuItem>
         </Collapse>
         <MenuItem onClick={() => window.open('https://github.com/syuchan1005/BookReader')}>
           GitHub - BookReader

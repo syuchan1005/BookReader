@@ -553,6 +553,11 @@ export type BooksQueryVariables = Exact<{
 
 export type BooksQuery = { __typename?: 'Query', books: Array<{ __typename?: 'Book', id: string, number: string, pages: number, thumbnail?: number | null, updatedAt: string, info?: { __typename?: 'BookInfo', id: string, name: string } | null } | null> };
 
+export type AvailableSearchModesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AvailableSearchModesQuery = { __typename?: 'Query', availableSearchModes: Array<SearchMode> };
+
 export type DeleteBooksMutationVariables = Exact<{
   infoId: Scalars['ID'];
   ids: Array<Scalars['ID']> | Scalars['ID'];
@@ -1362,6 +1367,38 @@ export function useBooksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Book
 export type BooksQueryHookResult = ReturnType<typeof useBooksQuery>;
 export type BooksLazyQueryHookResult = ReturnType<typeof useBooksLazyQuery>;
 export type BooksQueryResult = Apollo.QueryResult<BooksQuery, BooksQueryVariables>;
+export const AvailableSearchModesDocument = gql`
+    query availableSearchModes {
+  availableSearchModes
+}
+    `;
+
+/**
+ * __useAvailableSearchModesQuery__
+ *
+ * To run a query within a React component, call `useAvailableSearchModesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAvailableSearchModesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAvailableSearchModesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAvailableSearchModesQuery(baseOptions?: Apollo.QueryHookOptions<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>(AvailableSearchModesDocument, options);
+      }
+export function useAvailableSearchModesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>(AvailableSearchModesDocument, options);
+        }
+export type AvailableSearchModesQueryHookResult = ReturnType<typeof useAvailableSearchModesQuery>;
+export type AvailableSearchModesLazyQueryHookResult = ReturnType<typeof useAvailableSearchModesLazyQuery>;
+export type AvailableSearchModesQueryResult = Apollo.QueryResult<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>;
 export const DeleteBooksDocument = gql`
     mutation deleteBooks($infoId: ID!, $ids: [ID!]!) {
   deleteBooks(infoId: $infoId, ids: $ids) {
