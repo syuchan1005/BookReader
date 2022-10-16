@@ -99,6 +99,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const defaultLoadBookInfoCount = 60;
+const loadMoreThreshold = 15;
 
 const Home = (props: HomeProps) => {
   useTitle('');
@@ -235,8 +236,8 @@ const Home = (props: HomeProps) => {
       }
 
       if (isFirstVisible) {
-        const isLast = i === infos.length - 1;
-        if (isLast && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+        const isOverLoadMoreThreshold = infos.length - i - 1 < loadMoreThreshold;
+        if (isOverLoadMoreThreshold && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
           handleLoadMore();
         }
       }
