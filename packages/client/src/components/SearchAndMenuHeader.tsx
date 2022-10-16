@@ -109,12 +109,15 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const [searchMode, setSearchMode] = React.useState(SearchMode.Database);
   const handleSearchModeChange = useCallback((e) => {
     const selectedSearchMode = e.target.value;
-    if (!Object.values(SearchMode).includes(selectedSearchMode)) {
-      setSearchMode(SearchMode.Database);
-    } else {
-      setSearchMode(selectedSearchMode);
+    let mode = SearchMode.Database;
+    if (Object.values(SearchMode).includes(selectedSearchMode)) {
+      mode = selectedSearchMode;
     }
-  }, []);
+    setSearchMode(mode);
+
+    onChangeSearchText?.(searchText, mode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText]);
 
   const handleSearchText = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     onChangeSearchText?.(event.target.value, searchMode);
