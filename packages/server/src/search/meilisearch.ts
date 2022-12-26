@@ -15,7 +15,10 @@ interface BookInfoIndexEntity {
 export class MeiliSearchClient {
   private client: MeiliSearch | undefined;
 
+  private index: string = 'book-reader';
+
   async init(): Promise<void> {
+    this.index = process.env.BOOKREADER_MEILISEARCH_INDEX || 'book-reader';
     const host = process.env.BOOKREADER_MEILISEARCH_HOST;
     const apiKey = process.env.BOOKREADER_MEILISEARCH_API_KEY;
     try {
@@ -50,7 +53,7 @@ export class MeiliSearchClient {
         updatedAt: bookInfo.updatedAt,
         genres: bookInfo.genres,
       })));
-    const bookInfoIndex = this.client.index('bookInfo');
+    const bookInfoIndex = this.client.index(this.index);
     await bookInfoIndex.deleteAllDocuments();
     await bookInfoIndex.updateFilterableAttributes(['genres']);
     await bookInfoIndex.updateSearchableAttributes(['infoName']);
@@ -65,7 +68,7 @@ export class MeiliSearchClient {
     if (!bookInfo) {
       return;
     }
-    await this.client.index<BookInfoIndexEntity>('bookInfo')
+    await this.client.index<BookInfoIndexEntity>(this.index)
       .addDocuments([
         {
           id: bookInfo.id,
@@ -81,7 +84,7 @@ export class MeiliSearchClient {
     if (!this.client) {
       return;
     }
-    await this.client.index('bookInfo')
+    await this.client.index(this.index)
       .deleteDocument(infoId);
   }
 
@@ -89,7 +92,7 @@ export class MeiliSearchClient {
    * Returns the list of infoId.
    */
   async search(query: string, genres: string[], limit: number): Promise<string[]> {
-    const result = await this.client.index('bookInfo')
+    const result = await this.client.index(this.index)
       .search<BookInfoIndexEntity>(query, {
         limit,
         attributesToRetrieve: ['id'],
