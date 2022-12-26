@@ -83,7 +83,8 @@ enum SplitType {
 
 enum SearchMode {
     DATABASE,
-    MEILISEARCH
+    MEILISEARCH,
+    ELASTICSEARCH
 }
 
 input BookInfosOption {

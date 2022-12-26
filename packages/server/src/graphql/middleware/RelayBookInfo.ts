@@ -11,7 +11,7 @@ import {
 } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager, SortKey } from '@server/database/BookDataManager';
 import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
-import { meiliSearchClient } from '@server/meilisearch';
+import { meiliSearchClient, elasticSearchClient } from '@server/search';
 
 const DefaultOptions: BookInfosOption = {
   search: undefined,
@@ -161,10 +161,36 @@ const searchBookInfosByDB = async ({
   };
 };
 
-const searchBookInfosByMeiliSearch = async (
-  { option = DefaultOptions }: Partial<QueryRelayBookInfosArgs>,
-): Promise<BookInfoPartialList> => {
-  const infoIds = await meiliSearchClient.search(option.search, option.genres);
+const searchBookInfosByMeiliSearch = async ({
+  first,
+  option = DefaultOptions,
+}: Partial<QueryRelayBookInfosArgs>): Promise<BookInfoPartialList> => {
+  const infoIds = await meiliSearchClient.search(option.search, option.genres, first);
+  const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
+  return {
+    edges: bookInfos.map((bookInfo) => ({
+      cursor: bookInfo.name,
+      node: {
+        ...bookInfo,
+        createdAt: `${bookInfo.createdAt.getTime()}`,
+        updatedAt: `${bookInfo.updatedAt.getTime()}`,
+        count: bookInfo.bookCount,
+      } as Omit<BookInfoGQLModel, BookInfoResolveAttrs>,
+    } as BookInfoEdge)),
+    pageInfo: {
+      hasNextPage: false,
+      hasPreviousPage: false,
+      startCursor: bookInfos[0]?.name ?? '',
+      endCursor: bookInfos[bookInfos.length - 1]?.name ?? '',
+    },
+  };
+};
+
+const searchBookInfosByElasticSearch = async ({
+  first,
+  option = DefaultOptions,
+}: Partial<QueryRelayBookInfosArgs>): Promise<BookInfoPartialList> => {
+  const infoIds = await elasticSearchClient.search(option.search, option.genres, first);
   const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
   return {
     edges: bookInfos.map((bookInfo) => ({
@@ -195,6 +221,11 @@ class RelayBookInfo extends GQLMiddleware {
           case SearchMode.Meilisearch:
             if (args.option.search && meiliSearchClient.isAvailable()) {
               return searchBookInfosByMeiliSearch(args);
+            }
+          // eslint-disable-next-line no-fallthrough
+          case SearchMode.Elasticsearch:
+            if (args.option.search && elasticSearchClient.isAvailable()) {
+              return searchBookInfosByElasticSearch(args);
             }
           // eslint-disable-next-line no-fallthrough
           case SearchMode.Database:

@@ -1,5 +1,5 @@
 import { MeiliSearch } from 'meilisearch';
-import { BookDataManager } from '@server/database/BookDataManager';
+import { BookDataManager } from '../database/BookDataManager';
 
 interface BookInfoIndexEntity {
   id: string;
@@ -12,7 +12,7 @@ interface BookInfoIndexEntity {
   }[];
 }
 
-class MeiliSearchClient {
+export class MeiliSearchClient {
   private client: MeiliSearch | undefined;
 
   async init(): Promise<void> {
@@ -61,12 +61,20 @@ class MeiliSearchClient {
     if (!this.client) {
       return;
     }
-    const bookInfo = await BookDataManager.getBookInfo(infoId);
+    const bookInfo = await BookDataManager.Debug.getBookInfo(infoId);
     if (!bookInfo) {
       return;
     }
-    await this.client.index('bookInfo')
-      .addDocuments([bookInfo]);
+    await this.client.index<BookInfoIndexEntity>('bookInfo')
+      .addDocuments([
+        {
+          id: bookInfo.id,
+          infoName: bookInfo.name,
+          createdAt: bookInfo.createdAt,
+          updatedAt: bookInfo.updatedAt,
+          genres: bookInfo.genres,
+        },
+      ]);
   }
 
   async removeBookInfo(infoId: string) {
@@ -80,9 +88,10 @@ class MeiliSearchClient {
   /**
    * Returns the list of infoId.
    */
-  async search(query: string, genres: string[]): Promise<string[]> {
+  async search(query: string, genres: string[], limit: number): Promise<string[]> {
     const result = await this.client.index('bookInfo')
       .search<BookInfoIndexEntity>(query, {
+        limit,
         attributesToRetrieve: ['id'],
         filter: [genres.map((g) => `genres.name = ${g}`)],
       });

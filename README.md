@@ -44,6 +44,8 @@ $ docker run \
 | `BOOKREADER_OIDC`                | `json-string` | ``                     | If not empty, authentication is activated.                          |
 | `BOOKREADER_MEILISEARCH_HOST`    | `string`      | ``                     | `http://xxxxx:xxxx`                                                 |
 | `BOOKREADER_MEILISEARCH_API_KEY` | `string`      | ``                     |                                                                     |
+| `BOOKREADER_ELASTICSEARCH_NODE`  | `string`      | ``                     |                                                                     |
+| `BOOKREADER_ELASTICSEARCH_INDEX` | `string`      | `book-reader`          |                                                                     |
 
 ## develop use
 ```shell script

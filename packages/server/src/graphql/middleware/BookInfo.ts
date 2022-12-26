@@ -15,7 +15,7 @@ import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { generateId } from '@server/database/models/Id';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
-import { meiliSearchClient } from '@server/meilisearch';
+import { meiliSearchClient, elasticSearchClient } from '@server/search';
 
 export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
 
@@ -73,6 +73,7 @@ class BookInfo extends GQLMiddleware {
           genres: genres?.map((genre) => ({ name: genre })),
         });
         await meiliSearchClient.addBookInfo(infoId);
+        await elasticSearchClient.addBookInfo(infoId);
         return {
           success: true,
           infoId,
@@ -104,7 +105,9 @@ class BookInfo extends GQLMiddleware {
         });
 
         await meiliSearchClient.removeBookInfo(infoId);
+        await elasticSearchClient.removeBookInfo(infoId);
         await meiliSearchClient.addBookInfo(infoId);
+        await elasticSearchClient.addBookInfo(infoId);
         return { success: true };
       },
       deleteBookInfo: async (parent, { id: infoId }) => {
@@ -117,6 +120,7 @@ class BookInfo extends GQLMiddleware {
         purgeImageCache();
 
         await meiliSearchClient.removeBookInfo(infoId);
+        await elasticSearchClient.removeBookInfo(infoId);
         return {
           success: true,
           books: books.map((book) => ({

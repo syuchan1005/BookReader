@@ -11,7 +11,7 @@ import Redis from 'ioredis';
 
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
-import { meiliSearchClient } from '@server/meilisearch';
+import { meiliSearchClient, elasticSearchClient } from '@server/search';
 import { convertImage } from './ImageUtil';
 import GraphQL from './graphql/index';
 import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddleware } from './auth';
@@ -20,6 +20,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
   await StorageDataManager.init();
   initAuth();
   await meiliSearchClient.init();
+  await elasticSearchClient.init();
 
   const app = express();
   const httpServer = http.createServer(app);

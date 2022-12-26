@@ -372,6 +372,7 @@ export type Revision = {
 
 export const SearchMode = {
   Database: 'DATABASE',
+  Elasticsearch: 'ELASTICSEARCH',
   Meilisearch: 'MEILISEARCH'
 } as const;
 
