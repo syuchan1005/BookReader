@@ -33,6 +33,7 @@ import {
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
   searchText?: string;
+  searchMode: SearchMode,
   onChangeSearchText?: (text: string, searchMode: SearchMode) => void;
 }
 
@@ -102,19 +103,17 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const {
     onClickMenuIcon,
     searchText,
+    searchMode,
     onChangeSearchText,
   } = props;
 
   const { data } = useAvailableSearchModesQuery();
-  const [searchMode, setSearchMode] = React.useState(SearchMode.Database);
   const handleSearchModeChange = useCallback((e) => {
     const selectedSearchMode = e.target.value;
     let mode = SearchMode.Database;
     if (Object.values(SearchMode).includes(selectedSearchMode)) {
       mode = selectedSearchMode;
     }
-    setSearchMode(mode);
-
     onChangeSearchText?.(searchText, mode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);

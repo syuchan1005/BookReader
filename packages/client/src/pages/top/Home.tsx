@@ -30,7 +30,7 @@ import { workbox } from '@client/registerServiceWorker';
 import {
   genresState,
   sortOrderState,
-  showBookInfoNameState, homeLastSeenBookPosition,
+  showBookInfoNameState, homeLastSeenBookPosition, searchModeState,
 } from '@client/store/atoms';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import db from '@client/indexedDb/Database';
@@ -137,7 +137,7 @@ const Home = (props: HomeProps) => {
     });
   }, [searchParams, setSearchParams, location]);
   const debounceSearch = useDebounceValue(searchText, 800);
-  const [searchMode, setSearchMode] = React.useState<SearchMode>(SearchMode.Database);
+  const [searchMode, setSearchMode] = useRecoilState(searchModeState);
   const handleSearchText = React.useCallback((text: string, mode: SearchMode) => {
     if (!text) {
       setSearchText(undefined);
@@ -147,7 +147,7 @@ const Home = (props: HomeProps) => {
       setSearchText(text, 'replace');
     }
     setSearchMode(mode);
-  }, [searchText, setSearchText]);
+  }, [searchText, setSearchText, setSearchMode]);
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
   React.useEffect(() => {
@@ -288,6 +288,7 @@ const Home = (props: HomeProps) => {
     <>
       <SearchAndMenuHeader
         searchText={searchText || ''}
+        searchMode={searchMode}
         onChangeSearchText={handleSearchText}
         onClickMenuIcon={setMenuAnchor}
       />

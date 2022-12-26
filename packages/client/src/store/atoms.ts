@@ -1,13 +1,26 @@
 /* eslint-disable import/prefer-default-export */
 import { atom, selector } from 'recoil';
 import { localStorageEffect, logEffect } from '@client/store/effects';
-import { BookInfoOrder, BookOrder } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  BookInfoOrder,
+  BookOrder,
+  SearchMode
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 export const genresState = atom<string[]>({
   key: 'genresState',
   default: [],
   effects_UNSTABLE: [
     logEffect(),
+  ],
+});
+
+export const searchModeState = atom<SearchMode>({
+  key: 'searchModeState',
+  default: SearchMode.Database,
+  effects_UNSTABLE: [
+    logEffect(),
+    localStorageEffect('searchMode'),
   ],
 });
 
