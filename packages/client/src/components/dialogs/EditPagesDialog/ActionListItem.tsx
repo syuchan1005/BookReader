@@ -351,6 +351,23 @@ const Templates: ({
   ) => Promise<EditTypeContent[]>,
 })[] = [
   {
+    name: 'PaddingOnCover',
+    initOptions: {},
+    exec: async (bookId: string, maxPage: number): Promise<EditTypeContent[]> => {
+      const coverPadding = await getPadding(bookId, maxPage, 0, 200);
+      return [
+        {
+          id: `${Date.now()}${Math.random()}`,
+          editType: EditType.Crop,
+          content: {
+            pageRange: [0],
+            ...coverPadding,
+          },
+        },
+      ];
+    },
+  },
+  {
     name: 'PaddingOnCoverAndContents',
     initOptions: {
       coverIndex: 1,
