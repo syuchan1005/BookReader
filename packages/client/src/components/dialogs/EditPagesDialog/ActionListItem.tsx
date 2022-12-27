@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Box,
   Button,
-  Card,
+  Card, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -341,46 +341,59 @@ export interface EditTypeContent {
   content: { [key: string]: any };
 }
 
-// noinspection JSUnusedGlobalSymbols
-const Templates = {
-  PaddingOnCoverAndContents: async (
+const Templates: ({
+  name: string,
+  initOptions: Record<string, number>,
+  exec: (
     bookId: string,
     maxPage: number,
-    coverIndex: number = 0,
-    contentPaddingPage: number = 4,
-  ): Promise<EditTypeContent[]> => {
-    const [coverPadding, contentsPadding] = await Promise.all([
-      getPadding(bookId, maxPage, coverIndex, 200),
-      getPadding(bookId, maxPage, contentPaddingPage, 50),
-    ]);
-    return [
-      {
-        id: `${Date.now()}${Math.random()}`,
-        editType: EditType.Crop,
-        content: {
-          pageRange: [coverIndex],
-          ...coverPadding,
+    options: Record<string, number>
+  ) => Promise<EditTypeContent[]>,
+})[] = [
+  {
+    name: 'PaddingOnCoverAndContents',
+    initOptions: {
+      coverIndex: 1,
+      contentPaddingPage: 5,
+    },
+    exec: async (
+      bookId: string,
+      maxPage: number,
+      options,
+    ): Promise<EditTypeContent[]> => {
+      const [coverPadding, contentsPadding] = await Promise.all([
+        getPadding(bookId, maxPage, options.coverIndex - 1, 200),
+        getPadding(bookId, maxPage, options.contentPaddingPage - 1, 50),
+      ]);
+      return [
+        {
+          id: `${Date.now()}${Math.random()}`,
+          editType: EditType.Crop,
+          content: {
+            pageRange: [options.coverIndex - 1],
+            ...coverPadding,
+          },
         },
-      },
-      {
-        id: `${Date.now()}${Math.random()}`,
-        editType: EditType.Crop,
-        content: {
-          pageRange: [[1, maxPage - 1]],
-          ...contentsPadding,
+        {
+          id: `${Date.now()}${Math.random()}`,
+          editType: EditType.Crop,
+          content: {
+            pageRange: [[1, maxPage - 1]],
+            ...contentsPadding,
+          },
         },
-      },
-      {
-        id: `${Date.now()}${Math.random()}`,
-        editType: EditType.Split,
-        content: {
-          pageRange: [[1, maxPage - 1]],
-          splitType: SplitType.Vertical,
+        {
+          id: `${Date.now()}${Math.random()}`,
+          editType: EditType.Split,
+          content: {
+            pageRange: [[1, maxPage - 1]],
+            splitType: SplitType.Vertical,
+          },
         },
-      },
-    ];
+      ];
+    },
   },
-};
+];
 
 interface AddTemplateListItemProps {
   bookId: string;
@@ -396,6 +409,13 @@ export const AddTemplateListItem = React.memo(
       onAdded,
     } = props;
     const [anchorEl, setAnchorEl] = React.useState(null);
+    const [selectedTemplate, setSelectedTemplate] = React.useState(null);
+    const [options, setOptions] = React.useState(null);
+    const handleClose = React.useCallback(() => {
+      setSelectedTemplate(null);
+      setOptions(null);
+      setAnchorEl(null);
+    }, []);
     return (
       <>
         <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
@@ -403,20 +423,57 @@ export const AddTemplateListItem = React.memo(
           <ListItemText primary="Use Template" />
         </ListItem>
         <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
-          {Object.keys(Templates)
-            .map((key: string) => (
-              <MenuItem
-                key={key}
-                onClick={async () => {
-                  const editContents = await Templates[key](bookId, maxPage);
+          {Templates.map((template) => (
+            <MenuItem
+              key={template.name}
+              onClick={async () => {
+                if (Object.keys(template.initOptions).length === 0) {
+                  const editContents = await template.exec(bookId, maxPage, template.initOptions);
                   onAdded(editContents);
-                  setAnchorEl(null);
-                }}
-              >
-                {key}
-              </MenuItem>
-            ))}
+                  handleClose();
+                } else {
+                  setSelectedTemplate(template);
+                  setOptions({ ...template.initOptions });
+                }
+              }}
+            >
+              {template.name}
+            </MenuItem>
+          ))}
         </Menu>
+        <Dialog open={selectedTemplate != null && options !== null}>
+          <DialogTitle>Template options</DialogTitle>
+          <DialogContent>
+            {Object.keys(options || {})
+              .map((key) => (
+                <TextField
+                  key={key}
+                  margin="dense"
+                  fullWidth
+                  variant="standard"
+                  label={key}
+                  type="number"
+                  value={options[key]}
+                  onChange={(e) => setOptions({
+                    ...options,
+                    [key]: e.target.value,
+                  })}
+                />
+              ))}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                const editContents = await selectedTemplate.exec(bookId, maxPage, options);
+                onAdded(editContents);
+                handleClose();
+              }}
+            >
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
       </>
     );
   },
