@@ -343,7 +343,7 @@ export interface EditTypeContent {
 
 const Templates: ({
   name: string,
-  initOptions: Record<string, number>,
+  initOptions: (maxPage: number) => Record<string, number>,
   exec: (
     bookId: string,
     maxPage: number,
@@ -352,7 +352,7 @@ const Templates: ({
 })[] = [
   {
     name: 'PaddingOnCover',
-    initOptions: {},
+    initOptions: () => ({}),
     exec: async (bookId: string, maxPage: number): Promise<EditTypeContent[]> => {
       const coverPadding = await getPadding(bookId, maxPage, 0, 200);
       return [
@@ -369,10 +369,11 @@ const Templates: ({
   },
   {
     name: 'PaddingOnCoverAndContents',
-    initOptions: {
+    initOptions: (maxPage) => ({
       coverIndex: 1,
       contentPaddingPage: 5,
-    },
+      contentEndPage: maxPage,
+    }),
     exec: async (
       bookId: string,
       maxPage: number,
@@ -395,7 +396,7 @@ const Templates: ({
           id: `${Date.now()}${Math.random()}`,
           editType: EditType.Crop,
           content: {
-            pageRange: [[1, maxPage - 1]],
+            pageRange: [[1, options.contentEndPage - 1]],
             ...contentsPadding,
           },
         },
@@ -403,7 +404,7 @@ const Templates: ({
           id: `${Date.now()}${Math.random()}`,
           editType: EditType.Split,
           content: {
-            pageRange: [[1, maxPage - 1]],
+            pageRange: [[1, options.contentEndPage - 1]],
             splitType: SplitType.Vertical,
           },
         },
@@ -444,13 +445,14 @@ export const AddTemplateListItem = React.memo(
             <MenuItem
               key={template.name}
               onClick={async () => {
-                if (Object.keys(template.initOptions).length === 0) {
-                  const editContents = await template.exec(bookId, maxPage, template.initOptions);
+                const initOptions = template.initOptions(maxPage);
+                if (Object.keys(initOptions).length === 0) {
+                  const editContents = await template.exec(bookId, maxPage, initOptions);
                   onAdded(editContents);
                   handleClose();
                 } else {
                   setSelectedTemplate(template);
-                  setOptions({ ...template.initOptions });
+                  setOptions({ ...initOptions });
                 }
               }}
             >
