@@ -71,6 +71,10 @@ export const createInitValue = (editType: EditType) => {
         pageRange: [],
         splitType: SplitType.Vertical,
       };
+    case EditType.HStack:
+      return {
+        pageRange: [],
+      };
     default:
       return {};
   }
@@ -285,6 +289,23 @@ const ListItems = {
             <FormControlLabel control={<Radio />} value={SplitType.Horizontal} label="Horizontal" />
           </RadioGroup>
         </FormControl>
+      </ListItemCard>
+    );
+  }),
+  [EditType.HStack]: React.forwardRef((props: ListItemProps, ref) => {
+    const {
+      maxPage,
+      content,
+      setContent,
+    } = props;
+    return (
+      <ListItemCard ref={ref} {...props} menuText="HStack">
+        <IntRangeInputField
+          initValue={content.pageRange || []}
+          onChange={(r) => setContent('pageRange', r)}
+          maxPage={maxPage}
+          fullWidth
+        />
       </ListItemCard>
     );
   }),
