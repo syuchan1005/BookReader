@@ -39,7 +39,7 @@
         "@types/express-session": "^1.17.5",
         "@types/ioredis": "^4.28.10",
         "@types/passport": "^1.0.10",
-        "apollo-server-core": "^3.10.0",
+        "apollo-server-core": "^3.11.1",
         "apollo-server-express": "^3.10.0",
         "connect-history-api-fallback": "^2.0.0",
         "connect-redis": "^6.1.3",
