@@ -8,7 +8,10 @@ import { PubSub } from 'graphql-subscriptions';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServer, gql } from 'apollo-server-express';
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import {
+  ApolloServerPluginDrainHttpServer,
+  ApolloServerPluginLandingPageGraphQLPlayground,
+} from 'apollo-server-core';
 
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
@@ -82,6 +85,7 @@ export default class GraphQL {
       schema: this.schema,
       plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
+        ApolloServerPluginLandingPageGraphQLPlayground(),
       ],
     });
   }

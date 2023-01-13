@@ -90,6 +90,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
   initAuthRoutes(app);
 
   const requireAuthRouter = express.Router();
+  requireAuthRouter.use(isAuthenticatedMiddleware);
   StorageDataManager.getStaticFolders().forEach((folderPath) => {
     requireAuthRouter.use(express.static(folderPath));
   });
@@ -143,11 +144,11 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
 
   await graphql.middleware(requireAuthRouter);
 
+  app.use(requireAuthRouter);
+
   app.use(history());
 
   app.use(express.static('public'));
-
-  app.use(isAuthenticatedMiddleware, requireAuthRouter);
 
   const port = process.env.PORT || 8081;
   httpServer.listen(port, () => {
