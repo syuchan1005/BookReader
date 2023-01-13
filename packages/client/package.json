@@ -31,7 +31,7 @@
     "png-to-ico": "^2.1.4",
     "react-test-renderer": "^17.0.2",
     "rollup-plugin-visualizer": "^5.7.1",
-    "vite": "^3.0.2",
+    "vite": "^3.0.3",
     "vite-plugin-pwa": "^0.12.3",
     "webpack": "^5.73.0",
     "workbox-cacheable-response": "^6.5.3",
