@@ -3,6 +3,7 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import sharp from 'sharp';
 import throttle from 'lodash.throttle';
 import { withFilter } from 'graphql-subscriptions';
+import lodashChunk from 'lodash.chunk';
 
 import {
   MutationResolvers, Result, SplitType, EditAction, Scalars, EditType, SubscriptionResolvers,
@@ -16,20 +17,23 @@ import {
   withPageEditFolder,
   writeFile,
 } from '@server/storage/StorageDataManager';
-import { flatRange } from '../scalar/IntRange';
+import { chunkedRange, flatRange } from '../scalar/IntRange';
 import {
   purgeImageCache,
-  getImageSize,
+  getImageSize, joinImagesAndSaveToJpg,
 } from '../../ImageUtil';
 
 const throttleMs = 500;
 
-const hasPageCountEffectMap = {
-  [EditType.Crop]: false,
-  [EditType.Replace]: false,
-  [EditType.Delete]: true,
-  [EditType.Put]: true,
-  [EditType.Split]: true,
+const editTypeConstraint: {
+  [key in EditType]: [/* is terminal operation */ boolean, /* is single operation */ boolean]
+} = {
+  [EditType.Crop]: [false, false],
+  [EditType.Replace]: [false, false],
+  [EditType.Delete]: [true, false],
+  [EditType.Put]: [true, false],
+  [EditType.Split]: [true, false],
+  [EditType.HStack]: [true, true],
 };
 
 type CropValue = {
@@ -50,20 +54,28 @@ type ImageEditAction = {
   willDelete: boolean;
   image?: Scalars['Upload'],
   cropTransforms?: TransformFn[],
+  compositePages?: number[],
 };
 
 const createImageEditAction = (pageIndex: number): ImageEditAction => ({
-  pageIndex, willDelete: false, image: undefined, cropTransforms: undefined,
+  pageIndex,
+  willDelete: false,
+  image: undefined,
+  cropTransforms: undefined,
+  compositePages: undefined,
 });
 
 const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefined => {
   const isValid = actions.every((action, index, arr) => {
-    const hasPageCountEffect = hasPageCountEffectMap[action.editType];
-    if (hasPageCountEffect === undefined) {
+    const constraint = editTypeConstraint[action.editType];
+    if (!constraint) {
+      return false;
+    }
+    if (constraint[1] && arr.length !== 1) {
       return false;
     }
     const isLast = index === arr.length - 1;
-    if (hasPageCountEffect && !isLast) {
+    if (constraint[0] && !isLast) {
       return false;
     }
 
@@ -74,6 +86,7 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
       case EditType.Put:
       case EditType.Replace:
       case EditType.Split:
+      case EditType.HStack:
         return !!action[action.editType.toLowerCase()];
       default:
         return false;
@@ -116,7 +129,6 @@ const calculateEditActions = (
         break;
       }
       case EditType.Put: {
-        createImageEditAction(-1);
         const newImageEditAction: ImageEditAction = createImageEditAction(-1);
         newImageEditAction.image = action.put.image;
         imageEditActions.splice(action.put.pageIndex + 1, 0, newImageEditAction);
@@ -131,25 +143,28 @@ const calculateEditActions = (
           }
           switch (action.split.splitType) {
             case SplitType.Vertical:
-              return [...Array(splitCount).keys()].reverse().map((i): ImageEditAction => ({
-                ...imageEditAction,
-                pageIndex: imageEditAction.pageIndex ?? pageIndex,
-                cropTransforms: [
-                  ...(imageEditAction.cropTransforms ?? []),
-                  (width, height) => {
-                    const widthPerPage = width / splitCount;
-                    const left = Math.round(widthPerPage * i);
-                    return {
-                      left,
-                      right: Math.min(width, Math.round(widthPerPage * (i + 1))),
-                      top: 0,
-                      bottom: height,
-                    };
-                  },
-                ],
-              }));
+              return [...Array(splitCount)
+                .keys()].reverse()
+                .map((i): ImageEditAction => ({
+                  ...imageEditAction,
+                  pageIndex: imageEditAction.pageIndex ?? pageIndex,
+                  cropTransforms: [
+                    ...(imageEditAction.cropTransforms ?? []),
+                    (width, height) => {
+                      const widthPerPage = width / splitCount;
+                      const left = Math.round(widthPerPage * i);
+                      return {
+                        left,
+                        right: Math.min(width, Math.round(widthPerPage * (i + 1))),
+                        top: 0,
+                        bottom: height,
+                      };
+                    },
+                  ],
+                }));
             case SplitType.Horizontal:
-              return [...Array(splitCount).keys()].map((i): ImageEditAction => ({
+              return [...Array(splitCount)
+                .keys()].map((i): ImageEditAction => ({
                 ...imageEditAction,
                 pageIndex: imageEditAction.pageIndex ?? pageIndex,
                 cropTransforms: [
@@ -176,6 +191,22 @@ const calculateEditActions = (
         imageEditActions[action.replace.pageIndex].image = action.replace.image;
         imageEditActions[action.replace.pageIndex].cropTransforms = undefined;
         break;
+      case EditType.HStack: {
+        const inputChunkedPageRange = chunkedRange(action.hstack.pageRange);
+        const pageRange = inputChunkedPageRange.flat();
+        if (pageRange.length !== new Set(pageRange).size) {
+          throw new Error('has duplicate range');
+        }
+        const chunkedPageRange: [number, number][] = inputChunkedPageRange
+          .map((pages) => lodashChunk(pages, 2))
+          .flat(1)
+          .filter((arr) => arr.length === 2);
+        chunkedPageRange.forEach((pages) => {
+          imageEditActions[pages[0]].compositePages = [...pages].reverse();
+          imageEditActions[pages[1]].willDelete = true;
+        });
+        break;
+      }
       default:
         // @ts-ignore
         throw new Error(`Unknown EditType ${action.editType}`);
@@ -225,7 +256,12 @@ const executeEditActions = async (
 
   let count = 0;
   const promises = executableEditActions
-    .map(async ({ pageIndex, image, cropTransforms }, index, arr): Promise<Result> => {
+    .map(async ({
+      pageIndex,
+      image,
+      cropTransforms,
+      compositePages,
+    }, index, arr): Promise<Result> => {
       const srcFileData = await StorageDataManager.getOriginalPageData({
         bookId,
         pageNumber: {
@@ -233,14 +269,16 @@ const executeEditActions = async (
           totalPageCount: bookPages,
         },
       });
-      const distFileName = `${index.toString(10).padStart(arr.length.toString(10).length, '0')}.jpg`;
+      const distFileName = `${index.toString(10)
+        .padStart(arr.length.toString(10).length, '0')}.jpg`;
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
         if (image) {
           const buffer = await image
             .then(({ createReadStream }) => createReadStream())
             .then(streamToBuffer);
-          await sharp(buffer).toFile(distFilePath);
+          await sharp(buffer)
+            .toFile(distFilePath);
         } else if (cropTransforms) {
           const size = await getImageSize(srcFileData.data);
           const cropValue = calculateCropTransforms(cropTransforms, size.width, size.height);
@@ -252,6 +290,17 @@ const executeEditActions = async (
               height: cropValue.bottom - cropValue.top,
             })
             .toFile(distFilePath);
+        } else if (compositePages) {
+          const pageDataList = await Promise.all(
+            compositePages.map((i) => StorageDataManager.getOriginalPageData({
+              bookId,
+              pageNumber: {
+                pageIndex: i,
+                totalPageCount: bookPages,
+              },
+            })),
+          );
+          await joinImagesAndSaveToJpg(pageDataList.map((p) => p.data), distFilePath);
         } else {
           await writeFile(distFilePath, srcFileData.data);
         }
@@ -279,7 +328,10 @@ class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Mutation(): MutationResolvers {
     return {
-      bulkEditPage: async (_, { id: bookId, actions }): Promise<Result> => {
+      bulkEditPage: async (_, {
+        id: bookId,
+        actions,
+      }): Promise<Result> => {
         const book = await BookDataManager.getBook(bookId);
         if (!book) {
           return {
@@ -309,8 +361,10 @@ class Page extends GQLMiddleware {
         log('Calculate edit actions');
         const editActions = calculateEditActions(
           strictEditActions,
-          [...Array(book.pageCount).keys()].map(createImageEditAction),
-        ).filter(({ willDelete }) => !willDelete);
+          [...Array(book.pageCount)
+            .keys()].map(createImageEditAction),
+        )
+          .filter(({ willDelete }) => !willDelete);
 
         return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
           log('Processing edit actions');
@@ -327,7 +381,9 @@ class Page extends GQLMiddleware {
 
           log('Move processed images');
           try {
-            await StorageDataManager.removeBook(bookId, true).catch(() => { /* ignored */ });
+            await StorageDataManager.removeBook(bookId, true)
+              .catch(() => { /* ignored */
+              });
             purgeImageCache();
             await replaceNewFiles();
           } catch (e) {

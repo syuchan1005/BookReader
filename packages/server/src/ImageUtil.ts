@@ -107,3 +107,59 @@ export const purgeImageCache = () => {
   sharp.cache(false);
   sharp.cache(true);
 };
+
+const getLeftTopPixelData = async (src: Buffer): Promise<{ r: number, g: number, b: number }> => {
+  const { data: [r, g, b] } = await sharp(src)
+    .extract({
+      left: 0,
+      top: 0,
+      width: 1,
+      height: 1,
+    })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return { r, g, b };
+};
+
+export const joinImagesAndSaveToJpg = async (srcBuffers: Buffer[], dist: string) => {
+  if (srcBuffers.length < 1) {
+    return;
+  }
+  const imageAttrs = await Promise.all(
+    srcBuffers.map(async (srcBuffer) => {
+      const { width, height } = await sharp(srcBuffer).metadata();
+      return {
+        width,
+        height,
+        data: srcBuffer,
+      };
+    }),
+  );
+  const background = await getLeftTopPixelData(srcBuffers[0]);
+
+  const distWidth = imageAttrs.reduce((acc, cur) => acc + cur.width, 0);
+  const distHeight = Math.max(...imageAttrs.map((v) => v.height));
+  let totalLeft = 0;
+  const compositeParams = imageAttrs.map((image) => {
+    const left = totalLeft;
+    totalLeft += image.width;
+    return {
+      input: image.data,
+      gravity: 'northwest',
+      left,
+      top: 0,
+    };
+  });
+
+  await sharp({
+    create: {
+      width: distWidth,
+      height: distHeight,
+      channels: 3,
+      background,
+    },
+  })
+    .composite(compositeParams)
+    .jpeg()
+    .toFile(dist);
+};
