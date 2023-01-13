@@ -141,6 +141,7 @@ export type EditAction = {
   crop?: InputMaybe<CropEditAction>;
   delete?: InputMaybe<DeleteEditAction>;
   editType: EditType;
+  hstack?: InputMaybe<HStackEditAction>;
   put?: InputMaybe<UploadEditAction>;
   replace?: InputMaybe<UploadEditAction>;
   split?: InputMaybe<SplitEditAction>;
@@ -149,6 +150,7 @@ export type EditAction = {
 export const EditType = {
   Crop: 'Crop',
   Delete: 'Delete',
+  HStack: 'HStack',
   Put: 'Put',
   Replace: 'Replace',
   Split: 'Split'
@@ -159,6 +161,10 @@ export type Genre = {
   __typename?: 'Genre';
   invisible: Scalars['Boolean'];
   name: Scalars['ID'];
+};
+
+export type HStackEditAction = {
+  pageRange: Scalars['IntRange'];
 };
 
 export type InputBook = {

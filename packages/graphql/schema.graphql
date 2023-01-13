@@ -229,6 +229,9 @@ enum EditType {
     Delete
     Put
     Split
+
+    # single operations
+    HStack
 }
 
 input EditAction {
@@ -239,6 +242,7 @@ input EditAction {
     delete: DeleteEditAction
     put: UploadEditAction
     split: SplitEditAction
+    hstack: HStackEditAction
 }
 
 input CropEditAction {
@@ -262,6 +266,10 @@ input SplitEditAction {
     pageRange: IntRange!
     splitType: SplitType!
     splitCount: Int = 2
+}
+
+input HStackEditAction {
+    pageRange: IntRange!
 }
 
 input InputBook {

@@ -140,6 +140,7 @@ export type EditAction = {
   crop?: InputMaybe<CropEditAction>;
   delete?: InputMaybe<DeleteEditAction>;
   editType: EditType;
+  hstack?: InputMaybe<HStackEditAction>;
   put?: InputMaybe<UploadEditAction>;
   replace?: InputMaybe<UploadEditAction>;
   split?: InputMaybe<SplitEditAction>;
@@ -148,6 +149,7 @@ export type EditAction = {
 export const EditType = {
   Crop: 'Crop',
   Delete: 'Delete',
+  HStack: 'HStack',
   Put: 'Put',
   Replace: 'Replace',
   Split: 'Split'
@@ -158,6 +160,10 @@ export type Genre = {
   __typename?: 'Genre';
   invisible: Scalars['Boolean'];
   name: Scalars['ID'];
+};
+
+export type HStackEditAction = {
+  pageRange: Scalars['IntRange'];
 };
 
 export type InputBook = {
@@ -699,6 +705,7 @@ export type ResolversTypes = {
   EditAction: EditAction;
   EditType: EditType;
   Genre: ResolverTypeWrapper<Genre>;
+  HStackEditAction: HStackEditAction;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   InputBook: InputBook;
   InputRead: InputRead;
@@ -744,6 +751,7 @@ export type ResolversParentTypes = {
   DeleteEditAction: DeleteEditAction;
   EditAction: EditAction;
   Genre: Genre;
+  HStackEditAction: HStackEditAction;
   ID: Scalars['ID'];
   InputBook: InputBook;
   InputRead: InputRead;
