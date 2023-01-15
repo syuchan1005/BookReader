@@ -1,16 +1,17 @@
-const { build } = require('esbuild');
-const NodeResolve = require('@esbuild-plugins/node-resolve').default;
+import { build } from 'esbuild';
+import { NodeResolvePlugin } from '@esbuild-plugins/node-resolve';
 
 const argEnv = process.argv[2] || 'development';
 
-const config = {
+// noinspection JSIgnoredPromiseFromCall
+build({
   entryPoints: ['src/index.ts'],
   bundle: true,
   outbase: './src',
   outdir: './dist',
   platform: 'node',
   plugins: [
-    NodeResolve({
+    NodeResolvePlugin({
       extensions: ['.ts', '.js'],
       onResolved: (resolved) => {
         if (resolved.includes('node_modules') && !resolved.includes('@syuchan1005')) {
@@ -25,14 +26,8 @@ const config = {
   loader: {
     '.graphql': 'text',
   },
-  watch: false,
-  minify: process.env.NODE_ENV === 'production',
-};
-
-if (argEnv !== 'development') {
-  config.define = {
+  minify: argEnv === 'production',
+  define: argEnv !== 'development' ? {
     'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
-  };
-}
-
-build(config);
+  } : undefined,
+});
