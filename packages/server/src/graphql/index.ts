@@ -1,9 +1,5 @@
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-/* eslint-disable import/extensions */
-import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
-/* eslint-enable import/extensions */
 import { PubSub } from 'graphql-subscriptions';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
@@ -43,7 +39,11 @@ export default class GraphQL {
 
   private readonly middlewares: { [key: string]: GQLMiddleware };
 
-  constructor(httpServer) {
+  /**
+   * @param httpServer
+   * @param updateResolver Its workaround that import the esm module from cjs.
+   */
+  constructor(httpServer, updateResolver) {
     this.pubsub = new PubSub();
     this.plugins = loadPlugins();
 
@@ -70,7 +70,7 @@ export default class GraphQL {
       resolvers: {
         BigInt,
         IntRange,
-        Upload: GraphQLUpload,
+        Upload: updateResolver,
         /* handler(parent, args, context, info) */
         Query: {
           ...middlewareOps('Query'),
@@ -90,10 +90,14 @@ export default class GraphQL {
     });
   }
 
-  async middleware(app) {
+  /**
+   * @param app
+   * @param uploadMiddleware Its workaround that import the esm module from cjs.
+   */
+  async middleware(app, uploadMiddleware) {
     await this.apolloServer.start();
     app
-      .use(graphqlUploadExpress())
+      .use(uploadMiddleware())
       .use(this.apolloServer.getMiddleware());
   }
 
@@ -102,7 +106,6 @@ export default class GraphQL {
       server: httpServer,
       path: '/graphql',
     });
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useServer({ schema: this.schema }, wsServer);
 
     ['SIGINT', 'SIGTERM'].forEach((signal) => {

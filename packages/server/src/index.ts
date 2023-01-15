@@ -17,6 +17,9 @@ import GraphQL from './graphql/index';
 import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddleware } from './auth';
 
 (async () => {
+  const { default: GraphQLUpload } = await import('graphql-upload/GraphQLUpload.mjs');
+  const { default: GraphQLUploadExpress } = await import('graphql-upload/graphqlUploadExpress.mjs');
+
   await StorageDataManager.init();
   initAuth();
   await meiliSearchClient.init();
@@ -24,7 +27,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
 
   const app = express();
   const httpServer = http.createServer(app);
-  const graphql = new GraphQL(httpServer);
+  const graphql = new GraphQL(httpServer, GraphQLUpload);
 
   app.use(morgan((tokens, req, res) => {
     let severity = 'INFO';
@@ -142,7 +145,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
 
   await BookDataManager.init();
 
-  await graphql.middleware(requireAuthRouter);
+  await graphql.middleware(requireAuthRouter, GraphQLUploadExpress);
 
   app.use(requireAuthRouter);
 
