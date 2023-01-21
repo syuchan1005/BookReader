@@ -13,13 +13,16 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { useAddBookInfoMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  HomeBookInfoFragment,
+  useAddBookInfoMutation,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import GenresSelect from '../GenresSelect';
 
 interface AddBookInfoDialogProps {
   open: boolean;
   name?: string;
-  onAdded?: (infoId: string) => void;
+  onAdded?: (homeBookInfo: HomeBookInfoFragment) => void;
   onClose?: () => void;
 }
 
@@ -91,7 +94,7 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
     onCompleted(d) {
       if (!d) return;
       closeDialog();
-      if (d.add.success && onAdded) onAdded(d.add.bookInfo.id);
+      if (d.add.success && onAdded) onAdded(d.add.bookInfo);
     },
   });
 

@@ -11,6 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
 import {
+  HomeBookInfoFragment,
   SearchMode,
   useRelayBookInfosQuery,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
@@ -154,6 +155,7 @@ const Home = (props: HomeProps) => {
     setSkipQuery(false);
   }, []);
 
+  const [infos, setInfos] = React.useState<HomeBookInfoFragment[]>([]);
   const {
     refetch,
     loading,
@@ -171,12 +173,10 @@ const Home = (props: HomeProps) => {
         order: sortOrder,
       },
     },
+    onCompleted(d) {
+      setInfos(d.bookInfos.edges.map((e) => e.node));
+    },
   });
-
-  const infos = React.useMemo(
-    () => (data ? data.bookInfos.edges.map((e) => e.node) : []),
-    [data],
-  );
 
   React.useEffect(() => {
     if (!lastSeenPosition) {
@@ -198,8 +198,7 @@ const Home = (props: HomeProps) => {
   }, [loading, lastSeenPosition, isLastSeenPositionLoaded, infos]);
 
   const handleDeletedBookInfo = React.useCallback((infoId: string, books) => {
-    // noinspection JSIgnoredPromiseFromCall
-    refetch({ first: infos.length });
+    setInfos((currentInfos) => currentInfos.filter((i) => i.id !== infoId));
     // noinspection JSIgnoredPromiseFromCall
     db.read.bulkDelete(books.map((b) => b.id));
     if (workbox) {
@@ -212,7 +211,14 @@ const Home = (props: HomeProps) => {
         pages,
       }));
     }
-  }, [refetch, infos]);
+  }, []);
+
+  const handleEditBookInfo = React.useCallback((homeBookInfo: HomeBookInfoFragment) => {
+    setInfos((currentInfos) => [
+      homeBookInfo,
+      ...currentInfos.filter((i) => i.id !== homeBookInfo.id),
+    ]);
+  }, []);
 
   const handleLoadMore = React.useCallback(
     () => fetchMore({
@@ -259,7 +265,7 @@ const Home = (props: HomeProps) => {
     [data, handleLoadMore, infos.length, isLastSeenPositionLoaded, loading, setLastSeenPosition],
   );
 
-  const openInfoPage = React.useCallback((infoId) => navigate(`/info/${infoId}?add`, {
+  const openInfoPage = React.useCallback(({ id }: HomeBookInfoFragment) => navigate(`/info/${id}?add`, {
     state: {
       referrer: location.pathname,
     },
@@ -296,7 +302,8 @@ const Home = (props: HomeProps) => {
       <main className={classes.home}>
         {(error && !data) ? (
           <div className={classes.loading}>
-            {`${error.toString().replace(/:\s*/g, '\n')}`}
+            {`${error.toString()
+              .replace(/:\s*/g, '\n')}`}
           </div>
         ) : (
           <>
@@ -307,7 +314,7 @@ const Home = (props: HomeProps) => {
                     key={info.id}
                     {...info}
                     onDeleted={handleDeletedBookInfo}
-                    onEdit={refetchAll}
+                    onEdit={handleEditBookInfo}
                     thumbnailSize={downXs ? 150 : 200}
                     showName={showBookInfoName}
                     visibleMargin={visibleMargin}

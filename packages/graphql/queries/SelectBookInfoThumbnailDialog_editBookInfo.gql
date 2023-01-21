@@ -2,5 +2,9 @@ mutation editBookInfoThumbnail($id: ID! $thumbnail: ID){
     edit: editBookInfo(id: $id thumbnail: $thumbnail) {
         success
         code
+
+        bookInfo {
+            ...HomeBookInfo
+        }
     }
 }

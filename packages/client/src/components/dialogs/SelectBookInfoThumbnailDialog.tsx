@@ -13,14 +13,18 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { useBookInfoQuery, useEditBookInfoThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import {
+  HomeBookInfoFragment,
+  useBookInfoQuery,
+  useEditBookInfoThumbnailMutation,
+} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 import Book from '@client/components/Book';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
   infoId: string;
   onClose?: () => void;
-  onEdit?: () => void;
+  onEdit?: (homeBookInfo: HomeBookInfoFragment) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -65,7 +69,7 @@ const SelectBookInfoThumbnailDialog = (
     onCompleted(d) {
       if (!d) return;
       if (d.edit.success && onClose) onClose();
-      if (d.edit.success && onEdit) onEdit();
+      if (d.edit.success && onEdit) onEdit(d.edit.bookInfo);
     },
   });
 
@@ -90,7 +94,7 @@ const SelectBookInfoThumbnailDialog = (
           <div>Loading</div>
         ) : null}
         {(error && !data) ? (
-          <div>{error}</div>
+          <div>{error.message}</div>
         ) : null}
         {(!loading && data) ? (
           <div className={classes.selectGrid}>

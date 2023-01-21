@@ -15,7 +15,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { yellow } from '@mui/material/colors';
 import { Link, useLocation } from 'react-router-dom';
 
-import { BookInfo as QLBookInfo } from '@syuchan1005/book-reader-graphql';
+import { BookInfo as QLBookInfo, HomeBookInfoFragment } from '@syuchan1005/book-reader-graphql';
 import {
   useDeleteBookInfoMutation,
   useEditBookInfoMutation,
@@ -43,7 +43,7 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   isReading?: boolean;
 
   onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
-  onEdit?: () => void;
+  onEdit?: (homeBookInfo: HomeBookInfoFragment) => void;
   index: number;
   onVisible?: (index: number, isVisible: boolean, isFirstVisible: boolean) => void;
   visibleMargin?: string;
@@ -240,7 +240,7 @@ const BookInfo = (props: BookInfoProps) => {
     onCompleted(d) {
       if (!d) return;
       setShowEditDialog(!d.edit.success);
-      if (d.edit.success && onEdit) onEdit();
+      if (d.edit.success && onEdit) onEdit(d.edit.bookInfo);
     },
   });
 

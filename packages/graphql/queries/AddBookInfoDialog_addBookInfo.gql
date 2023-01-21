@@ -4,7 +4,7 @@ mutation addBookInfo($name: String! $genres: [String!]!) {
         code
 
         bookInfo {
-            id
+            ...HomeBookInfo
         }
     }
 }
