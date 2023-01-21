@@ -91,7 +91,7 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
     onCompleted(d) {
       if (!d) return;
       closeDialog();
-      if (d.add.success && onAdded) onAdded(d.add.infoId);
+      if (d.add.success && onAdded) onAdded(d.add.bookInfo.id);
     },
   });
 

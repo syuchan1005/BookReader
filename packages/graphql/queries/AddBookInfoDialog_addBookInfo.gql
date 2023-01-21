@@ -3,6 +3,8 @@ mutation addBookInfo($name: String! $genres: [String!]!) {
         success
         code
 
-        infoId
+        bookInfo {
+            id
+        }
     }
 }

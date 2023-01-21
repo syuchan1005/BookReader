@@ -22,6 +22,14 @@ export type Scalars = {
   Upload: Upload;
 };
 
+export type AddBookInfoResult = {
+  __typename?: 'AddBookInfoResult';
+  bookInfo?: Maybe<BookInfo>;
+  code?: Maybe<Scalars['String']>;
+  message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
+};
+
 export type Auth0 = {
   __typename?: 'Auth0';
   clientId: Scalars['String'];
@@ -82,14 +90,6 @@ export type BookInfoPartialList = {
   pageInfo: PageInfo;
 };
 
-export type BookInfoResult = {
-  __typename?: 'BookInfoResult';
-  books: Array<Book>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
 export type BookInfoThumbnail = {
   __typename?: 'BookInfoThumbnail';
   bookId: Scalars['ID'];
@@ -133,6 +133,14 @@ export type Debug_BookCounts = {
   bookInfoCount: Scalars['Int'];
 };
 
+export type DeleteBookInfoResult = {
+  __typename?: 'DeleteBookInfoResult';
+  books: Array<Book>;
+  code?: Maybe<Scalars['String']>;
+  message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
+};
+
 export type DeleteEditAction = {
   pageRange: Scalars['IntRange'];
 };
@@ -145,6 +153,14 @@ export type EditAction = {
   put?: InputMaybe<UploadEditAction>;
   replace?: InputMaybe<UploadEditAction>;
   split?: InputMaybe<SplitEditAction>;
+};
+
+export type EditBookInfoResult = {
+  __typename?: 'EditBookInfoResult';
+  bookInfo?: Maybe<BookInfo>;
+  code?: Maybe<Scalars['String']>;
+  message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
 };
 
 export const EditType = {
@@ -182,17 +198,17 @@ export type InputRead = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addBookInfo: ResultWithInfoId;
+  addBookInfo: AddBookInfoResult;
   addBooks: Array<Result>;
   addCompressBook: ResultWithBookResults;
   bulkEditPage: Result;
   debug_deleteUnusedFolders: Result;
   debug_rebuildMeiliSearch: Result;
-  deleteBookInfo: BookInfoResult;
+  deleteBookInfo: DeleteBookInfoResult;
   deleteBooks: Result;
   deleteGenre: Result;
   editBook: Result;
-  editBookInfo: Result;
+  editBookInfo: EditBookInfoResult;
   editGenre: Result;
   moveBooks: Result;
 };
@@ -362,14 +378,6 @@ export type ResultWithBookResults = {
   success: Scalars['Boolean'];
 };
 
-export type ResultWithInfoId = {
-  __typename?: 'ResultWithInfoId';
-  code?: Maybe<Scalars['String']>;
-  infoId?: Maybe<Scalars['ID']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
 export type Revision = {
   __typename?: 'Revision';
   count: Scalars['Int'];
@@ -451,7 +459,7 @@ export type AddBookInfoMutationVariables = Exact<{
 }>;
 
 
-export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithInfoId', success: boolean, code?: string | null, infoId?: string | null } };
+export type AddBookInfoMutation = { __typename?: 'Mutation', add: { __typename?: 'AddBookInfoResult', success: boolean, code?: string | null, bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null } };
 
 export type DebugBookCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -473,7 +481,7 @@ export type DeleteBookInfoMutationVariables = Exact<{
 }>;
 
 
-export type DeleteBookInfoMutation = { __typename?: 'Mutation', del: { __typename?: 'BookInfoResult', success: boolean, code?: string | null, books: Array<{ __typename?: 'Book', id: string, pages: number }> } };
+export type DeleteBookInfoMutation = { __typename?: 'Mutation', del: { __typename?: 'DeleteBookInfoResult', success: boolean, code?: string | null, books: Array<{ __typename?: 'Book', id: string, pages: number }> } };
 
 export type EditBookInfoMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -482,7 +490,7 @@ export type EditBookInfoMutationVariables = Exact<{
 }>;
 
 
-export type EditBookInfoMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
+export type EditBookInfoMutation = { __typename?: 'Mutation', edit: { __typename?: 'EditBookInfoResult', success: boolean, code?: string | null, bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null } };
 
 export type EditBookMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -520,6 +528,8 @@ export type BookQueryVariables = Exact<{
 
 
 export type BookQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, number: string, pages: number, info?: { __typename?: 'BookInfo', id: string, name: string } | null } | null };
+
+export type HomeBookInfoFragment = { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> };
 
 export type RelayBookInfosQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']>;
@@ -587,7 +597,7 @@ export type EditBookInfoThumbnailMutationVariables = Exact<{
 }>;
 
 
-export type EditBookInfoThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
+export type EditBookInfoThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'EditBookInfoResult', success: boolean, code?: string | null, bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null } };
 
 export type BookPagesQueryVariables = Exact<{
   id: Scalars['ID'];
@@ -617,7 +627,23 @@ export type GenresQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GenresQuery = { __typename?: 'Query', genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> };
 
-
+export const HomeBookInfoFragmentDoc = gql`
+    fragment HomeBookInfo on BookInfo {
+  id
+  name
+  count
+  thumbnail {
+    bookId
+    pageIndex
+    bookPageCount
+  }
+  genres {
+    name
+    invisible
+  }
+  updatedAt
+}
+    `;
 export const AddBooksDocument = gql`
     mutation addBooks($id: ID!, $books: [InputBook!]!) {
   adds: addBooks(id: $id, books: $books) {
@@ -765,10 +791,12 @@ export const AddBookInfoDocument = gql`
   add: addBookInfo(name: $name, genres: $genres) {
     success
     code
-    infoId
+    bookInfo {
+      ...HomeBookInfo
+    }
   }
 }
-    `;
+    ${HomeBookInfoFragmentDoc}`;
 export type AddBookInfoMutationFn = Apollo.MutationFunction<AddBookInfoMutation, AddBookInfoMutationVariables>;
 
 /**
@@ -939,9 +967,12 @@ export const EditBookInfoDocument = gql`
   edit: editBookInfo(id: $id, name: $name, genres: $genres) {
     success
     code
+    bookInfo {
+      ...HomeBookInfo
+    }
   }
 }
-    `;
+    ${HomeBookInfoFragmentDoc}`;
 export type EditBookInfoMutationFn = Apollo.MutationFunction<EditBookInfoMutation, EditBookInfoMutationVariables>;
 
 /**
@@ -1158,19 +1189,7 @@ export const RelayBookInfosDocument = gql`
     edges {
       cursor
       node {
-        id
-        name
-        count
-        thumbnail {
-          bookId
-          pageIndex
-          bookPageCount
-        }
-        genres {
-          name
-          invisible
-        }
-        updatedAt
+        ...HomeBookInfo
       }
     }
     pageInfo {
@@ -1181,7 +1200,7 @@ export const RelayBookInfosDocument = gql`
     }
   }
 }
-    `;
+    ${HomeBookInfoFragmentDoc}`;
 
 /**
  * __useRelayBookInfosQuery__
@@ -1481,9 +1500,12 @@ export const EditBookInfoThumbnailDocument = gql`
   edit: editBookInfo(id: $id, thumbnail: $thumbnail) {
     success
     code
+    bookInfo {
+      ...HomeBookInfo
+    }
   }
 }
-    `;
+    ${HomeBookInfoFragmentDoc}`;
 export type EditBookInfoThumbnailMutationFn = Apollo.MutationFunction<EditBookInfoThumbnailMutation, EditBookInfoThumbnailMutationVariables>;
 
 /**

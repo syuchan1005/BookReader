@@ -31,9 +31,9 @@ type Query {
 
 type Mutation {
     ## BookInfo
-    addBookInfo(name: String!, genres: [String!]): ResultWithInfoId!
-    editBookInfo(id: ID!, name: String, thumbnail: ID, genres: [String!]): Result!
-    deleteBookInfo(id: ID!): BookInfoResult!
+    addBookInfo(name: String!, genres: [String!]): AddBookInfoResult!
+    editBookInfo(id: ID!, name: String, thumbnail: ID, genres: [String!]): EditBookInfoResult!
+    deleteBookInfo(id: ID!): DeleteBookInfoResult!
 
     ## Book
     addBooks(id: ID!, books: [InputBook!]!): [Result!]!
@@ -150,12 +150,28 @@ type Result {
     message: String
 }
 
-type ResultWithInfoId {
+type AddBookInfoResult {
     success: Boolean!
     code: String
     message: String
 
-    infoId: ID
+    bookInfo: BookInfo
+}
+
+type EditBookInfoResult {
+    success: Boolean!
+    code: String
+    message: String
+
+    bookInfo: BookInfo
+}
+
+type DeleteBookInfoResult {
+    success: Boolean!
+    code: String
+    message: String
+
+    books: [Book!]!
 }
 
 type ResultWithBookResults {
@@ -164,13 +180,6 @@ type ResultWithBookResults {
     message: String
 
     bookResults: [Result!]
-}
-
-type BookInfoResult {
-    success: Boolean!
-    code: String
-    message: String
-    books: [Book!]!
 }
 
 type Plugin {

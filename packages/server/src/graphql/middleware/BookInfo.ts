@@ -72,11 +72,24 @@ class BookInfo extends GQLMiddleware {
           name,
           genres: genres?.map((genre) => ({ name: genre })),
         });
+        const bookInfo = await BookDataManager.getBookInfo(infoId);
+        if (!bookInfo) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
         await meiliSearchClient.addBookInfo(infoId);
         await elasticSearchClient.addBookInfo(infoId);
         return {
           success: true,
-          infoId,
+          bookInfo: {
+            ...bookInfo,
+            createdAt: `${bookInfo.createdAt.getTime()}`,
+            updatedAt: `${bookInfo.updatedAt.getTime()}`,
+            count: bookInfo.bookCount,
+          } as Omit<BookInfoGQLModel, BookInfoResolveAttrs> as BookInfoGQLModel,
         };
       },
       editBookInfo: async (parent, {
@@ -103,12 +116,29 @@ class BookInfo extends GQLMiddleware {
           ...editValue,
           genres: editValue.genres?.map((genre) => ({ name: genre })),
         });
+        const editedBookInfo = await BookDataManager.getBookInfo(infoId);
+        if (!editedBookInfo) {
+          return {
+            success: false,
+            code: 'QL0004',
+            message: Errors.QL0004,
+          };
+        }
 
         await meiliSearchClient.removeBookInfo(infoId);
         await elasticSearchClient.removeBookInfo(infoId);
         await meiliSearchClient.addBookInfo(infoId);
         await elasticSearchClient.addBookInfo(infoId);
-        return { success: true };
+
+        return {
+          success: true,
+          bookInfo: {
+            ...editedBookInfo,
+            createdAt: `${editedBookInfo.createdAt.getTime()}`,
+            updatedAt: `${editedBookInfo.updatedAt.getTime()}`,
+            count: editedBookInfo.bookCount,
+          } as Omit<BookInfoGQLModel, BookInfoResolveAttrs> as BookInfoGQLModel,
+        };
       },
       deleteBookInfo: async (parent, { id: infoId }) => {
         const books = await BookDataManager.getBookInfoBooks(infoId, []);
