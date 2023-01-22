@@ -1,5 +1,3 @@
-import { PubSub } from 'graphql-subscriptions';
-import { ApolloServerBase } from 'apollo-server-core';
 import * as Util from '@server/Util';
 import GQLUtil from '@server/graphql/GQLUtil';
 import {
@@ -12,17 +10,10 @@ import { IBookDataManager } from '@server/database/BookDataManager';
 import { SubscriptionKeys } from './index';
 
 export default class GQLMiddleware {
-  readonly util: { saveImage: (dist: string, buf: Buffer) => Promise<any> };
-
-  readonly server: ApolloServerBase;
-
-  readonly pubsub: PubSub;
-
   /* eslint-disable class-methods-use-this,@typescript-eslint/no-unused-vars */
-
   Query(
     bookDataManager: IBookDataManager,
-    middleware: Pick<GQLMiddleware, 'server' | 'pubsub'>,
+    middleware: GQLMiddleware,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): QueryResolvers {
@@ -31,7 +22,7 @@ export default class GQLMiddleware {
 
   Mutation(
     bookDataManager: IBookDataManager,
-    middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
+    middleware: GQLMiddleware,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): MutationResolvers {
@@ -40,7 +31,7 @@ export default class GQLMiddleware {
 
   Subscription(
     bookDataManager: IBookDataManager,
-    middleware: Pick<GQLMiddleware, 'server' | 'pubsub'>,
+    middleware: GQLMiddleware,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): SubscriptionResolvers {
@@ -49,7 +40,7 @@ export default class GQLMiddleware {
 
   Resolver(
     bookDataManager: IBookDataManager,
-    middleware: Pick<GQLMiddleware, 'server' | 'pubsub' | 'util'>,
+    middleware: GQLMiddleware,
     subscriptionKeys: typeof SubscriptionKeys,
     util: typeof Util | typeof GQLUtil,
   ): Resolvers {

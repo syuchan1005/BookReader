@@ -1,6 +1,5 @@
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { PubSub } from 'graphql-subscriptions';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServer, gql } from 'apollo-server-express';
@@ -11,13 +10,11 @@ import {
 
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
-import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import { BookDataManager } from '@server/database/BookDataManager';
 import * as Util from '../Util';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
 import GQLUtil from './GQLUtil';
-import { convertAndSaveJpg } from '../ImageUtil';
 import internalMiddlewares from './middleware/index';
 
 export const SubscriptionKeys = {
@@ -26,28 +23,20 @@ export const SubscriptionKeys = {
 };
 
 export default class GraphQL {
-  public readonly util = { saveImage: convertAndSaveJpg };
-
   public readonly apolloServer: ApolloServer;
 
-  public readonly pubsub: PubSub;
-
   private readonly schema: GraphQLSchema;
-
-  private readonly middlewares: { [key: string]: GQLMiddleware };
 
   /**
    * @param httpServer
    * @param updateResolver Its workaround that import the esm module from cjs.
    */
   constructor(httpServer, updateResolver) {
-    this.pubsub = new PubSub();
-
-    this.middlewares = internalMiddlewares;
+    const middlewares = internalMiddlewares;
     const util = { ...GQLUtil, ...Util };
-    const middlewareOps = (key) => Object.keys(this.middlewares)
+    const middlewareOps = (key) => Object.keys(middlewares)
       .map((k) => {
-        const fun = this.middlewares[k][key];
+        const fun = middlewares[k][key];
         return fun ? fun.bind(this)(BookDataManager, this, SubscriptionKeys, util) : {};
       }).reduce((a, o) => ({ ...a, ...o }), {});
 

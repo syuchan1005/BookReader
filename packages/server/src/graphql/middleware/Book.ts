@@ -1,7 +1,7 @@
 import path from 'path';
 import { generateId } from '@server/database/models/Id';
 import { Book as DBBook } from '@server/database/models/Book';
-import { withFilter } from 'graphql-subscriptions';
+import { PubSub, withFilter } from 'graphql-subscriptions';
 import throttle from 'lodash.throttle';
 
 import {
@@ -25,6 +25,8 @@ import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
 import { StorageDataManager, withTemporaryFolder } from '@server/storage/StorageDataManager';
 
 const throttleMs = 500;
+
+const pubsub = new PubSub();
 
 class Book extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
@@ -90,7 +92,7 @@ class Book extends GQLMiddleware {
           return archiveFile;
         }
 
-        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+        await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
           id: infoId,
           addBooks: `Extract Book (${book.number}) ...`,
         });
@@ -98,7 +100,7 @@ class Book extends GQLMiddleware {
         return withTemporaryFolder(async (_, tempPath) => {
           const progressListener = (
             percent: number,
-          ) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          ) => pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
             id: infoId,
             addBooks: `Extract Book (${book.number}) ${percent}%`,
           });
@@ -108,7 +110,7 @@ class Book extends GQLMiddleware {
             throttle(progressListener, throttleMs),
           )
             .catch((err) => Promise.reject(err));
-          await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
             id: infoId,
             addBooks: `Move Book (${book.number}) ...`,
           });
@@ -119,7 +121,7 @@ class Book extends GQLMiddleware {
             bookId,
             book.number,
             throttle((current, total) => {
-              this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+              pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
                 id: infoId,
                 addBooks: `Move Book (${book.number}) ${current}/${total}`,
               });
@@ -140,7 +142,7 @@ class Book extends GQLMiddleware {
           return archiveFile as unknown as ResultWithBookResults;
         }
 
-        await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+        await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
           id: infoId,
           addBooks: 'Extract Book...',
         });
@@ -150,7 +152,7 @@ class Book extends GQLMiddleware {
             tempPath,
             archiveFile.data,
             throttle(
-              (percent) => this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+              (percent) => pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
                 id: infoId,
                 addBooks: `Extract Book ${percent}%`,
               }),
@@ -170,7 +172,7 @@ class Book extends GQLMiddleware {
             };
           }
 
-          await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+          await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
             id: infoId,
             addBooks: 'Move Book...',
           });
@@ -190,7 +192,7 @@ class Book extends GQLMiddleware {
               nums = `[DUP]${nums}: ${p}`;
             }
 
-            await this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+            await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
               id: infoId,
               addBooks: `Move Book (${nums}) ...`,
             });
@@ -203,7 +205,7 @@ class Book extends GQLMiddleware {
               nums,
               throttle(
                 (current, total) => {
-                  this.pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
+                  pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
                     id: infoId,
                     addBooks: `Move Book (${nums}) ${current}/${total}`,
                   });
@@ -276,7 +278,7 @@ class Book extends GQLMiddleware {
       addBooks: {
         // @ts-ignore
         subscribe: withFilter(
-          () => this.pubsub.asyncIterator([SubscriptionKeys.ADD_BOOKS]),
+          () => pubsub.asyncIterator([SubscriptionKeys.ADD_BOOKS]),
           (payload, variables) => payload.id === variables.id,
         ),
       },

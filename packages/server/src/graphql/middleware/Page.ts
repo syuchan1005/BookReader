@@ -2,7 +2,7 @@ import GQLMiddleware from '@server/graphql/GQLMiddleware';
 
 import sharp from 'sharp';
 import throttle from 'lodash.throttle';
-import { withFilter } from 'graphql-subscriptions';
+import { PubSub, withFilter } from 'graphql-subscriptions';
 import lodashChunk from 'lodash.chunk';
 
 import {
@@ -324,6 +324,8 @@ const executeEditActions = async (
   }
 };
 
+const pubsub = new PubSub();
+
 class Page extends GQLMiddleware {
   // eslint-disable-next-line class-methods-use-this
   Mutation(): MutationResolvers {
@@ -342,7 +344,7 @@ class Page extends GQLMiddleware {
         }
 
         const log = throttle(
-          (message: string) => this.pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
+          (message: string) => pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
             id: bookId,
             bulkEditPage: message,
           }),
@@ -408,7 +410,7 @@ class Page extends GQLMiddleware {
       bulkEditPage: {
         // @ts-ignore
         subscribe: withFilter(
-          () => this.pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
+          () => pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
           (payload, variables) => payload.id === variables.id,
         ),
       },
