@@ -12,7 +12,8 @@
     "noImplicitAny": false,
     "paths": {
       "@server/*" :["src/*"],
-      "natural-orderby": ["src/sort"]
+      "natural-orderby": ["src/sort"],
+      "@syuchan1005/book-reader-graphql": ["generated/GQLResolvers.ts"]
     }
   },
   "include": ["src/*"],

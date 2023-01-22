@@ -5,7 +5,7 @@ import createStyles from '@mui/styles/createStyles';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import db, { BookInfoFavorite } from '@client/indexedDb/Database';
-import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
 import BookInfo from '@client/components/BookInfo';
 import { useTitle } from '@client/hooks/useTitle';
 

@@ -28,7 +28,7 @@ import {
   SearchMode,
   useAvailableSearchModesQuery,
   useGenresQuery,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;

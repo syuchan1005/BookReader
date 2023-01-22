@@ -20,7 +20,7 @@ import {
   useDeleteUnusedFoldersMutation,
   useDebugBookCountsLazyQuery,
   useRebuildMeiliSearchMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 import { workbox } from '@client/registerServiceWorker';
 import { resetStore } from '@client/apollo';

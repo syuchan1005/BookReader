@@ -4,14 +4,14 @@ import { PubSub, withFilter } from 'graphql-subscriptions';
 import lodashChunk from 'lodash.chunk';
 
 import {
+  Maybe,
   Result,
   SplitType,
   EditAction,
   Scalars,
   EditType,
   Resolvers,
-} from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
-import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
+} from '@syuchan1005/book-reader-graphql';
 import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
 import { BookDataManager } from '@server/database/BookDataManager';
@@ -27,6 +27,24 @@ import {
 } from '../../ImageUtil';
 
 const throttleMs = 500;
+
+type Clean<T> = T;
+
+type Merge<L, R> = Clean<{
+  [K in keyof L | keyof R]: (K extends keyof L ? L[K] : never) | (K extends keyof R ? R[K] : never);
+}>;
+
+export type StrictEditAction = {
+  [T in EditType]:
+  Merge<{ editType: T },
+    {
+      [L in Lowercase<T> & keyof EditAction]:
+      EditAction[L] extends Maybe<infer A> | undefined
+        ? A
+        : never
+    }>
+}[EditType];
+
 
 const editTypeConstraint: {
   [key in EditType]: [/* is terminal operation */ boolean, /* is single operation */ boolean]

@@ -9,8 +9,7 @@ import {
 } from 'apollo-server-core';
 import { mergeResolvers } from '@graphql-tools/merge';
 
-// @ts-ignore
-import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
+import { schemaString } from '@syuchan1005/book-reader-graphql';
 import { resolvers } from '@server/graphql/resolvers';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';

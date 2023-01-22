@@ -22,7 +22,7 @@ import { useBeforeUnload } from 'react-use';
 
 import {
   useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';

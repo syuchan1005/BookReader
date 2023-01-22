@@ -11,7 +11,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 import { BookInfo } from '@syuchan1005/book-reader-graphql';
-import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql';
 import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {

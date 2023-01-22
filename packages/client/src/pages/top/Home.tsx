@@ -14,7 +14,7 @@ import {
   HomeBookInfoFragment,
   SearchMode,
   useRelayBookInfosQuery,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';

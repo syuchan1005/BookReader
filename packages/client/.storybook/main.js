@@ -15,6 +15,7 @@ module.exports = {
   },
   async webpackFinal(config) {
     config.resolve.alias['@client'] = path.resolve(__dirname, '../src');
+    config.resolve.alias['@syuchan1005/book-reader-graphql'] = path.resolve(__dirname, '../generated', 'GQLQueries.ts')
     return config;
   },
   previewHead: (head) => (`${head}

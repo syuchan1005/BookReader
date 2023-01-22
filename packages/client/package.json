@@ -7,7 +7,8 @@
     "test": "jest",
     "storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider build-storybook -o dist/storybook",
-    "generateIcons": "node scripts/generateIcon.js"
+    "generateIcons": "node scripts/generateIcon.js",
+    "gql-gen": "graphql-codegen --config codegen.yml"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -46,6 +47,11 @@
     "@apollo/client": "^3.7.4",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@graphql-codegen/add": "^3.2.3",
+    "@graphql-codegen/cli": "^2.16.4",
+    "@graphql-codegen/typescript": "^2.8.7",
+    "@graphql-codegen/typescript-operations": "^2.5.12",
+    "@graphql-codegen/typescript-react-apollo": "^3.3.7",
     "@mui/material": "^5.11.4",
     "@mui/styles": "^5.11.2",
     "apollo-upload-client": "^17.0.0",

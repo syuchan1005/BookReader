@@ -1,6 +1,6 @@
 import { GraphQLScalarType, IntValueNode } from 'graphql';
 import { Kind } from 'graphql/language/kinds';
-import { Scalars } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
+import { Scalars } from '@syuchan1005/book-reader-graphql';
 
 export const flatRange = (range: Scalars['IntRange']): number[] => {
   if (!range) return [];

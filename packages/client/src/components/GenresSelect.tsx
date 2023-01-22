@@ -22,7 +22,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql';
 
 interface GenresSelectProps {
   value: string[],

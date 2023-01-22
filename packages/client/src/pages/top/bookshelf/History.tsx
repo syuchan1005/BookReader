@@ -1,6 +1,6 @@
 import {
   useBooksLazyQuery,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 import React from 'react';
 import db, { BookRead } from '@client/indexedDb/Database';

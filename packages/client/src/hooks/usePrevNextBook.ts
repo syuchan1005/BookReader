@@ -4,7 +4,7 @@ import { useApolloClient } from '@apollo/client';
 import {
   BookOrder,
   BookInfoDocument, BookInfoQuery, BookInfoQueryVariables,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 const usePrevNextBook = (infoId, bookId): [prev: string | undefined, next: string | undefined] => {
   const client = useApolloClient();

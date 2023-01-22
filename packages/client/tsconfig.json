@@ -11,7 +11,8 @@
         "downlevelIteration": true,
         "outDir": "./dist",
         "paths": {
-            "@client/*" :["src/*"]
+            "@client/*" :["src/*"],
+            "@syuchan1005/book-reader-graphql": ["generated/GQLQueries.ts"]
         }
     }
 }

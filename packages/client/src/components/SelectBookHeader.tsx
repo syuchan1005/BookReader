@@ -23,7 +23,7 @@ import { createTheme } from '@mui/material/styles';
 
 import { commonTheme } from '@client/App';
 
-import { useDeleteBooksMutation, useMoveBooksMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useDeleteBooksMutation, useMoveBooksMutation } from '@syuchan1005/book-reader-graphql';
 
 interface SelectBookHeaderProps {
   infoId: string;

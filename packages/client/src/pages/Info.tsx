@@ -8,7 +8,7 @@ import { common } from '@mui/material/colors';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
-import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql';
 
 import { commonTheme } from '@client/App';
 

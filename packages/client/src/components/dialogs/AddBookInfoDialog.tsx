@@ -16,7 +16,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import {
   HomeBookInfoFragment,
   useAddBookInfoMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 import GenresSelect from '../GenresSelect';
 
 interface AddBookInfoDialogProps {

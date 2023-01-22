@@ -75,10 +75,11 @@ export default defineConfig({
     dedupe: ['@apollo/client'],
     alias: {
       '@client': resolve(__dirname, 'src'),
+      '@syuchan1005/book-reader-graphql': resolve(__dirname, 'generated', 'GQLQueries.ts'),
     },
   },
   build: {
-    brotliSize: false,
+    reportCompressedSize: false,
   },
   plugins: [
     react(),
@@ -89,6 +90,7 @@ export default defineConfig({
       manifest: false,
     }),
     RemoveServiceWorkerTsFilePlugin(),
+    // @ts-ignore
     bundleVisualizer({
       template: 'treemap',
       gzipSize: true,

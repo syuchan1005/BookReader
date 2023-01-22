@@ -10,7 +10,7 @@ import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
 
 import createCustomFetcher from '@client/CustomFetcher';
 
-import { BookInfo } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { WebSocketLink } from '@client/apollo/WebSocketLink';
 import { onError } from '@apollo/client/link/error';
 import { goToAuthPage } from '@client/auth';

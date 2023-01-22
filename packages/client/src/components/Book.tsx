@@ -20,7 +20,7 @@ import { Book as BookType } from '@syuchan1005/book-reader-graphql';
 import {
   useDeleteBooksMutation,
   useEditBookMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';

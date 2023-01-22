@@ -9,6 +9,7 @@ module.exports = {
         map: [
           ['@server', `${__dirname}/src`],
           ['natural-orderby', `${__dirname}/src/sort`],
+          ['@syuchan1005/book-reader-graphql', `${__dirname}/generated/GQLResolvers.ts`],
         ],
       },
     },

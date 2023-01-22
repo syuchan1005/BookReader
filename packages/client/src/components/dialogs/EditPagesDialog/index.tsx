@@ -14,7 +14,7 @@ import { List as MovableList, arrayMove } from 'react-movable';
 import {
   useBulkEditPageProgressSubscription,
   useBulkEditPagesMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 import {
   ActionListItem, AddItemListItem,
   AddTemplateListItem, createInitValue,

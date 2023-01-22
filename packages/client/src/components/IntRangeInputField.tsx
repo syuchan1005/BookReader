@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextField } from '@mui/material';
-import { IntRange } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { IntRange } from '@syuchan1005/book-reader-graphql';
 
 interface IntRangeInputFieldProps {
   maxPage: number;

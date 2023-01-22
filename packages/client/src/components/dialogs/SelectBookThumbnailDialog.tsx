@@ -15,7 +15,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { useBookPagesQuery, useEditBookThumbnailMutation } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useBookPagesQuery, useEditBookThumbnailMutation } from '@syuchan1005/book-reader-graphql';
 
 import BookPageImage, { pageAspectRatio } from '@client/components/BookPageImage';
 import useVisible from '@client/hooks/useVisible';

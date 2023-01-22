@@ -17,7 +17,7 @@ import {
   HomeBookInfoFragment,
   useBookInfoQuery,
   useEditBookInfoThumbnailMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 import Book from '@client/components/Book';
 
 interface SelectThumbnailDialogProps {

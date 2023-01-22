@@ -19,7 +19,7 @@ import { BookInfo as QLBookInfo, HomeBookInfoFragment } from '@syuchan1005/book-
 import {
   useDeleteBookInfoMutation,
   useEditBookInfoMutation,
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 import db from '@client/indexedDb/Database';
 

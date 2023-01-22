@@ -19,7 +19,7 @@ import {
 import { useWindowSize } from 'react-use';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
-import { useBookQuery } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { useBookQuery } from '@syuchan1005/book-reader-graphql';
 
 import db from '@client/indexedDb/Database';
 import usePrevNextBook from '@client/hooks/usePrevNextBook';

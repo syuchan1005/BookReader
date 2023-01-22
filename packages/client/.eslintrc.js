@@ -35,6 +35,7 @@ module.exports = {
       alias: {
         map: [
           ['@client', `${__dirname}/src`],
+          ['@syuchan1005/book-reader-graphql', `${__dirname}/generated/GQLQueries.ts`],
         ],
       },
     },

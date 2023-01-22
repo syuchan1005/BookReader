@@ -5,7 +5,7 @@ import {
   BookInfoOrder,
   BookOrder,
   SearchMode
-} from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+} from '@syuchan1005/book-reader-graphql';
 
 export const genresState = atom<string[]>({
   key: 'genresState',

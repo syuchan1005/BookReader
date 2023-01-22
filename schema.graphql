@@ -180,26 +180,6 @@ type ResultWithBookResults {
     bookResults: [Result!]
 }
 
-type Plugin {
-    info: PluginInfo!
-    queries: PluginQueries!
-}
-
-type PluginInfo {
-    name: String!
-    version: String!
-}
-
-type PluginQueries {
-    add: CommonPluginQuery!
-}
-
-type CommonPluginQuery {
-    name: String!
-    args: [String!]!
-    subscription: Boolean
-}
-
 type Genre {
     name: ID!
     invisible: Boolean!

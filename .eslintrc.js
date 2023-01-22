@@ -64,8 +64,8 @@ module.exports = {
         '@graphql-eslint/known-type-names': 'error',
       },
       parserOptions: {
-        operations: './packages/graphql/queries/**/*.gql',
-        schema: './packages/graphql/schema.graphql',
+        operations: './packages/client/queries/**/*.gql',
+        schema: './schema.graphql',
       },
     },
   ],

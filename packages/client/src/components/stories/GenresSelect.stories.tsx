@@ -3,7 +3,7 @@ import { ComponentMeta } from '@storybook/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { ListItem } from '@mui/material';
 
-import { GenresDocument } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
+import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import GenresSelect from '../GenresSelect';
 
 export default {
