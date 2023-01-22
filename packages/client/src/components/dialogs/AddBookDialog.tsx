@@ -18,12 +18,10 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { gql, useMutation } from '@apollo/client';
 import { useBeforeUnload } from 'react-use';
 
-import { Result } from '@syuchan1005/book-reader-graphql';
 import {
-  useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation, usePluginsQuery,
+  useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation,
 } from '@syuchan1005/book-reader-graphql/generated/GQLQueries';
 
 import FileField from '@client/components/FileField';
@@ -113,24 +111,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   const [isBlockUnload, setBlockUnload] = React.useState(false);
   useBeforeUnload(isBlockUnload, 'In Process. Changes may not be saved.');
 
-  const {
-    data,
-  } = usePluginsQuery();
-
-  const selectedPlugin = React.useMemo(() => {
-    if (!data || addType === 'file' || addType === 'file_compressed') return undefined;
-    return data.plugins.filter(({ info: { name } }) => name === addType)[0];
-  }, [addType, data]);
-
-  const pluginMutationArgs = React.useMemo(() => {
-    if (!selectedPlugin) return [];
-    return [
-      selectedPlugin.queries.add.name,
-      `(${selectedPlugin.queries.add.args.map((s) => (s === 'id' ? '$id: ID!' : `$${s}: String!`))})`,
-      `(${selectedPlugin.queries.add.args.map((s) => `${s}: $${s}`)})`,
-    ];
-  }, [selectedPlugin]);
-
   const mutateCloseDialog = React.useCallback((success) => {
     if (onClose && success) onClose();
     if (success && onAdded) onAdded();
@@ -142,23 +122,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     setEditContent({});
     setBlockUnload(false);
   }, [onClose, onAdded]);
-
-  const [addPlugin, { loading: addPluginLoading }] = useMutation<{ plugin: Pick<Result, 'success'> }>(
-    gql(`
-      mutation ${pluginMutationArgs[1] || ''}{
-        plugin: ${pluginMutationArgs[0]}${pluginMutationArgs[2] || ''}{
-            success
-            code
-        }
-      }
-    `),
-    {
-      onCompleted(d) {
-        if (!d) return;
-        mutateCloseDialog(d.plugin.success);
-      },
-    },
-  );
 
   const [addBook, { loading: addBookLoading }] = useAddBooksMutation({
     variables: {
@@ -196,8 +159,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   });
 
   const loading = React.useMemo(
-    () => addBookLoading || addCompressBookLoading || addPluginLoading,
-    [addBookLoading, addCompressBookLoading, addPluginLoading],
+    () => addBookLoading || addCompressBookLoading,
+    [addBookLoading, addCompressBookLoading],
   );
 
   const {
@@ -220,7 +183,10 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     }
     return '';
   }, [addBookProgress, subscriptionData]);
-  useTitle(title, { restoreOnUnmount: true, inheritTitle: true });
+  useTitle(title, {
+    restoreOnUnmount: true,
+    inheritTitle: true,
+  });
 
   const closeDialog = () => {
     if (!loading) {
@@ -267,67 +233,51 @@ const AddBookDialog = (props: AddBookDialogProps) => {
 
   const clickAddButton = React.useCallback(
     async () => {
-      if (!selectedPlugin) {
-        setSubscriptionId(infoId);
-        let count = 1;
-        while (!subscriptionLoading && count <= 2) {
+      setSubscriptionId(infoId);
+      let count = 1;
+      while (!subscriptionLoading && count <= 2) {
         // eslint-disable-next-line no-await-in-loop,no-loop-func,no-promise-executor-return
-          await new Promise((r) => setTimeout(r, 100 * count));
-          count += 1;
-        }
-        if (addType === 'file_compressed') {
-          addCompressBook({
-            context: {
-              fetchOptions: {
-                useUpload: !!addBooks[0].file,
-                onProgress: (ev: ProgressEvent) => {
-                  setAddBookProgress(ev);
-                },
-                onAbortPossible: (abortFunc) => {
-                  setAddBookAbort(() => () => {
-                    abortFunc();
-                    setBlockUnload(false);
-                  });
-                },
+        await new Promise((r) => setTimeout(r, 100 * count));
+        count += 1;
+      }
+      if (addType === 'file_compressed') {
+        addCompressBook({
+          context: {
+            fetchOptions: {
+              useUpload: !!addBooks[0].file,
+              onProgress: (ev: ProgressEvent) => {
+                setAddBookProgress(ev);
+              },
+              onAbortPossible: (abortFunc) => {
+                setAddBookAbort(() => () => {
+                  abortFunc();
+                  setBlockUnload(false);
+                });
               },
             },
-          });
-        } else {
-          addBook({
-            context: {
-              fetchOptions: {
-                useUpload: addBooks.filter((b) => b.file).length >= 1,
-                onProgress: (ev: ProgressEvent) => {
-                  setAddBookProgress(ev);
-                },
-                onAbortPossible: (abortFunc) => {
-                  setAddBookAbort(() => () => {
-                    abortFunc();
-                    setBlockUnload(false);
-                  });
-                },
-              },
-            },
-          });
-        }
+          },
+        });
       } else {
-        if (selectedPlugin.queries.add.subscription) {
-          setSubscriptionId(infoId);
-        }
-        // noinspection JSIgnoredPromiseFromCall
-        addPlugin({
-          variables: {
-            ...editContent,
-            ...(selectedPlugin.queries.add.args.includes('id') ? {
-              id: infoId,
-            } : {}),
+        addBook({
+          context: {
+            fetchOptions: {
+              useUpload: addBooks.filter((b) => b.file).length >= 1,
+              onProgress: (ev: ProgressEvent) => {
+                setAddBookProgress(ev);
+              },
+              onAbortPossible: (abortFunc) => {
+                setAddBookAbort(() => () => {
+                  abortFunc();
+                  setBlockUnload(false);
+                });
+              },
+            },
           },
         });
       }
       setBlockUnload(true);
     },
-    [selectedPlugin, infoId, subscriptionLoading, addType,
-      addCompressBook, addBooks, addBook, addPlugin, editContent],
+    [infoId, subscriptionLoading, addType, addCompressBook, addBooks, addBook],
   );
 
   return (
@@ -352,7 +302,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         if (
           (subscriptionData && (!addBookProgress
               || (addBookProgress.loaded / addBookProgress.total) < 97)
-          ) || (selectedPlugin && addPluginLoading)) {
+          )) {
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />
@@ -381,113 +331,83 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                 label="Compress File"
                 value="file_compressed"
               />
-              {data && data.plugins.map((plugin) => (
-                <FormControlLabel
-                  key={plugin.info.name}
-                  disabled={loading}
-                  control={<Radio classes={{ root: classes.addTypeRadioRoot }} />}
-                  label={plugin.info.name}
-                  value={plugin.info.name}
-                />
-              ))}
             </RadioGroup>
 
-            {(addType === 'file' || addType === 'file_compressed') ? (
+            <div>
+              {(addType === 'file_compressed' ? [addBooks[0]].filter((a) => a) : addBooks)
+                .map(({
+                  number,
+                  file,
+                  path,
+                }, i) => (
+                  <div
+                    key={`${path !== undefined ? i : file.name}`}
+                    className={classes.listItem}
+                  >
+                    {path !== undefined ? (
+                      <TextField
+                        color="secondary"
+                        label="FilePath"
+                        value={path}
+                        onChange={(e) => changeAddBook(i, { path: e.target.value })}
+                      />
+                    ) : (
+                      <FileField
+                        file={file}
+                        onChange={(f) => changeAddBook(i, { file: f })}
+                        style={addType === 'file_compressed' ? { gridColumn: '1 / span 2' } : undefined}
+                      />
+                    )}
+                    {(addType !== 'file_compressed') && (
+                      <TextField
+                        color="secondary"
+                        label="Number"
+                        value={number}
+                        // @ts-ignore
+                        onChange={(event) => changeAddBook(i, { number: event.target.value })}
+                        margin="none"
+                        autoFocus
+                      />
+                    )}
+                    <IconButton
+                      onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}
+                      size="large"
+                    >
+                      <Icon>clear</Icon>
+                    </IconButton>
+                  </div>
+                ))}
+            </div>
+            {addType === 'file' && (
+              <ButtonGroup style={{ marginLeft: 'auto' }} size="small" color="secondary">
+                <Button
+                  variant={nameType === 'number' ? 'contained' : 'outlined'}
+                  onClick={() => setNameType('number')}
+                >
+                  Number
+                </Button>
+                <Button
+                  variant={nameType === 'filename' ? 'contained' : 'outlined'}
+                  onClick={() => setNameType('filename')}
+                >
+                  FileName
+                </Button>
+              </ButtonGroup>
+            )}
+            {((addType === 'file_compressed' && addBooks.length === 0) || addType !== 'file_compressed') && (
               <>
-                <div>
-                  {(addType === 'file_compressed'
-                    ? [addBooks[0]].filter((a) => a)
-                    : addBooks
-                  ).map(({
-                    number,
-                    file,
-                    path,
-                  }, i) => (
-                    <div key={`${path !== undefined ? i : file.name}`} className={classes.listItem}>
-                      {path !== undefined ? (
-                        <TextField
-                          color="secondary"
-                          label="FilePath"
-                          value={path}
-                          onChange={(e) => changeAddBook(i, { path: e.target.value })}
-                        />
-                      ) : (
-                        <FileField
-                          file={file}
-                          onChange={(f) => changeAddBook(i, { file: f })}
-                          style={addType === 'file_compressed' ? { gridColumn: '1 / span 2' } : undefined}
-                        />
-                      )}
-                      {(addType !== 'file_compressed') && (
-                        <TextField
-                          color="secondary"
-                          label="Number"
-                          value={number}
-                          // @ts-ignore
-                          onChange={(event) => changeAddBook(i, { number: event.target.value })}
-                          margin="none"
-                          autoFocus
-                        />
-                      )}
-                      <IconButton
-                        onClick={() => setAddBooks(addBooks.filter((f, k) => k !== i))}
-                        size="large"
-                      >
-                        <Icon>clear</Icon>
-                      </IconButton>
-                    </div>
-                  ))}
-                </div>
-                {addType === 'file' && (
-                  <ButtonGroup style={{ marginLeft: 'auto' }} size="small" color="secondary">
-                    <Button
-                      variant={nameType === 'number' ? 'contained' : 'outlined'}
-                      onClick={() => setNameType('number')}
-                    >
-                      Number
-                    </Button>
-                    <Button
-                      variant={nameType === 'filename' ? 'contained' : 'outlined'}
-                      onClick={() => setNameType('filename')}
-                    >
-                      FileName
-                    </Button>
-                  </ButtonGroup>
-                )}
-                {((addType === 'file_compressed' && addBooks.length === 0) || addType !== 'file_compressed') && (
-                  <>
-                    <DropZone onChange={dropFiles} />
-                    <Button
-                      startIcon={<Icon>add</Icon>}
-                      onClick={() => setAddBooks([...addBooks, {
-                        number: '',
-                        path: '',
-                        file: undefined,
-                      }])}
-                    >
-                      Add local
-                    </Button>
-                  </>
-                )}
+                <DropZone onChange={dropFiles} />
+                <Button
+                  startIcon={<Icon>add</Icon>}
+                  onClick={() => setAddBooks([...addBooks, {
+                    number: '',
+                    path: '',
+                    file: undefined,
+                  }])}
+                >
+                  Add local
+                </Button>
               </>
-            ) : (
-              <div className={classes.pluginFields}>
-                {selectedPlugin.queries.add.args
-                  .filter((s) => s !== 'id')
-                  .map((label) => (
-                    <TextField
-                      key={label}
-                      color="secondary"
-                      disabled={loading}
-                      label={label}
-                      value={editContent[label] || ''}
-                      onChange={(e) => setEditContent({
-                        ...editContent,
-                        [label]: e.target.value,
-                      })}
-                    />
-                  ))}
-              </div>
             )}
           </DialogContent>
         );

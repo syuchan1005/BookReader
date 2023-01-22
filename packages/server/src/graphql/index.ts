@@ -16,7 +16,6 @@ import { BookDataManager } from '@server/database/BookDataManager';
 import * as Util from '../Util';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
-import { InternalGQLPlugin, loadPlugins } from './GQLPlugin';
 import GQLUtil from './GQLUtil';
 import { convertAndSaveJpg } from '../ImageUtil';
 import internalMiddlewares from './middleware/index';
@@ -35,8 +34,6 @@ export default class GraphQL {
 
   private readonly schema: GraphQLSchema;
 
-  private readonly plugins: InternalGQLPlugin[];
-
   private readonly middlewares: { [key: string]: GQLMiddleware };
 
   /**
@@ -45,16 +42,8 @@ export default class GraphQL {
    */
   constructor(httpServer, updateResolver) {
     this.pubsub = new PubSub();
-    this.plugins = loadPlugins();
 
-    this.middlewares = {
-      ...(this.plugins.reduce((obj, p) => {
-        // eslint-disable-next-line no-param-reassign
-        obj[p.info.name] = p.middleware;
-        return obj;
-      }, {})),
-      ...internalMiddlewares,
-    };
+    this.middlewares = internalMiddlewares;
     const util = { ...GQLUtil, ...Util };
     const middlewareOps = (key) => Object.keys(this.middlewares)
       .map((k) => {
@@ -63,10 +52,7 @@ export default class GraphQL {
       }).reduce((a, o) => ({ ...a, ...o }), {});
 
     this.schema = makeExecutableSchema({
-      typeDefs: [
-        gql(schemaString),
-        ...this.plugins.map((pl) => pl.typeDefs),
-      ],
+      typeDefs: gql(schemaString),
       resolvers: {
         BigInt,
         IntRange,
@@ -74,7 +60,6 @@ export default class GraphQL {
         /* handler(parent, args, context, info) */
         Query: {
           ...middlewareOps('Query'),
-          plugins: () => this.plugins,
         },
         Mutation: middlewareOps('Mutation'),
         Subscription: middlewareOps('Subscription'),

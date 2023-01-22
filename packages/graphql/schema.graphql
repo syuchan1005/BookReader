@@ -21,8 +21,6 @@ type Query {
     ## Debug
     debug_bookCounts: Debug_BookCounts!
 
-    plugins: [Plugin!]!
-
     ## Genre
     genres: [Genre!]!
 

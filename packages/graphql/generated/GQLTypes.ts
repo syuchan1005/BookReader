@@ -315,7 +315,6 @@ export type Query = {
   books: Array<Maybe<Book>>;
   debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
-  plugins: Array<Plugin>;
   relayBookInfos: BookInfoPartialList;
 };
 
@@ -446,11 +445,6 @@ export type AddCompressBookMutationVariables = Exact<{
 
 
 export type AddCompressBookMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithBookResults', success: boolean, code?: string | null } };
-
-export type PluginsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type PluginsQuery = { __typename?: 'Query', plugins: Array<{ __typename?: 'Plugin', info: { __typename?: 'PluginInfo', name: string }, queries: { __typename?: 'PluginQueries', add: { __typename?: 'CommonPluginQuery', name: string, args: Array<string>, subscription?: boolean | null } } }> };
 
 export type AddBookInfoMutationVariables = Exact<{
   name: Scalars['String'];
@@ -940,7 +934,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   books?: Resolver<Array<Maybe<ResolversTypes['Book']>>, ParentType, ContextType, RequireFields<QueryBooksArgs, 'ids'>>;
   debug_bookCounts?: Resolver<ResolversTypes['Debug_BookCounts'], ParentType, ContextType>;
   genres?: Resolver<Array<ResolversTypes['Genre']>, ParentType, ContextType>;
-  plugins?: Resolver<Array<ResolversTypes['Plugin']>, ParentType, ContextType>;
   relayBookInfos?: Resolver<ResolversTypes['BookInfoPartialList'], ParentType, ContextType, Partial<QueryRelayBookInfosArgs>>;
 };
 

@@ -316,7 +316,6 @@ export type Query = {
   books: Array<Maybe<Book>>;
   debug_bookCounts: Debug_BookCounts;
   genres: Array<Genre>;
-  plugins: Array<Plugin>;
   relayBookInfos: BookInfoPartialList;
 };
 
@@ -447,11 +446,6 @@ export type AddCompressBookMutationVariables = Exact<{
 
 
 export type AddCompressBookMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithBookResults', success: boolean, code?: string | null } };
-
-export type PluginsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type PluginsQuery = { __typename?: 'Query', plugins: Array<{ __typename?: 'Plugin', info: { __typename?: 'PluginInfo', name: string }, queries: { __typename?: 'PluginQueries', add: { __typename?: 'CommonPluginQuery', name: string, args: Array<string>, subscription?: boolean | null } } }> };
 
 export type AddBookInfoMutationVariables = Exact<{
   name: Scalars['String'];
@@ -743,49 +737,6 @@ export function useAddCompressBookMutation(baseOptions?: Apollo.MutationHookOpti
 export type AddCompressBookMutationHookResult = ReturnType<typeof useAddCompressBookMutation>;
 export type AddCompressBookMutationResult = Apollo.MutationResult<AddCompressBookMutation>;
 export type AddCompressBookMutationOptions = Apollo.BaseMutationOptions<AddCompressBookMutation, AddCompressBookMutationVariables>;
-export const PluginsDocument = gql`
-    query plugins {
-  plugins {
-    info {
-      name
-    }
-    queries {
-      add {
-        name
-        args
-        subscription
-      }
-    }
-  }
-}
-    `;
-
-/**
- * __usePluginsQuery__
- *
- * To run a query within a React component, call `usePluginsQuery` and pass it any options that fit your needs.
- * When your component renders, `usePluginsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = usePluginsQuery({
- *   variables: {
- *   },
- * });
- */
-export function usePluginsQuery(baseOptions?: Apollo.QueryHookOptions<PluginsQuery, PluginsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<PluginsQuery, PluginsQueryVariables>(PluginsDocument, options);
-      }
-export function usePluginsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PluginsQuery, PluginsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<PluginsQuery, PluginsQueryVariables>(PluginsDocument, options);
-        }
-export type PluginsQueryHookResult = ReturnType<typeof usePluginsQuery>;
-export type PluginsLazyQueryHookResult = ReturnType<typeof usePluginsLazyQuery>;
-export type PluginsQueryResult = Apollo.QueryResult<PluginsQuery, PluginsQueryVariables>;
 export const AddBookInfoDocument = gql`
     mutation addBookInfo($name: String!, $genres: [String!]!) {
   add: addBookInfo(name: $name, genres: $genres) {

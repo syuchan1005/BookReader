@@ -35,7 +35,6 @@ $ docker run \
 | key                              | type          | default                | note                                                                |
 |:---------------------------------|:--------------|:-----------------------|:--------------------------------------------------------------------|
 | `PORT`                           | `number`      | `8081`                 |                                                                     |
-| `BOOKREADER_PLUGIN`              | `string`      | ``                     |                                                                     |
 | `BOOKREADER_TRACE_SERVICE_NAME`  | `string`      | `book-reader`          |                                                                     |
 | `BOOKREADER_TRACE_URL`           | `string`      | ``                     |                                                                     |
 | `BOOKREADER_TRACE_CONSOLE`       | `boolean`     | ``                     |                                                                     |

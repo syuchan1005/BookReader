@@ -1,7 +1,7 @@
 {
     "name": "@syuchan1005/book-reader-server",
     "scripts": {
-        "serve": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && npm run build -- development && cross-env BOOKREADER_PLUGIN=../book-reader-test-plugin node --stack_trace_limit=200 dist\"",
+        "serve": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && npm run build -- development && node --stack_trace_limit=200 dist\"",
         "build": "node scripts/build.mjs",
         "prisma-migrate": "node scripts/prisma-migrate.js",
         "test": "jest",
@@ -15,7 +15,6 @@
         "@types/node-7z": "^2.1.4",
         "@types/sharp": "^0.31.1",
         "@types/unzipper": "^0.10.5",
-        "cross-env": "^7.0.3",
         "esbuild": "^0.17.0",
         "nodemon": "^2.0.20"
     },
