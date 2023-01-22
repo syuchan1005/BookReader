@@ -1,16 +1,14 @@
-import GQLMiddleware from '@server/graphql/GQLMiddleware';
 import {
-  QueryResolvers,
   BookInfosOption,
   BookInfoOrder,
   BookInfo as BookInfoGQLModel,
   SearchMode,
   QueryRelayBookInfosArgs,
   BookInfoPartialList,
-  BookInfoEdge,
+  BookInfoEdge, Resolvers,
 } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager, SortKey } from '@server/database/BookDataManager';
-import { BookInfoResolveAttrs } from '@server/graphql/middleware/BookInfo';
+import { BookInfoResolveAttrs } from '@server/graphql/resolvers/BookInfo';
 import { meiliSearchClient, elasticSearchClient } from '@server/search';
 
 const DefaultOptions: BookInfosOption = {
@@ -211,31 +209,25 @@ const searchBookInfosByElasticSearch = async ({
   };
 };
 
-class RelayBookInfo extends GQLMiddleware {
-  // eslint-disable-next-line class-methods-use-this
-  Query(): QueryResolvers {
-    return {
-      // @ts-ignore
-      relayBookInfos: async (_parent, args): BookInfoPartialList => {
-        switch ((args.option || DefaultOptions).searchMode) {
-          case SearchMode.Meilisearch:
-            if (args.option.search && meiliSearchClient.isAvailable()) {
-              return searchBookInfosByMeiliSearch(args);
-            }
-          // eslint-disable-next-line no-fallthrough
-          case SearchMode.Elasticsearch:
-            if (args.option.search && elasticSearchClient.isAvailable()) {
-              return searchBookInfosByElasticSearch(args);
-            }
-          // eslint-disable-next-line no-fallthrough
-          case SearchMode.Database:
-            return searchBookInfosByDB(args);
-          default:
-            throw Error('Unknown searchMode');
-        }
-      },
-    };
-  }
-}
-
-export default RelayBookInfo;
+export const resolvers: Resolvers = {
+  Query: {
+    relayBookInfos: async (_parent, args): Promise<BookInfoPartialList> => {
+      switch ((args.option || DefaultOptions).searchMode) {
+        case SearchMode.Meilisearch:
+          if (args.option.search && meiliSearchClient.isAvailable()) {
+            return searchBookInfosByMeiliSearch(args);
+          }
+        // eslint-disable-next-line no-fallthrough
+        case SearchMode.Elasticsearch:
+          if (args.option.search && elasticSearchClient.isAvailable()) {
+            return searchBookInfosByElasticSearch(args);
+          }
+        // eslint-disable-next-line no-fallthrough
+        case SearchMode.Database:
+          return searchBookInfosByDB(args);
+        default:
+          throw Error('Unknown searchMode');
+      }
+    },
+  },
+};

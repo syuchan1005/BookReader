@@ -7,15 +7,13 @@ import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from 'apollo-server-core';
+import { mergeResolvers } from '@graphql-tools/merge';
 
 // @ts-ignore
 import schemaString from '@syuchan1005/book-reader-graphql/schema.graphql';
-import { BookDataManager } from '@server/database/BookDataManager';
-import * as Util from '../Util';
+import { resolvers } from '@server/graphql/resolvers';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
-import GQLUtil from './GQLUtil';
-import internalMiddlewares from './middleware/index';
 
 export const SubscriptionKeys = {
   ADD_BOOKS: 'ADD_BOOKS',
@@ -29,31 +27,19 @@ export default class GraphQL {
 
   /**
    * @param httpServer
-   * @param updateResolver Its workaround that import the esm module from cjs.
+   * @param uploadResolver Its workaround that import the esm module from cjs.
    */
-  constructor(httpServer, updateResolver) {
-    const middlewares = internalMiddlewares;
-    const util = { ...GQLUtil, ...Util };
-    const middlewareOps = (key) => Object.keys(middlewares)
-      .map((k) => {
-        const fun = middlewares[k][key];
-        return fun ? fun.bind(this)(BookDataManager, this, SubscriptionKeys, util) : {};
-      }).reduce((a, o) => ({ ...a, ...o }), {});
-
+  constructor(httpServer, uploadResolver) {
     this.schema = makeExecutableSchema({
       typeDefs: gql(schemaString),
-      resolvers: {
-        BigInt,
-        IntRange,
-        Upload: updateResolver,
-        /* handler(parent, args, context, info) */
-        Query: {
-          ...middlewareOps('Query'),
+      resolvers: mergeResolvers([
+        {
+          BigInt,
+          IntRange,
+          Upload: uploadResolver,
         },
-        Mutation: middlewareOps('Mutation'),
-        Subscription: middlewareOps('Subscription'),
-        ...middlewareOps('Resolver'),
-      },
+        resolvers,
+      ]),
     });
     this.apolloServer = new ApolloServer({
       schema: this.schema,

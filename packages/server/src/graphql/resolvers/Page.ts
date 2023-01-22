@@ -1,12 +1,15 @@
-import GQLMiddleware from '@server/graphql/GQLMiddleware';
-
 import sharp from 'sharp';
 import throttle from 'lodash.throttle';
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import lodashChunk from 'lodash.chunk';
 
 import {
-  MutationResolvers, Result, SplitType, EditAction, Scalars, EditType, SubscriptionResolvers,
+  Result,
+  SplitType,
+  EditAction,
+  Scalars,
+  EditType,
+  Resolvers,
 } from '@syuchan1005/book-reader-graphql/generated/GQLTypes';
 import { StrictEditAction } from '@syuchan1005/book-reader-graphql/GQLTypesEx';
 import { SubscriptionKeys } from '@server/graphql';
@@ -208,8 +211,7 @@ const calculateEditActions = (
         break;
       }
       default:
-        // @ts-ignore
-        throw new Error(`Unknown EditType ${action.editType}`);
+        throw new Error(`Unknown EditAction ${action}`);
     }
   });
   return imageEditActions;
@@ -326,97 +328,88 @@ const executeEditActions = async (
 
 const pubsub = new PubSub();
 
-class Page extends GQLMiddleware {
-  // eslint-disable-next-line class-methods-use-this
-  Mutation(): MutationResolvers {
-    return {
-      bulkEditPage: async (_, {
-        id: bookId,
-        actions,
-      }): Promise<Result> => {
-        const book = await BookDataManager.getBook(bookId);
-        if (!book) {
-          return {
-            success: false,
-            code: 'QL0004',
-            message: Errors.QL0004,
-          };
-        }
+export const resolvers: Resolvers = {
+  Mutation: {
+    bulkEditPage: async (_, {
+      id: bookId,
+      actions,
+    }) => {
+      const book = await BookDataManager.getBook(bookId);
+      if (!book) {
+        return {
+          success: false,
+          code: 'QL0004',
+          message: Errors.QL0004,
+        };
+      }
 
-        const log = throttle(
-          (message: string) => pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
-            id: bookId,
-            bulkEditPage: message,
-          }),
-          throttleMs,
+      const log = throttle(
+        (message: string) => pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
+          id: bookId,
+          bulkEditPage: message,
+        }),
+        throttleMs,
+      );
+
+      log('Validate edit actions');
+      const strictEditActions = validateEditActions(actions);
+      if (strictEditActions === undefined) {
+        return {
+          success: false,
+          code: 'QL0012',
+          message: Errors.QL0012,
+        };
+      }
+      log('Calculate edit actions');
+      const editActions = calculateEditActions(
+        strictEditActions,
+        [...Array(book.pageCount)
+          .keys()].map(createImageEditAction),
+      )
+        .filter(({ willDelete }) => !willDelete);
+
+      return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
+        log('Processing edit actions');
+        const result = await executeEditActions(
+          editActions,
+          folderPath,
+          bookId,
+          book.pageCount,
+          (str) => log(`Processing ${str}`),
         );
+        if (!result.success) {
+          return result;
+        }
 
-        log('Validate edit actions');
-        const strictEditActions = validateEditActions(actions);
-        if (strictEditActions === undefined) {
+        log('Move processed images');
+        try {
+          await StorageDataManager.removeBook(bookId, true)
+            .catch(() => { /* ignored */
+            });
+          purgeImageCache();
+          await replaceNewFiles();
+        } catch (e) {
           return {
             success: false,
-            code: 'QL0012',
-            message: Errors.QL0012,
+            code: 'QL0013',
+            message: Errors.QL0013,
           };
         }
-        log('Calculate edit actions');
-        const editActions = calculateEditActions(
-          strictEditActions,
-          [...Array(book.pageCount)
-            .keys()].map(createImageEditAction),
-        )
-          .filter(({ willDelete }) => !willDelete);
-
-        return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
-          log('Processing edit actions');
-          const result = await executeEditActions(
-            editActions,
-            folderPath,
-            bookId,
-            book.pageCount,
-            (str) => log(`Processing ${str}`),
-          );
-          if (!result.success) {
-            return result;
-          }
-
-          log('Move processed images');
-          try {
-            await StorageDataManager.removeBook(bookId, true)
-              .catch(() => { /* ignored */
-              });
-            purgeImageCache();
-            await replaceNewFiles();
-          } catch (e) {
-            return {
-              success: false,
-              code: 'QL0013',
-              message: Errors.QL0013,
-            };
-          }
-          log('Update database');
-          await BookDataManager.editBook(bookId, {
-            pageCount: editActions.length,
-          });
-          return { success: true };
+        log('Update database');
+        await BookDataManager.editBook(bookId, {
+          pageCount: editActions.length,
         });
-      },
-    };
-  }
-
-  Subscription(): SubscriptionResolvers {
-    return {
-      bulkEditPage: {
-        // @ts-ignore
-        subscribe: withFilter(
-          () => pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
-          (payload, variables) => payload.id === variables.id,
-        ),
-      },
-    };
-  }
-}
-
-// noinspection JSUnusedGlobalSymbols
-export default Page;
+        return { success: true };
+      });
+    },
+  },
+  Subscription: {
+    bulkEditPage: {
+      // Ref: https://github.com/apollographql/graphql-subscriptions/pull/250#issuecomment-1351898681
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
+        (payload, variables) => payload.id === variables.id,
+      ) as any,
+    },
+  },
+};
