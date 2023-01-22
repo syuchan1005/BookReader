@@ -1,12 +1,14 @@
+import cors from 'cors';
+import { json } from 'body-parser';
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { ApolloServer, gql } from 'apollo-server-express';
-import {
-  ApolloServerPluginDrainHttpServer,
-  ApolloServerPluginLandingPageGraphQLPlayground,
-} from 'apollo-server-core';
+import gql from 'graphql-tag';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
 import { mergeResolvers } from '@graphql-tools/merge';
 
 import { schemaString } from '@syuchan1005/book-reader-graphql';
@@ -55,9 +57,13 @@ export default class GraphQL {
    */
   async middleware(app, uploadMiddleware) {
     await this.apolloServer.start();
-    app
-      .use(uploadMiddleware())
-      .use(this.apolloServer.getMiddleware());
+    app.use(
+      '/graphql',
+      cors(),
+      json(),
+      uploadMiddleware(),
+      expressMiddleware(this.apolloServer),
+    );
   }
 
   useSubscription(httpServer) {

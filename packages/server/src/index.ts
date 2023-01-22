@@ -157,7 +157,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
   httpServer.listen(port, () => {
     /* eslint-disable no-console */
     console.log(`👔 listen  at: http://localhost:${port}`);
-    console.log(`🚀 graphql at: http://localhost:${port}${graphql.apolloServer.graphqlPath}`);
+    console.log(`🚀 graphql at: http://localhost:${port}/graphql`);
   });
 
   graphql.useSubscription(httpServer);
