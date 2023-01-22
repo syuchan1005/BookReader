@@ -7,7 +7,6 @@ WORKDIR /build
 COPY package*.json ./
 COPY packages/client/package*.json packages/client/
 COPY packages/common/package*.json packages/common/
-COPY packages/graphql/package*.json packages/graphql/
 COPY packages/server/package*.json packages/server/
 COPY packages/server/package*.json /bookReader/
 RUN npm ci --include=dev && \
