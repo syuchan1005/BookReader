@@ -1,14 +1,13 @@
 import {
   BookInfosOption,
   BookInfoOrder,
-  BookInfo as BookInfoGQLModel,
   SearchMode,
   QueryRelayBookInfosArgs,
   BookInfoPartialList,
-  BookInfoEdge, Resolvers,
+  Resolvers,
+  BookInfo as BookInfoGQLModel,
 } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager, SortKey } from '@server/database/BookDataManager';
-import { BookInfoResolveAttrs } from '@server/graphql/resolvers/BookInfo';
 import { meiliSearchClient, elasticSearchClient } from '@server/search';
 
 const DefaultOptions: BookInfosOption = {
@@ -85,7 +84,7 @@ const searchBookInfosByDB = async ({
   last,
   before: argBefore,
   option = DefaultOptions,
-}: Partial<QueryRelayBookInfosArgs>): Promise<BookInfoPartialList> => {
+}: Partial<QueryRelayBookInfosArgs>) => {
   const {
     search,
     genres,
@@ -118,12 +117,7 @@ const searchBookInfosByDB = async ({
       } : undefined),
     },
     sort: [[cursorKey, sqlOrder]],
-  })).map((bookInfo) => ({
-    ...bookInfo,
-    createdAt: `${bookInfo.createdAt.getTime()}`,
-    updatedAt: `${bookInfo.updatedAt.getTime()}`,
   }));
-
   let edges = bookInfos;
   if (first !== undefined) {
     if (first < 0) {
@@ -145,73 +139,65 @@ const searchBookInfosByDB = async ({
   return {
     edges: edges.map((bookInfo) => ({
       cursor: bookInfo[cursorKey],
-      node: {
-        ...bookInfo,
-        count: bookInfo.bookCount,
-      } as Omit<BookInfoGQLModel, BookInfoResolveAttrs>,
-    } as BookInfoEdge)),
+      // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+      node: bookInfo as BookInfoGQLModel,
+    })),
     pageInfo: {
       hasNextPage: bookInfos.length > first,
       hasPreviousPage: false, // TODO: actual value
       startCursor: edges[0]?.[cursorKey] ?? '',
       endCursor: edges[edges.length - 1]?.[cursorKey] ?? '',
     },
-  };
+  } as BookInfoPartialList;
 };
 
 const searchBookInfosByMeiliSearch = async ({
   first,
   option = DefaultOptions,
-}: Partial<QueryRelayBookInfosArgs>): Promise<BookInfoPartialList> => {
+}: Partial<QueryRelayBookInfosArgs>) => {
   const infoIds = await meiliSearchClient.search(option.search, option.genres, first);
   const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
   return {
     edges: bookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
-      node: {
-        ...bookInfo,
-        createdAt: `${bookInfo.createdAt.getTime()}`,
-        updatedAt: `${bookInfo.updatedAt.getTime()}`,
-        count: bookInfo.bookCount,
-      } as Omit<BookInfoGQLModel, BookInfoResolveAttrs>,
-    } as BookInfoEdge)),
+      // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+      node: bookInfo as BookInfoGQLModel,
+    })),
     pageInfo: {
       hasNextPage: false,
       hasPreviousPage: false,
       startCursor: bookInfos[0]?.name ?? '',
       endCursor: bookInfos[bookInfos.length - 1]?.name ?? '',
     },
-  };
+  } as BookInfoPartialList;
 };
 
 const searchBookInfosByElasticSearch = async ({
   first,
   option = DefaultOptions,
-}: Partial<QueryRelayBookInfosArgs>): Promise<BookInfoPartialList> => {
+}: Partial<QueryRelayBookInfosArgs>) => {
   const infoIds = await elasticSearchClient.search(option.search, option.genres, first);
   const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
   return {
     edges: bookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
-      node: {
-        ...bookInfo,
-        createdAt: `${bookInfo.createdAt.getTime()}`,
-        updatedAt: `${bookInfo.updatedAt.getTime()}`,
-        count: bookInfo.bookCount,
-      } as Omit<BookInfoGQLModel, BookInfoResolveAttrs>,
-    } as BookInfoEdge)),
+      // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+      node: bookInfo as BookInfoGQLModel,
+    })),
     pageInfo: {
       hasNextPage: false,
       hasPreviousPage: false,
       startCursor: bookInfos[0]?.name ?? '',
       endCursor: bookInfos[bookInfos.length - 1]?.name ?? '',
     },
-  };
+  } as BookInfoPartialList;
 };
 
 export const resolvers: Resolvers = {
   Query: {
-    relayBookInfos: async (_parent, args): Promise<BookInfoPartialList> => {
+    // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+    relayBookInfos: (_parent, args) => {
+      // eslint-disable-next-line default-case
       switch ((args.option || DefaultOptions).searchMode) {
         case SearchMode.Meilisearch:
           if (args.option.search && meiliSearchClient.isAvailable()) {
@@ -225,9 +211,8 @@ export const resolvers: Resolvers = {
         // eslint-disable-next-line no-fallthrough
         case SearchMode.Database:
           return searchBookInfosByDB(args);
-        default:
-          throw Error('Unknown searchMode');
       }
+      throw Error('Unknown searchMode');
     },
   },
 };

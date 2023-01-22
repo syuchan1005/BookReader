@@ -24,3 +24,6 @@ config:
     BigInt: BigInt
     IntRange: IntRange
     Upload: Upload
+  mappers:
+    BookInfo: "../src/database/models/BookInfo#BookInfo as BookInfoModel"
+    Book: "../src/database/models/Book#Book as BookModel"

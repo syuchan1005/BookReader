@@ -1,13 +1,14 @@
 import path from 'path';
 import { generateId } from '@server/database/models/Id';
-import { Book as DBBook } from '@server/database/models/Book';
+import { Book as BookDBModel } from '@server/database/models/Book';
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import throttle from 'lodash.throttle';
 
 import {
-  BookInfo as BookInfoGQLModel,
+  Book as BookGQLModel,
   Resolvers,
   ResultWithBookResults,
+  BookResolvers,
 } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
@@ -17,43 +18,35 @@ import { asyncMap } from '@server/Util';
 import { purgeImageCache } from '@server/ImageUtil';
 import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
 import { StorageDataManager, withTemporaryFolder } from '@server/storage/StorageDataManager';
-import { BookInfoResolveAttrs } from '@server/graphql/resolvers/BookInfo';
+import { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
 
 const throttleMs = 500;
 
 const pubsub = new PubSub();
 
-export const resolvers: Resolvers = {
+export const resolvers: Resolvers & {
+  Book: StrictResolver<BookGQLModel, BookDBModel, BookResolvers>
+} = {
   Query: {
     book: async (parent, { id: bookId }) => {
       const book = await BookDataManager.getBook(bookId);
       if (!book) {
         return undefined;
       }
-      return {
-        ...book,
-        thumbnail: book.thumbnailPage,
-        pages: book.pageCount,
-        updatedAt: `${book.updatedAt.getTime()}`,
-      };
+      return book;
     },
     books: async (parent, { ids }) => {
       const bookMap = (await BookDataManager.getBooks(ids))
         .reduce((acc, book) => {
           acc[book.id] = book;
           return acc;
-        }, {} as Map<string, DBBook>);
+        }, {} as Map<string, BookDBModel>);
       return ids.map((id) => {
-        const book: DBBook | undefined = bookMap[id];
+        const book: BookDBModel | undefined = bookMap[id];
         if (!book) {
           return undefined;
         }
-        return {
-          ...book,
-          thumbnail: book.thumbnailPage,
-          pages: book.pageCount,
-          updatedAt: `${book.updatedAt.getTime()}`,
-        };
+        return book;
       });
     },
   },
@@ -268,13 +261,9 @@ export const resolvers: Resolvers = {
     },
   },
   Book: {
-    info: async ({ id: bookId }) => {
-      const bookInfo = await BookDataManager.getBookInfoFromBookId(bookId);
-      return {
-        ...bookInfo,
-        count: bookInfo.bookCount,
-        updatedAt: `${bookInfo.updatedAt.getTime()}`,
-      } as Omit<BookInfoGQLModel, BookInfoResolveAttrs> as BookInfoGQLModel;
-    },
+    pages: ({ pageCount }) => pageCount,
+    thumbnail: ({ thumbnailPage }) => thumbnailPage,
+    updatedAt: ({ updatedAt }) => updatedAt.getTime().toString(),
+    info: async ({ id: bookId }) => BookDataManager.getBookInfoFromBookId(bookId),
   },
 };

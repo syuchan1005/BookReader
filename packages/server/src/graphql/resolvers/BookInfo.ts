@@ -4,6 +4,7 @@ import {
   BookOrder,
   BookInfo as BookInfoGQLModel,
   Resolvers,
+  BookInfoResolvers,
 } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
@@ -12,43 +13,30 @@ import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDa
 import { generateId } from '@server/database/models/Id';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import { meiliSearchClient, elasticSearchClient } from '@server/search';
+import { BookInfo as BookInfoDBModel } from '@server/database/models/BookInfo';
+import { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
 
-export type BookInfoResolveAttrs = 'thumbnail' | 'genres' | 'books';
-
-export const resolvers: Resolvers = {
+export const resolvers: Resolvers & {
+  BookInfo: StrictResolver<BookInfoGQLModel, BookInfoDBModel, BookInfoResolvers>,
+} = {
   Query: {
-    bookInfo: async (parent, {
-      id: infoId,
-    }) => {
-      const bookInfo = await BookDataManager.getBookInfo(infoId);
-      if (!bookInfo) {
-        return undefined;
-      }
-      return {
-        ...bookInfo,
-        count: bookInfo.bookCount,
-        updatedAt: `${bookInfo.updatedAt.getTime()}`,
-      } as Omit<BookInfoGQLModel, BookInfoResolveAttrs> as BookInfoGQLModel;
-    },
+    bookInfo: (parent, { id: infoId }) => BookDataManager.getBookInfo(infoId),
     bookInfos: async (parent, {
       ids: infoIds,
     }) => {
-      const bookInfoMap = (await BookDataManager.getBookInfosFromIds(infoIds))
+      const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
+      const bookInfoMap = bookInfos
         .reduce((map, bookInfo) => {
           // eslint-disable-next-line no-param-reassign
           map[bookInfo.id] = bookInfo;
           return map;
-        }, {});
+        }, {} as { [key: string]: BookInfoDBModel });
       return infoIds.map((infoId) => {
         const bookInfo = bookInfoMap[infoId];
         if (!bookInfo) {
           return undefined;
         }
-        return {
-          ...bookInfo,
-          count: bookInfo.bookCount,
-          updatedAt: `${bookInfo.updatedAt.getTime()}`,
-        };
+        return bookInfo;
       });
     },
   },
@@ -74,12 +62,7 @@ export const resolvers: Resolvers = {
       await elasticSearchClient.addBookInfo(infoId);
       return {
         success: true,
-        bookInfo: {
-          ...bookInfo,
-          createdAt: `${bookInfo.createdAt.getTime()}`,
-          updatedAt: `${bookInfo.updatedAt.getTime()}`,
-          count: bookInfo.bookCount,
-        } as Omit<BookInfoGQLModel, BookInfoResolveAttrs> as BookInfoGQLModel,
+        bookInfo,
       };
     },
     editBookInfo: async (parent, {
@@ -122,12 +105,7 @@ export const resolvers: Resolvers = {
 
       return {
         success: true,
-        bookInfo: {
-          ...editedBookInfo,
-          createdAt: `${editedBookInfo.createdAt.getTime()}`,
-          updatedAt: `${editedBookInfo.updatedAt.getTime()}`,
-          count: editedBookInfo.bookCount,
-        } as Omit<BookInfoGQLModel, BookInfoResolveAttrs> as BookInfoGQLModel,
+        bookInfo: editedBookInfo,
       };
     },
     deleteBookInfo: async (parent, { id: infoId }) => {
@@ -143,22 +121,15 @@ export const resolvers: Resolvers = {
       await elasticSearchClient.removeBookInfo(infoId);
       return {
         success: true,
-        books: books.map((book) => ({
-          ...book,
-          pages: book.thumbnailPage,
-          updatedAt: `${book.updatedAt.getTime()}`,
-        })),
+        books,
       };
     },
   },
   BookInfo: {
-    thumbnail: async ({
-      id,
-      thumbnail: t,
-    }) => {
-      if (t && typeof t === 'object') {
-        return t;
-      }
+    count: ({ bookCount }) => bookCount,
+    updatedAt: ({ updatedAt }) => updatedAt.getTime()
+      .toString(),
+    thumbnail: async ({ id }) => {
       const thumbnail = await BookDataManager.getBookInfoThumbnail(id);
       if (!thumbnail) {
         return undefined;
@@ -169,10 +140,7 @@ export const resolvers: Resolvers = {
         bookPageCount: thumbnail.pageCount,
       };
     },
-    genres: ({
-      id,
-      genres: argGenres,
-    }) => argGenres || BookDataManager.getBookInfoGenres(id)
+    genres: ({ id }) => BookDataManager.getBookInfoGenres(id)
       .then((genres) => genres?.map((genre) => ({
         name: genre.name,
         invisible: genre.isInvisible,
@@ -192,12 +160,7 @@ export const resolvers: Resolvers = {
         );
         if (order === BookOrder.NumberDesc) books.reverse();
       }
-      return books.map((book) => ({
-        ...book,
-        pages: book.pageCount,
-        thumbnail: book.thumbnailPage,
-        updatedAt: `${book.updatedAt.getTime()}`,
-      }));
+      return books;
     },
   },
 };
