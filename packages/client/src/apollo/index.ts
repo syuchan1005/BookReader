@@ -144,6 +144,7 @@ export const apolloClient = new ApolloClient({
             ...options.headers,
             // eslint-disable-next-line no-underscore-dangle
             ...options._headers,
+            'Apollo-Require-Preflight': 'true',
           };
           return f(url, options);
         },

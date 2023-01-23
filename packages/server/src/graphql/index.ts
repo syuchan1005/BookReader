@@ -1,4 +1,3 @@
-import cors from 'cors';
 import { json } from 'body-parser';
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -59,7 +58,6 @@ export default class GraphQL {
     await this.apolloServer.start();
     app.use(
       '/graphql',
-      cors(),
       json(),
       uploadMiddleware(),
       expressMiddleware(this.apolloServer),
