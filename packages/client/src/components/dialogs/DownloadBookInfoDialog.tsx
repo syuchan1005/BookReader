@@ -10,6 +10,7 @@ import {
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql';
 import { createBookPageUrl } from '@client/components/BookPageImage';
@@ -63,7 +64,7 @@ const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
           .then((res) => {
             num += 1;
             setDownloadImages(num);
-            bookFolder.file(`${nameA}.jpg`, res.blob());
+            bookFolder.file(`${nameA}.${defaultStoredImageExtension}`, res.blob());
           });
       }));
     }

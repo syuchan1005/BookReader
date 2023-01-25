@@ -10,10 +10,22 @@ export const defaultGenres = [
   'Completed',
 ];
 
-export const ImageHeader = {
-  width: 'x-book-reader-width',
-  height: 'x-book-reader-height',
-  cache: 'x-book-reader-cache', // default=false
-};
-
 export const defaultTitle = 'Book Reader';
+
+export const availableImageExtensionWithContentType = {
+  webp: 'image/webp',
+  jpg: 'image/jpeg',
+} as const;
+
+type AvailableImageExtensionType = keyof typeof availableImageExtensionWithContentType;
+
+export const defaultStoredImageExtension: AvailableImageExtensionType = 'jpg';
+
+// @ts-ignore
+export const availableImageExtensions: AvailableImageExtensionType[] = Object
+  .keys(availableImageExtensionWithContentType);
+
+// @ts-ignore
+export const optionalImageExtensions: AvailableImageExtensionType[] = Object
+  .keys(availableImageExtensionWithContentType)
+  .filter((imageType) => imageType !== defaultStoredImageExtension);

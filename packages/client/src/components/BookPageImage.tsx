@@ -4,6 +4,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 import { Remount } from '@client/components/Remount';
 import { Theme } from '@mui/material';
+import {
+  availableImageExtensions,
+  availableImageExtensionWithContentType,
+  defaultStoredImageExtension,
+} from '@syuchan1005/book-reader-common';
 import { goToAuthPage } from '@client/auth';
 
 interface BookPageImageProps {
@@ -44,7 +49,7 @@ export const createBookPageUrl = (
   bookPageCount: number,
   width?: number,
   height?: number,
-  extension: 'jpg' | 'webp' = 'jpg',
+  extension: keyof typeof availableImageExtensionWithContentType = defaultStoredImageExtension,
 ) => {
   const pageFileName = pageIndex.toString(10)
     .padStart(bookPageCount.toString(10).length, '0');
@@ -111,37 +116,40 @@ const BookPageImage = (props: BookPageImageProps) => {
         };
       }
       const suffix = noSave ? '?nosave' : '';
-      const jpgSrc = createBookPageUrl(
+      const defaultSrc = createBookPageUrl(
         bookId,
         pageIndex,
         bookPageCount,
         requestImageWidth,
         requestImageHeight,
-        'jpg',
+        defaultStoredImageExtension,
       );
 
       const sources = [];
       if (requestImageWidth !== undefined || requestImageHeight !== undefined) {
         const sizeRatio = [1, 1.5, 2, 3];
-        const webpSrcSet = sizeRatio.map((ratio) => {
-          const src = createBookPageUrl(
-            bookId,
-            pageIndex,
-            bookPageCount,
-            requestImageWidth !== undefined ? Math.ceil(requestImageWidth * ratio) : undefined,
-            requestImageHeight !== undefined ? Math.ceil(requestImageHeight * ratio) : undefined,
-            'webp',
-          );
-          return `${src}${suffix} ${ratio}x`;
-        })
-          .join(',');
-        sources.push({
-          type: 'image/webp',
-          srcSet: webpSrcSet,
+
+        availableImageExtensions.forEach((imageType) => {
+          const srcSet = sizeRatio.map((ratio) => {
+            const src = createBookPageUrl(
+              bookId,
+              pageIndex,
+              bookPageCount,
+              requestImageWidth !== undefined ? Math.ceil(requestImageWidth * ratio) : undefined,
+              requestImageHeight !== undefined ? Math.ceil(requestImageHeight * ratio) : undefined,
+              imageType,
+            );
+            return `${src}${suffix} ${ratio}x`;
+          })
+            .join(',');
+          sources.push({
+            type: availableImageExtensionWithContentType[imageType],
+            srcSet,
+          });
         });
       }
       return {
-        imgSrc: `${jpgSrc}${suffix}`,
+        imgSrc: `${defaultSrc}${suffix}`,
         sources,
       };
     },
@@ -172,11 +180,12 @@ const BookPageImage = (props: BookPageImageProps) => {
   const [isRetried, setRetried] = React.useState(false);
 
   const checkAuthenticate = React.useCallback(() => {
-    fetch('/auth').then((res) => {
-      if (res.status === 401) {
-        goToAuthPage();
-      }
-    });
+    fetch('/auth')
+      .then((res) => {
+        if (res.status === 401) {
+          goToAuthPage();
+        }
+      });
   }, []);
 
   return (

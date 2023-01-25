@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import { createBookPageUrl } from '@client/components/BookPageImage';
 
 interface DownloadBookDialogProps {
@@ -45,7 +46,7 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
         .then((res) => {
           num += 1;
           setDownloadImages(num);
-          zip.file(`${name}.jpg`, res.blob());
+          zip.file(`${name}.${defaultStoredImageExtension}`, res.blob());
         });
     }))
       .then(() => zip.generateAsync(
