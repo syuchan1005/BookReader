@@ -9,6 +9,7 @@ import {
   Result,
   Scalars,
 } from '@syuchan1005/book-reader-graphql';
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 
 import Errors from '@server/Errors';
 import { asyncForEach } from '@server/Util';
@@ -19,9 +20,9 @@ import {
   streamToBuffer,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
-import { convertToJpg } from '../ImageUtil';
+import { convertToDefaultImageType } from '../ImageUtil';
 
-const readdirRecursively = async (dir, files: string[] = []): Promise<string[]> => {
+const readImageFilePathsRecursively = async (dir, files: string[] = []): Promise<string[]> => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
   dirents.forEach((dirent) => {
@@ -30,9 +31,13 @@ const readdirRecursively = async (dir, files: string[] = []): Promise<string[]> 
   });
   await asyncForEach(dirs, async (d) => {
     // eslint-disable-next-line no-param-reassign
-    files = await readdirRecursively(d, files);
+    files = await readImageFilePathsRecursively(d, files);
   });
-  return Promise.resolve(files);
+  return files
+    // TODO: Filter node-sharp not supported types only
+    .filter(
+      (f) => /^(?!.*__MACOSX).*\.(jpe?g|png|webp)$/i.test(f),
+    );
 };
 
 const GQLUtil = {
@@ -43,10 +48,7 @@ const GQLUtil = {
     number: string,
     onProgress: (current: number, total: number) => void,
   ): Promise<Result> {
-    let files = await readdirRecursively(tempPath)
-      .then((fileList) => fileList.filter(
-        (f) => /^(?!.*__MACOSX).*\.(jpe?g|png|webp)$/i.test(f),
-      ));
+    let files = await readImageFilePathsRecursively(tempPath);
     if (files.length <= 0) {
       return {
         success: false,
@@ -58,17 +60,17 @@ const GQLUtil = {
     let count = 0;
     onProgress(count, files.length);
     const promises = files.map(async (f, i) => {
-      let imageBuffer = await readFile(f);
-      if (!/\.jpe?g$/i.test(f)) {
-        imageBuffer = await convertToJpg(imageBuffer);
-      }
-      await StorageDataManager.writeOriginalPage(
+      const imageBuffer = await convertToDefaultImageType(await readFile(f));
+      await StorageDataManager.writePage(
         {
           bookId,
           pageNumber: {
             pageIndex: i,
             totalPageCount: files.length,
           },
+          width: 0,
+          height: 0,
+          extension: defaultStoredImageExtension,
         },
         imageBuffer,
         false,
@@ -76,7 +78,9 @@ const GQLUtil = {
       count += 1;
       onProgress(count, files.length);
     });
-    await Promise.all(promises).catch(() => {});
+    await Promise.all(promises)
+      .catch(() => {
+      });
 
     await BookDataManager.addBook({
       id: bookId,

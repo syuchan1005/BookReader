@@ -3,6 +3,7 @@ import throttle from 'lodash.throttle';
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import lodashChunk from 'lodash.chunk';
 
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import {
   Maybe,
   Result,
@@ -23,7 +24,8 @@ import {
 import { chunkedRange, flatRange } from '../scalar/IntRange';
 import {
   purgeImageCache,
-  getImageSize, joinImagesAndSaveToJpg,
+  getImageSize,
+  joinImagesAndSaveImage,
 } from '../../ImageUtil';
 
 const throttleMs = 500;
@@ -44,7 +46,6 @@ export type StrictEditAction = {
         : never
     }>
 }[EditType];
-
 
 const editTypeConstraint: {
   [key in EditType]: [/* is terminal operation */ boolean, /* is single operation */ boolean]
@@ -289,8 +290,9 @@ const executeEditActions = async (
           totalPageCount: bookPages,
         },
       });
+      const extension = srcFileData?.contentExtension || defaultStoredImageExtension;
       const distFileName = `${index.toString(10)
-        .padStart(arr.length.toString(10).length, '0')}.jpg`;
+        .padStart(arr.length.toString(10).length, '0')}.${extension}`;
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
         if (image) {
@@ -320,7 +322,7 @@ const executeEditActions = async (
               },
             })),
           );
-          await joinImagesAndSaveToJpg(pageDataList.map((p) => p.data), distFilePath);
+          await joinImagesAndSaveImage(pageDataList.map((p) => p.data), distFilePath);
         } else {
           await writeFile(distFilePath, srcFileData.data);
         }

@@ -1,16 +1,17 @@
 import sharp from 'sharp';
 import { Buffer } from 'buffer';
-import { getContentType, StorageDataManager } from '@server/storage/StorageDataManager';
+import { availableImageExtensionWithContentType, defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
+import { StorageDataManager } from '@server/storage/StorageDataManager';
 
 // eslint-disable-next-line import/prefer-default-export
-export const convertImage = async (
+export const getOrConvertImage = async (
   bookId: string,
   pageNumber: string,
-  info: { ext: 'jpg', size: { width: number, height: number } } | { ext: 'webp', size?: { width: number, height: number } },
+  info: { ext: keyof typeof availableImageExtensionWithContentType, size?: { width: number, height: number } },
   isSave: boolean,
 ): Promise<{
   success: true,
-  type: 'image/jpeg' | 'image/webp',
+  type: typeof availableImageExtensionWithContentType[keyof typeof availableImageExtensionWithContentType],
   body: Buffer,
   byteLength: number,
   lastModified: Date,
@@ -29,7 +30,7 @@ export const convertImage = async (
   if (cachePageData) {
     return {
       success: true,
-      type: cachePageData.contentType,
+      type: availableImageExtensionWithContentType[cachePageData.contentExtension],
       body: cachePageData.data,
       byteLength: cachePageData.contentLength,
       lastModified: cachePageData.lastModified,
@@ -54,23 +55,9 @@ export const convertImage = async (
     });
   }
 
-  switch (info.ext) {
-    case 'jpg':
-      sharpInstance = sharpInstance.jpeg();
-      break;
-    case 'webp':
-      sharpInstance = sharpInstance.webp();
-      break;
-    default:
-      return {
-        success: false,
-        body: 'unknown extension',
-      };
-  }
-
   let cachePageBuffer: Buffer;
   try {
-    cachePageBuffer = await sharpInstance.toBuffer();
+    cachePageBuffer = await sharpInstance.toFormat(info.ext).toBuffer();
   } catch (e) {
     return {
       success: false,
@@ -83,20 +70,16 @@ export const convertImage = async (
 
   return {
     success: true,
-    type: getContentType(metadata.extension),
+    type: availableImageExtensionWithContentType[metadata.extension],
     body: cachePageBuffer,
     byteLength: cachePageBuffer.byteLength,
     lastModified: originalPageData.lastModified,
   };
 };
 
-export const convertAndSaveJpg = async (src: string | Buffer, dist: string) => {
-  await sharp(src).jpeg().toFile(dist);
-};
-
-export const convertToJpg = (
+export const convertToDefaultImageType = (
   srcBuffer: Buffer,
-): Promise<Buffer | undefined> => sharp(srcBuffer).jpeg().toBuffer();
+): Promise<Buffer | undefined> => sharp(srcBuffer).toFormat(defaultStoredImageExtension).toBuffer();
 
 export const getImageSize = async (data: Buffer): Promise<{ width: number, height: number }> => {
   const { width, height } = await sharp(data).metadata();
@@ -121,7 +104,7 @@ const getLeftTopPixelData = async (src: Buffer): Promise<{ r: number, g: number,
   return { r, g, b };
 };
 
-export const joinImagesAndSaveToJpg = async (srcBuffers: Buffer[], dist: string) => {
+export const joinImagesAndSaveImage = async (srcBuffers: Buffer[], dist: string) => {
   if (srcBuffers.length < 1) {
     return;
   }
@@ -160,6 +143,5 @@ export const joinImagesAndSaveToJpg = async (srcBuffers: Buffer[], dist: string)
     },
   })
     .composite(compositeParams)
-    .jpeg()
     .toFile(dist);
 };

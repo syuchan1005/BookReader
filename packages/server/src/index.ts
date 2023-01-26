@@ -9,10 +9,14 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import Redis from 'ioredis';
 
+import {
+  availableImageExtensions,
+  availableImageExtensionWithContentType
+} from '@syuchan1005/book-reader-common';
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import { meiliSearchClient, elasticSearchClient } from '@server/search';
-import { convertImage } from './ImageUtil';
+import { getOrConvertImage } from './ImageUtil';
 import GraphQL from './graphql/index';
 import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddleware } from './auth';
 
@@ -99,9 +103,9 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
   });
 
   /* image serve with options in image name */
+  const bookImagePathRegex = new RegExp(`(\\d+)(_(\\d+)x(\\d+))?\\.(${availableImageExtensions.join('|')})$`);
   requireAuthRouter.get('/book/:bookId/:fileName', async (req, res, next) => {
-    const match = req.params.fileName
-      .match(/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)$/);
+    const match = req.params.fileName.match(bookImagePathRegex);
     if (!match) {
       await next();
       return;
@@ -109,19 +113,9 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_full, pageNum, sizeExists, width, height, ext] = match;
     const isNotSave = req.query.nosave === '';
-    let extension;
-    if (ext === 'jpg') {
-      extension = 'jpg';
-    } else {
-      extension = 'webp';
-    }
+    const extension = ext as keyof typeof availableImageExtensionWithContentType;
 
-    if (ext === 'jpg' && !sizeExists) {
-      await next();
-      return;
-    }
-
-    const result = await convertImage(
+    const result = await getOrConvertImage(
       req.params.bookId,
       pageNum,
       {

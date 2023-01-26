@@ -6,6 +6,7 @@ import os from 'os';
 
 import { move } from 'fs-extra';
 
+import { availableImageExtensionWithContentType } from '@syuchan1005/book-reader-common';
 import { LocalStorageDataManager, bookFolderPath } from './local';
 
 export interface IStorageDataManager {
@@ -17,8 +18,6 @@ export interface IStorageDataManager {
 
   getPageData(metadata: CacheablePageMetadata): Promise<PageData | undefined>;
 
-  writeOriginalPage(metadata: PageMetadata, data: Buffer, overwrite: boolean): Promise<void>;
-
   writePage(metadata: CacheablePageMetadata, data: Buffer, overwrite: boolean): Promise<void>;
 
   removeBook(bookId: string, cacheOnly: boolean): Promise<void>;
@@ -27,10 +26,6 @@ export interface IStorageDataManager {
 
   getUserStoredArchive(fileName: string): Promise<Buffer | undefined>;
 }
-
-export const getContentType = (
-  extension: 'jpg' | 'webp',
-): 'image/jpeg' | 'image/webp' => (extension === 'jpg' ? 'image/jpeg' : 'image/webp');
 
 export const streamToBuffer = (stream: Stream): Promise<Buffer> => new Promise(
   (resolve, reject) => {
@@ -60,7 +55,10 @@ export const withTemporaryFolder = async <T>(
       folderPath,
     );
   } finally {
-    await fs.rm(folderPath, { recursive: true, force: true });
+    await fs.rm(folderPath, {
+      recursive: true,
+      force: true,
+    });
   }
   return result;
 };
@@ -73,6 +71,7 @@ export const withPageEditFolder = async <T>(
   const folderPath = `${oldFolderPath}_new`;
   await fs.mkdir(folderPath, { recursive: true });
   const replaceNewFiles = async () => {
+    // TODO: Move this logic to LocalStorageDataManager
     await fs.rm(oldFolderPath, { recursive: true });
     await move(folderPath, oldFolderPath, { overwrite: true });
   };
@@ -85,12 +84,18 @@ export const withPageEditFolder = async <T>(
   } finally {
     for (let i = 0; i < 4; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      await new Promise((resolve) => { setTimeout(resolve, 1500); });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1500);
+      });
       try {
         // eslint-disable-next-line no-await-in-loop
-        await fs.rm(folderPath, { recursive: true, force: true });
+        await fs.rm(folderPath, {
+          recursive: true,
+          force: true,
+        });
         break;
-      } catch (ignored) { /* ignored */ }
+      } catch (ignored) { /* ignored */
+      }
     }
   }
   if (error) {
@@ -100,7 +105,10 @@ export const withPageEditFolder = async <T>(
   }
 };
 
-export const { readFile, writeFile } = fs;
+export const {
+  readFile,
+  writeFile,
+} = fs;
 
 export type PageMetadata = {
   bookId: string;
@@ -110,13 +118,13 @@ export type PageMetadata = {
 export type CacheablePageMetadata = PageMetadata & {
   width: number; /* 0 = auto */
   height: number; /* 0 = auto */
-  extension: 'jpg' | 'webp';
+  extension: keyof typeof availableImageExtensionWithContentType;
 };
 
 export type PageData = {
   data: Buffer;
   contentLength: number;
-  contentType: 'image/jpeg' | 'image/webp';
+  contentExtension: keyof typeof availableImageExtensionWithContentType;
   lastModified: Date;
 };
 
