@@ -56,4 +56,8 @@ $ npm run serve
 
 
 ## Note
-last version with Sequelize: 1.3.1-rc39
+- stored default image file format: 
+  - ~1.4.1: jpg
+  - 1.4.2~: webp
+
+- last version with Sequelize: 1.3.1-rc39
