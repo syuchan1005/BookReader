@@ -290,9 +290,8 @@ const executeEditActions = async (
           totalPageCount: bookPages,
         },
       });
-      const extension = srcFileData?.contentExtension || defaultStoredImageExtension;
       const distFileName = `${index.toString(10)
-        .padStart(arr.length.toString(10).length, '0')}.${extension}`;
+        .padStart(arr.length.toString(10).length, '0')}.${defaultStoredImageExtension}`;
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
         if (image) {
@@ -323,8 +322,10 @@ const executeEditActions = async (
             })),
           );
           await joinImagesAndSaveImage(pageDataList.map((p) => p.data), distFilePath);
-        } else {
+        } else if (srcFileData.contentExtension === defaultStoredImageExtension) {
           await writeFile(distFilePath, srcFileData.data);
+        } else {
+          await sharp(srcFileData.data).toFile(distFilePath);
         }
         return { success: true };
       } catch (e) {
