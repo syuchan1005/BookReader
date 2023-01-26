@@ -101,13 +101,14 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
   /* image serve with options in image name */
   requireAuthRouter.get('/book/:bookId/:fileName', async (req, res, next) => {
     const match = req.params.fileName
-      .match(/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)(\?nosave)?$/);
+      .match(/(\d+)(_(\d+)x(\d+))?\.(jpg|jpg\.webp|webp)$/);
     if (!match) {
       await next();
       return;
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_full, pageNum, sizeExists, width, height, ext, isNotSave] = match;
+    const [_full, pageNum, sizeExists, width, height, ext] = match;
+    const isNotSave = req.query.nosave === '';
     let extension;
     if (ext === 'jpg') {
       extension = 'jpg';
