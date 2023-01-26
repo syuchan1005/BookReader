@@ -19,7 +19,7 @@ export const availableImageExtensionWithContentType = {
 
 type AvailableImageExtensionType = keyof typeof availableImageExtensionWithContentType;
 
-export const defaultStoredImageExtension: AvailableImageExtensionType = 'jpg';
+export const defaultStoredImageExtension: AvailableImageExtensionType = 'webp';
 
 // @ts-ignore
 export const availableImageExtensions: AvailableImageExtensionType[] = Object
