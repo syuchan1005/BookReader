@@ -1,4 +1,4 @@
-import './OpenTelemetrySetup';
+import './OpenTelemetry';
 
 import http from 'http';
 import express from 'express';

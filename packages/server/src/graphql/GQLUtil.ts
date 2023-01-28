@@ -4,11 +4,9 @@ import { Buffer } from 'buffer';
 
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
+import { SpanStatusCode } from '@opentelemetry/api';
 
-import {
-  Result,
-  Scalars,
-} from '@syuchan1005/book-reader-graphql';
+import { Result, Scalars } from '@syuchan1005/book-reader-graphql';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 
 import Errors from '@server/Errors';
@@ -20,7 +18,8 @@ import {
   streamToBuffer,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
-import { convertToDefaultImageType } from '../ImageUtil';
+import { convertToDefaultImageType } from '@server/ImageUtil';
+import { tracer } from '@server/OpenTelemetry';
 
 const readImageFilePathsRecursively = async (dir, files: string[] = []): Promise<string[]> => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
@@ -48,103 +47,141 @@ const GQLUtil = {
     number: string,
     onProgress: (current: number, total: number) => void,
   ): Promise<Result> {
-    let files = await readImageFilePathsRecursively(tempPath);
-    if (files.length <= 0) {
-      return {
-        success: false,
-        code: 'QL0003',
-        message: Errors.QL0003,
-      };
-    }
-    files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
-    let count = 0;
-    onProgress(count, files.length);
-    const promises = files.map(async (f, i) => {
-      const imageBuffer = await convertToDefaultImageType(await readFile(f));
-      await StorageDataManager.writePage(
-        {
-          bookId,
-          pageNumber: {
-            pageIndex: i,
-            totalPageCount: files.length,
-          },
-          width: 0,
-          height: 0,
-          extension: defaultStoredImageExtension,
-        },
-        imageBuffer,
-        false,
-      );
-      count += 1;
-      onProgress(count, files.length);
-    });
-    await Promise.all(promises)
-      .catch(() => {
-      });
+    return tracer.startActiveSpan(
+      'GQLUtil.addBookFromLocalPath',
+      async (span) => {
+        let files = await readImageFilePathsRecursively(tempPath);
+        if (files.length <= 0) {
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: 'QL0003',
+          });
+          span.end();
+          return {
+            success: false,
+            code: 'QL0003',
+            message: Errors.QL0003,
+          };
+        }
+        files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
+        let count = 0;
+        onProgress(count, files.length);
+        const promises = files.map(async (f, i) => {
+          const imageBuffer = await convertToDefaultImageType(await readFile(f));
+          await StorageDataManager.writePage(
+            {
+              bookId,
+              pageNumber: {
+                pageIndex: i,
+                totalPageCount: files.length,
+              },
+              width: 0,
+              height: 0,
+              extension: defaultStoredImageExtension,
+            },
+            imageBuffer,
+            false,
+          );
+          count += 1;
+          onProgress(count, files.length);
+        });
+        await Promise.all(promises)
+          .catch(() => {
+          });
 
-    await BookDataManager.addBook({
-      id: bookId,
-      thumbnailPage: 0,
-      number,
-      pageCount: files.length,
-      infoId,
-    });
-    return {
-      success: true,
-    };
+        await BookDataManager.addBook({
+          id: bookId,
+          thumbnailPage: 0,
+          number,
+          pageCount: files.length,
+          infoId,
+        });
+
+        span.end();
+        return { success: true };
+      },
+    );
   },
   extractCompressFile(
     tempPath: string,
     archiveFileData: Buffer,
     onProgress: (percent: number) => void,
-  ): Promise<void> {
-    return withTemporaryFolder(async (writeFile) => {
-      const filePath = await writeFile('archive.zip', archiveFileData);
-      return new Promise((resolve, reject) => {
-        const extractStream = extractFull(filePath, tempPath, {
-          recursive: true,
-          $progress: true,
+  ): Promise<unknown> {
+    return tracer.startActiveSpan(
+      'GQLUtil.extractCompressFile',
+      {
+        attributes: {
+          archiveSize: archiveFileData.length,
+        },
+      },
+      (span) => withTemporaryFolder(async (writeFile) => {
+        const filePath = await writeFile('archive.zip', archiveFileData);
+        return new Promise((resolve, reject) => {
+          const extractStream = extractFull(filePath, tempPath, {
+            recursive: true,
+            $progress: true,
+          });
+          extractStream.on('progress', (event) => {
+            onProgress(event.percent);
+          });
+          extractStream.on('error', (err) => {
+            span.end();
+            reject(err);
+          });
+          extractStream.on('end', (...args) => {
+            span.end();
+            resolve(args);
+          });
         });
-        extractStream.on('progress', (event) => {
-          onProgress(event.percent);
-        });
-        extractStream.on('error', reject);
-        extractStream.on('end', (...args) => {
-          resolve(...args);
-        });
-      });
-    });
+      }),
+    );
   },
   async getArchiveFile(
     file?: Scalars['Upload'],
     localPath?: string,
   ): Promise<({ success: false } & Result) | { success: true, data: Buffer }> {
-    if (!file && !localPath) {
-      return {
-        success: false,
-        code: 'QL0012',
-        message: Errors.QL0012,
-      };
-    }
+    return tracer.startActiveSpan(
+      'GQLUtil.getArchiveFile',
+      async (span): Promise<({ success: false } & Result) | { success: true, data: Buffer }> => {
+        if (!file && !localPath) {
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: 'QL0012',
+          });
+          span.end();
+          return {
+            success: false,
+            code: 'QL0012',
+            message: Errors.QL0012,
+          };
+        }
 
-    let buffer: Buffer;
-    if (localPath) {
-      buffer = await StorageDataManager.getUserStoredArchive(localPath);
-    } else if (file) {
-      buffer = await streamToBuffer((await file).createReadStream());
-    }
+        let buffer: Buffer;
+        if (localPath) {
+          buffer = await StorageDataManager.getUserStoredArchive(localPath);
+        } else if (file) {
+          buffer = await streamToBuffer((await file).createReadStream());
+        }
 
-    if (!buffer) {
-      return {
-        success: false,
-        code: 'QL0012',
-        message: Errors.QL0012,
-      };
-    }
-    return {
-      success: true,
-      data: buffer,
-    };
+        if (!buffer) {
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: 'QL0012',
+          });
+          span.end();
+          return {
+            success: false,
+            code: 'QL0012',
+            message: Errors.QL0012,
+          };
+        }
+        span.end();
+        return {
+          success: true,
+          data: buffer,
+        };
+      },
+    );
   },
   async searchBookFolders(tempPath: string) {
     let booksFolderPath = '/';

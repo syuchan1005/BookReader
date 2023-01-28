@@ -1,7 +1,7 @@
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
-import * as api from '@opentelemetry/api';
+import api, { Tracer } from '@opentelemetry/api';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import {
   BatchSpanProcessor,
@@ -15,11 +15,8 @@ import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
 
-export const setup = () => {
+const setup = (): Tracer => {
   const exportUrl = process.env.BOOKREADER_TRACE_URL;
-  if (!exportUrl) {
-    return;
-  }
 
   const contextManager = new AsyncHooksContextManager().enable();
   api.context.setGlobalContextManager(contextManager);
@@ -31,8 +28,10 @@ export const setup = () => {
     }),
   });
 
-  const otlpTraceExporter = new OTLPTraceExporter({ url: exportUrl });
-  provider.addSpanProcessor(new BatchSpanProcessor(otlpTraceExporter));
+  if (exportUrl) {
+    const otlpTraceExporter = new OTLPTraceExporter({ url: exportUrl });
+    provider.addSpanProcessor(new BatchSpanProcessor(otlpTraceExporter));
+  }
   if (process.env.NODE_ENV !== 'production' && process.env.BOOKREADER_TRACE_CONSOLE === 'true') {
     provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   }
@@ -48,6 +47,8 @@ export const setup = () => {
       new PrismaInstrumentation({ middleware: true }),
     ],
   });
+
+  return api.trace.getTracer(serviceName);
 };
 
-setup();
+export const tracer: Tracer = setup();
