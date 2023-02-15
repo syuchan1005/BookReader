@@ -9,9 +9,10 @@ import { createUploadLink } from 'apollo-upload-client';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
 
 import { BookInfo } from '@syuchan1005/book-reader-graphql';
-import { WebSocketLink } from '@client/apollo/WebSocketLink';
 import { onError } from '@apollo/client/link/error';
 import { goToAuthPage } from '@client/auth';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 const schemaVersion = '1.3.1';
@@ -126,9 +127,11 @@ export const apolloClient = new ApolloClient({
           && definition.operation === 'subscription'
         );
       },
-      new WebSocketLink({
-        url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
-      }),
+      new GraphQLWsLink(
+        createClient({
+          url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
+        }),
+      ),
       createUploadLink({
         uri: `${window.location.protocol}${uri}`,
         headers: { 'Apollo-Require-Preflight': 'true' },
