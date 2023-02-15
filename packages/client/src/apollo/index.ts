@@ -8,8 +8,6 @@ import {
 import { createUploadLink } from 'apollo-upload-client';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
 
-import createCustomFetcher from '@client/CustomFetcher';
-
 import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { WebSocketLink } from '@client/apollo/WebSocketLink';
 import { onError } from '@apollo/client/link/error';
@@ -133,21 +131,7 @@ export const apolloClient = new ApolloClient({
       }),
       createUploadLink({
         uri: `${window.location.protocol}${uri}`,
-        // credentials: "same-origin",
-        fetch: (url, options) => {
-          let f = fetch;
-          if (options.useUpload) {
-            f = createCustomFetcher(options.onProgress, options.onAbortPossible);
-          }
-          // eslint-disable-next-line no-param-reassign
-          options.headers = {
-            ...options.headers,
-            // eslint-disable-next-line no-underscore-dangle
-            ...options._headers,
-            'Apollo-Require-Preflight': 'true',
-          };
-          return f(url, options);
-        },
+        headers: { 'Apollo-Require-Preflight': 'true' },
       }),
     ),
   ]),

@@ -10,7 +10,6 @@ import {
   FormControlLabel,
   Icon,
   IconButton,
-  LinearProgress,
   Radio,
   RadioGroup,
   TextField,
@@ -94,10 +93,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   const [addBooks, setAddBooks] = React.useState([]);
   const [subscriptionId, setSubscriptionId] = React.useState<string | undefined>(undefined);
 
-  const [addBookProgress, setAddBookProgress] = React
-    .useState<ProgressEvent | undefined>(undefined);
-  const [addBookAbort, setAddBookAbort] = React
-    .useState<() => void | undefined>(undefined);
   const [addType, setAddType] = React.useState('file');
   const [nameType, setNameType] = React.useState<'number' | 'filename'>('number');
   const [editContent, setEditContent] = React.useState({});
@@ -115,8 +110,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     if (onClose && success) onClose();
     if (success && onAdded) onAdded();
     setAddBooks([]);
-    setAddBookProgress(undefined);
-    setAddBookAbort(undefined);
     setSubscriptionId(undefined);
     setAddType('file');
     setEditContent({});
@@ -133,8 +126,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       mutateCloseDialog(d.adds.every((a) => a.success));
     },
     onError() {
-      setAddBookProgress(undefined);
-      setAddBookAbort(undefined);
       setSubscriptionId(undefined);
     },
   });
@@ -152,8 +143,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       mutateCloseDialog(d.add.success);
     },
     onError() {
-      setAddBookProgress(undefined);
-      setAddBookAbort(undefined);
       setSubscriptionId(undefined);
     },
   });
@@ -177,12 +166,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     if (subscriptionData) {
       return `${subscriptionData.addBooks}`;
     }
-    if (addBookProgress) {
-      const percent = (addBookProgress.loaded / addBookProgress.total) * 100;
-      return `Uploading ${percent.toFixed(2)}%`;
-    }
     return '';
-  }, [addBookProgress, subscriptionData]);
+  }, [subscriptionData]);
   useTitle(title, {
     restoreOnUnmount: true,
     inheritTitle: true,
@@ -241,74 +226,26 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         count += 1;
       }
       if (addType === 'file_compressed') {
-        addCompressBook({
-          context: {
-            fetchOptions: {
-              useUpload: !!addBooks[0].file,
-              onProgress: (ev: ProgressEvent) => {
-                setAddBookProgress(ev);
-              },
-              onAbortPossible: (abortFunc) => {
-                setAddBookAbort(() => () => {
-                  abortFunc();
-                  setBlockUnload(false);
-                });
-              },
-            },
-          },
-        });
+        addCompressBook();
       } else {
-        addBook({
-          context: {
-            fetchOptions: {
-              useUpload: addBooks.filter((b) => b.file).length >= 1,
-              onProgress: (ev: ProgressEvent) => {
-                setAddBookProgress(ev);
-              },
-              onAbortPossible: (abortFunc) => {
-                setAddBookAbort(() => () => {
-                  abortFunc();
-                  setBlockUnload(false);
-                });
-              },
-            },
-          },
-        });
+        addBook();
       }
       setBlockUnload(true);
     },
-    [infoId, subscriptionLoading, addType, addCompressBook, addBooks, addBook],
+    [infoId, subscriptionLoading, addType, addCompressBook, addBook],
   );
 
   return (
     <Dialog open={open} onClose={closeDialog}>
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
-        if (addBookProgress && addBookProgress.loaded < addBookProgress.total) {
-          return (
-            <DialogContent className={classes.addBookProgress}>
-              {addBookProgress && (
-                <LinearProgress
-                  variant="determinate"
-                  value={(addBookProgress.loaded / addBookProgress.total) * 100}
-                />
-              )}
-              {addBookAbort && (
-                <Button onClick={addBookAbort}>Abort</Button>
-              )}
-            </DialogContent>
-          );
-        }
-        if (
-          (subscriptionData && (!addBookProgress
-              || (addBookProgress.loaded / addBookProgress.total) < 97)
-          )) {
+        if (loading) {
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />
-              {(subscriptionData) && (
-                <div className={classes.progressMessage}>{subscriptionData.addBooks}</div>
-              )}
+              <div className={classes.progressMessage}>
+                {subscriptionData?.addBooks ?? 'Uploading'}
+              </div>
             </DialogContent>
           );
         }
