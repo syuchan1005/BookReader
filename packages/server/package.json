@@ -43,6 +43,7 @@
         "@opentelemetry/semantic-conventions": "^1.9.0",
         "@prisma/client": "^4.8.1",
         "@prisma/instrumentation": "^4.8.1",
+        "@supercharge/promise-pool": "^2.4.0",
         "@types/connect-redis": "^0.0.19",
         "@types/express-session": "^1.17.5",
         "@types/ioredis": "^4.28.10",

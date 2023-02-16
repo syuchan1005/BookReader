@@ -5,6 +5,7 @@ import { Buffer } from 'buffer';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
 import { SpanStatusCode } from '@opentelemetry/api';
+import { PromisePool } from '@supercharge/promise-pool';
 
 import { Result, Scalars } from '@syuchan1005/book-reader-graphql';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
@@ -64,31 +65,30 @@ const GQLUtil = {
           };
         }
         files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
-        let count = 0;
-        onProgress(count, files.length);
-        const promises = files.map(async (f, i) => {
-          const imageBuffer = await convertToDefaultImageType(await readFile(f));
-          await StorageDataManager.writePage(
-            {
-              bookId,
-              pageNumber: {
-                pageIndex: i,
-                totalPageCount: files.length,
+        onProgress(0, files.length);
+        await PromisePool
+          .for(files)
+          .withConcurrency(10)
+          .onTaskFinished((_, pool) => {
+            onProgress(pool.processedCount(), files.length);
+          })
+          .process(async (f, i) => {
+            const imageBuffer = await convertToDefaultImageType(await readFile(f));
+            await StorageDataManager.writePage(
+              {
+                bookId,
+                pageNumber: {
+                  pageIndex: i,
+                  totalPageCount: files.length,
+                },
+                width: 0,
+                height: 0,
+                extension: defaultStoredImageExtension,
               },
-              width: 0,
-              height: 0,
-              extension: defaultStoredImageExtension,
-            },
-            imageBuffer,
-            false,
-          );
-          count += 1;
-          onProgress(count, files.length);
-        });
-        await Promise.all(promises)
-          .catch(() => {
+              imageBuffer,
+              false,
+            );
           });
-
         await BookDataManager.addBook({
           id: bookId,
           thumbnailPage: 0,
