@@ -20,12 +20,35 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useBeforeUnload } from 'react-use';
 
 import {
-  useAddBooksMutation, useAddBooksProgressSubscription, useAddCompressBookMutation,
+  InputBook,
+  useAddBooksMutation,
+  useAddBooksProgressSubscription,
+  useAddCompressBookMutation,
+  AddBooksSubscriptionType,
+  AddBooksProgressSubscription,
 } from '@syuchan1005/book-reader-graphql';
 
 import FileField from '@client/components/FileField';
 import DropZone from '@client/components/DropZone';
 import { useTitle } from '@client/hooks/useTitle';
+
+type StrictAddBooksSubscriptionResult<
+  EnumType = typeof AddBooksSubscriptionType,
+  ResolversType extends Record<string, unknown> = AddBooksProgressSubscription['addBooks'],
+  ResultTypeName extends keyof ResolversType = 'AddBooksSubscriptionResult',
+> = {
+  [K in keyof EnumType]: K extends string ? ResultTypeName extends string
+    ? {
+    type: EnumType[K];
+  } & (
+    ResolversType extends infer U
+      ? U extends { __typename?: `${K}${ResultTypeName}` }
+        ? { type: EnumType[K] } & U
+        : never
+      : never
+    )
+    : never : never;
+}[keyof EnumType];
 
 interface AddBookDialogProps {
   open: boolean;
@@ -90,7 +113,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     children,
   } = props;
 
-  const [addBooks, setAddBooks] = React.useState([]);
+  const [addBooks, setAddBooks] = React
+    .useState<InputBook[]>([]);
   const [subscriptionId, setSubscriptionId] = React.useState<string | undefined>(undefined);
 
   const [addType, setAddType] = React.useState('file');
@@ -105,6 +129,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
 
   const [isBlockUnload, setBlockUnload] = React.useState(false);
   useBeforeUnload(isBlockUnload, 'In Process. Changes may not be saved.');
+
+  const [uploadingFileBytes, setUploadingFileBytes] = React.useState(0);
 
   const mutateCloseDialog = React.useCallback((success) => {
     if (onClose && success) onClose();
@@ -225,14 +251,20 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         await new Promise((r) => setTimeout(r, 100 * count));
         count += 1;
       }
+      const uploadTargetFiles: (InputBook | undefined)[] = [];
       if (addType === 'file_compressed') {
         addCompressBook();
+        uploadTargetFiles.push(addBooks[0]);
       } else {
         addBook();
+        uploadTargetFiles.push(...addBooks);
       }
+      const totalUploadBytes = uploadTargetFiles
+        .reduce((total, f) => total + (f?.file?.size || 0), 0);
+      setUploadingFileBytes(totalUploadBytes);
       setBlockUnload(true);
     },
-    [infoId, subscriptionLoading, addType, addCompressBook, addBook],
+    [infoId, subscriptionLoading, addType, addCompressBook, addBook, addBooks],
   );
 
   return (
@@ -240,11 +272,42 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
         if (loading) {
+          let message;
+          const addBooksSubscriptionResult = subscriptionData
+            ?.addBooks as StrictAddBooksSubscriptionResult;
+          const bookNumber = addBooksSubscriptionResult?.bookNumber || '';
+          switch (addBooksSubscriptionResult?.type) {
+            case 'Moving': {
+              const progressText = addBooksSubscriptionResult.totalPageCount > 0
+                ? ` ${addBooksSubscriptionResult.movedPageCount}/${addBooksSubscriptionResult.totalPageCount}`
+                : '';
+              message = `Move Book (${bookNumber})${progressText}`;
+              break;
+            }
+            case 'Extracting': {
+              const progressText = addBooksSubscriptionResult.progressPercent > 0
+                ? ` ${addBooksSubscriptionResult.progressPercent}%`
+                : '';
+              message = `Extract Book (${bookNumber})${progressText}`;
+              break;
+            }
+            case 'Uploading': {
+              const progress = addBooksSubscriptionResult.downloadedBytes / uploadingFileBytes;
+              const progressText = addBooksSubscriptionResult.downloadedBytes > 0
+                ? ` ${Math.floor(progress * 100)}%`
+                : '';
+              message = `Extract Book (${bookNumber})${progressText}`;
+              break;
+            }
+            default:
+              message = 'Uploading';
+              break;
+          }
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />
               <div className={classes.progressMessage}>
-                {subscriptionData?.addBooks ?? 'Uploading'}
+                {message}
               </div>
             </DialogContent>
           );

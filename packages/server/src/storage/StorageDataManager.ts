@@ -27,10 +27,16 @@ export interface IStorageDataManager {
   getUserStoredArchive(fileName: string): Promise<Buffer | undefined>;
 }
 
-export const streamToBuffer = (stream: Stream): Promise<Buffer> => new Promise(
+export const streamToBuffer = (
+  stream: NodeJS.ReadableStream,
+  onProgress: (downloadedBytes: number) => void,
+): Promise<Buffer> => new Promise(
   (resolve, reject) => {
-    const buffer = [];
-    stream.on('data', (chunk) => buffer.push(chunk));
+    const buffer: Buffer[] = [];
+    stream.on('data', (chunk) => {
+      buffer.push(chunk);
+      onProgress(buffer.reduce((total, c) => total + c.length, 0));
+    });
     stream.on('end', () => resolve(Buffer.concat(buffer)));
     stream.on('error', reject);
   },

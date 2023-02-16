@@ -31,6 +31,18 @@ export type AddBookInfoResult = {
   success: Scalars['Boolean'];
 };
 
+export type AddBooksSubscriptionResult = {
+  bookNumber?: Maybe<Scalars['String']>;
+  type: AddBooksSubscriptionType;
+};
+
+export const AddBooksSubscriptionType = {
+  Extracting: 'Extracting',
+  Moving: 'Moving',
+  Uploading: 'Uploading'
+} as const;
+
+export type AddBooksSubscriptionType = typeof AddBooksSubscriptionType[keyof typeof AddBooksSubscriptionType];
 export type Auth0 = {
   __typename?: 'Auth0';
   clientId: Scalars['String'];
@@ -167,6 +179,13 @@ export const EditType = {
 } as const;
 
 export type EditType = typeof EditType[keyof typeof EditType];
+export type ExtractingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
+  __typename?: 'ExtractingAddBooksSubscriptionResult';
+  bookNumber?: Maybe<Scalars['String']>;
+  progressPercent: Scalars['Int'];
+  type: AddBooksSubscriptionType;
+};
+
 export type Genre = {
   __typename?: 'Genre';
   invisible: Scalars['Boolean'];
@@ -188,6 +207,14 @@ export type InputRead = {
   infoId: Scalars['ID'];
   page: Scalars['Int'];
   updatedAt: Scalars['String'];
+};
+
+export type MovingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
+  __typename?: 'MovingAddBooksSubscriptionResult';
+  bookNumber?: Maybe<Scalars['String']>;
+  movedPageCount: Scalars['Int'];
+  totalPageCount: Scalars['Int'];
+  type: AddBooksSubscriptionType;
 };
 
 export type Mutation = {
@@ -381,7 +408,7 @@ export const SplitType = {
 export type SplitType = typeof SplitType[keyof typeof SplitType];
 export type Subscription = {
   __typename?: 'Subscription';
-  addBooks: Scalars['String'];
+  addBooks: AddBooksSubscriptionResult;
   bulkEditPage: Scalars['String'];
 };
 
@@ -400,6 +427,13 @@ export type UploadEditAction = {
   pageIndex: Scalars['Int'];
 };
 
+export type UploadingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
+  __typename?: 'UploadingAddBooksSubscriptionResult';
+  bookNumber?: Maybe<Scalars['String']>;
+  downloadedBytes: Scalars['Int'];
+  type: AddBooksSubscriptionType;
+};
+
 export type AddBooksMutationVariables = Exact<{
   id: Scalars['ID'];
   books: Array<InputBook> | InputBook;
@@ -413,7 +447,7 @@ export type AddBooksProgressSubscriptionVariables = Exact<{
 }>;
 
 
-export type AddBooksProgressSubscription = { __typename?: 'Subscription', addBooks: string };
+export type AddBooksProgressSubscription = { __typename?: 'Subscription', addBooks: { __typename?: 'ExtractingAddBooksSubscriptionResult', progressPercent: number, type: AddBooksSubscriptionType, bookNumber?: string | null } | { __typename?: 'MovingAddBooksSubscriptionResult', movedPageCount: number, totalPageCount: number, type: AddBooksSubscriptionType, bookNumber?: string | null } | { __typename?: 'UploadingAddBooksSubscriptionResult', downloadedBytes: number, type: AddBooksSubscriptionType, bookNumber?: string | null } };
 
 export type AddCompressBookMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -652,7 +686,20 @@ export type AddBooksMutationResult = Apollo.MutationResult<AddBooksMutation>;
 export type AddBooksMutationOptions = Apollo.BaseMutationOptions<AddBooksMutation, AddBooksMutationVariables>;
 export const AddBooksProgressDocument = gql`
     subscription addBooksProgress($id: ID!) {
-  addBooks(id: $id)
+  addBooks(id: $id) {
+    type
+    bookNumber
+    ... on UploadingAddBooksSubscriptionResult {
+      downloadedBytes
+    }
+    ... on ExtractingAddBooksSubscriptionResult {
+      progressPercent
+    }
+    ... on MovingAddBooksSubscriptionResult {
+      movedPageCount
+      totalPageCount
+    }
+  }
 }
     `;
 

@@ -1,3 +1,4 @@
+/* eslint no-underscore-dangle: ["error", { "allow": ["__resolveType"] }] */
 import path from 'path';
 import { generateId } from '@server/database/models/Id';
 import { Book as BookDBModel } from '@server/database/models/Book';
@@ -9,6 +10,8 @@ import {
   Resolvers,
   ResultWithBookResults,
   BookResolvers,
+  AddBooksSubscriptionType,
+  ResolversParentTypes,
 } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
@@ -20,9 +23,31 @@ import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDa
 import { StorageDataManager, withTemporaryFolder } from '@server/storage/StorageDataManager';
 import { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
 
+type StrictAddBooksSubscriptionResult<
+  EnumType = typeof AddBooksSubscriptionType,
+  ResolversType extends Record<string, unknown> = ResolversParentTypes,
+  ResultTypeName extends keyof ResolversType = 'AddBooksSubscriptionResult',
+> = {
+  [K in keyof EnumType]: K extends string ? ResultTypeName extends string
+    ? {
+    type: EnumType[K];
+  } & (
+    ResolversType[ResultTypeName] extends infer U
+      ? U extends { __typename?: `${K}${ResultTypeName}` }
+        ? { type: EnumType[K] } & U
+        : never
+      : never
+    )
+    : never : never;
+}[keyof EnumType];
+
 const throttleMs = 500;
 
 const pubsub = new PubSub();
+const publishAddBooksSubscription = (
+  infoId: string,
+  result: StrictAddBooksSubscriptionResult,
+) => pubsub.publish(SubscriptionKeys.ADD_BOOKS, { id: infoId, addBooks: result });
 
 export const resolvers: Resolvers & {
   Book: StrictResolver<BookGQLModel, BookDBModel, BookResolvers>
@@ -58,6 +83,7 @@ export const resolvers: Resolvers & {
         books,
       },
     ) => asyncMap(books, async (book) => {
+      const publishAddBooksSubscriptionThrottle = throttle(publishAddBooksSubscription, throttleMs);
       const bookId = generateId();
       const bookInfo = await BookDataManager.getBookInfo(infoId);
       if (!bookInfo) {
@@ -68,32 +94,46 @@ export const resolvers: Resolvers & {
         };
       }
 
-      const archiveFile = await GQLUtil.getArchiveFile(book.file, book.path);
+      await publishAddBooksSubscriptionThrottle(infoId, {
+        type: AddBooksSubscriptionType.Uploading,
+        bookNumber: book.number,
+        downloadedBytes: 0,
+      });
+      const archiveFile = await GQLUtil.getArchiveFile(
+        (bytes) => publishAddBooksSubscriptionThrottle(infoId, {
+          type: AddBooksSubscriptionType.Uploading,
+          bookNumber: book.number,
+          downloadedBytes: bytes,
+        }),
+        book.file,
+        book.path,
+      );
       if (archiveFile.success !== true) {
         return archiveFile;
       }
 
-      await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-        id: infoId,
-        addBooks: `Extract Book (${book.number}) ...`,
+      await publishAddBooksSubscriptionThrottle(infoId, {
+        type: AddBooksSubscriptionType.Extracting,
+        bookNumber: book.number,
+        progressPercent: 0,
       });
       // extract
       return withTemporaryFolder(async (_, tempPath) => {
-        const progressListener = (
-          percent: number,
-        ) => pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-          id: infoId,
-          addBooks: `Extract Book (${book.number}) ${percent}%`,
-        });
         await GQLUtil.extractCompressFile(
           tempPath,
           archiveFile.data,
-          throttle(progressListener, throttleMs),
+          (percent: number) => publishAddBooksSubscriptionThrottle(infoId, {
+            type: AddBooksSubscriptionType.Extracting,
+            bookNumber: book.number,
+            progressPercent: percent,
+          }),
         )
           .catch((err) => Promise.reject(err));
-        await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-          id: infoId,
-          addBooks: `Move Book (${book.number}) ...`,
+        await publishAddBooksSubscriptionThrottle(infoId, {
+          type: AddBooksSubscriptionType.Moving,
+          bookNumber: book.number,
+          movedPageCount: 0,
+          totalPageCount: 0,
         });
 
         return GQLUtil.addBookFromLocalPath(
@@ -101,12 +141,12 @@ export const resolvers: Resolvers & {
           infoId,
           bookId,
           book.number,
-          throttle((current, total) => {
-            pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-              id: infoId,
-              addBooks: `Move Book (${book.number}) ${current}/${total}`,
-            });
-          }, throttleMs),
+          (current, total) => publishAddBooksSubscriptionThrottle(infoId, {
+            type: AddBooksSubscriptionType.Moving,
+            bookNumber: book.number,
+            movedPageCount: current,
+            totalPageCount: total,
+          }),
         );
       });
     }),
@@ -118,27 +158,36 @@ export const resolvers: Resolvers & {
         path: localPath,
       },
     ) => {
-      const archiveFile = await GQLUtil.getArchiveFile(compressBooks, localPath);
+      const publishAddBooksSubscriptionThrottle = throttle(publishAddBooksSubscription, throttleMs);
+      await publishAddBooksSubscriptionThrottle(infoId, {
+        type: AddBooksSubscriptionType.Uploading,
+        downloadedBytes: 0,
+      });
+      const archiveFile = await GQLUtil.getArchiveFile(
+        (bytes) => publishAddBooksSubscriptionThrottle(infoId, {
+          type: AddBooksSubscriptionType.Uploading,
+          downloadedBytes: bytes,
+        }),
+        compressBooks,
+        localPath,
+      );
       if (archiveFile.success === false) {
         return archiveFile as unknown as ResultWithBookResults;
       }
 
-      await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-        id: infoId,
-        addBooks: 'Extract Book...',
+      await publishAddBooksSubscriptionThrottle(infoId, {
+        type: AddBooksSubscriptionType.Extracting,
+        progressPercent: 0,
       });
 
       return withTemporaryFolder(async (_, tempPath) => {
         await GQLUtil.extractCompressFile(
           tempPath,
           archiveFile.data,
-          throttle(
-            (percent) => pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-              id: infoId,
-              addBooks: `Extract Book ${percent}%`,
-            }),
-            throttleMs,
-          ),
+          (percent) => publishAddBooksSubscriptionThrottle(infoId, {
+            type: AddBooksSubscriptionType.Extracting,
+            progressPercent: percent,
+          }),
         );
 
         const {
@@ -153,9 +202,10 @@ export const resolvers: Resolvers & {
           };
         }
 
-        await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-          id: infoId,
-          addBooks: 'Move Book...',
+        await publishAddBooksSubscriptionThrottle(infoId, {
+          type: AddBooksSubscriptionType.Moving,
+          movedPageCount: 0,
+          totalPageCount: 0,
         });
 
         const addedNums = [];
@@ -173,9 +223,11 @@ export const resolvers: Resolvers & {
             nums = `[DUP]${nums}: ${p}`;
           }
 
-          await pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-            id: infoId,
-            addBooks: `Move Book (${nums}) ...`,
+          await publishAddBooksSubscriptionThrottle(infoId, {
+            type: AddBooksSubscriptionType.Moving,
+            bookNumber: nums,
+            movedPageCount: 0,
+            totalPageCount: 0,
           });
 
           addedNums.push(nums);
@@ -184,15 +236,14 @@ export const resolvers: Resolvers & {
             infoId,
             generateId(),
             nums,
-            throttle(
-              (current, total) => {
-                pubsub.publish(SubscriptionKeys.ADD_BOOKS, {
-                  id: infoId,
-                  addBooks: `Move Book (${nums}) ${current}/${total}`,
-                });
-              },
-              throttleMs,
-            ),
+            (current, total) => {
+              publishAddBooksSubscriptionThrottle(infoId, {
+                type: AddBooksSubscriptionType.Moving,
+                bookNumber: nums,
+                movedPageCount: current,
+                totalPageCount: total,
+              });
+            },
           );
         });
         return {
@@ -263,7 +314,21 @@ export const resolvers: Resolvers & {
   Book: {
     pages: ({ pageCount }) => pageCount,
     thumbnail: ({ thumbnailPage }) => thumbnailPage,
-    updatedAt: ({ updatedAt }) => updatedAt.getTime().toString(),
+    updatedAt: ({ updatedAt }) => `${updatedAt.getTime()}`,
     info: async ({ id: bookId }) => BookDataManager.getBookInfoFromBookId(bookId),
+  },
+  AddBooksSubscriptionResult: {
+    __resolveType(result) {
+      switch (result.type) {
+        case 'Extracting':
+          return 'ExtractingAddBooksSubscriptionResult';
+        case 'Moving':
+          return 'MovingAddBooksSubscriptionResult';
+        case 'Uploading':
+          return 'UploadingAddBooksSubscriptionResult';
+        default:
+          return null;
+      }
+    },
   },
 };

@@ -11,7 +11,7 @@ export type AcceptType = 'archive' | 'image';
 interface FileFieldProps {
   acceptType?: AcceptType;
   file?: File;
-  onChange?: Function;
+  onChange?: (File) => void;
   style?: React.CSSProperties;
 }
 

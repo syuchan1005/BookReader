@@ -137,6 +137,7 @@ const GQLUtil = {
     );
   },
   async getArchiveFile(
+    onProgress: (downloadedBytes: number) => void,
     file?: Scalars['Upload'],
     localPath?: string,
   ): Promise<({ success: false } & Result) | { success: true, data: Buffer }> {
@@ -159,8 +160,9 @@ const GQLUtil = {
         let buffer: Buffer;
         if (localPath) {
           buffer = await StorageDataManager.getUserStoredArchive(localPath);
+          onProgress(0);
         } else if (file) {
-          buffer = await streamToBuffer((await file).createReadStream());
+          buffer = await streamToBuffer((await file).createReadStream(), onProgress);
         }
 
         if (!buffer) {

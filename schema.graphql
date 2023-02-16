@@ -53,7 +53,7 @@ type Mutation {
 }
 
 type Subscription {
-    addBooks(id: ID!): String!
+    addBooks(id: ID!): AddBooksSubscriptionResult!
 
     bulkEditPage(id: ID!): String!
 }
@@ -219,6 +219,36 @@ enum EditType {
 
     # single operations
     HStack
+}
+
+interface AddBooksSubscriptionResult {
+    type: AddBooksSubscriptionType!
+    bookNumber: String
+}
+
+enum AddBooksSubscriptionType {
+    Uploading,
+    Extracting,
+    Moving
+}
+
+type UploadingAddBooksSubscriptionResult implements AddBooksSubscriptionResult {
+    type: AddBooksSubscriptionType!
+    bookNumber: String
+    downloadedBytes: Int!
+}
+
+type ExtractingAddBooksSubscriptionResult implements AddBooksSubscriptionResult {
+    type: AddBooksSubscriptionType!
+    bookNumber: String
+    progressPercent: Int!
+}
+
+type MovingAddBooksSubscriptionResult implements AddBooksSubscriptionResult {
+    type: AddBooksSubscriptionType!
+    bookNumber: String
+    movedPageCount: Int!
+    totalPageCount: Int!
 }
 
 input EditAction {
