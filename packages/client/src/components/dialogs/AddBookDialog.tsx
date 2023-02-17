@@ -187,14 +187,42 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       id: subscriptionId,
     },
   });
-
-  const title = React.useMemo(() => {
-    if (subscriptionData) {
-      return `${subscriptionData.addBooks}`;
+  const subscriptionDataText = React.useMemo(() => {
+    const addBooksSubscriptionResult = subscriptionData
+      ?.addBooks as StrictAddBooksSubscriptionResult;
+    if (!addBooksSubscriptionResult) {
+      return '';
     }
-    return '';
-  }, [subscriptionData]);
-  useTitle(title, {
+    let bookNumber = '';
+    if (addBooksSubscriptionResult?.bookNumber) {
+      bookNumber = ` (${addBooksSubscriptionResult?.bookNumber})`;
+    }
+    switch (addBooksSubscriptionResult?.type) {
+      case 'Moving': {
+        const progressText = addBooksSubscriptionResult.totalPageCount > 0
+          ? ` ${addBooksSubscriptionResult.movedPageCount}/${addBooksSubscriptionResult.totalPageCount}`
+          : '';
+        return `Move Book${bookNumber}${progressText}`;
+      }
+      case 'Extracting': {
+        const progressText = addBooksSubscriptionResult.progressPercent > 0
+          ? ` ${addBooksSubscriptionResult.progressPercent}%`
+          : '';
+        return `Extract Book${bookNumber}${progressText}`;
+      }
+      case 'Uploading': {
+        const progress = addBooksSubscriptionResult.downloadedBytes / uploadingFileBytes;
+        const progressText = addBooksSubscriptionResult.downloadedBytes > 0
+          ? ` ${Math.floor(progress * 100)}%`
+          : '';
+        return `Extract Book${bookNumber}${progressText}`;
+      }
+      default:
+        return 'Uploading';
+    }
+  }, [subscriptionData, uploadingFileBytes]);
+
+  useTitle(subscriptionDataText, {
     restoreOnUnmount: true,
     inheritTitle: true,
   });
@@ -272,45 +300,11 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
         if (loading) {
-          let message;
-          const addBooksSubscriptionResult = subscriptionData
-            ?.addBooks as StrictAddBooksSubscriptionResult;
-          let bookNumber = '';
-          if (addBooksSubscriptionResult?.bookNumber) {
-            bookNumber = ` (${addBooksSubscriptionResult?.bookNumber})`;
-          }
-          switch (addBooksSubscriptionResult?.type) {
-            case 'Moving': {
-              const progressText = addBooksSubscriptionResult.totalPageCount > 0
-                ? ` ${addBooksSubscriptionResult.movedPageCount}/${addBooksSubscriptionResult.totalPageCount}`
-                : '';
-              message = `Move Book${bookNumber}${progressText}`;
-              break;
-            }
-            case 'Extracting': {
-              const progressText = addBooksSubscriptionResult.progressPercent > 0
-                ? ` ${addBooksSubscriptionResult.progressPercent}%`
-                : '';
-              message = `Extract Book${bookNumber}${progressText}`;
-              break;
-            }
-            case 'Uploading': {
-              const progress = addBooksSubscriptionResult.downloadedBytes / uploadingFileBytes;
-              const progressText = addBooksSubscriptionResult.downloadedBytes > 0
-                ? ` ${Math.floor(progress * 100)}%`
-                : '';
-              message = `Extract Book${bookNumber}${progressText}`;
-              break;
-            }
-            default:
-              message = 'Uploading';
-              break;
-          }
           return (
             <DialogContent className={classes.addBookSubscription}>
               <CircularProgress color="secondary" />
               <div className={classes.progressMessage}>
-                {message}
+                {subscriptionDataText}
               </div>
             </DialogContent>
           );
