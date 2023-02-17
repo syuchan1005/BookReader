@@ -275,20 +275,23 @@ const AddBookDialog = (props: AddBookDialogProps) => {
           let message;
           const addBooksSubscriptionResult = subscriptionData
             ?.addBooks as StrictAddBooksSubscriptionResult;
-          const bookNumber = addBooksSubscriptionResult?.bookNumber || '';
+          let bookNumber = '';
+          if (addBooksSubscriptionResult?.bookNumber) {
+            bookNumber = ` (${addBooksSubscriptionResult?.bookNumber})`;
+          }
           switch (addBooksSubscriptionResult?.type) {
             case 'Moving': {
               const progressText = addBooksSubscriptionResult.totalPageCount > 0
                 ? ` ${addBooksSubscriptionResult.movedPageCount}/${addBooksSubscriptionResult.totalPageCount}`
                 : '';
-              message = `Move Book (${bookNumber})${progressText}`;
+              message = `Move Book${bookNumber}${progressText}`;
               break;
             }
             case 'Extracting': {
               const progressText = addBooksSubscriptionResult.progressPercent > 0
                 ? ` ${addBooksSubscriptionResult.progressPercent}%`
                 : '';
-              message = `Extract Book (${bookNumber})${progressText}`;
+              message = `Extract Book${bookNumber}${progressText}`;
               break;
             }
             case 'Uploading': {
@@ -296,7 +299,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
               const progressText = addBooksSubscriptionResult.downloadedBytes > 0
                 ? ` ${Math.floor(progress * 100)}%`
                 : '';
-              message = `Extract Book (${bookNumber})${progressText}`;
+              message = `Extract Book${bookNumber}${progressText}`;
               break;
             }
             default:
