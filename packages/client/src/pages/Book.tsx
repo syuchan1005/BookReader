@@ -667,4 +667,4 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   );
 };
 
-export default React.memo(Book);
+export default Book;

@@ -65,4 +65,4 @@ const Top = () => {
   );
 };
 
-export default React.memo(Top);
+export default Top;

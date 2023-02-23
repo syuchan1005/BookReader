@@ -318,7 +318,7 @@ interface AddItemListItemProps {
   onAdded: (editType: EditType) => void;
 }
 
-export const AddItemListItem = React.memo((props: AddItemListItemProps) => {
+export const AddItemListItem = (props: AddItemListItemProps) => {
   const { onAdded } = props;
   const [anchorEl, setAnchorEl] = React.useState(null);
   return (
@@ -343,7 +343,7 @@ export const AddItemListItem = React.memo((props: AddItemListItemProps) => {
       </Menu>
     </>
   );
-});
+};
 
 const getPadding = async (
   bookId: string,
@@ -440,99 +440,95 @@ interface AddTemplateListItemProps {
   onAdded: (editTypeContents: EditTypeContent[]) => void;
 }
 
-export const AddTemplateListItem = React.memo(
-  (props: AddTemplateListItemProps) => {
-    const {
-      bookId,
-      maxPage,
-      onAdded,
-    } = props;
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const [selectedTemplate, setSelectedTemplate] = React.useState(null);
-    const [options, setOptions] = React.useState(null);
-    const handleClose = React.useCallback(() => {
-      setSelectedTemplate(null);
-      setOptions(null);
-      setAnchorEl(null);
-    }, []);
-    return (
-      <>
-        <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
-          <ListItemIcon><Icon>add</Icon></ListItemIcon>
-          <ListItemText primary="Use Template" />
-        </ListItem>
-        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
-          {Templates.map((template) => (
-            <MenuItem
-              key={template.name}
-              onClick={async () => {
-                const initOptions = template.initOptions(maxPage);
-                if (Object.keys(initOptions).length === 0) {
-                  const editContents = await template.exec(bookId, maxPage, initOptions);
-                  onAdded(editContents);
-                  handleClose();
-                } else {
-                  setSelectedTemplate(template);
-                  setOptions({ ...initOptions });
-                }
-              }}
-            >
-              {template.name}
-            </MenuItem>
-          ))}
-        </Menu>
-        <Dialog open={selectedTemplate != null && options !== null}>
-          <DialogTitle>Template options</DialogTitle>
-          <DialogContent>
-            {Object.keys(options || {})
-              .map((key) => (
-                <TextField
-                  key={key}
-                  margin="dense"
-                  fullWidth
-                  variant="standard"
-                  label={key}
-                  type="number"
-                  value={options[key]}
-                  onChange={(e) => setOptions({
-                    ...options,
-                    [key]: e.target.value,
-                  })}
-                />
-              ))}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button
-              onClick={async () => {
-                const editContents = await selectedTemplate.exec(bookId, maxPage, options);
+export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
+  const {
+    bookId,
+    maxPage,
+    onAdded,
+  } = props;
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedTemplate, setSelectedTemplate] = React.useState(null);
+  const [options, setOptions] = React.useState(null);
+  const handleClose = React.useCallback(() => {
+    setSelectedTemplate(null);
+    setOptions(null);
+    setAnchorEl(null);
+  }, []);
+  return (
+    <>
+      <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
+        <ListItemIcon><Icon>add</Icon></ListItemIcon>
+        <ListItemText primary="Use Template" />
+      </ListItem>
+      <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
+        {Templates.map((template) => (
+          <MenuItem
+            key={template.name}
+            onClick={async () => {
+              const initOptions = template.initOptions(maxPage);
+              if (Object.keys(initOptions).length === 0) {
+                const editContents = await template.exec(bookId, maxPage, initOptions);
                 onAdded(editContents);
                 handleClose();
-              }}
-            >
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
-    );
-  },
-);
+              } else {
+                setSelectedTemplate(template);
+                setOptions({ ...initOptions });
+              }
+            }}
+          >
+            {template.name}
+          </MenuItem>
+        ))}
+      </Menu>
+      <Dialog open={selectedTemplate != null && options !== null}>
+        <DialogTitle>Template options</DialogTitle>
+        <DialogContent>
+          {Object.keys(options || {})
+            .map((key) => (
+              <TextField
+                key={key}
+                margin="dense"
+                fullWidth
+                variant="standard"
+                label={key}
+                type="number"
+                value={options[key]}
+                onChange={(e) => setOptions({
+                  ...options,
+                  [key]: e.target.value,
+                })}
+              />
+            ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button
+            onClick={async () => {
+              const editContents = await selectedTemplate.exec(bookId, maxPage, options);
+              onAdded(editContents);
+              handleClose();
+            }}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
 
 interface ActionListItemProps extends ListItemProps {
   ref: React.ForwardedRef<unknown>;
   editType?: EditType;
 }
 
-export const ActionListItem = React.memo(
-  React.forwardRef(
-    (props: ActionListItemProps, ref) => {
-      const {
-        editType,
-        ...forwardProps
-      } = props;
-      const Item = ListItems[editType] ?? UnknownListItem;
-      return <Item ref={ref} {...forwardProps} />;
-    },
-  ),
+export const ActionListItem = React.forwardRef(
+  (props: ActionListItemProps, ref) => {
+    const {
+      editType,
+      ...forwardProps
+    } = props;
+    const Item = ListItems[editType] ?? UnknownListItem;
+    return <Item ref={ref} {...forwardProps} />;
+  },
 );

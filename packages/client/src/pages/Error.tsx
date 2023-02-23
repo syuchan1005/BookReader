@@ -76,4 +76,4 @@ const Error = (props) => {
   );
 };
 
-export default React.memo(Error);
+export default Error;

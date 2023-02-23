@@ -125,4 +125,4 @@ const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
   );
 };
 
-export default React.memo(DownloadBookInfoDialog);
+export default DownloadBookInfoDialog;

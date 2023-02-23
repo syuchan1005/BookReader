@@ -295,4 +295,4 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   );
 };
 
-export default React.memo(HomeHeaderMenu);
+export default HomeHeaderMenu;

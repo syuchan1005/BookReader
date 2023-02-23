@@ -63,4 +63,4 @@ const BookShelf = () => {
   );
 };
 
-export default React.memo(BookShelf);
+export default BookShelf;

@@ -195,4 +195,4 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
   );
 };
 
-export default React.memo(EditPagesDialog);
+export default EditPagesDialog;

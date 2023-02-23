@@ -335,4 +335,4 @@ const Book = (props: BookProps) => {
   );
 };
 
-export default React.memo(Book);
+export default Book;

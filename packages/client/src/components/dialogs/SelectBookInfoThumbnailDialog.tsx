@@ -133,4 +133,4 @@ const SelectBookInfoThumbnailDialog = (
   );
 };
 
-export default React.memo(SelectBookInfoThumbnailDialog);
+export default SelectBookInfoThumbnailDialog;

@@ -66,4 +66,4 @@ const CropImageDialog = (props: CropImageDialogProps) => {
   );
 };
 
-export default React.memo(CropImageDialog);
+export default CropImageDialog;

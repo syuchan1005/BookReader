@@ -280,4 +280,4 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   );
 };
 
-export default React.memo(SearchAndMenuHeader);
+export default SearchAndMenuHeader;

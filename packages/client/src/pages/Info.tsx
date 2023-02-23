@@ -358,4 +358,4 @@ const Info = (props: InfoProps) => {
   );
 };
 
-export default React.memo(Info);
+export default Info;

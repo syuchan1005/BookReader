@@ -90,4 +90,4 @@ const IntRangeInputField = (props: IntRangeInputFieldProps) => {
   );
 };
 
-export default React.memo(IntRangeInputField);
+export default IntRangeInputField;

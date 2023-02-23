@@ -76,4 +76,4 @@ const FileField = (props: FileFieldProps) => {
   );
 };
 
-export default React.memo(FileField);
+export default FileField;

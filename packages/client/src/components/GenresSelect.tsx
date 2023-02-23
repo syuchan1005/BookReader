@@ -143,4 +143,4 @@ const GenresSelect = (props: GenresSelectProps) => {
   );
 };
 
-export default React.memo(GenresSelect);
+export default GenresSelect;

@@ -431,4 +431,4 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   );
 };
 
-export default React.memo(AddBookDialog);
+export default AddBookDialog;

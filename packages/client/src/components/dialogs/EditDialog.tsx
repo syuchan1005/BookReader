@@ -116,4 +116,4 @@ const EditDialog = (props: EditDialogProps) => {
   );
 };
 
-export default React.memo(EditDialog);
+export default EditDialog;

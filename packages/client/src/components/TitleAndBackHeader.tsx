@@ -87,4 +87,4 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   );
 };
 
-export default React.memo(TitleAndBackHeader);
+export default TitleAndBackHeader;

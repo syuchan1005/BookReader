@@ -67,4 +67,4 @@ const DropZone = (props: FileFieldProps) => {
   );
 };
 
-export default React.memo(DropZone);
+export default DropZone;

@@ -197,4 +197,4 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
   );
 };
 
-export default React.memo(SelectBookHeader);
+export default SelectBookHeader;

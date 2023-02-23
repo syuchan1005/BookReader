@@ -222,4 +222,4 @@ const BookPageImage = (props: BookPageImageProps) => {
   );
 };
 
-export default React.memo(BookPageImage);
+export default BookPageImage;

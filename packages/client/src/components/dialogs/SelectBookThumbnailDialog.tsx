@@ -152,4 +152,4 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
   );
 };
 
-export default React.memo(SelectBookThumbnailDialog);
+export default SelectBookThumbnailDialog;

@@ -406,4 +406,4 @@ const BookInfo = (props: BookInfoProps) => {
   );
 };
 
-export default React.memo(BookInfo);
+export default BookInfo;

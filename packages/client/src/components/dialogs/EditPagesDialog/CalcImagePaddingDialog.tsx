@@ -251,4 +251,4 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
   );
 };
 
-export default React.memo(CalcImagePaddingDialog);
+export default CalcImagePaddingDialog;

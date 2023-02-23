@@ -31,4 +31,4 @@ const ColorTile = ({ color, num = 500, marginLeft }: ColorTileProps) => {
   );
 };
 
-export default React.memo(ColorTile);
+export default ColorTile;

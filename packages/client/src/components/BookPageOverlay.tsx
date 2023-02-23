@@ -316,4 +316,4 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   );
 };
 
-export default React.memo(BookPageOverlay);
+export default BookPageOverlay;

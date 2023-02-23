@@ -145,4 +145,4 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
   );
 };
 
-export default React.memo(AddBookInfoDialog);
+export default AddBookInfoDialog;
