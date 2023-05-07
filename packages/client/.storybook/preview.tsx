@@ -1,6 +1,6 @@
 // @ts-ignore
 import React from 'react';
-import { DecoratorFn } from '@storybook/react';
+import { Decorator } from '@storybook/react';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme, StyledEngineProvider } from '@mui/material/styles';
 import { RecoilRoot } from 'recoil';
@@ -17,7 +17,7 @@ export const parameters = {
 
 const theme = createTheme();
 
-export const decorators: Array<DecoratorFn> = [
+export const decorators: Array<Decorator> = [
   (Story) => (
     <RecoilRoot>
       <Story />
