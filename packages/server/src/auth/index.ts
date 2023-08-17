@@ -26,18 +26,18 @@ export const init = () => {
 export const initRoutes = (app: Express) => {
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use('/auth', createAuthRouter());
+  app.use('/auth', createAuthRouter('/auth'));
 };
 
-const createAuthRouter = () => {
+const createAuthRouter = (path: String) => {
   const router = express.Router();
   router.get('/', (req, res) => {
     // @ts-ignore
     const isAuthenticated = req.session.passport !== undefined;
     if (!oidcConfig || isAuthenticated) {
-      res.sendStatus(202);
+      res.redirect(200, '/');
     } else {
-      res.sendStatus(401);
+      res.redirect(401, `${path}/oidc`);
     }
   });
 
@@ -71,10 +71,14 @@ const createAuthRouter = () => {
   return router;
 };
 
-export const isAuthenticatedMiddleware = (req, res, next) => {
+export const isAuthenticatedMiddleware = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+): void => {
   if (!oidcConfig || req.isAuthenticated()) {
     return next();
   }
-  res.sendStatus(401);
+  res.redirect('/auth');
   return undefined;
 };

@@ -97,14 +97,13 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
   initAuthRoutes(app);
 
   const requireAuthRouter = express.Router();
-  requireAuthRouter.use(isAuthenticatedMiddleware);
   StorageDataManager.getStaticFolders().forEach((folderPath) => {
-    requireAuthRouter.use(express.static(folderPath));
+    requireAuthRouter.use(isAuthenticatedMiddleware, express.static(folderPath));
   });
 
   /* image serve with options in image name */
   const bookImagePathRegex = new RegExp(`(\\d+)(_(\\d+)x(\\d+))?\\.(${availableImageExtensions.join('|')})$`);
-  requireAuthRouter.get('/book/:bookId/:fileName', async (req, res, next) => {
+  requireAuthRouter.get('/book/:bookId/:fileName', isAuthenticatedMiddleware, async (req, res, next) => {
     const match = req.params.fileName.match(bookImagePathRegex);
     if (!match) {
       await next();
@@ -140,7 +139,7 @@ import { init as initAuth, initRoutes as initAuthRoutes, isAuthenticatedMiddlewa
 
   await BookDataManager.init();
 
-  await graphql.middleware(requireAuthRouter, GraphQLUploadExpress);
+  await graphql.middleware(requireAuthRouter, GraphQLUploadExpress, isAuthenticatedMiddleware);
 
   app.use(requireAuthRouter);
 

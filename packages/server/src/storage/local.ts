@@ -4,7 +4,6 @@ import { join, dirname } from 'path';
 
 import {
   availableImageExtensions,
-  availableImageExtensionWithContentType,
   defaultStoredImageExtension,
   optionalImageExtensions,
 } from '@syuchan1005/book-reader-common';

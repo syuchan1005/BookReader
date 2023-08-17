@@ -54,10 +54,11 @@ export default class GraphQL {
    * @param app
    * @param uploadMiddleware Its workaround that import the esm module from cjs.
    */
-  async middleware(app, uploadMiddleware) {
+  async middleware(app, uploadMiddleware, preMiddleware) {
     await this.apolloServer.start();
     app.use(
       '/graphql',
+      preMiddleware,
       json(),
       uploadMiddleware(),
       expressMiddleware(this.apolloServer),
