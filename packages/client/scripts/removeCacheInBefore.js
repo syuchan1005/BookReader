@@ -25,31 +25,29 @@ const asyncForEach = async (arr, callback) => {
 const readdirRecursively = async (dir, files = []) => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
-  dirents.forEach((dirent) => {
+  for (const dirent of dirents) {
     if (dirent.isDirectory()) dirs.push(`${dir}/${dirent.name}`);
     if (dirent.isFile()) files.push(`${dir}/${dirent.name}`);
-  });
-  await asyncForEach(dirs, async (d) => {
+  }
+  for (const dir of dirs) {
     files = await readdirRecursively(d, files);
-  });
+  }
   return Promise.resolve(files);
 };
 
 (async () => {
   const files = await readdirRecursively('./storage');
 
-  await asyncForEach(
-    files
-      .filter((s) => s.includes('_200x'))
-      .map((s) => [
-        s,
-        s.replace('/storage', '/storage/cache').replace('_200x', '_200x0'),
-      ]),
-    async (s) => {
-      await mkdirpIfNotExists(path.join(s[1], '..'));
-      await fs.rename(s[0], s[1]);
-    },
-  );
+  const cachableFiles = files
+    .filter((s) => s.includes('_200x'))
+    .map((s) => [
+      s,
+      s.replace('/storage', '/storage/cache').replace('_200x', '_200x0'),
+    ]);
+  for (const file of cachableFiles) {
+    await mkdirpIfNotExists(path.join(file[1], '..'));
+    await fs.rename(file[0], file[1]);
+  }
 
   console.log('==END==');
 })();

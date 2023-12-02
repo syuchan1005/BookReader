@@ -264,9 +264,9 @@ export class PrismaBookDataManager implements IBookDataManager {
         })
         .then((books) => {
           const result = {};
-          books.forEach((info) => {
+          for (const info of books) {
             result[info.thumbnailById] = info;
-          });
+          }
           return result;
         });
       return infoIds.map((id) =>
@@ -313,9 +313,9 @@ export class PrismaBookDataManager implements IBookDataManager {
       })
       .then((bookInfos) => {
         const result = {};
-        bookInfos.forEach((info) => {
+        for (const info of bookInfos) {
           result[info.id] = info?.genres?.map(({ genre }) => genre);
-        });
+        }
         return result;
       });
     return infoIds.map((id) => genreMap[id]);

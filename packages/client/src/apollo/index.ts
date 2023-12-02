@@ -48,7 +48,7 @@ const uniqueRelayStylePagination = <T = any>(
         }),
       );
       const filteredEdges: { cursor: string; node: T }[] = [];
-      edges.forEach((edge) => {
+      for (const edge of edges) {
         const index = filteredEdges.findIndex(
           (e) => e.node[uniqueKey] === edge.node[uniqueKey],
         );
@@ -60,7 +60,7 @@ const uniqueRelayStylePagination = <T = any>(
         } else {
           filteredEdges.push(edge);
         }
-      });
+      }
       return {
         ...mergeResult,
         edges: filteredEdges,
@@ -114,11 +114,11 @@ export const apolloClient = new ApolloClient({
         console.log(message);
       };
       if (graphQLErrors) {
-        graphQLErrors.forEach(({ message, locations, path }) =>
+        for (const { message, locations, path } of graphQLErrors) {
           log(
             `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-          ),
-        );
+          );
+        }
       }
       if (networkError) {
         log(`[Network error]: ${networkError}`);

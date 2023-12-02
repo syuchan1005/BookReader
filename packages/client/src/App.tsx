@@ -83,10 +83,10 @@ export const commonTheme = {
         return [];
       })
       .reduce((o, props) => {
-        props.forEach(([k, v]) => {
+        for (const [k, v] of props) {
           // @ts-ignore
           o[k] = v;
-        });
+        }
         return o;
       }, {}),
 };

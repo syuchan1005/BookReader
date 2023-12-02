@@ -200,9 +200,9 @@ export class StoreWrapper<T> {
       const tx = this.db.transaction(this.storeName, 'readwrite');
 
       const store = tx.objectStore(this.storeName);
-      keyPathValues.forEach((keyPathValue) => {
+      for (const keyPathValue of keyPathValues) {
         store.delete(keyPathValue);
-      });
+      }
 
       tx.onerror = (e) => reject(e);
       tx.oncomplete = () => resolve();
@@ -313,9 +313,12 @@ export class Database {
       request.onupgradeneeded = (event) => {
         // @ts-ignore
         this._db = event.target.result;
-        UpgradeTask.slice(event.oldVersion + 1, event.newVersion + 1).forEach(
-          (task) => task(this._db, request),
-        );
+        for (const task of UpgradeTask.slice(
+          event.oldVersion + 1,
+          event.newVersion + 1,
+        )) {
+          task(this._db, request);
+        }
       };
       request.onerror = (event) => {
         reject(event);

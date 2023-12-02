@@ -72,8 +72,8 @@ export default class GraphQL {
     });
     useServer({ schema: this.schema }, wsServer);
 
-    ['SIGINT', 'SIGTERM'].forEach((signal) => {
+    for (const signal of ['SIGINT', 'SIGTERM']) {
       process.on(signal, () => wsServer.close());
-    });
+    }
   }
 }

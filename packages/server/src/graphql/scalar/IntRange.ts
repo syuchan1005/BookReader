@@ -5,14 +5,14 @@ import { Kind } from 'graphql/language/kinds';
 export const flatRange = (range: Scalars['IntRange']): number[] => {
   if (!range) return [];
   let arr = [];
-  range.forEach((a) => {
+  for (const a of range) {
     if (Array.isArray(a)) {
       const [max, min] = a[0] > a[1] ? a : [a[1], a[0]];
       arr = [...arr, ...[...Array(max - min + 1).keys()].map((i) => i + min)];
     } else {
       arr.push(a);
     }
-  });
+  }
 
   return arr
     .filter((elem, index, self) => self.indexOf(elem) === index)
@@ -22,14 +22,14 @@ export const flatRange = (range: Scalars['IntRange']): number[] => {
 export const chunkedRange = (range: Scalars['IntRange']): number[][] => {
   if (!range) return [];
   const arr: number[][] = [];
-  range.forEach((a) => {
+  for (const a of range) {
     if (Array.isArray(a)) {
       const [max, min] = a[0] > a[1] ? a : [a[1], a[0]];
       arr.push([...Array(max - min + 1).keys()].map((i) => i + min));
     } else {
       arr.push([a]);
     }
-  });
+  }
   return arr;
 };
 

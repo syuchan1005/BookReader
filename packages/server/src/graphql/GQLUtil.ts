@@ -28,13 +28,13 @@ const readImageFilePathsRecursively = async (
 ): Promise<string[]> => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
-  dirents.forEach((dirent) => {
+  for (const dirent of dirents) {
     if (dirent.isDirectory()) dirs.push(`${dir}/${dirent.name}`);
     if (dirent.isFile()) files.push(`${dir}/${dirent.name}`);
-  });
-  await asyncForEach(dirs, async (d) => {
-    files = await readImageFilePathsRecursively(d, files);
-  });
+  }
+  for (const dir of dirs) {
+    files = await readImageFilePathsRecursively(dir, files);
+  }
   return (
     files
       // TODO: Filter node-sharp not supported types only
@@ -211,8 +211,8 @@ const GQLUtil = {
       });
       const dirs = dirents.filter((d) => d.isDirectory());
       if (dirs.length > 1) {
-        await asyncForEach(dirs, async (d) => {
-          const hasMulti = d.name.match(/(\d+)-(\d+)/);
+        for (const dir of dirs) {
+          const hasMulti = dir.name.match(/(\d+)-(\d+)/);
           if (hasMulti) {
             const min = parseInt(hasMulti[1], 10);
             const max = parseInt(hasMulti[2], 10);
@@ -221,7 +221,7 @@ const GQLUtil = {
                 (index) => index + min,
               );
               const nestFolders = await fs
-                .readdir(path.join(tempBooksFolder, d.name), {
+                .readdir(path.join(tempBooksFolder, dir.name), {
                   withFileTypes: true,
                 })
                 .then((nestDirs) => nestDirs.filter((a) => a.isDirectory()));
@@ -239,14 +239,14 @@ const GQLUtil = {
                   0
               ) {
                 bookFolders.push(
-                  ...nestFolders.map((f) => path.join(d.name, f.name)),
+                  ...nestFolders.map((f) => path.join(dir.name, f.name)),
                 );
                 return;
               }
             }
           }
-          bookFolders.push(d.name);
-        });
+          bookFolders.push(dir.name);
+        }
         break;
       }
       if (dirs.length === 1) {

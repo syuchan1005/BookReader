@@ -133,11 +133,11 @@ const calculateEditActions = (
   initImageEditActions: ImageEditAction[],
 ): ImageEditAction[] => {
   let imageEditActions = [...initImageEditActions];
-  actions.forEach((action) => {
+  for (const action of actions) {
     switch (action.editType) {
       case EditType.Crop: {
         const pageRange = flatRange(action.crop.pageRange);
-        imageEditActions.forEach((imageEditAction, i) => {
+        for(const [i, imageEditAction] of imageEditActions.entries()) {
           if (pageRange.includes(i)) {
             imageEditAction.cropTransforms = [
               ...(imageEditAction.cropTransforms ?? []),
@@ -149,15 +149,15 @@ const calculateEditActions = (
               }),
             ];
           }
-        });
+        }
         break;
       }
       case EditType.Delete: {
         const pageRange = flatRange(action.delete.pageRange);
-        imageEditActions.forEach((imageEditAction, i) => {
+        for(const [i, imageEditAction] of imageEditActions.entries()) {
           imageEditAction.willDelete =
             imageEditAction.willDelete || pageRange.includes(i);
-        });
+        }
         break;
       }
       case EditType.Put: {
@@ -247,10 +247,10 @@ const calculateEditActions = (
         const chunkedPageRange: [number, number][] = inputChunkedPageRange
           .flatMap((pages) => lodashChunk(pages, 2))
           .filter((arr) => arr.length === 2);
-        chunkedPageRange.forEach((pages) => {
+        for (const pages of chunkedPageRange) {
           imageEditActions[pages[0]].compositePages = [...pages].reverse();
           imageEditActions[pages[1]].willDelete = true;
-        });
+        }
         break;
       }
       default:

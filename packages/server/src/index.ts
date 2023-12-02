@@ -107,12 +107,12 @@ import GraphQL from './graphql/index';
   initAuthRoutes(app);
 
   const requireAuthRouter = express.Router();
-  StorageDataManager.getStaticFolders().forEach((folderPath) => {
+  for (const folderPath of StorageDataManager.getStaticFolders()) {
     requireAuthRouter.use(
       isAuthenticatedMiddleware,
       express.static(folderPath),
     );
-  });
+  }
 
   /* image serve with options in image name */
   const bookImagePathRegex = new RegExp(

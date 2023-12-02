@@ -139,7 +139,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     if (requestImageWidth !== undefined || requestImageHeight !== undefined) {
       const sizeRatio = [1, 1.5, 2, 3];
 
-      availableImageExtensions.forEach((imageType) => {
+      for (const imageType of availableImageExtensions) {
         const srcSet = sizeRatio
           .map((ratio) => {
             const src = createBookPageUrl(
@@ -161,7 +161,7 @@ const BookPageImage = (props: BookPageImageProps) => {
           type: availableImageExtensionWithContentType[imageType],
           srcSet,
         });
-      });
+      }
     }
     return {
       imgSrc: `${defaultSrc}${suffix}`,
