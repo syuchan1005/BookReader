@@ -1,8 +1,11 @@
-import React from 'react';
 import {
   Box,
   Button,
-  Card, Dialog, DialogActions, DialogContent, DialogTitle,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -16,15 +19,17 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  TextField, Typography,
+  TextField,
+  Typography,
   useTheme,
 } from '@mui/material';
+import React from 'react';
 
-import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
-import IntRangeInputField from '@client/components/IntRangeInputField';
-import FileField from '@client/components/FileField';
 import { createBookPageUrl } from '@client/components/BookPageImage';
+import FileField from '@client/components/FileField';
+import IntRangeInputField from '@client/components/IntRangeInputField';
 import CropImageDialog from '@client/components/dialogs/EditPagesDialog/CropImageDialog';
+import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
 import CalcImagePaddingDialog, {
   calcPadding,
   urlToImageData,
@@ -81,13 +86,8 @@ export const createInitValue = (editType: EditType) => {
 };
 
 const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
-  const {
-    draggableProps,
-    dragHandleProps,
-    menuText,
-    onDelete,
-    children,
-  } = props;
+  const { draggableProps, dragHandleProps, menuText, onDelete, children } =
+    props;
   const theme = useTheme();
   return (
     <ListItem
@@ -97,7 +97,7 @@ const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
       style={{
         zIndex: theme.zIndex.modal + 1,
         // @ts-ignore
-        ...(draggableProps.style),
+        ...draggableProps.style,
         flexWrap: 'wrap',
       }}
     >
@@ -108,8 +108,14 @@ const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
           padding: theme.spacing(1),
         }}
       >
-        <ListItem disableGutters ContainerComponent="div" style={{ paddingTop: 0 }}>
-          <ListItemIcon><Icon {...dragHandleProps}>menu</Icon></ListItemIcon>
+        <ListItem
+          disableGutters
+          ContainerComponent="div"
+          style={{ paddingTop: 0 }}
+        >
+          <ListItemIcon>
+            <Icon {...dragHandleProps}>menu</Icon>
+          </ListItemIcon>
           <ListItemText primary={menuText} />
           <ListItemSecondaryAction>
             <IconButton edge="end" onClick={onDelete} size="large">
@@ -125,12 +131,7 @@ const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
 
 const ListItems = {
   [EditType.Crop]: React.forwardRef((props: ListItemProps, ref) => {
-    const {
-      maxPage,
-      content,
-      setContent,
-      bookId,
-    } = props;
+    const { maxPage, content, setContent, bookId } = props;
     const theme = useTheme();
     const [isOpen, setOpen] = React.useState(false);
     return (
@@ -147,7 +148,9 @@ const ListItems = {
             color="secondary"
             type="number"
             value={content[label.toLowerCase()]}
-            onChange={(e) => setContent(label.toLowerCase(), Number(e.target.value))}
+            onChange={(e) =>
+              setContent(label.toLowerCase(), Number(e.target.value))
+            }
           />
         ))}
         <Button
@@ -174,11 +177,7 @@ const ListItems = {
     );
   }),
   [EditType.Replace]: React.forwardRef((props: ListItemProps, ref) => {
-    const {
-      maxPage,
-      content,
-      setContent,
-    } = props;
+    const { maxPage, content, setContent } = props;
     return (
       <ListItemCard ref={ref} {...props} menuText="Replace">
         <TextField
@@ -196,11 +195,7 @@ const ListItems = {
     );
   }),
   [EditType.Delete]: React.forwardRef((props: ListItemProps, ref) => {
-    const {
-      maxPage,
-      content,
-      setContent,
-    } = props;
+    const { maxPage, content, setContent } = props;
     return (
       <ListItemCard ref={ref} {...props} menuText="Delete">
         <IntRangeInputField
@@ -213,12 +208,7 @@ const ListItems = {
     );
   }),
   [EditType.Put]: React.forwardRef((props: ListItemProps, ref) => {
-    const {
-      bookId,
-      maxPage,
-      content,
-      setContent,
-    } = props;
+    const { bookId, maxPage, content, setContent } = props;
 
     const [isOpen, setOpen] = React.useState(false);
 
@@ -240,10 +230,7 @@ const ListItems = {
             onChange={(f) => setContent('image', f)}
           />
           <span>or</span>
-          <Button
-            sx={{ m: 1 }}
-            onClick={() => setOpen(true)}
-          >
+          <Button sx={{ m: 1 }} onClick={() => setOpen(true)}>
             Crop image
           </Button>
           <CropImageDialog
@@ -262,11 +249,7 @@ const ListItems = {
     );
   }),
   [EditType.Split]: React.forwardRef((props: ListItemProps, ref) => {
-    const {
-      maxPage,
-      content,
-      setContent,
-    } = props;
+    const { maxPage, content, setContent } = props;
     const theme = useTheme();
     return (
       <ListItemCard ref={ref} {...props} menuText="Split">
@@ -285,19 +268,23 @@ const ListItems = {
             value={content.splitType}
             onChange={(e) => setContent('splitType', e.target.value)}
           >
-            <FormControlLabel control={<Radio />} value={SplitType.Vertical} label="Vertical" />
-            <FormControlLabel control={<Radio />} value={SplitType.Horizontal} label="Horizontal" />
+            <FormControlLabel
+              control={<Radio />}
+              value={SplitType.Vertical}
+              label="Vertical"
+            />
+            <FormControlLabel
+              control={<Radio />}
+              value={SplitType.Horizontal}
+              label="Horizontal"
+            />
           </RadioGroup>
         </FormControl>
       </ListItemCard>
     );
   }),
   [EditType.HStack]: React.forwardRef((props: ListItemProps, ref) => {
-    const {
-      maxPage,
-      content,
-      setContent,
-    } = props;
+    const { maxPage, content, setContent } = props;
     return (
       <ListItemCard ref={ref} {...props} menuText="HStack">
         <IntRangeInputField
@@ -312,7 +299,8 @@ const ListItems = {
 };
 
 const UnknownListItem = React.forwardRef((props: ListItemProps, ref) => (
-  <ListItemCard ref={ref} {...props} menuText="Unknown" />));
+  <ListItemCard ref={ref} {...props} menuText="Unknown" />
+));
 
 interface AddItemListItemProps {
   onAdded: (editType: EditType) => void;
@@ -324,22 +312,27 @@ export const AddItemListItem = (props: AddItemListItemProps) => {
   return (
     <>
       <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
-        <ListItemIcon><Icon>add</Icon></ListItemIcon>
+        <ListItemIcon>
+          <Icon>add</Icon>
+        </ListItemIcon>
         <ListItemText primary="Add Action" />
       </ListItem>
-      <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
-        {Object.keys(ListItems)
-          .map((editType: EditType) => (
-            <MenuItem
-              key={editType}
-              onClick={() => {
-                onAdded(editType);
-                setAnchorEl(null);
-              }}
-            >
-              {editType}
-            </MenuItem>
-          ))}
+      <Menu
+        anchorEl={anchorEl}
+        open={!!anchorEl}
+        onClose={() => setAnchorEl(null)}
+      >
+        {Object.keys(ListItems).map((editType: EditType) => (
+          <MenuItem
+            key={editType}
+            onClick={() => {
+              onAdded(editType);
+              setAnchorEl(null);
+            }}
+          >
+            {editType}
+          </MenuItem>
+        ))}
       </Menu>
     </>
   );
@@ -350,31 +343,34 @@ const getPadding = async (
   maxPage: number,
   pageIndex: number,
   threshold: number,
-): Promise<{ left: number, right: number }> => {
+): Promise<{ left: number; right: number }> => {
   const coverUrl = createBookPageUrl(bookId, pageIndex, maxPage);
   const coverImageData = await urlToImageData(coverUrl);
   return calcPadding(coverImageData, threshold, 150, 10, false);
 };
 
 export interface EditTypeContent {
-  id: string,
-  editType: EditType
+  id: string;
+  editType: EditType;
   content: { [key: string]: any };
 }
 
-const Templates: ({
-  name: string,
-  initOptions: (maxPage: number) => Record<string, number>,
+const Templates: {
+  name: string;
+  initOptions: (maxPage: number) => Record<string, number>;
   exec: (
     bookId: string,
     maxPage: number,
-    options: Record<string, number>
-  ) => Promise<EditTypeContent[]>,
-})[] = [
+    options: Record<string, number>,
+  ) => Promise<EditTypeContent[]>;
+}[] = [
   {
     name: 'PaddingOnCover',
     initOptions: () => ({}),
-    exec: async (bookId: string, maxPage: number): Promise<EditTypeContent[]> => {
+    exec: async (
+      bookId: string,
+      maxPage: number,
+    ): Promise<EditTypeContent[]> => {
       const coverPadding = await getPadding(bookId, maxPage, 0, 200);
       return [
         {
@@ -441,11 +437,7 @@ interface AddTemplateListItemProps {
 }
 
 export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
-  const {
-    bookId,
-    maxPage,
-    onAdded,
-  } = props;
+  const { bookId, maxPage, onAdded } = props;
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedTemplate, setSelectedTemplate] = React.useState(null);
   const [options, setOptions] = React.useState(null);
@@ -457,17 +449,27 @@ export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
   return (
     <>
       <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
-        <ListItemIcon><Icon>add</Icon></ListItemIcon>
+        <ListItemIcon>
+          <Icon>add</Icon>
+        </ListItemIcon>
         <ListItemText primary="Use Template" />
       </ListItem>
-      <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}>
+      <Menu
+        anchorEl={anchorEl}
+        open={!!anchorEl}
+        onClose={() => setAnchorEl(null)}
+      >
         {Templates.map((template) => (
           <MenuItem
             key={template.name}
             onClick={async () => {
               const initOptions = template.initOptions(maxPage);
               if (Object.keys(initOptions).length === 0) {
-                const editContents = await template.exec(bookId, maxPage, initOptions);
+                const editContents = await template.exec(
+                  bookId,
+                  maxPage,
+                  initOptions,
+                );
                 onAdded(editContents);
                 handleClose();
               } else {
@@ -483,28 +485,33 @@ export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
       <Dialog open={selectedTemplate != null && options !== null}>
         <DialogTitle>Template options</DialogTitle>
         <DialogContent>
-          {Object.keys(options || {})
-            .map((key) => (
-              <TextField
-                key={key}
-                margin="dense"
-                fullWidth
-                variant="standard"
-                label={key}
-                type="number"
-                value={options[key]}
-                onChange={(e) => setOptions({
+          {Object.keys(options || {}).map((key) => (
+            <TextField
+              key={key}
+              margin="dense"
+              fullWidth
+              variant="standard"
+              label={key}
+              type="number"
+              value={options[key]}
+              onChange={(e) =>
+                setOptions({
                   ...options,
                   [key]: e.target.value,
-                })}
-              />
-            ))}
+                })
+              }
+            />
+          ))}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             onClick={async () => {
-              const editContents = await selectedTemplate.exec(bookId, maxPage, options);
+              const editContents = await selectedTemplate.exec(
+                bookId,
+                maxPage,
+                options,
+              );
               onAdded(editContents);
               handleClose();
             }}
@@ -524,10 +531,7 @@ interface ActionListItemProps extends ListItemProps {
 
 export const ActionListItem = React.forwardRef(
   (props: ActionListItemProps, ref) => {
-    const {
-      editType,
-      ...forwardProps
-    } = props;
+    const { editType, ...forwardProps } = props;
     const Item = ListItems[editType] ?? UnknownListItem;
     return <Item ref={ref} {...forwardProps} />;
   },

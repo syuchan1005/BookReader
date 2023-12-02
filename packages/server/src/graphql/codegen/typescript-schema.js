@@ -5,7 +5,6 @@ const { stripIgnoredCharacters } = require('graphql');
 const print = (schema) => `export const schemaString = \`${schema}\`;`;
 
 module.exports = {
-  plugin: (schema) => print(
-    stripIgnoredCharacters(printSchemaWithDirectives(schema)),
-  ),
+  plugin: (schema) =>
+    print(stripIgnoredCharacters(printSchemaWithDirectives(schema))),
 };

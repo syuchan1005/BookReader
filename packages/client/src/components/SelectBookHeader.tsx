@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   AppBar,
   Button,
@@ -9,21 +8,25 @@ import {
   DialogTitle,
   Icon,
   IconButton,
-  ThemeProvider,
   StyledEngineProvider,
   TextField,
   Theme,
+  ThemeProvider,
   Toolbar,
   Typography,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import React from 'react';
 
 import { commonTheme } from '@client/App';
 
-import { useDeleteBooksMutation, useMoveBooksMutation } from '@syuchan1005/book-reader-graphql';
+import {
+  useDeleteBooksMutation,
+  useMoveBooksMutation,
+} from '@syuchan1005/book-reader-graphql';
 
 interface SelectBookHeaderProps {
   infoId: string;
@@ -33,22 +36,24 @@ interface SelectBookHeaderProps {
   onMoveBooks?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  appBar: {
-    paddingTop: commonTheme.safeArea.top,
-  },
-  iconButton: {
-    color: theme.palette.common.white,
-  },
-  loadingContent: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  title: {
-    userSelect: 'none',
-    flexGrow: 1,
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    appBar: {
+      paddingTop: commonTheme.safeArea.top,
+    },
+    iconButton: {
+      color: theme.palette.common.white,
+    },
+    loadingContent: {
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    title: {
+      userSelect: 'none',
+      flexGrow: 1,
+    },
+  }),
+);
 
 const ContextualActionBarTheme = createTheme({
   palette: {
@@ -60,13 +65,7 @@ const ContextualActionBarTheme = createTheme({
 
 const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
-  const {
-    infoId,
-    selectIds,
-    onClose,
-    onDeleteBooks,
-    onMoveBooks,
-  } = props;
+  const { infoId, selectIds, onClose, onDeleteBooks, onMoveBooks } = props;
 
   const [openMoveDialog, setOpenMoveDialog] = React.useState(false);
   const [moveInfoId, setMoveInfoId] = React.useState(infoId);
@@ -84,16 +83,17 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
 
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
 
-  const [doDeleteBooks, { loading: deleteBooksLoading }] = useDeleteBooksMutation({
-    variables: {
-      infoId,
-      ids: selectIds,
-    },
-    onCompleted() {
-      setOpenDeleteDialog(false);
-      if (onDeleteBooks) onDeleteBooks();
-    },
-  });
+  const [doDeleteBooks, { loading: deleteBooksLoading }] =
+    useDeleteBooksMutation({
+      variables: {
+        infoId,
+        ids: selectIds,
+      },
+      onCompleted() {
+        setOpenDeleteDialog(false);
+        if (onDeleteBooks) onDeleteBooks();
+      },
+    });
 
   return (
     <>
@@ -103,7 +103,7 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
             <Toolbar>
               <IconButton
                 className={classes.iconButton}
-                onClick={() => (onClose && onClose())}
+                onClick={() => onClose && onClose()}
                 size="large"
               >
                 <Icon>clear</Icon>
@@ -134,10 +134,10 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
 
       <Dialog
         open={openMoveDialog}
-        onClose={() => (!moveBooksLoading && setOpenMoveDialog(false))}
+        onClose={() => !moveBooksLoading && setOpenMoveDialog(false)}
       >
         <DialogTitle>Move Books</DialogTitle>
-        {(moveBooksLoading) ? (
+        {moveBooksLoading ? (
           <DialogContent className={classes.loadingContent}>
             <CircularProgress color="secondary" />
           </DialogContent>
@@ -170,7 +170,7 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
 
       <Dialog
         open={openDeleteDialog}
-        onClose={() => (!deleteBooksLoading && setOpenDeleteDialog(false))}
+        onClose={() => !deleteBooksLoading && setOpenDeleteDialog(false)}
       >
         <DialogTitle>Delete Books</DialogTitle>
         <DialogContent className={classes.loadingContent}>

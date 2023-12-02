@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Button,
   Dialog,
@@ -7,6 +6,7 @@ import {
   DialogTitle,
   Icon,
   IconButton,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -18,24 +18,30 @@ import {
   Toolbar,
   Typography,
   useTheme,
-  Switch,
 } from '@mui/material';
+import React, { useState } from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { useDeleteGenreMutation, useEditGenreMutation, useGenresQuery } from '@syuchan1005/book-reader-graphql';
+import {
+  useDeleteGenreMutation,
+  useEditGenreMutation,
+  useGenresQuery,
+} from '@syuchan1005/book-reader-graphql';
 
-import { defaultGenres } from '@syuchan1005/book-reader-common';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { useTitle } from '@client/hooks/useTitle';
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  setting: {
-    margin: theme.spacing(1, 2, 0, 2),
-    height: 'fit-content',
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    setting: {
+      margin: theme.spacing(1, 2, 0, 2),
+      height: 'fit-content',
+    },
+  }),
+);
 
 const Setting = (props) => {
   useTitle('Setting');
@@ -52,24 +58,19 @@ const Setting = (props) => {
   const [editGenreContent, setEditGenreContent] = useState('');
   const [deleteGenre, setDeleteGenre] = useState<string>(undefined);
 
-  const [
-    doDeleteGenre,
-    { loading: deleteGenreLoading },
-  ] = useDeleteGenreMutation({
-    variables: {
-      name: deleteGenre,
-    },
-    onCompleted({ deleteGenre: genreResult }) {
-      if (genreResult.success) {
-        setDeleteGenre(undefined);
-        genreRefetch();
-      }
-    },
-  });
-  const [
-    doEditGenre,
-    { loading: editGenreLoading },
-  ] = useEditGenreMutation({
+  const [doDeleteGenre, { loading: deleteGenreLoading }] =
+    useDeleteGenreMutation({
+      variables: {
+        name: deleteGenre,
+      },
+      onCompleted({ deleteGenre: genreResult }) {
+        if (genreResult.success) {
+          setDeleteGenre(undefined);
+          genreRefetch();
+        }
+      },
+    });
+  const [doEditGenre, { loading: editGenreLoading }] = useEditGenreMutation({
     onCompleted({ editGenre: genreResult }) {
       if (genreResult.success) {
         setEditGenreContent(undefined);
@@ -81,13 +82,11 @@ const Setting = (props) => {
 
   return (
     <>
-      <TitleAndBackHeader
-        title="Setting"
-      />
+      <TitleAndBackHeader title="Setting" />
       <Toolbar />
 
       <main className={classes.setting}>
-        {(!genreLoading && genreData) && (
+        {!genreLoading && genreData && (
           <>
             <Typography variant="h6">
               Genres
@@ -109,77 +108,87 @@ const Setting = (props) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {genreData.genres
-                    .map((genre) => (
-                      <TableRow key={genre.name}>
-                        <TableCell>
-                          <Switch
-                            checked={genre.invisible}
-                            onChange={(event) => doEditGenre({
+                  {genreData.genres.map((genre) => (
+                    <TableRow key={genre.name}>
+                      <TableCell>
+                        <Switch
+                          checked={genre.invisible}
+                          onChange={(event) =>
+                            doEditGenre({
                               variables: {
                                 oldName: genre.name,
                                 invisible: event.target.checked,
                               },
-                            })}
-                            disabled={defaultGenres.includes(genre.name)}
-                          />
-                        </TableCell>
-                        <TableCell align="left">
-                          {(editGenre === genre.name) ? (
-                            <>
-                              <TextField
-                                autoFocus
-                                size="small"
-                                value={editGenreContent}
-                                onChange={(e) => setEditGenreContent(e.target.value as string)}
-                              />
-                              <IconButton
-                                size="small"
-                                disabled={editGenre === editGenreContent || editGenreLoading}
-                                onClick={() => doEditGenre({
+                            })
+                          }
+                          disabled={defaultGenres.includes(genre.name)}
+                        />
+                      </TableCell>
+                      <TableCell align="left">
+                        {editGenre === genre.name ? (
+                          <>
+                            <TextField
+                              autoFocus
+                              size="small"
+                              value={editGenreContent}
+                              onChange={(e) =>
+                                setEditGenreContent(e.target.value as string)
+                              }
+                            />
+                            <IconButton
+                              size="small"
+                              disabled={
+                                editGenre === editGenreContent ||
+                                editGenreLoading
+                              }
+                              onClick={() =>
+                                doEditGenre({
                                   variables: {
                                     oldName: genre.name,
                                     newName: editGenreContent,
                                   },
-                                })}
-                              >
-                                <Icon>check</Icon>
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                onClick={() => setEditGenre(undefined)}
-                                disabled={editGenreLoading}
-                              >
-                                <Icon>clear</Icon>
-                              </IconButton>
-                            </>
-                          ) : genre.name}
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setDeleteGenre(undefined);
-                              setEditGenre(genre.name);
-                              setEditGenreContent(genre.name);
-                            }}
-                          >
-                            <Icon>edit</Icon>
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            disabled={defaultGenres.includes(genre.name)}
-                            onClick={() => {
-                              setDeleteGenre(genre.name);
-                              setEditGenre(undefined);
-                              setEditGenreContent('');
-                            }}
-                          >
-                            <Icon>delete</Icon>
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                                })
+                              }
+                            >
+                              <Icon>check</Icon>
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => setEditGenre(undefined)}
+                              disabled={editGenreLoading}
+                            >
+                              <Icon>clear</Icon>
+                            </IconButton>
+                          </>
+                        ) : (
+                          genre.name
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setDeleteGenre(undefined);
+                            setEditGenre(genre.name);
+                            setEditGenreContent(genre.name);
+                          }}
+                        >
+                          <Icon>edit</Icon>
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          disabled={defaultGenres.includes(genre.name)}
+                          onClick={() => {
+                            setDeleteGenre(genre.name);
+                            setEditGenre(undefined);
+                            setEditGenreContent('');
+                          }}
+                        >
+                          <Icon>delete</Icon>
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>

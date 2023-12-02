@@ -1,15 +1,34 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_count"] }] */
-import { PrismaClient, BookInfo as PBookInfo, Book as PBook } from '@prisma/client';
-
-import { IBookDataManager, RequireAtLeastOne, SortKey } from '@server/database/BookDataManager';
 import {
-  Book, BookEditableValue, BookId, InputBook, SortableBookProperties,
+  Book as PBook,
+  BookInfo as PBookInfo,
+  PrismaClient,
+} from '@prisma/client';
+
+import {
+  BatchLoading,
+  BatchLoadingClear,
+  BatchLoadingClearAll,
+} from '@server/database/BatchLoading';
+import {
+  IBookDataManager,
+  RequireAtLeastOne,
+  SortKey,
+} from '@server/database/BookDataManager';
+import {
+  Book,
+  BookEditableValue,
+  BookId,
+  InputBook,
+  SortableBookProperties,
 } from '@server/database/models/Book';
 import {
-  BookInfo, BookInfoEditableValue,
+  BookInfo,
+  BookInfoEditableValue,
   BookInfoThumbnail,
   InfoId,
-  InputBookInfo, SortableBookInfoProperties,
+  InputBookInfo,
+  SortableBookInfoProperties,
 } from '@server/database/models/BookInfo';
 import {
   DeleteGenreError,
@@ -17,27 +36,24 @@ import {
   GenreEditableValue,
   GenreName,
 } from '@server/database/models/Genre';
-import { defaultGenres } from '@syuchan1005/book-reader-common';
 import { generateId } from '@server/database/models/Id';
-import {
-  BatchLoading,
-  BatchLoadingClear,
-  BatchLoadingClearAll,
-} from '@server/database/BatchLoading';
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
 
 function removeNullableEntries<T extends {}>(obj: T): Omit<T, NullableKeys<T>> {
-  const entries = Object.entries(obj)
-    .filter(([_, value]) => value !== undefined && value !== null);
+  const entries = Object.entries(obj).filter(
+    ([_, value]) => value !== undefined && value !== null,
+  );
   return Object.fromEntries(entries) as Omit<T, NullableKeys<T>>;
 }
 
 // Same as scripts/prisma-migrate.js
-const env = (process.argv[2] || process.env.NODE_ENV) === 'production'
-  ? 'production'
-  : 'development';
+const env =
+  (process.argv[2] || process.env.NODE_ENV) === 'production'
+    ? 'production'
+    : 'development';
 
 const PrismaErrorCode = {
   UniqueConstraintFailed: 'P2002',
@@ -53,10 +69,12 @@ export class PrismaBookDataManager implements IBookDataManager {
       datasources: {
         db: { url },
       },
-      log: [{
-        level: 'query',
-        emit: 'event',
-      }],
+      log: [
+        {
+          level: 'query',
+          emit: 'event',
+        },
+      ],
     });
     // this.prismaClient.$on('query', console.log);
     // The `prismaClient` has the`.$connect(): Promise` method. But, It'll be called automatically.
@@ -91,11 +109,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     'getBookInfoThumbnail',
     (args) => args[0].infoId,
   )
-  async addBook({
-    id,
-    infoId,
-    ...book
-  }: InputBook): Promise<BookId> {
+  async addBook({ id, infoId, ...book }: InputBook): Promise<BookId> {
     const bookId = id || generateId();
     await this.prismaClient.$transaction(async (transactionalPrismaClient) => {
       await transactionalPrismaClient.book.create({
@@ -126,7 +140,10 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   @BatchLoadingClearAll('getBookInfoThumbnail')
-  async editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void> {
+  async editBook(
+    bookId: BookId,
+    value: RequireAtLeastOne<BookEditableValue>,
+  ): Promise<void> {
     await this.prismaClient.book.update({
       where: { id: bookId },
       data: removeNullableEntries(value),
@@ -152,7 +169,10 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   @BatchLoadingClearAll('getBookInfoThumbnail')
-  async moveBooks(bookIds: Array<BookId>, destinationInfoId: InfoId): Promise<void> {
+  async moveBooks(
+    bookIds: Array<BookId>,
+    destinationInfoId: InfoId,
+  ): Promise<void> {
     if (bookIds.length === 0) {
       return;
     }
@@ -236,13 +256,14 @@ export class PrismaBookDataManager implements IBookDataManager {
   @BatchLoading<InfoId, BookInfoThumbnail>(
     'getBookInfoThumbnail',
     async (infoIds) => {
-      const bookMap = await INSTANCE.prismaClient.book.findMany({
-        where: {
-          thumbnailById: {
-            in: infoIds,
+      const bookMap = await INSTANCE.prismaClient.book
+        .findMany({
+          where: {
+            thumbnailById: {
+              in: infoIds,
+            },
           },
-        },
-      })
+        })
         .then((books) => {
           const result = {};
           books.forEach((info) => {
@@ -250,11 +271,14 @@ export class PrismaBookDataManager implements IBookDataManager {
           });
           return result;
         });
-      return infoIds
-        .map((id) => PrismaBookDataManager.convertBookInfoThumbnail(bookMap[id]));
+      return infoIds.map((id) =>
+        PrismaBookDataManager.convertBookInfoThumbnail(bookMap[id]),
+      );
     },
   )
-  async getBookInfoThumbnail(infoId: InfoId): Promise<BookInfoThumbnail | undefined> {
+  async getBookInfoThumbnail(
+    infoId: InfoId,
+  ): Promise<BookInfoThumbnail | undefined> {
     const thumbnailBook = await this.prismaClient.book.findFirst({
       where: { thumbnailById: infoId },
     });
@@ -264,17 +288,18 @@ export class PrismaBookDataManager implements IBookDataManager {
   private static convertBookInfoThumbnail(
     thumbnailBook?: PBook,
   ): BookInfoThumbnail | undefined {
-    return thumbnailBook ? {
-      bookId: thumbnailBook.id,
-      pageCount: thumbnailBook.pageCount,
-      thumbnailPage: thumbnailBook.thumbnailPage,
-    } : undefined;
+    return thumbnailBook
+      ? {
+          bookId: thumbnailBook.id,
+          pageCount: thumbnailBook.pageCount,
+          thumbnailPage: thumbnailBook.thumbnailPage,
+        }
+      : undefined;
   }
 
-  @BatchLoading<InfoId, Array<Genre>>(
-    'getBookInfoGenres',
-    async (infoIds) => {
-      const genreMap = await INSTANCE.prismaClient.bookInfo.findMany({
+  @BatchLoading<InfoId, Array<Genre>>('getBookInfoGenres', async (infoIds) => {
+    const genreMap = await INSTANCE.prismaClient.bookInfo
+      .findMany({
         where: {
           id: {
             in: infoIds,
@@ -288,16 +313,15 @@ export class PrismaBookDataManager implements IBookDataManager {
           },
         },
       })
-        .then((bookInfos) => {
-          const result = {};
-          bookInfos.forEach((info) => {
-            result[info.id] = info?.genres?.map(({ genre }) => genre);
-          });
-          return result;
+      .then((bookInfos) => {
+        const result = {};
+        bookInfos.forEach((info) => {
+          result[info.id] = info?.genres?.map(({ genre }) => genre);
         });
-      return infoIds.map((id) => genreMap[id]);
-    },
-  )
+        return result;
+      });
+    return infoIds.map((id) => genreMap[id]);
+  })
   async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre>> {
     const bookInfo = await this.prismaClient.bookInfo.findUnique({
       where: {
@@ -322,8 +346,9 @@ export class PrismaBookDataManager implements IBookDataManager {
       where: { id: infoId },
       include: {
         books: {
-          orderBy: (sort.length === 0 ? [['updatedAt', 'asc']] : sort)
-            .map(([key, order]) => ({ [key]: order })),
+          orderBy: (sort.length === 0 ? [['updatedAt', 'asc']] : sort).map(
+            ([key, order]) => ({ [key]: order }),
+          ),
         },
       },
     });
@@ -335,57 +360,50 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   async getBookInfos(option: {
-    limit?: number,
+    limit?: number;
     filter: {
-      genres?: Array<GenreName>,
+      genres?: Array<GenreName>;
       name: {
-        include?: string,
-        between?: [string | undefined, string | undefined],
-      },
-      createdAt?: [number | undefined, number | undefined],
-      updatedAt?: [number | undefined, number | undefined],
-    },
-    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+        include?: string;
+        between?: [string | undefined, string | undefined];
+      };
+      createdAt?: [number | undefined, number | undefined];
+      updatedAt?: [number | undefined, number | undefined];
+    };
+    sort?: Array<[SortableBookInfoProperties, SortKey]>;
   }): Promise<Array<BookInfo>> {
     const {
       limit,
-      filter: {
-        genres,
-        name: {
-          include,
-          between,
-        },
-        createdAt,
-        updatedAt,
-      },
+      filter: { genres, name: { include, between }, createdAt, updatedAt },
       sort,
     } = option;
 
-    const genreFilter = genres.length === 0
-      ? {
-        where: {
-          NOT: {
-            genres: {
-              some: {
-                genre: {
-                  isInvisible: true,
+    const genreFilter =
+      genres.length === 0
+        ? {
+            where: {
+              NOT: {
+                genres: {
+                  some: {
+                    genre: {
+                      isInvisible: true,
+                    },
+                  },
                 },
               },
             },
-          },
-        },
-      }
-      : {
-        where: {
-          genres: {
-            some: {
-              genreName: {
-                in: genres,
+          }
+        : {
+            where: {
+              genres: {
+                some: {
+                  genreName: {
+                    in: genres,
+                  },
+                },
               },
             },
-          },
-        },
-      };
+          };
 
     const bookInfos = await this.prismaClient.bookInfo.findMany({
       take: limit,
@@ -419,10 +437,9 @@ export class PrismaBookDataManager implements IBookDataManager {
         },
       },
     });
-    return bookInfos.map(({
-      genres: _,
-      ...bookInfo
-    }) => PrismaBookDataManager.convertBookInfo(bookInfo));
+    return bookInfos.map(({ genres: _, ...bookInfo }) =>
+      PrismaBookDataManager.convertBookInfo(bookInfo),
+    );
   }
 
   async addBookInfo({
@@ -435,10 +452,7 @@ export class PrismaBookDataManager implements IBookDataManager {
       data: {
         id: infoId,
         genres: {
-          create: genres.map(({
-            name,
-            isInvisible,
-          }) => ({
+          create: genres.map(({ name, isInvisible }) => ({
             genre: {
               connectOrCreate: {
                 where: { name },
@@ -477,10 +491,7 @@ export class PrismaBookDataManager implements IBookDataManager {
             id: infoId,
             name: bookName,
             genres: {
-              connectOrCreate: (genres || []).map(({
-                name,
-                isInvisible,
-              }) => ({
+              connectOrCreate: (genres || []).map(({ name, isInvisible }) => ({
                 where: {
                   infoId_genreName: {
                     infoId,
@@ -512,10 +523,11 @@ export class PrismaBookDataManager implements IBookDataManager {
         });
       }
       if (thumbnail) {
-        const oldThumbnailBook = await transactionalPrismaClient.book.findUnique({
-          where: { thumbnailById: infoId },
-          select: { updatedAt: true },
-        });
+        const oldThumbnailBook =
+          await transactionalPrismaClient.book.findUnique({
+            where: { thumbnailById: infoId },
+            select: { updatedAt: true },
+          });
         if (oldThumbnailBook) {
           await transactionalPrismaClient.book.updateMany({
             where: { thumbnailById: infoId },
@@ -525,13 +537,15 @@ export class PrismaBookDataManager implements IBookDataManager {
             },
           });
         }
-        const newThumbnailBook = await transactionalPrismaClient.book.findFirst({
-          where: {
-            id: thumbnail,
-            infoId,
+        const newThumbnailBook = await transactionalPrismaClient.book.findFirst(
+          {
+            where: {
+              id: thumbnail,
+              infoId,
+            },
+            select: { updatedAt: true },
           },
-          select: { updatedAt: true },
-        });
+        );
         await transactionalPrismaClient.book.updateMany({
           where: {
             id: thumbnail,
@@ -582,7 +596,9 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   @BatchLoadingClearAll('getBookInfoGenres')
-  async deleteGenre(genreName: GenreName): Promise<DeleteGenreError | undefined> {
+  async deleteGenre(
+    genreName: GenreName,
+  ): Promise<DeleteGenreError | undefined> {
     if (defaultGenres.includes(genreName)) {
       return 'DELETE_DEFAULT';
     }
@@ -592,58 +608,70 @@ export class PrismaBookDataManager implements IBookDataManager {
 
   get Debug() {
     return {
-      getBookIds: (): Promise<Array<BookId>> => this.prismaClient.book.findMany({
-        select: {
-          id: true,
-        },
-      })
-        .then((books) => books.map(({ id }) => id)),
+      getBookIds: (): Promise<Array<BookId>> =>
+        this.prismaClient.book
+          .findMany({
+            select: {
+              id: true,
+            },
+          })
+          .then((books) => books.map(({ id }) => id)),
 
-      getBookInfoCount: (): Promise<number> => this.prismaClient.bookInfo.count(),
+      getBookInfoCount: (): Promise<number> =>
+        this.prismaClient.bookInfo.count(),
 
-      getBookInfos: (): Promise<(BookInfo & { genres: Genre[] })[]> => this.prismaClient.bookInfo
-        .findMany({
-          include: {
-            _count: {
-              select: {
-                books: true,
+      getBookInfos: (): Promise<(BookInfo & { genres: Genre[] })[]> =>
+        this.prismaClient.bookInfo
+          .findMany({
+            include: {
+              _count: {
+                select: {
+                  books: true,
+                },
+              },
+              genres: {
+                include: {
+                  genre: true,
+                },
               },
             },
-            genres: {
-              include: {
-                genre: true,
-              },
-            },
-          },
-        })
-        .then((bookInfos) => bookInfos.map((info) => ({
-          ...PrismaBookDataManager.convertBookInfo(info),
-          genres: info.genres.map((g) => g.genre),
-        }))),
+          })
+          .then((bookInfos) =>
+            bookInfos.map((info) => ({
+              ...PrismaBookDataManager.convertBookInfo(info),
+              genres: info.genres.map((g) => g.genre),
+            })),
+          ),
 
-      getBookInfo: (infoId: string): Promise<(BookInfo & { genres: Genre[] }) | undefined> => this
-        .prismaClient.bookInfo
-        .findUnique({
-          where: {
-            id: infoId,
-          },
-          include: {
-            _count: {
-              select: {
-                books: true,
+      getBookInfo: (
+        infoId: string,
+      ): Promise<(BookInfo & { genres: Genre[] }) | undefined> =>
+        this.prismaClient.bookInfo
+          .findUnique({
+            where: {
+              id: infoId,
+            },
+            include: {
+              _count: {
+                select: {
+                  books: true,
+                },
+              },
+              genres: {
+                include: {
+                  genre: true,
+                },
               },
             },
-            genres: {
-              include: {
-                genre: true,
-              },
-            },
-          },
-        })
-        .then((info) => (info ? {
-          ...PrismaBookDataManager.convertBookInfo(info),
-          genres: info.genres.map((g) => g.genre),
-        } : undefined)),
+          })
+          .then((info) =>
+            info
+              ? {
+                  ...PrismaBookDataManager.convertBookInfo(info),
+                  genres: info.genres.map((g) => g.genre),
+                }
+              : undefined,
+          ),
     };
   }
 }

@@ -1,11 +1,11 @@
-import { RecoilState, useSetRecoilState } from 'recoil';
 import React, { useEffect } from 'react';
+import { RecoilState, useSetRecoilState } from 'recoil';
 
-export const RecoilValue = <T, >({
+export const RecoilValue = <T,>({
   atom,
   value,
   children,
-}: { atom: RecoilState<T>, value: T, children: React.ReactElement }) => {
+}: { atom: RecoilState<T>; value: T; children: React.ReactElement }) => {
   const setter = useSetRecoilState(atom);
   useEffect(() => {
     setter(value);

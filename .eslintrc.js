@@ -3,10 +3,7 @@ module.exports = {
   globals: {
     NodeJS: true,
   },
-  plugins: [
-    '@typescript-eslint',
-    'import',
-  ],
+  plugins: ['@typescript-eslint', 'import'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     sourceType: 'module',
@@ -31,13 +28,17 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'no-use-before-define': 'off',
     'import/no-extraneous-dependencies': 'off',
-    'import/extensions': ['error', 'ignorePackages', {
-      ts: 'never',
-      tsx: 'never',
-      js: 'never',
-      jsx: 'never',
-      mjs: 'never',
-    }],
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        ts: 'never',
+        tsx: 'never',
+        js: 'never',
+        jsx: 'never',
+        mjs: 'never',
+      },
+    ],
     'class-methods-use-this': 'off',
     'import/prefer-default-export': 'off',
   },

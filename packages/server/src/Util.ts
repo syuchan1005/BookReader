@@ -1,7 +1,7 @@
-export const asyncForEach = async <T> (
+export const asyncForEach = async <T>(
   arr: Array<T>,
-  callback: (item: T, index: number, array: Array<T>,
-) => void) => {
+  callback: (item: T, index: number, array: Array<T>) => void,
+) => {
   for (let i = 0; i < arr.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     await callback(arr[i], i, arr);

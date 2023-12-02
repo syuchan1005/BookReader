@@ -1,6 +1,6 @@
-import { Resolvers } from '@syuchan1005/book-reader-graphql';
 import { BookDataManager } from '@server/database/BookDataManager';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
+import { Resolvers } from '@syuchan1005/book-reader-graphql';
 
 export const resolvers: Resolvers = {
   Query: {

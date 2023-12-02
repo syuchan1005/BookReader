@@ -1,5 +1,5 @@
-import React from 'react';
 import { Button, Theme } from '@mui/material';
+import React from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -15,29 +15,26 @@ interface FileFieldProps {
   style?: React.CSSProperties;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  fileField: {
-    margin: theme.spacing(1),
-  },
-  fieldLabel: {
-    margin: 0,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    direction: 'rtl',
-    textAlign: 'left',
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    fileField: {
+      margin: theme.spacing(1),
+    },
+    fieldLabel: {
+      margin: 0,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      direction: 'rtl',
+      textAlign: 'left',
+    },
+  }),
+);
 
 const FileField = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const inputRef = React.useRef(null);
-  const {
-    acceptType = 'archive',
-    file,
-    onChange,
-    style,
-  } = props;
+  const { acceptType = 'archive', file, onChange, style } = props;
 
   const onFilePicked = (event) => {
     const { files } = event.target;
@@ -53,7 +50,11 @@ const FileField = (props: FileFieldProps) => {
       break;
     case 'archive':
     default:
-      acceptTypeText = `${Object.keys(archiveTypes).join(',')},${[...new Set(Object.values(archiveTypes))].map((a) => `.${a}`).join(',')}`;
+      acceptTypeText = `${Object.keys(archiveTypes).join(',')},${[
+        ...new Set(Object.values(archiveTypes)),
+      ]
+        .map((a) => `.${a}`)
+        .join(',')}`;
       break;
   }
   return (
@@ -62,9 +63,7 @@ const FileField = (props: FileFieldProps) => {
       className={classes.fileField}
       style={style}
     >
-      <p className={classes.fieldLabel}>
-        {file ? file.name : 'Upload'}
-      </p>
+      <p className={classes.fieldLabel}>{file ? file.name : 'Upload'}</p>
       <input
         hidden
         type="file"

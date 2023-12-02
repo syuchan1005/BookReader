@@ -1,36 +1,36 @@
-import React from 'react';
-import {
-  Theme, Fab, Icon, Typography,
-} from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
-import createStyles from '@mui/styles/createStyles';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useTitle } from '@client/hooks/useTitle';
+import { Fab, Icon, Theme, Typography } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useTestId from '../hooks/useTestId';
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  error: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  oops: {
-    margin: theme.spacing(2),
-    maxWidth: '70vw',
-    maxHeight: '30vw',
-  },
-  backButton: {
-    marginTop: theme.spacing(3),
-  },
-  backIcon: {
-    transform: 'rotate(-35deg)',
-    marginRight: theme.spacing(0.75),
-    marginLeft: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    error: {
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    oops: {
+      margin: theme.spacing(2),
+      maxWidth: '70vw',
+      maxHeight: '30vw',
+    },
+    backButton: {
+      marginTop: theme.spacing(3),
+    },
+    backIcon: {
+      transform: 'rotate(-35deg)',
+      marginRight: theme.spacing(0.75),
+      marginLeft: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+    },
+  }),
+);
 
 const Error = (props) => {
   useTitle('Error');
@@ -59,7 +59,9 @@ const Error = (props) => {
             <stop stopColor="#86007D" offset="100%" />
           </linearGradient>
         </defs>
-        <text y="12" fill="url(#g)">Oops!</text>
+        <text y="12" fill="url(#g)">
+          Oops!
+        </text>
       </svg>
       <Typography {...textTestId}>404 - Not Found</Typography>
       <Fab
@@ -67,7 +69,9 @@ const Error = (props) => {
         className={classes.backButton}
         color="secondary"
         variant="extended"
-        onClick={() => navigate('/', { state: { referrer: location.pathname } })}
+        onClick={() =>
+          navigate('/', { state: { referrer: location.pathname } })
+        }
       >
         <Icon className={classes.backIcon}>send</Icon>
         Go to homepage

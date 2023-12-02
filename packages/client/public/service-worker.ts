@@ -1,10 +1,10 @@
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 /* eslint-disable */
-import { skipWaiting, clientsClaim, setCacheNameDetails } from 'workbox-core';
+import { clientsClaim, setCacheNameDetails, skipWaiting } from 'workbox-core';
+import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 setCacheNameDetails({
   prefix: 'bookReader',
@@ -45,9 +45,10 @@ const cacheNames = {
 };
 
 registerRoute(
-  ({ request, url }) => request.destination === 'image'
-    && !url.searchParams.has('nosave')
-    && url.pathname.startsWith('/book/'),
+  ({ request, url }) =>
+    request.destination === 'image' &&
+    !url.searchParams.has('nosave') &&
+    url.pathname.startsWith('/book/'),
   new StaleWhileRevalidate({
     cacheName: cacheNames.thumbnail,
     plugins: [
@@ -68,7 +69,7 @@ const oldCacheNames = [
 ];
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    Promise.all(oldCacheNames.map((name) => caches.delete(name)))
+    Promise.all(oldCacheNames.map((name) => caches.delete(name))),
   );
 });
 
@@ -88,7 +89,9 @@ addEventListener('message', (event) => {
         skipWaiting();
         break;
       case 'PURGE_CACHE': {
-        await Promise.all(Object.values(cacheNames).map((k) => caches.delete(k)));
+        await Promise.all(
+          Object.values(cacheNames).map((k) => caches.delete(k)),
+        );
         break;
       }
     }

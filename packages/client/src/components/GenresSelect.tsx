@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Button,
   Checkbox,
@@ -18,6 +17,7 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
+import React, { useState } from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -25,48 +25,43 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql';
 
 interface GenresSelectProps {
-  value: string[],
-  onChange?: (genres: string[]) => any,
+  value: string[];
+  onChange?: (genres: string[]) => any;
   showAdd?: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  genreCheckBox: {
-    padding: theme.spacing(0),
-    margin: theme.spacing(0, 1),
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: 2,
-  },
-  genreField: {
-    marginBottom: theme.spacing(1),
-  },
-  genreSelect: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    genreCheckBox: {
+      padding: theme.spacing(0),
+      margin: theme.spacing(0, 1),
+    },
+    chips: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
+    chip: {
+      margin: 2,
+    },
+    genreField: {
+      marginBottom: theme.spacing(1),
+    },
+    genreSelect: {
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+    },
+  }),
+);
 
 const GenresSelect = (props: GenresSelectProps) => {
   const classes = useStyles(props);
-  const {
-    value,
-    onChange,
-    showAdd,
-  } = props;
+  const { value, onChange, showAdd } = props;
 
   const [openAdd, setOpenAdd] = useState(false);
   const [addContent, setAddContent] = useState('');
 
-  const [loadGenres, {
-    called,
-    data: genreData,
-  }] = useGenresLazyQuery();
+  const [loadGenres, { called, data: genreData }] = useGenresLazyQuery();
 
   return (
     <div className={classes.genreSelect}>
@@ -77,7 +72,7 @@ const GenresSelect = (props: GenresSelectProps) => {
           multiple
           value={value}
           /* (event) => setSelectGenres(event.target.value as string[]) */
-          onChange={(e) => (onChange && onChange(e.target.value as string[]))}
+          onChange={(e) => onChange && onChange(e.target.value as string[])}
           onOpen={() => {
             if (!called) loadGenres();
           }}
@@ -100,13 +95,17 @@ const GenresSelect = (props: GenresSelectProps) => {
             .filter((elem, index, self) => self.indexOf(elem) === index)
             .map((g) => (
               <MenuItem key={g} value={g}>
-                <Checkbox classes={{ root: classes.genreCheckBox }} size="small" checked={value.indexOf(g) > -1} />
+                <Checkbox
+                  classes={{ root: classes.genreCheckBox }}
+                  size="small"
+                  checked={value.indexOf(g) > -1}
+                />
                 <ListItemText primary={g} />
               </MenuItem>
             ))}
         </Select>
       </FormControl>
-      {(showAdd) && (
+      {showAdd && (
         <>
           <IconButton size="small" onClick={() => setOpenAdd(true)}>
             <Icon>add</Icon>
@@ -127,8 +126,11 @@ const GenresSelect = (props: GenresSelectProps) => {
                 variant="contained"
                 color="secondary"
                 onClick={() => {
-                  onChange([...value, addContent]
-                    .filter((elem, index, self) => self.indexOf(elem) === index));
+                  onChange(
+                    [...value, addContent].filter(
+                      (elem, index, self) => self.indexOf(elem) === index,
+                    ),
+                  );
                   setAddContent('');
                   setOpenAdd(false);
                 }}

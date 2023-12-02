@@ -1,28 +1,31 @@
+import { Buffer } from 'buffer';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Buffer } from 'buffer';
 
-import { orderBy as naturalOrderBy } from 'natural-orderby';
-import { extractFull } from 'node-7z';
 import { SpanStatusCode } from '@opentelemetry/api';
 import { PromisePool } from '@supercharge/promise-pool';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
+import { extractFull } from 'node-7z';
 
-import { Result, Scalars } from '@syuchan1005/book-reader-graphql';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
+import { Result, Scalars } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
+import { convertToDefaultImageType } from '@server/ImageUtil';
+import { tracer } from '@server/OpenTelemetry';
 import { asyncForEach } from '@server/Util';
 import { BookDataManager } from '@server/database/BookDataManager';
 import {
-  readFile,
   StorageDataManager,
+  readFile,
   streamToBuffer,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
-import { convertToDefaultImageType } from '@server/ImageUtil';
-import { tracer } from '@server/OpenTelemetry';
 
-const readImageFilePathsRecursively = async (dir, files: string[] = []): Promise<string[]> => {
+const readImageFilePathsRecursively = async (
+  dir,
+  files: string[] = [],
+): Promise<string[]> => {
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
   dirents.forEach((dirent) => {
@@ -33,11 +36,11 @@ const readImageFilePathsRecursively = async (dir, files: string[] = []): Promise
     // eslint-disable-next-line no-param-reassign
     files = await readImageFilePathsRecursively(d, files);
   });
-  return files
-    // TODO: Filter node-sharp not supported types only
-    .filter(
-      (f) => /^(?!.*__MACOSX).*\.(jpe?g|png|webp)$/i.test(f),
-    );
+  return (
+    files
+      // TODO: Filter node-sharp not supported types only
+      .filter((f) => /^(?!.*__MACOSX).*\.(jpe?g|png|webp)$/i.test(f))
+  );
 };
 
 const GQLUtil = {
@@ -64,16 +67,22 @@ const GQLUtil = {
             message: Errors.QL0003,
           };
         }
-        files = naturalOrderBy(files, undefined, undefined, ['_', '.', '!', 'cover']);
+        files = naturalOrderBy(files, undefined, undefined, [
+          '_',
+          '.',
+          '!',
+          'cover',
+        ]);
         onProgress(0, files.length);
-        await PromisePool
-          .for(files)
+        await PromisePool.for(files)
           .withConcurrency(10)
           .onTaskFinished((_, pool) => {
             onProgress(pool.processedCount(), files.length);
           })
           .process(async (f, i) => {
-            const imageBuffer = await convertToDefaultImageType(await readFile(f));
+            const imageBuffer = await convertToDefaultImageType(
+              await readFile(f),
+            );
             await StorageDataManager.writePage(
               {
                 bookId,
@@ -114,36 +123,41 @@ const GQLUtil = {
           archiveSize: archiveFileData.length,
         },
       },
-      (span) => withTemporaryFolder(async (writeFile) => {
-        const filePath = await writeFile('archive.zip', archiveFileData);
-        return new Promise((resolve, reject) => {
-          const extractStream = extractFull(filePath, tempPath, {
-            recursive: true,
-            $progress: true,
+      (span) =>
+        withTemporaryFolder(async (writeFile) => {
+          const filePath = await writeFile('archive.zip', archiveFileData);
+          return new Promise((resolve, reject) => {
+            const extractStream = extractFull(filePath, tempPath, {
+              recursive: true,
+              $progress: true,
+            });
+            extractStream.on('progress', (event) => {
+              onProgress(event.percent);
+            });
+            extractStream.on('error', (err) => {
+              span.end();
+              reject(err);
+            });
+            extractStream.on('end', (...args) => {
+              span.end();
+              resolve(args);
+            });
           });
-          extractStream.on('progress', (event) => {
-            onProgress(event.percent);
-          });
-          extractStream.on('error', (err) => {
-            span.end();
-            reject(err);
-          });
-          extractStream.on('end', (...args) => {
-            span.end();
-            resolve(args);
-          });
-        });
-      }),
+        }),
     );
   },
   async getArchiveFile(
     onProgress: (downloadedBytes: number) => void,
     file?: Scalars['Upload'],
     localPath?: string,
-  ): Promise<({ success: false } & Result) | { success: true, data: Buffer }> {
+  ): Promise<({ success: false } & Result) | { success: true; data: Buffer }> {
     return tracer.startActiveSpan(
       'GQLUtil.getArchiveFile',
-      async (span): Promise<({ success: false } & Result) | { success: true, data: Buffer }> => {
+      async (
+        span,
+      ): Promise<
+        ({ success: false } & Result) | { success: true; data: Buffer }
+      > => {
         if (!file && !localPath) {
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -162,7 +176,10 @@ const GQLUtil = {
           buffer = await StorageDataManager.getUserStoredArchive(localPath);
           onProgress(0);
         } else if (file) {
-          buffer = await streamToBuffer((await file).createReadStream(), onProgress);
+          buffer = await streamToBuffer(
+            (await file).createReadStream(),
+            onProgress,
+          );
         }
 
         if (!buffer) {
@@ -191,7 +208,9 @@ const GQLUtil = {
     for (let i = 0; i < 10; i += 1) {
       const tempBooksFolder = path.join(tempPath, booksFolderPath);
       // eslint-disable-next-line no-await-in-loop
-      const dirents = await fs.readdir(tempBooksFolder, { withFileTypes: true });
+      const dirents = await fs.readdir(tempBooksFolder, {
+        withFileTypes: true,
+      });
       const dirs = dirents.filter((d) => d.isDirectory());
       if (dirs.length > 1) {
         // eslint-disable-next-line no-await-in-loop
@@ -201,13 +220,13 @@ const GQLUtil = {
             const min = parseInt(hasMulti[1], 10);
             const max = parseInt(hasMulti[2], 10);
             if (min < max) {
-              const nestNumbers = [...Array(max - min + 1)
-                .keys()]
-                .map((index) => index + min);
-              const nestFolders = await fs.readdir(
-                path.join(tempBooksFolder, d.name),
-                { withFileTypes: true },
-              )
+              const nestNumbers = [...Array(max - min + 1).keys()].map(
+                (index) => index + min,
+              );
+              const nestFolders = await fs
+                .readdir(path.join(tempBooksFolder, d.name), {
+                  withFileTypes: true,
+                })
                 .then((nestDirs) => nestDirs.filter((a) => a.isDirectory()));
               const folderNumbers = nestFolders.map((f) => {
                 const inNums = f.name.match(/\d+/g);
@@ -216,9 +235,15 @@ const GQLUtil = {
                 }
                 return min - 1;
               });
-              if (nestNumbers.filter((n) => !folderNumbers.includes(n)).length === 0
-                && folderNumbers.filter((n) => !nestNumbers.includes(n)).length === 0) {
-                bookFolders.push(...nestFolders.map((f) => path.join(d.name, f.name)));
+              if (
+                nestNumbers.filter((n) => !folderNumbers.includes(n)).length ===
+                  0 &&
+                folderNumbers.filter((n) => !nestNumbers.includes(n)).length ===
+                  0
+              ) {
+                bookFolders.push(
+                  ...nestFolders.map((f) => path.join(d.name, f.name)),
+                );
                 return;
               }
             }

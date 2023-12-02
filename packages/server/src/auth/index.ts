@@ -29,7 +29,7 @@ export const initRoutes = (app: Express) => {
   app.use('/auth', createAuthRouter('/auth'));
 };
 
-const createAuthRouter = (path: String) => {
+const createAuthRouter = (path: string) => {
   const router = express.Router();
   router.get('/', (req, res) => {
     // @ts-ignore
@@ -58,10 +58,10 @@ const createAuthRouter = (path: String) => {
     );
     router.get(
       '/oidc/callback',
-      passport.authenticate(
-        'openidconnect',
-        { failureRedirect: 'oidc', keepSessionInfo: true },
-      ),
+      passport.authenticate('openidconnect', {
+        failureRedirect: 'oidc',
+        keepSessionInfo: true,
+      }),
       (req, res) => {
         // @ts-ignore
         res.redirect(req.session.redirectTo || '/');

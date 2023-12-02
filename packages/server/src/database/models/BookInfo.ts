@@ -1,6 +1,6 @@
-import { Id } from './Id';
 import { BookId } from './Book';
 import { InputGenre } from './Genre';
+import { Id } from './Id';
 
 export type InfoId = Id;
 
@@ -25,9 +25,8 @@ export type BookInfoEditableValue = Partial<Pick<BookInfo, 'name'>> & {
   genres?: Array<InputGenre>;
 };
 
-export type InputBookInfo = Required<Pick<BookInfo, 'name'>>
-  & Partial<Omit<BookInfo, 'name' | 'updatedAt'>>
-  & {
-  thumbnail?: BookId;
-  genres?: Array<InputGenre>;
-};
+export type InputBookInfo = Required<Pick<BookInfo, 'name'>> &
+  Partial<Omit<BookInfo, 'name' | 'updatedAt'>> & {
+    thumbnail?: BookId;
+    genres?: Array<InputGenre>;
+  };

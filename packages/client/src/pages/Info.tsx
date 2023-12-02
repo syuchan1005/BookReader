@@ -1,10 +1,16 @@
-import React from 'react';
 import {
-  Fab, Icon, IconButton, Menu, MenuItem, Theme, useTheme,
+  Fab,
+  Icon,
+  IconButton,
+  Menu,
+  MenuItem,
+  Theme,
+  useTheme,
 } from '@mui/material';
+import { common } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { common } from '@mui/material/colors';
+import React from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
@@ -15,98 +21,102 @@ import { commonTheme } from '@client/App';
 import db, { Read } from '@client/indexedDb/Database';
 
 import Book from '@client/components/Book';
-import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import { pageAspectRatio } from '@client/components/BookPageImage';
+import { EmptyScreen } from '@client/components/EmptyScreen';
 import SelectBookHeader from '@client/components/SelectBookHeader';
-import { workbox } from '@client/registerServiceWorker';
+import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import { sortBookOrderState } from '@client/store/atoms';
-import { pageAspectRatio } from '@client/components/BookPageImage';
-import useLazyDialog from '@client/hooks/useLazyDialog';
-import { EmptyScreen } from '@client/components/EmptyScreen';
 import { useTitle } from '@client/hooks/useTitle';
+import { workbox } from '@client/registerServiceWorker';
+import { sortBookOrderState } from '@client/store/atoms';
 
-const AddBookDialog = React.lazy(() => import('@client/components/dialogs/AddBookDialog'));
+const AddBookDialog = React.lazy(
+  () => import('@client/components/dialogs/AddBookDialog'),
+);
 
 interface InfoProps {
   children?: React.ReactElement;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  info: {
-    height: '100%',
-    ...commonTheme.appbar(theme, 'paddingTop'),
-  },
-  infoGrid: {
-    padding: theme.spacing(1),
-    display: 'grid',
-    justifyContent: 'center',
-    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    info: {
+      height: '100%',
+      ...commonTheme.appbar(theme, 'paddingTop'),
     },
-  },
-  loading: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '2rem',
-    whiteSpace: 'pre-line',
-    textAlign: 'center',
-  },
-  fab: {
-    position: 'fixed',
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
-    right: theme.spacing(2),
-    zIndex: 2,
-    fallbacks: {
-      bottom: theme.spacing(2),
+    infoGrid: {
+      padding: theme.spacing(1),
+      display: 'grid',
+      justifyContent: 'center',
+      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+      columnGap: theme.spacing(2),
+      rowGap: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+      },
     },
-  },
-  addButton: {
-    position: 'fixed',
-    right: theme.spacing(2),
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
-    background: theme.palette.background.paper,
-    color: theme.palette.secondary.main,
-    zIndex: 2,
-    fallbacks: {
-      bottom: theme.spacing(11),
+    loading: {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontSize: '2rem',
+      whiteSpace: 'pre-line',
+      textAlign: 'center',
     },
-  },
-  selectedBookOverlay: {
-    position: 'relative',
-    '&::after': {
-      pointerEvents: 'none',
-      backgroundColor: theme.palette.primary.main,
-      opacity: '0.45',
-      content: '\'\'',
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      left: 0,
-      bottom: 0,
-      borderRadius: theme.shape.borderRadius,
+    fab: {
+      position: 'fixed',
+      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
+      right: theme.spacing(2),
+      zIndex: 2,
+      fallbacks: {
+        bottom: theme.spacing(2),
+      },
     },
-  },
-  selectedBookCheckIcon: {
-    color: theme.palette.common.white,
-    marginRight: theme.spacing(1),
-    marginTop: theme.spacing(1),
-  },
-}));
+    addButton: {
+      position: 'fixed',
+      right: theme.spacing(2),
+      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
+      background: theme.palette.background.paper,
+      color: theme.palette.secondary.main,
+      zIndex: 2,
+      fallbacks: {
+        bottom: theme.spacing(11),
+      },
+    },
+    selectedBookOverlay: {
+      position: 'relative',
+      '&::after': {
+        pointerEvents: 'none',
+        backgroundColor: theme.palette.primary.main,
+        opacity: '0.45',
+        content: "''",
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: 0,
+        borderRadius: theme.shape.borderRadius,
+      },
+    },
+    selectedBookCheckIcon: {
+      color: theme.palette.common.white,
+      marginRight: theme.spacing(1),
+      marginTop: theme.spacing(1),
+    },
+  }),
+);
 
 const ScreenMode = {
   NORMAL: 'NORMAL',
   SELECT: 'SELECT',
 } as const;
-type ScreenModeType = typeof ScreenMode[keyof typeof ScreenMode];
+type ScreenModeType = (typeof ScreenMode)[keyof typeof ScreenMode];
 
 const Info = (props: InfoProps) => {
   const [sortBookOrder, setSortBookOrder] = useRecoilState(sortBookOrderState);
@@ -116,9 +126,12 @@ const Info = (props: InfoProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
-  const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
-  const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] = useLazyDialog(false);
+  const visibleMargin = React.useMemo(
+    () => `0px 0px ${theme.spacing(3)} 0px`,
+    [theme],
+  );
+  const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] =
+    useLazyDialog(false);
   const [mode, setMode] = React.useState<ScreenModeType>(ScreenMode.NORMAL);
   const [selectIds, setSelectIds] = React.useState([]);
 
@@ -139,12 +152,7 @@ const Info = (props: InfoProps) => {
     // eslint-disable-next-line
   }, []);
 
-  const {
-    refetch,
-    loading,
-    error,
-    data,
-  } = useBookInfoQuery({
+  const { refetch, loading, error, data } = useBookInfoQuery({
     skip: isSkipQuery,
     variables: {
       id: infoId,
@@ -155,27 +163,29 @@ const Info = (props: InfoProps) => {
   const bookName = React.useMemo(() => data?.bookInfo?.name ?? '', [data]);
   useTitle(bookName || undefined);
 
-  const bookList = React.useMemo(
-    () => (data?.bookInfo?.books ?? []),
-    [data],
-  );
+  const bookList = React.useMemo(() => data?.bookInfo?.books ?? [], [data]);
 
   const [sortedReadBooks, setSortedReadBooks] = React.useState<Read[]>([]);
   React.useEffect(() => {
     let cancelled = false;
-    db.read.getAll(Number.MAX_SAFE_INTEGER, { key: 'infoId', direction: 'prev' }, infoId)
+    db.read
+      .getAll(
+        Number.MAX_SAFE_INTEGER,
+        { key: 'infoId', direction: 'prev' },
+        infoId,
+      )
       .then((reads) => {
         if (cancelled) {
           return;
         }
 
         setSortedReadBooks(
-          reads.sort(
-            (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-          ),
+          reads.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()),
         );
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [infoId]);
 
   const readId: string = React.useMemo(() => {
@@ -186,47 +196,60 @@ const Info = (props: InfoProps) => {
       return sortedReadBooks[0].bookId;
     }
     const existBookIds = bookList.map((book) => book.id);
-    return sortedReadBooks
-      .find((read) => existBookIds.includes(read.bookId))
-      ?.bookId || '';
+    return (
+      sortedReadBooks.find((read) => existBookIds.includes(read.bookId))
+        ?.bookId || ''
+    );
   }, [bookList, sortedReadBooks]);
 
-  const onDeletedBook = React.useCallback((bookId: string, pages: number) => {
-    // noinspection JSIgnoredPromiseFromCall
-    refetch();
-    // noinspection JSIgnoredPromiseFromCall
-    db.read.delete(bookId);
-    workbox?.messageSW({
-      type: 'BOOK_REMOVE',
-      bookId,
-      pages,
-    });
-  }, [refetch]);
+  const onDeletedBook = React.useCallback(
+    (bookId: string, pages: number) => {
+      // noinspection JSIgnoredPromiseFromCall
+      refetch();
+      // noinspection JSIgnoredPromiseFromCall
+      db.read.delete(bookId);
+      workbox?.messageSW({
+        type: 'BOOK_REMOVE',
+        bookId,
+        pages,
+      });
+    },
+    [refetch],
+  );
 
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const toggleSelect = React.useCallback((id: string) => {
-    if (selectIds.includes(id)) {
-      setSelectIds(selectIds.filter((i) => i !== id));
-    } else {
-      setSelectIds([...selectIds, id]);
-    }
-  }, [selectIds]);
+  const toggleSelect = React.useCallback(
+    (id: string) => {
+      if (selectIds.includes(id)) {
+        setSelectIds(selectIds.filter((i) => i !== id));
+      } else {
+        setSelectIds([...selectIds, id]);
+      }
+    },
+    [selectIds],
+  );
 
   const [sortEl, setSortEl, resetSortEl] = useMenuAnchor();
 
-  const handleBookClick = React.useCallback((event: React.MouseEvent, bookId: string) => {
-    if (mode === ScreenMode.SELECT) {
-      event.preventDefault();
-      toggleSelect(bookId);
-    }
-  }, [mode, toggleSelect]);
+  const handleBookClick = React.useCallback(
+    (event: React.MouseEvent, bookId: string) => {
+      if (mode === ScreenMode.SELECT) {
+        event.preventDefault();
+        toggleSelect(bookId);
+      }
+    },
+    [mode, toggleSelect],
+  );
 
-  const handleBookLongClick = React.useCallback((event, bookId: string) => {
-    event.preventDefault();
-    setMode(ScreenMode.SELECT);
-    toggleSelect(bookId);
-  }, [toggleSelect]);
+  const handleBookLongClick = React.useCallback(
+    (event, bookId: string) => {
+      event.preventDefault();
+      setMode(ScreenMode.SELECT);
+      toggleSelect(bookId);
+    },
+    [toggleSelect],
+  );
 
   const handleHeaderClose = React.useCallback(() => {
     setMode(ScreenMode.NORMAL);
@@ -245,31 +268,27 @@ const Info = (props: InfoProps) => {
 
   return (
     <>
-      {(mode === ScreenMode.NORMAL) ? (
-        <TitleAndBackHeader
-          backRoute="/"
-          title={bookName}
-        >
-          <IconButton style={{ color: common.white }} onClick={setSortEl} size="large">
+      {mode === ScreenMode.NORMAL ? (
+        <TitleAndBackHeader backRoute="/" title={bookName}>
+          <IconButton
+            style={{ color: common.white }}
+            onClick={setSortEl}
+            size="large"
+          >
             <Icon>sort</Icon>
           </IconButton>
-          <Menu
-            anchorEl={sortEl}
-            open={!!sortEl}
-            onClose={resetSortEl}
-          >
-            {Object.keys(BookOrder)
-              .map((order: BookOrder) => (
-                <MenuItem
-                  key={order}
-                  onClick={() => {
-                    setSortBookOrder(BookOrder[order]);
-                    resetSortEl();
-                  }}
-                >
-                  {BookOrder[order]}
-                </MenuItem>
-              ))}
+          <Menu anchorEl={sortEl} open={!!sortEl} onClose={resetSortEl}>
+            {Object.keys(BookOrder).map((order: BookOrder) => (
+              <MenuItem
+                key={order}
+                onClick={() => {
+                  setSortBookOrder(BookOrder[order]);
+                  resetSortEl();
+                }}
+              >
+                {BookOrder[order]}
+              </MenuItem>
+            ))}
           </Menu>
         </TitleAndBackHeader>
       ) : (
@@ -282,19 +301,20 @@ const Info = (props: InfoProps) => {
         />
       )}
       <main className={classes.info}>
-        {(loading || (error && !data)) ? (
+        {loading || (error && !data) ? (
           <div className={classes.loading}>
             {loading && 'Loading'}
-            {error && `${error.toString()
-              .replace(/:\s*/g, '\n')}`}
+            {error && `${error.toString().replace(/:\s*/g, '\n')}`}
           </div>
         ) : (
           <>
             {(loading || bookList?.length > 0) && (
               <div className={classes.infoGrid}>
-                {// @ts-ignore
-                  (bookList && bookList.length > 0) && bookList.map(
-                    (book) => (
+                {
+                  // @ts-ignore
+                  bookList &&
+                    bookList.length > 0 &&
+                    bookList.map((book) => (
                       <Book
                         key={book.id}
                         infoId={infoId}
@@ -308,22 +328,29 @@ const Info = (props: InfoProps) => {
                         thumbnailSize={downXs ? 150 : 200}
                         thumbnailNoSave={false}
                         visibleMargin={visibleMargin}
-                        overlayClassName={selectIds.includes(book.id)
-                          ? classes.selectedBookOverlay
-                          : undefined}
+                        overlayClassName={
+                          selectIds.includes(book.id)
+                            ? classes.selectedBookOverlay
+                            : undefined
+                        }
                         disableRipple={mode === ScreenMode.SELECT}
-                        onLongPress={mode === ScreenMode.NORMAL ? handleBookLongClick : undefined}
+                        onLongPress={
+                          mode === ScreenMode.NORMAL
+                            ? handleBookLongClick
+                            : undefined
+                        }
                       >
-                        {(selectIds.includes(book.id)) && (
-                          <Icon className={classes.selectedBookCheckIcon}>check_circle</Icon>
+                        {selectIds.includes(book.id) && (
+                          <Icon className={classes.selectedBookCheckIcon}>
+                            check_circle
+                          </Icon>
                         )}
                       </Book>
-                    ),
-                  )
+                    ))
                 }
               </div>
             )}
-            {(!loading && bookList.length === 0) && (<EmptyScreen />)}
+            {!loading && bookList.length === 0 && <EmptyScreen />}
 
             {/* eslint-disable-next-line jsx-a11y/no-access-key */}
             <Fab
@@ -345,13 +372,13 @@ const Info = (props: InfoProps) => {
           <Icon style={{ color: 'white' }}>refresh</Icon>
         </Fab>
 
-        {(canMountAddDialog) && (
-        <AddBookDialog
-          open={isShownAddDialog}
-          infoId={infoId}
-          onAdded={refetch}
-          onClose={hideAddDialog}
-        />
+        {canMountAddDialog && (
+          <AddBookDialog
+            open={isShownAddDialog}
+            infoId={infoId}
+            onAdded={refetch}
+            onClose={hideAddDialog}
+          />
         )}
       </main>
     </>

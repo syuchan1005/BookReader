@@ -15,14 +15,15 @@ interface BookInfoIndexEntity {
 export class ElasticSearchClient {
   private client: Client | undefined;
 
-  private index: string = 'book-reader';
+  private index = 'book-reader';
 
   async init(): Promise<void> {
     this.index = process.env.BOOKREADER_ELASTICSEARCH_INDEX || 'book-reader';
     const node = process.env.BOOKREADER_ELASTICSEARCH_NODE;
     try {
       const client = new Client({ node });
-      const isHealthy = await client.cluster.health()
+      const isHealthy = await client.cluster
+        .health()
         .then(() => true)
         .catch(() => false);
 
@@ -30,8 +31,7 @@ export class ElasticSearchClient {
         this.client = client;
       }
       // eslint-disable-next-line no-empty
-    } catch (ignored) {
-    }
+    } catch (ignored) {}
   }
 
   isAvailable(): boolean {
@@ -42,42 +42,50 @@ export class ElasticSearchClient {
     if (!this.client) {
       return;
     }
-    const bookInfos: BookInfoIndexEntity[] = await BookDataManager.Debug.getBookInfos()
-      .then((res) => res.map((bookInfo) => ({
-        id: bookInfo.id,
-        infoName: bookInfo.name,
-        createdAt: bookInfo.createdAt,
-        updatedAt: bookInfo.updatedAt,
-        genres: bookInfo.genres,
-      })));
+    const bookInfos: BookInfoIndexEntity[] =
+      await BookDataManager.Debug.getBookInfos().then((res) =>
+        res.map((bookInfo) => ({
+          id: bookInfo.id,
+          infoName: bookInfo.name,
+          createdAt: bookInfo.createdAt,
+          updatedAt: bookInfo.updatedAt,
+          genres: bookInfo.genres,
+        })),
+      );
     await this.client.indices.delete({ index: this.index }, { ignore: [404] });
-    await this.client.indices.create({
-      index: this.index,
-      settings: {
-        index: {
-          analysis: {
-            analyzer: {
-              default: {
-                type: 'custom',
-                char_filter: ['icu_normalizer'],
-                tokenizer: 'kuromoji_tokenizer',
-                filter: [
-                  'kuromoji_baseform',
-                  'kuromoji_part_of_speech',
-                  'cjk_width',
-                  'ja_stop',
-                  'kuromoji_stemmer',
-                  'lowercase',
-                ],
+    await this.client.indices.create(
+      {
+        index: this.index,
+        settings: {
+          index: {
+            analysis: {
+              analyzer: {
+                default: {
+                  type: 'custom',
+                  char_filter: ['icu_normalizer'],
+                  tokenizer: 'kuromoji_tokenizer',
+                  filter: [
+                    'kuromoji_baseform',
+                    'kuromoji_part_of_speech',
+                    'cjk_width',
+                    'ja_stop',
+                    'kuromoji_stemmer',
+                    'lowercase',
+                  ],
+                },
               },
             },
           },
         },
       },
-    }, { ignore: /* ignore exists */ [400] });
+      { ignore: /* ignore exists */ [400] },
+    );
     await this.client.bulk<BookInfoIndexEntity>({
       refresh: true,
-      operations: bookInfos.flatMap((doc) => [{ index: { _index: this.index } }, doc]),
+      operations: bookInfos.flatMap((doc) => [
+        { index: { _index: this.index } },
+        doc,
+      ]),
     });
   }
 
@@ -121,12 +129,20 @@ export class ElasticSearchClient {
   /**
    * Returns the list of infoId.
    */
-  async search(query: string, genres: string[], limit: number): Promise<string[]> {
-    const nameQuery = query ? [{
-      match: {
-        infoName: query,
-      },
-    }] : [];
+  async search(
+    query: string,
+    genres: string[],
+    limit: number,
+  ): Promise<string[]> {
+    const nameQuery = query
+      ? [
+          {
+            match: {
+              infoName: query,
+            },
+          },
+        ]
+      : [];
     const result = await this.client.search<BookInfoIndexEntity>({
       index: this.index,
       size: limit,

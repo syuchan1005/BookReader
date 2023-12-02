@@ -1,4 +1,4 @@
-import { ApolloClient, split, from } from '@apollo/client';
+import { ApolloClient, from, split } from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
 import {
   concatPagination,
@@ -8,10 +8,10 @@ import {
 import { createUploadLink } from 'apollo-upload-client';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
 
-import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { onError } from '@apollo/client/link/error';
-import { goToAuthPage } from '@client/auth';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { goToAuthPage } from '@client/auth';
+import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { createClient } from 'graphql-ws';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
@@ -38,17 +38,20 @@ const uniqueRelayStylePagination = <T = any>(
       };
       // @ts-ignore
       const mergeResult = pagination.merge(existing, incoming, _a);
-      const edges: { cursor: string, node: T }[] = mergeResult.edges.map((edge) => ({
-        ...edge,
-        node: {
-          ...edge.node,
-          [uniqueKey]: _a.readField(uniqueKey, edge.node),
-        },
-      }));
-      const filteredEdges: { cursor: string, node: T }[] = [];
+      const edges: { cursor: string; node: T }[] = mergeResult.edges.map(
+        (edge) => ({
+          ...edge,
+          node: {
+            ...edge.node,
+            [uniqueKey]: _a.readField(uniqueKey, edge.node),
+          },
+        }),
+      );
+      const filteredEdges: { cursor: string; node: T }[] = [];
       edges.forEach((edge) => {
-        const index = filteredEdges
-          .findIndex((e) => e.node[uniqueKey] === edge.node[uniqueKey]);
+        const index = filteredEdges.findIndex(
+          (e) => e.node[uniqueKey] === edge.node[uniqueKey],
+        );
         if (index !== -1) {
           if (selector(select(edge.node), select(filteredEdges[index].node))) {
             filteredEdges.splice(index, 1);
@@ -106,14 +109,17 @@ export const apolloClient = new ApolloClient({
 
       const log = (message) => {
         // @ts-ignore
-        if (apolloClient.snackbar) apolloClient.snackbar(message, { variant: 'error' });
+        if (apolloClient.snackbar)
+          apolloClient.snackbar(message, { variant: 'error' });
         // eslint-disable-next-line
         console.log(message);
       };
       if (graphQLErrors) {
-        graphQLErrors.forEach(({ message, locations, path }) => log(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-        ));
+        graphQLErrors.forEach(({ message, locations, path }) =>
+          log(
+            `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+          ),
+        );
       }
       if (networkError) {
         log(`[Network error]: ${networkError}`);
@@ -123,13 +129,15 @@ export const apolloClient = new ApolloClient({
       ({ query }) => {
         const definition = getMainDefinition(query);
         return (
-          definition.kind === 'OperationDefinition'
-          && definition.operation === 'subscription'
+          definition.kind === 'OperationDefinition' &&
+          definition.operation === 'subscription'
         );
       },
       new GraphQLWsLink(
         createClient({
-          url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${uri}`,
+          url: `${
+            window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+          }${uri}`,
         }),
       ),
       createUploadLink({

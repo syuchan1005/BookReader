@@ -1,21 +1,25 @@
-import { Resolvers } from '@syuchan1005/book-reader-graphql';
 import { createError } from '@server/Errors';
-import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
+import {
+  BookDataManager,
+  maybeRequireAtLeastOne,
+} from '@server/database/BookDataManager';
+import { Resolvers } from '@syuchan1005/book-reader-graphql';
 
 export const resolvers: Resolvers = {
   Query: {
-    genres: () => BookDataManager.getGenres()
-      .then((genres) => genres.map((genre) => ({
-        name: genre.name,
-        invisible: genre.isInvisible,
-      }))),
+    genres: () =>
+      BookDataManager.getGenres().then((genres) =>
+        genres.map((genre) => ({
+          name: genre.name,
+          invisible: genre.isInvisible,
+        })),
+      ),
   },
   Mutation: {
-    editGenre: async (_parent, {
-      oldName: currentGenreName,
-      newName,
-      invisible,
-    }) => {
+    editGenre: async (
+      _parent,
+      { oldName: currentGenreName, newName, invisible },
+    ) => {
       const editGenre = maybeRequireAtLeastOne({
         name: newName,
         isInvisible: invisible,

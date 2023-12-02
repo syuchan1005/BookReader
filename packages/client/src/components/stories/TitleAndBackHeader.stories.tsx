@@ -1,12 +1,12 @@
-import React from 'react';
-import { ComponentMeta } from '@storybook/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { MockedProvider } from '@apollo/client/testing';
 import { Icon, IconButton } from '@mui/material';
+import { ComponentMeta } from '@storybook/react';
+import React from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import TitleAndBackHeader from '../TitleAndBackHeader';
 
-export default {
+export default ({
   title: 'Components/TitleAndBackHeader',
   argTypes: {
     backRoute: {
@@ -33,9 +33,9 @@ export default {
       </MockedProvider>
     ),
   ],
-} as ComponentMeta<typeof TitleAndBackHeader>;
+} as ComponentMeta<typeof TitleAndBackHeader>);
 
-const Template = (args) => (<TitleAndBackHeader {...args} />);
+const Template = (args) => <TitleAndBackHeader {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
@@ -49,8 +49,10 @@ WithChildren.args = {
   backRoute: '/',
   title: 'Title',
   subTitle: 'Subtitle',
-  children: (<IconButton sx={{ color: 'white' }}><Icon>sort</Icon></IconButton>),
+  children: (
+    <IconButton sx={{ color: 'white' }}>
+      <Icon>sort</Icon>
+    </IconButton>
+  ),
 };
-WithChildren.decorators = [
-  (Story) => (<Story />),
-];
+WithChildren.decorators = [(Story) => <Story />];

@@ -1,32 +1,32 @@
-import {
-  useBooksLazyQuery,
-} from '@syuchan1005/book-reader-graphql';
+import { useBooksLazyQuery } from '@syuchan1005/book-reader-graphql';
 
-import React from 'react';
-import db, { BookRead } from '@client/indexedDb/Database';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme, useTheme } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import { pageAspectRatio } from '@client/components/BookPageImage';
 import Book from '@client/components/Book';
+import { pageAspectRatio } from '@client/components/BookPageImage';
 import useMediaQuery from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
+import db, { BookRead } from '@client/indexedDb/Database';
+import { Theme, useTheme } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import React from 'react';
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  grid: {
-    padding: theme.spacing(1),
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-    justifyContent: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    grid: {
+      padding: theme.spacing(1),
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+      justifyContent: 'center',
+      columnGap: theme.spacing(2),
+      rowGap: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+      },
     },
-  },
-}));
+  }),
+);
 
 const defaultLoadBooksCount = 20;
 
@@ -42,14 +42,16 @@ const History = () => {
   const [getBooks, { loading, data, fetchMore }] = useBooksLazyQuery({
     fetchPolicy: 'network-only',
   });
-  const mappedBooks: { [bookId: string]: typeof data.books[number]} = React.useMemo(
-    () => (data?.books ?? []).reduce((map, book) => {
-      // eslint-disable-next-line no-param-reassign
-      map[book.id] = book;
-      return map;
-    }, {}),
-    [data?.books],
-  );
+  const mappedBooks: { [bookId: string]: (typeof data.books)[number] } =
+    React.useMemo(
+      () =>
+        (data?.books ?? []).reduce((map, book) => {
+          // eslint-disable-next-line no-param-reassign
+          map[book.id] = book;
+          return map;
+        }, {}),
+      [data?.books],
+    );
 
   const getHistoryBooks = React.useCallback(() => {
     let after;
@@ -57,29 +59,32 @@ const History = () => {
       after = historyBooks[historyBooks.length - 1].updatedAt;
     }
     setHistoryBookLoading(true);
-    db.read.getAll(
-      defaultLoadBooksCount,
-      { key: 'updatedAt', direction: 'prev', after },
-    ).then((historyList) => {
-      if (historyList.length <= 0) {
-        return;
-      }
-      if (historyBooks.length === 0) {
-        getBooks({
-          variables: {
-            ids: historyList.map((book) => book.bookId),
-          },
-        });
-      } else {
-        fetchMore({
-          variables: {
-            ids: historyList.map((book) => book.bookId),
-          },
-        });
-      }
-      setHistoryBooks((p) => [...p, ...historyList]);
-      setHistoryBookLoading(false);
-    });
+    db.read
+      .getAll(defaultLoadBooksCount, {
+        key: 'updatedAt',
+        direction: 'prev',
+        after,
+      })
+      .then((historyList) => {
+        if (historyList.length <= 0) {
+          return;
+        }
+        if (historyBooks.length === 0) {
+          getBooks({
+            variables: {
+              ids: historyList.map((book) => book.bookId),
+            },
+          });
+        } else {
+          fetchMore({
+            variables: {
+              ids: historyList.map((book) => book.bookId),
+            },
+          });
+        }
+        setHistoryBooks((p) => [...p, ...historyList]);
+        setHistoryBookLoading(false);
+      });
   }, [fetchMore, getBooks, historyBooks]);
 
   React.useEffect(() => {
@@ -102,14 +107,22 @@ const History = () => {
               thumbnailSize={downSm ? 150 : 200}
               thumbnailNoSave={false}
               onVisible={() => {
-                if (arr.length - 1 === index && !loading && !historyBookLoading) {
+                if (
+                  arr.length - 1 === index &&
+                  !loading &&
+                  !historyBookLoading
+                ) {
                   getHistoryBooks();
                 }
               }}
             />
           );
         }
-        return <div key={bookRead.bookId}>{`Failed: ${JSON.stringify(bookRead)}`}</div>;
+        return (
+          <div key={bookRead.bookId}>{`Failed: ${JSON.stringify(
+            bookRead,
+          )}`}</div>
+        );
       })}
     </div>
   );

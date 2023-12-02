@@ -1,13 +1,19 @@
-import React from 'react';
 import { ListItem } from '@mui/material';
 import * as colors from '@mui/material/colors';
 import { ComponentMeta } from '@storybook/react';
+import React from 'react';
 
 import ColorTile from '../ColorTile';
 
-export default {
+export default ({
   title: 'Components/ColorTile',
-  decorators: [(Story) => (<ListItem><Story /></ListItem>)],
+  decorators: [
+    (Story) => (
+      <ListItem>
+        <Story />
+      </ListItem>
+    ),
+  ],
   argTypes: {
     color: {
       type: { name: 'string', required: true },
@@ -23,9 +29,9 @@ export default {
       type: { name: 'boolean', required: false },
     },
   },
-} as ComponentMeta<typeof ColorTile>;
+} as ComponentMeta<typeof ColorTile>);
 
-const Template = (args) => (<ColorTile {...args} />);
+const Template = (args) => <ColorTile {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {

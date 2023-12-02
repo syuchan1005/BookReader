@@ -1,7 +1,9 @@
 import React from 'react';
 
 const useOS = () => {
-  const [os, setOS] = React.useState<undefined | 'macOS' | 'Windows' | 'Linux' | 'iOS' | 'Android'>(undefined);
+  const [os, setOS] = React.useState<
+    undefined | 'macOS' | 'Windows' | 'Linux' | 'iOS' | 'Android'
+  >(undefined);
 
   const getOS = () => {
     const { userAgent, platform } = window.navigator;

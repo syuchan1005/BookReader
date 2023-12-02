@@ -1,36 +1,40 @@
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 
 import {
-  BookOrder,
   BookInfo as BookInfoGQLModel,
-  Resolvers,
   BookInfoResolvers,
+  BookOrder,
+  Resolvers,
 } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
 import { purgeImageCache } from '@server/ImageUtil';
-import { BookDataManager, maybeRequireAtLeastOne } from '@server/database/BookDataManager';
-import { generateId } from '@server/database/models/Id';
-import { StorageDataManager } from '@server/storage/StorageDataManager';
-import { meiliSearchClient, elasticSearchClient } from '@server/search';
+import {
+  BookDataManager,
+  maybeRequireAtLeastOne,
+} from '@server/database/BookDataManager';
 import { BookInfo as BookInfoDBModel } from '@server/database/models/BookInfo';
+import { generateId } from '@server/database/models/Id';
 import { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
+import { elasticSearchClient, meiliSearchClient } from '@server/search';
+import { StorageDataManager } from '@server/storage/StorageDataManager';
 
 export const resolvers: Resolvers & {
-  BookInfo: StrictResolver<BookInfoGQLModel, BookInfoDBModel, BookInfoResolvers>,
+  BookInfo: StrictResolver<
+    BookInfoGQLModel,
+    BookInfoDBModel,
+    BookInfoResolvers
+  >;
 } = {
   Query: {
     bookInfo: (parent, { id: infoId }) => BookDataManager.getBookInfo(infoId),
-    bookInfos: async (parent, {
-      ids: infoIds,
-    }) => {
+    bookInfos: async (parent, { ids: infoIds }) => {
       const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
-      const bookInfoMap = bookInfos
-        .reduce((map, bookInfo) => {
-          // eslint-disable-next-line no-param-reassign
-          map[bookInfo.id] = bookInfo;
-          return map;
-        }, {} as { [key: string]: BookInfoDBModel });
+      const bookInfoMap = bookInfos.reduce((map, bookInfo) => {
+        // eslint-disable-next-line no-param-reassign
+        map[bookInfo.id] = bookInfo;
+        return map;
+      }, {} as { [key: string]: BookInfoDBModel });
       return infoIds.map((infoId) => {
         const bookInfo = bookInfoMap[infoId];
         if (!bookInfo) {
@@ -41,10 +45,7 @@ export const resolvers: Resolvers & {
     },
   },
   Mutation: {
-    addBookInfo: async (parent, {
-      name,
-      genres,
-    }) => {
+    addBookInfo: async (parent, { name, genres }) => {
       const infoId = await BookDataManager.addBookInfo({
         id: generateId(),
         name,
@@ -65,10 +66,7 @@ export const resolvers: Resolvers & {
         bookInfo,
       };
     },
-    editBookInfo: async (parent, {
-      id: infoId,
-      ...value
-    }) => {
+    editBookInfo: async (parent, { id: infoId, ...value }) => {
       const editValue = maybeRequireAtLeastOne(value);
       if (!editValue) {
         return {
@@ -127,8 +125,7 @@ export const resolvers: Resolvers & {
   },
   BookInfo: {
     count: ({ bookCount }) => bookCount,
-    updatedAt: ({ updatedAt }) => updatedAt.getTime()
-      .toString(),
+    updatedAt: ({ updatedAt }) => updatedAt.getTime().toString(),
     thumbnail: async ({ id }) => {
       const thumbnail = await BookDataManager.getBookInfoThumbnail(id);
       if (!thumbnail) {
@@ -140,24 +137,24 @@ export const resolvers: Resolvers & {
         bookPageCount: thumbnail.pageCount,
       };
     },
-    genres: ({ id }) => BookDataManager.getBookInfoGenres(id)
-      .then((genres) => genres?.map((genre) => ({
-        name: genre.name,
-        invisible: genre.isInvisible,
-      })) ?? []),
+    genres: ({ id }) =>
+      BookDataManager.getBookInfoGenres(id).then(
+        (genres) =>
+          genres?.map((genre) => ({
+            name: genre.name,
+            invisible: genre.isInvisible,
+          })) ?? [],
+      ),
     books: async ({ id }, { order }: { order: BookOrder }) => {
       const sortNumber = order.startsWith('Number_');
       let books = await BookDataManager.getBookInfoBooks(
         id,
-        sortNumber ? [] : [
-          ['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc'],
-        ],
+        sortNumber
+          ? []
+          : [['updatedAt', order === BookOrder.UpdateNewest ? 'asc' : 'desc']],
       );
       if (sortNumber) {
-        books = naturalOrderBy(
-          books || [],
-          [(v) => v.number],
-        );
+        books = naturalOrderBy(books || [], [(v) => v.number]);
         if (order === BookOrder.NumberDesc) books.reverse();
       }
       return books;

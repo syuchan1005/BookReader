@@ -1,4 +1,3 @@
-import React, { useRef } from 'react';
 import {
   Card,
   CardActionArea,
@@ -10,12 +9,16 @@ import {
   MenuItem,
   Theme,
 } from '@mui/material';
+import { yellow } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { yellow } from '@mui/material/colors';
+import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-import { BookInfo as QLBookInfo, HomeBookInfoFragment } from '@syuchan1005/book-reader-graphql';
+import {
+  BookInfo as QLBookInfo,
+  HomeBookInfoFragment,
+} from '@syuchan1005/book-reader-graphql';
 import {
   useDeleteBookInfoMutation,
   useEditBookInfoMutation,
@@ -26,15 +29,18 @@ import db from '@client/indexedDb/Database';
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
 import useBooleanState from '@client/hooks/useBooleanState';
+import useLazyDialog from '@client/hooks/useLazyDialog';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import useVisible from '@client/hooks/useVisible';
-import useLazyDialog from '@client/hooks/useLazyDialog';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 
-const DownloadDialog = React.lazy(() => import('@client/components/dialogs/DownloadBookInfoDialog'));
+const DownloadDialog = React.lazy(
+  () => import('@client/components/dialogs/DownloadBookInfoDialog'),
+);
 
-interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'count' | 'genres'> {
+interface BookInfoProps
+  extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'count' | 'genres'> {
   style?: React.CSSProperties;
   thumbnailSize: number;
   showName?: boolean;
@@ -42,105 +48,113 @@ interface BookInfoProps extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | '
   simple?: boolean;
   isReading?: boolean;
 
-  onDeleted?: (infoId: string, books: { id: string, pages: number }[]) => void;
+  onDeleted?: (infoId: string, books: { id: string; pages: number }[]) => void;
   onEdit?: (homeBookInfo: HomeBookInfoFragment) => void;
   index: number;
-  onVisible?: (index: number, isVisible: boolean, isFirstVisible: boolean) => void;
+  onVisible?: (
+    index: number,
+    isVisible: boolean,
+    isFirstVisible: boolean,
+  ) => void;
   visibleMargin?: string;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  card: {
-    width: '100%',
-    maxHeight: '100%',
-    margin: 'auto',
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  countLabel: {
-    position: 'absolute',
-    bottom: '0',
-    right: '0',
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    fontSize: '1rem',
-    width: '2rem',
-    height: '2rem',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-    borderRadius: '50%',
-  },
-  headerMenu: {
-    position: 'absolute',
-    zIndex: 1,
-    padding: 0,
-  },
-  completedLabel: {
-    position: 'absolute',
-    bottom: theme.spacing(2),
-    left: theme.spacing(-4),
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    fontSize: '1rem',
-    height: '2rem',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing(1, 3),
-    transform: 'rotate(45deg)',
-  },
-  invisibleLabel: {
-    position: 'absolute',
-    right: theme.spacing(1.5),
-    bottom: `calc(2rem + ${theme.spacing(1)})`,
-    color: 'white',
-    textShadow: '1px 1px 1px black',
-  },
-  newLabel: {
-    position: 'absolute',
-    top: theme.spacing(1.5),
-    left: theme.spacing(1.5),
-    color: 'white',
-    textShadow: '1px 1px 2px black',
-  },
-  cardContent: {
-    position: 'absolute',
-    bottom: '0',
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    fontSize: '1rem',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: theme.spacing(1),
-    borderTopRightRadius: theme.spacing(0.5),
-  },
-  link: {
-    width: '100%',
-    color: 'unset',
-    textDecoration: 'unset',
-  },
-  labelContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    display: 'flex',
-  },
-  readLabel: {
-    marginLeft: theme.spacing(1),
-    background: theme.palette.secondary.main,
-    color: theme.palette.secondary.contrastText,
-    padding: theme.spacing(1),
-    borderRadius: theme.spacing(1),
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    card: {
+      width: '100%',
+      maxHeight: '100%',
+      margin: 'auto',
+      display: 'flex',
+      justifyContent: 'flex-end',
+    },
+    countLabel: {
+      position: 'absolute',
+      bottom: '0',
+      right: '0',
+      background: 'rgba(0, 0, 0, 0.7)',
+      color: 'white',
+      fontSize: '1rem',
+      width: '2rem',
+      height: '2rem',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: theme.spacing(1),
+      margin: theme.spacing(1),
+      borderRadius: '50%',
+    },
+    headerMenu: {
+      position: 'absolute',
+      zIndex: 1,
+      padding: 0,
+    },
+    completedLabel: {
+      position: 'absolute',
+      bottom: theme.spacing(2),
+      left: theme.spacing(-4),
+      background: 'rgba(0, 0, 0, 0.7)',
+      color: 'white',
+      fontSize: '1rem',
+      height: '2rem',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: theme.spacing(1, 3),
+      transform: 'rotate(45deg)',
+    },
+    invisibleLabel: {
+      position: 'absolute',
+      right: theme.spacing(1.5),
+      bottom: `calc(2rem + ${theme.spacing(1)})`,
+      color: 'white',
+      textShadow: '1px 1px 1px black',
+    },
+    newLabel: {
+      position: 'absolute',
+      top: theme.spacing(1.5),
+      left: theme.spacing(1.5),
+      color: 'white',
+      textShadow: '1px 1px 2px black',
+    },
+    cardContent: {
+      position: 'absolute',
+      bottom: '0',
+      background: 'rgba(0, 0, 0, 0.7)',
+      color: 'white',
+      fontSize: '1rem',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: theme.spacing(1),
+      borderTopRightRadius: theme.spacing(0.5),
+    },
+    link: {
+      width: '100%',
+      color: 'unset',
+      textDecoration: 'unset',
+    },
+    labelContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      display: 'flex',
+    },
+    readLabel: {
+      marginLeft: theme.spacing(1),
+      background: theme.palette.secondary.main,
+      color: theme.palette.secondary.contrastText,
+      padding: theme.spacing(1),
+      borderRadius: theme.spacing(1),
+    },
+  }),
+);
 
-const useFavorite = (infoId: string): [value: boolean, toggle: () => Promise<unknown>] => {
+const useFavorite = (
+  infoId: string,
+): [value: boolean, toggle: () => Promise<unknown>] => {
   const [isFavorite, setFavorite] = React.useState(false);
   const toggleFavorite = React.useCallback(() => {
     let p: Promise<unknown>;
@@ -159,7 +173,8 @@ const useFavorite = (infoId: string): [value: boolean, toggle: () => Promise<unk
   }, [infoId, isFavorite]);
 
   React.useEffect(() => {
-    db.bookInfoFavorite.get(infoId)
+    db.bookInfoFavorite
+      .get(infoId)
       .then((r) => setFavorite(!!r))
       .catch(() => setFavorite(false));
   }, [infoId]);
@@ -195,20 +210,36 @@ const BookInfo = (props: BookInfoProps) => {
   const [keepVisible, setKeepVisible] = React.useState(false);
 
   const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
-  const [isShownDeleteDialog, showDeleteDialog,
-    hideDeleteDialog, , setShowDeleteDialog] = useBooleanState(false);
-  const [isShownEditDialog, showEditDialog,
-    hideEditDialog, , setShowEditDialog] = useBooleanState(false);
+  const [
+    isShownDeleteDialog,
+    showDeleteDialog,
+    hideDeleteDialog,
+    ,
+    setShowDeleteDialog,
+  ] = useBooleanState(false);
+  const [
+    isShownEditDialog,
+    showEditDialog,
+    hideEditDialog,
+    ,
+    setShowEditDialog,
+  ] = useBooleanState(false);
   const [editContent, setEditContent] = React.useState({
     name,
     genres: genres.map((g) => g.name),
   });
-  const [selectDialog, setSelectDialog] = React.useState<string | undefined>(undefined);
+  const [selectDialog, setSelectDialog] = React.useState<string | undefined>(
+    undefined,
+  );
   const hideSelectDialog = React.useCallback(() => {
     setSelectDialog(undefined);
   }, []);
-  const [isShownDownloadDialog, canMountDownloadDialog, showDownloadDialog,
-    hideDownloadDialog] = useLazyDialog(false);
+  const [
+    isShownDownloadDialog,
+    canMountDownloadDialog,
+    showDownloadDialog,
+    hideDownloadDialog,
+  ] = useLazyDialog(false);
 
   React.useEffect(() => {
     onVisible(index, isVisible, isVisible && !keepVisible);
@@ -278,7 +309,10 @@ const BookInfo = (props: BookInfoProps) => {
     }));
   }, [name]);
 
-  const hasInvisibleGenre = React.useMemo(() => genres.some((g) => g.invisible), [genres]);
+  const hasInvisibleGenre = React.useMemo(
+    () => genres.some((g) => g.invisible),
+    [genres],
+  );
   const [isFavorite, toggleFavorite] = useFavorite(infoId);
   const handleFavoriteClick = React.useCallback(() => {
     resetMenuAnchor();
@@ -295,9 +329,13 @@ const BookInfo = (props: BookInfoProps) => {
     >
       {keepVisible && (
         <Card className={classes.card} style={style} sx={{ height: '100%' }}>
-          {(!simple) && (
+          {!simple && (
             <CardActions className={classes.headerMenu}>
-              <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
+              <IconButton
+                onClick={setMenuAnchor}
+                aria-label="menu"
+                size="large"
+              >
                 <Icon>more_vert</Icon>
               </IconButton>
               <Menu
@@ -306,9 +344,11 @@ const BookInfo = (props: BookInfoProps) => {
                 onClose={resetMenuAnchor}
               >
                 <MenuItem onClick={handleFavoriteClick}>
-                  {(isFavorite ? 'Remove from favorite' : 'Favorite')}
+                  {isFavorite ? 'Remove from favorite' : 'Favorite'}
                 </MenuItem>
-                <MenuItem onClick={clickSelectThumbnailBookInfo}>Select Thumbnail</MenuItem>
+                <MenuItem onClick={clickSelectThumbnailBookInfo}>
+                  Select Thumbnail
+                </MenuItem>
                 <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
                 <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
                 <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
@@ -332,36 +372,45 @@ const BookInfo = (props: BookInfoProps) => {
               />
               {showName ? (
                 <CardContent className={classes.cardContent}>
-                  <div>{`${name} (${count}${genres.some((g) => g.name === 'Completed') ? ', Completed' : ''})`}</div>
+                  <div>{`${name} (${count}${
+                    genres.some((g) => g.name === 'Completed')
+                      ? ', Completed'
+                      : ''
+                  })`}</div>
                 </CardContent>
               ) : (
                 <CardContent className={classes.countLabel}>
                   <div>{count}</div>
                 </CardContent>
               )}
-              {(genres.some((g) => g.name === 'Completed') && !showName) ? (
+              {genres.some((g) => g.name === 'Completed') && !showName ? (
                 <div className={classes.completedLabel}>Completed</div>
               ) : null}
-              {(isFavorite) && (
+              {isFavorite && (
                 <Icon
                   sx={{
                     position: 'absolute',
                     right: (t) => t.spacing(1.5),
-                    bottom: (t) => `calc(2rem + ${t.spacing(hasInvisibleGenre ? 4 : 1)})`,
+                    bottom: (t) =>
+                      `calc(2rem + ${t.spacing(hasInvisibleGenre ? 4 : 1)})`,
                     color: yellow[700],
                   }}
                 >
                   star
                 </Icon>
               )}
-              {(hasInvisibleGenre) && (
+              {hasInvisibleGenre && (
                 <Icon className={classes.invisibleLabel}>visibility_off</Icon>
               )}
-              {((Date.now() - Number(updatedAt)) < NEW_BOOK_INFO_EXPIRED) && (
+              {Date.now() - Number(updatedAt) < NEW_BOOK_INFO_EXPIRED && (
                 <Icon className={classes.newLabel}>tips_and_updates</Icon>
               )}
-              {(isReading && !simple) ? (
-                <div className={`${classes.labelContainer} ${classes.readLabel}`}>Reading</div>
+              {isReading && !simple ? (
+                <div
+                  className={`${classes.labelContainer} ${classes.readLabel}`}
+                >
+                  Reading
+                </div>
               ) : null}
             </CardActionArea>
           </Link>
@@ -393,7 +442,7 @@ const BookInfo = (props: BookInfoProps) => {
             onEdit={onEdit}
           />
 
-          {(canMountDownloadDialog) && (
+          {canMountDownloadDialog && (
             <DownloadDialog
               open={isShownDownloadDialog}
               onClose={hideDownloadDialog}

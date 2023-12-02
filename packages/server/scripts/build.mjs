@@ -1,5 +1,5 @@
-import { build } from 'esbuild';
 import { NodeResolvePlugin } from '@esbuild-plugins/node-resolve';
+import { build } from 'esbuild';
 
 const argEnv = process.argv[2] || 'development';
 
@@ -14,7 +14,10 @@ build({
     NodeResolvePlugin({
       extensions: ['.ts', '.js'],
       onResolved: (resolved) => {
-        if (resolved.includes('node_modules') && !resolved.includes('@syuchan1005')) {
+        if (
+          resolved.includes('node_modules') &&
+          !resolved.includes('@syuchan1005')
+        ) {
           return {
             external: true,
           };
@@ -27,7 +30,10 @@ build({
     '.graphql': 'text',
   },
   minify: argEnv === 'production',
-  define: argEnv !== 'development' ? {
-    'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
-  } : undefined,
+  define:
+    argEnv !== 'development'
+      ? {
+          'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
+        }
+      : undefined,
 });

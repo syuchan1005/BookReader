@@ -1,11 +1,6 @@
 module.exports = {
   extends: '../../.eslintrc.js',
-  plugins: [
-    'react',
-    'react-hooks',
-    'jsx-a11y',
-    'jest',
-  ],
+  plugins: ['react', 'react-hooks', 'jsx-a11y', 'jest'],
   env: {
     browser: true,
     'jest/globals': true,
@@ -19,12 +14,14 @@ module.exports = {
     'react/no-unused-prop-types': 0,
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': [
-      'warn', {
+      'warn',
+      {
         additionalHooks: 'useRecoilCallback',
       },
     ],
     'react/function-component-definition': [
-      'error', {
+      'error',
+      {
         namedComponents: 'arrow-function',
         unnamedComponents: 'arrow-function',
       },
@@ -35,7 +32,10 @@ module.exports = {
       alias: {
         map: [
           ['@client', `${__dirname}/src`],
-          ['@syuchan1005/book-reader-graphql', `${__dirname}/generated/GQLQueries.ts`],
+          [
+            '@syuchan1005/book-reader-graphql',
+            `${__dirname}/generated/GQLQueries.ts`,
+          ],
         ],
       },
     },

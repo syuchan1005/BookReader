@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   CircularProgress,
@@ -12,26 +11,27 @@ import {
   useTheme,
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
 import {
   BookInfoOrder,
-  useDeleteUnusedFoldersMutation,
   useDebugBookCountsLazyQuery,
+  useDeleteUnusedFoldersMutation,
   useRebuildMeiliSearchMutation,
 } from '@syuchan1005/book-reader-graphql';
 
-import { workbox } from '@client/registerServiceWorker';
 import { resetStore } from '@client/apollo';
 import ColorTile from '@client/components/ColorTile';
+import { exportDbJson, importDbJson } from '@client/indexedDb/DBFileController';
+import { workbox } from '@client/registerServiceWorker';
 import {
   primaryColorState,
   secondaryColorState,
   showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
-import { exportDbJson, importDbJson } from '@client/indexedDb/DBFileController';
 
 interface HeaderMenuProps {
   anchorEl: Element;
@@ -39,17 +39,17 @@ interface HeaderMenuProps {
 }
 
 const HomeHeaderMenu = (props: HeaderMenuProps) => {
-  const {
-    anchorEl,
-    onClose,
-  } = props;
+  const { anchorEl, onClose } = props;
 
   const navigate = useNavigate();
   const location = useLocation();
   const [primaryColor, setPrimaryColor] = useRecoilState(primaryColorState);
-  const [secondaryColor, setSecondaryColor] = useRecoilState(secondaryColorState);
+  const [secondaryColor, setSecondaryColor] =
+    useRecoilState(secondaryColorState);
   const [sortOrder, setSortOrder] = useRecoilState(sortOrderState);
-  const [showBookInfoName, setShowBookInfoName] = useRecoilState(showBookInfoNameState);
+  const [showBookInfoName, setShowBookInfoName] = useRecoilState(
+    showBookInfoNameState,
+  );
   const theme = useTheme();
 
   const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
@@ -59,20 +59,20 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const [openIndexedDBMenu, setOpenIndexedDBMenu] = React.useState(null);
 
   const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
-  const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(undefined);
+  const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(
+    undefined,
+  );
 
-  const [getBookCounts, {
-    refetch,
-    loading,
-    data,
-  }] = useDebugBookCountsLazyQuery();
+  const [getBookCounts, { refetch, loading, data }] =
+    useDebugBookCountsLazyQuery();
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] = useDeleteUnusedFoldersMutation({
-    onCompleted() {
-      // noinspection JSIgnoredPromiseFromCall
-      refetch();
-    },
-  });
+  const [deleteUnusedFolder, { loading: deleteLoading }] =
+    useDeleteUnusedFoldersMutation({
+      onCompleted() {
+        // noinspection JSIgnoredPromiseFromCall
+        refetch();
+      },
+    });
 
   /* i => [apollo, storage, all] */
   const purgeCache = React.useCallback((i) => {
@@ -80,13 +80,14 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     const isStorage = i === 1 || i === 2;
     const wb = isStorage ? workbox : undefined;
     Promise.all([
-      (isApollo ? resetStore() : Promise.resolve()),
+      isApollo ? resetStore() : Promise.resolve(),
       Promise.race([
-        (wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
-        new Promise((r) => { setTimeout(r, 1000); }), // timeout: 1000ms
+        wb ? wb.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve(),
+        new Promise((r) => {
+          setTimeout(r, 1000);
+        }), // timeout: 1000ms
       ]),
-    ])
-      .finally(() => window.location.reload());
+    ]).finally(() => window.location.reload());
   }, []);
 
   const [vConsole, setVConsole] = React.useState(undefined);
@@ -104,7 +105,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     }
   }, [vConsole]);
 
-  const [rebuildMeiliSearchMutation, { loading: rebuilding }] = useRebuildMeiliSearchMutation();
+  const [rebuildMeiliSearchMutation, { loading: rebuilding }] =
+    useRebuildMeiliSearchMutation();
 
   return (
     <>
@@ -115,7 +117,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         }}
         anchorEl={anchorEl}
         open={!!anchorEl}
-        onClose={() => (onClose && onClose())}
+        onClose={() => onClose && onClose()}
       >
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
           {`Sort: ${sortOrder}`}
@@ -142,13 +144,17 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           <span>{`${showBookInfoName ? 'Hide' : 'Show'} InfoName`}</span>
         </MenuItem>
         <MenuItem
-          onClick={() => navigate('/setting', {
-            state: {
-              referrer: location.pathname,
-            },
-          })}
+          onClick={() =>
+            navigate('/setting', {
+              state: {
+                referrer: location.pathname,
+              },
+            })
+          }
         >
-          <ListItemIcon><Icon>settings</Icon></ListItemIcon>
+          <ListItemIcon>
+            <Icon>settings</Icon>
+          </ListItemIcon>
           Settings
         </MenuItem>
         <MenuItem onClick={() => setDebugAnchorEl(!debugAnchorEl)}>
@@ -164,15 +170,17 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             <Icon>{`keyboard_arrow_${openCacheControl ? 'up' : 'down'}`}</Icon>
           </MenuItem>
           <Collapse in={openCacheControl}>
-            {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map((order, i) => (
-              <MenuItem
-                key={order}
-                onClick={() => purgeCache(i)}
-                style={{ paddingLeft: theme.spacing(3) }}
-              >
-                {order}
-              </MenuItem>
-            ))}
+            {['Purge apollo cache', 'Purge cacheStorage', 'Purge All'].map(
+              (order, i) => (
+                <MenuItem
+                  key={order}
+                  onClick={() => purgeCache(i)}
+                  style={{ paddingLeft: theme.spacing(3) }}
+                >
+                  {order}
+                </MenuItem>
+              ),
+            )}
           </Collapse>
           <MenuItem
             onClick={() => {
@@ -184,11 +192,12 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             <Icon>{`keyboard_arrow_${openBookCounts ? 'up' : 'down'}`}</Icon>
           </MenuItem>
           <Collapse in={openBookCounts}>
-            {(deleteLoading || loading || !data) ? (
-              <MenuItem style={{
-                display: 'flex',
-                justifyContent: 'center',
-              }}
+            {deleteLoading || loading || !data ? (
+              <MenuItem
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
               >
                 <CircularProgress color="secondary" />
               </MenuItem>
@@ -225,18 +234,25 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             <Icon>{`keyboard_arrow_${openIndexedDBMenu ? 'up' : 'down'}`}</Icon>
           </MenuItem>
           <Collapse in={openIndexedDBMenu}>
-            <MenuItem onClick={() => exportDbJson()}>
-              Export indexedDB
-            </MenuItem>
+            <MenuItem onClick={() => exportDbJson()}>Export indexedDB</MenuItem>
             <MenuItem onClick={() => importDbJson()}>
               Import indexedDB (merge & overwrite)
             </MenuItem>
           </Collapse>
-          <MenuItem onClick={() => { rebuildMeiliSearchMutation(); }} disabled={rebuilding}>
+          <MenuItem
+            onClick={() => {
+              rebuildMeiliSearchMutation();
+            }}
+            disabled={rebuilding}
+          >
             Rebuild MeiliSearch indexes
           </MenuItem>
         </Collapse>
-        <MenuItem onClick={() => window.open('https://github.com/syuchan1005/BookReader')}>
+        <MenuItem
+          onClick={() =>
+            window.open('https://github.com/syuchan1005/BookReader')
+          }
+        >
           GitHub - BookReader
         </MenuItem>
       </Menu>
@@ -249,18 +265,17 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         open={!!sortAnchorEl}
         onClose={() => setSortAnchorEl(null)}
       >
-        {Object.keys(BookInfoOrder)
-          .map((order: BookInfoOrder) => (
-            <MenuItem
-              key={order}
-              onClick={() => {
-                setSortOrder(BookInfoOrder[order]);
-                setSortAnchorEl(null);
-              }}
-            >
-              {BookInfoOrder[order]}
-            </MenuItem>
-          ))}
+        {Object.keys(BookInfoOrder).map((order: BookInfoOrder) => (
+          <MenuItem
+            key={order}
+            onClick={() => {
+              setSortOrder(BookInfoOrder[order]);
+              setSortAnchorEl(null);
+            }}
+          >
+            {BookInfoOrder[order]}
+          </MenuItem>
+        ))}
       </Menu>
       <Menu
         anchorEl={colorAnchorEl}
@@ -273,8 +288,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           style: { maxHeight: theme.spacing(7 * 5) },
         }}
       >
-        {Object.keys(colors)
-          .map((c) => ((c !== 'common') ? (
+        {Object.keys(colors).map((c) =>
+          c !== 'common' ? (
             <MenuItem
               key={c}
               onClick={() => {
@@ -289,7 +304,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             >
               <ColorTile color={c} />
             </MenuItem>
-          ) : null))}
+          ) : null,
+        )}
       </Menu>
     </>
   );

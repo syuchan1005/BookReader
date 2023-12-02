@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   Dialog,
@@ -13,6 +12,7 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
+import React from 'react';
 import GenresSelect from '../GenresSelect';
 
 interface EditDialogProps {
@@ -30,15 +30,17 @@ interface EditDialogProps {
   onClose?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  checkbox: {
-    marginBottom: theme.spacing(1),
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    content: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    checkbox: {
+      marginBottom: theme.spacing(1),
+    },
+  }),
+);
 
 const defaultGenres = [];
 
@@ -56,23 +58,29 @@ const EditDialog = (props: EditDialogProps) => {
   } = props;
   const classes = useStyles(props);
 
-  const handleChangeGenres = React.useCallback((g) => {
-    if (onChange) {
-      onChange('genres', g);
-    }
-  }, [onChange]);
+  const handleChangeGenres = React.useCallback(
+    (g) => {
+      if (onChange) {
+        onChange('genres', g);
+      }
+    },
+    [onChange],
+  );
 
-  const handleTextChange = React.useCallback((event) => {
-    if (onChange) {
-      onChange(info ? 'name' : 'number', event.target.value);
-    }
-  }, [info, onChange]);
+  const handleTextChange = React.useCallback(
+    (event) => {
+      if (onChange) {
+        onChange(info ? 'name' : 'number', event.target.value);
+      }
+    },
+    [info, onChange],
+  );
 
   return (
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
       <DialogContent className={classes.content}>
-        {(info) && (
+        {info && (
           <GenresSelect
             value={genres ?? defaultGenres}
             onChange={handleChangeGenres}
@@ -97,10 +105,7 @@ const EditDialog = (props: EditDialogProps) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={onClose}
-          disabled={loading}
-        >
+        <Button onClick={onClose} disabled={loading}>
           close
         </Button>
         <Button

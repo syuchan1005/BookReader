@@ -1,14 +1,16 @@
-import React from 'react';
 import {
   Box,
-  Button, CircularProgress,
+  Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogTitle,
   List,
   ListItem,
-  ListItemText, Typography,
+  ListItemText,
+  Typography,
 } from '@mui/material';
+import React from 'react';
 import { List as MovableList, arrayMove } from 'react-movable';
 
 import {
@@ -16,9 +18,11 @@ import {
   useBulkEditPagesMutation,
 } from '@syuchan1005/book-reader-graphql';
 import {
-  ActionListItem, AddItemListItem,
-  AddTemplateListItem, createInitValue,
+  ActionListItem,
+  AddItemListItem,
+  AddTemplateListItem,
   EditTypeContent,
+  createInitValue,
 } from './ActionListItem';
 
 interface EditPagesDialogProps {
@@ -30,14 +34,10 @@ interface EditPagesDialogProps {
 }
 
 const EditPagesDialog = (props: EditPagesDialogProps) => {
-  const {
-    open,
-    onClose,
-    maxPage,
-    bookId,
-    onSuccess,
-  } = props;
-  const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>([]);
+  const { open, onClose, maxPage, bookId, onSuccess } = props;
+  const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>(
+    [],
+  );
   const [subscriptionId, setSubscriptionId] = React.useState<string>(undefined);
 
   const handleDeleteAction = React.useCallback((index: number) => {
@@ -90,25 +90,69 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
       <DialogTitle>Edit Pages</DialogTitle>
 
       {/* eslint-disable-next-line no-nested-ternary */}
-      {(loading) ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+      {loading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}
+        >
           <CircularProgress color="secondary" size={50} />
           <Typography variant="subtitle1" sx={{ mt: 1 }}>
             {subscriptionData?.bulkEditPage}
           </Typography>
         </Box>
+      ) : actions.length === 0 ? (
+        <List>
+          <AddTemplateListItem
+            bookId={bookId}
+            maxPage={maxPage}
+            onAdded={setActions}
+          />
+          <ListItem>
+            <ListItemText primary="or" style={{ textAlign: 'center' }} />
+          </ListItem>
+          <AddItemListItem
+            onAdded={(editType) => {
+              setActions([
+                ...actions,
+                {
+                  id: `${Date.now()}`,
+                  editType,
+                  content: createInitValue(editType),
+                },
+              ]);
+            }}
+          />
+        </List>
       ) : (
-        (actions.length === 0) ? (
-          <List>
-            <AddTemplateListItem
-              bookId={bookId}
-              maxPage={maxPage}
-              onAdded={setActions}
-            />
-            <ListItem>
-              <ListItemText primary="or" style={{ textAlign: 'center' }} />
-            </ListItem>
-            <AddItemListItem onAdded={(editType) => {
+        <>
+          <MovableList
+            transitionDuration={150}
+            values={actions}
+            onChange={({ oldIndex, newIndex }) =>
+              setActions(arrayMove(actions, oldIndex, newIndex))
+            }
+            renderList={({ children, props: listProps }) => (
+              <List {...listProps}>{children}</List>
+            )}
+            renderItem={({ value, index, props: itemProps }) => (
+              <ActionListItem
+                key={value.id}
+                draggableProps={itemProps}
+                dragHandleProps={{ 'data-movable-handle': true }}
+                editType={value.editType}
+                maxPage={maxPage}
+                bookId={bookId}
+                content={value.content}
+                setContent={(k, c) => setContentValue(index, k, c)}
+                onDelete={() => handleDeleteAction(index)}
+              />
+            )}
+          />
+          <AddItemListItem
+            onAdded={(editType) => {
               setActions([
                 ...actions,
                 {
@@ -118,58 +162,8 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
                 },
               ]);
             }}
-            />
-          </List>
-        ) : (
-          <>
-            <MovableList
-              transitionDuration={150}
-              values={actions}
-              onChange={({
-                oldIndex,
-                newIndex,
-              }) => setActions(
-                arrayMove(actions, oldIndex, newIndex),
-              )}
-              renderList={({
-                children,
-                props: listProps,
-              }) => (
-                <List {...listProps}>
-                  {children}
-                </List>
-              )}
-              renderItem={({
-                value,
-                index,
-                props: itemProps,
-              }) => (
-                <ActionListItem
-                  key={value.id}
-                  draggableProps={itemProps}
-                  dragHandleProps={{ 'data-movable-handle': true }}
-                  editType={value.editType}
-                  maxPage={maxPage}
-                  bookId={bookId}
-                  content={value.content}
-                  setContent={(k, c) => setContentValue(index, k, c)}
-                  onDelete={() => handleDeleteAction(index)}
-                />
-              )}
-            />
-            <AddItemListItem onAdded={(editType) => {
-              setActions([
-                ...actions,
-                {
-                  id: `${Date.now()}`,
-                  editType,
-                  content: createInitValue(editType),
-                },
-              ]);
-            }}
-            />
-          </>
-        )
+          />
+        </>
       )}
 
       <DialogActions>

@@ -1,11 +1,11 @@
-import React, { lazy } from 'react';
 import {
   BottomNavigation,
   BottomNavigationAction,
   Icon,
   Paper,
 } from '@mui/material';
-import { useLocation, Outlet, Link } from 'react-router-dom';
+import React, { lazy } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const TabItems = [
   {
@@ -25,7 +25,9 @@ const Top = () => {
   const [tabIndex, setTabIndex] = React.useState(0);
 
   React.useEffect(() => {
-    const i = TabItems.findIndex(({ path }) => path !== '/' && location.pathname.startsWith(path));
+    const i = TabItems.findIndex(
+      ({ path }) => path !== '/' && location.pathname.startsWith(path),
+    );
     setTabIndex(Math.max(0, i));
     // eslint-disable-next-line
   }, []);

@@ -1,18 +1,25 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useTheme } from '@mui/material';
 import useDebounceValue from '@client/hooks/useDebounceValue';
+import { useTheme } from '@mui/material';
+import { useCallback, useMemo, useState } from 'react';
 
-export const useLazyDialog = (initialState: boolean, leavingScreen?: number): [
+export const useLazyDialog = (
+  initialState: boolean,
+  leavingScreen?: number,
+): [
   openState: boolean,
   componentVisibleState: boolean,
-  setTrue: () => void, setFalse: () => void, toggle: () => void,
+  setTrue: () => void,
+  setFalse: () => void,
+  toggle: () => void,
   setState: (state: boolean) => void,
 ] => {
   const theme = useTheme();
   const [state, setState] = useState(initialState);
   const debounceState = useDebounceValue(
     state,
-    leavingScreen !== undefined ? leavingScreen : theme.transitions.duration.leavingScreen,
+    leavingScreen !== undefined
+      ? leavingScreen
+      : theme.transitions.duration.leavingScreen,
   );
   const componentVisibleState = useMemo(
     () => state || debounceState,

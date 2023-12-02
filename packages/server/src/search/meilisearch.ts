@@ -15,7 +15,7 @@ interface BookInfoIndexEntity {
 export class MeiliSearchClient {
   private client: MeiliSearch | undefined;
 
-  private index: string = 'book-reader';
+  private index = 'book-reader';
 
   async init(): Promise<void> {
     this.index = process.env.BOOKREADER_MEILISEARCH_INDEX || 'book-reader';
@@ -26,15 +26,13 @@ export class MeiliSearchClient {
         host,
         apiKey,
       });
-      const isHealthy = await client.isHealthy()
-        .catch(() => false);
+      const isHealthy = await client.isHealthy().catch(() => false);
 
       if (isHealthy) {
         this.client = client;
       }
       // eslint-disable-next-line no-empty
-    } catch (ignored) {
-    }
+    } catch (ignored) {}
   }
 
   isAvailable(): boolean {
@@ -45,14 +43,16 @@ export class MeiliSearchClient {
     if (!this.client) {
       return;
     }
-    const bookInfos: BookInfoIndexEntity[] = await BookDataManager.Debug.getBookInfos()
-      .then((res) => res.map((bookInfo) => ({
-        id: bookInfo.id,
-        infoName: bookInfo.name,
-        createdAt: bookInfo.createdAt,
-        updatedAt: bookInfo.updatedAt,
-        genres: bookInfo.genres,
-      })));
+    const bookInfos: BookInfoIndexEntity[] =
+      await BookDataManager.Debug.getBookInfos().then((res) =>
+        res.map((bookInfo) => ({
+          id: bookInfo.id,
+          infoName: bookInfo.name,
+          createdAt: bookInfo.createdAt,
+          updatedAt: bookInfo.updatedAt,
+          genres: bookInfo.genres,
+        })),
+      );
     const bookInfoIndex = this.client.index(this.index);
     await bookInfoIndex.deleteAllDocuments();
     await bookInfoIndex.updateFilterableAttributes(['genres']);
@@ -68,31 +68,34 @@ export class MeiliSearchClient {
     if (!bookInfo) {
       return;
     }
-    await this.client.index<BookInfoIndexEntity>(this.index)
-      .addDocuments([
-        {
-          id: bookInfo.id,
-          infoName: bookInfo.name,
-          createdAt: bookInfo.createdAt,
-          updatedAt: bookInfo.updatedAt,
-          genres: bookInfo.genres,
-        },
-      ]);
+    await this.client.index<BookInfoIndexEntity>(this.index).addDocuments([
+      {
+        id: bookInfo.id,
+        infoName: bookInfo.name,
+        createdAt: bookInfo.createdAt,
+        updatedAt: bookInfo.updatedAt,
+        genres: bookInfo.genres,
+      },
+    ]);
   }
 
   async removeBookInfo(infoId: string) {
     if (!this.client) {
       return;
     }
-    await this.client.index(this.index)
-      .deleteDocument(infoId);
+    await this.client.index(this.index).deleteDocument(infoId);
   }
 
   /**
    * Returns the list of infoId.
    */
-  async search(query: string, genres: string[], limit: number): Promise<string[]> {
-    const result = await this.client.index(this.index)
+  async search(
+    query: string,
+    genres: string[],
+    limit: number,
+  ): Promise<string[]> {
+    const result = await this.client
+      .index(this.index)
       .search<BookInfoIndexEntity>(query, {
         limit,
         attributesToRetrieve: ['id'],

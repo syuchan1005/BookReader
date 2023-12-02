@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   Dialog,
@@ -9,16 +8,17 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import React from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
+import Book from '@client/components/Book';
 import {
   HomeBookInfoFragment,
   useBookInfoQuery,
   useEditBookInfoThumbnailMutation,
 } from '@syuchan1005/book-reader-graphql';
-import Book from '@client/components/Book';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -27,29 +27,24 @@ interface SelectThumbnailDialogProps {
   onEdit?: (homeBookInfo: HomeBookInfoFragment) => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  selectGrid: {
-    minWidth: '250px',
-    width: '100%',
-    padding: theme.spacing(1),
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
-    justifyContent: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    selectGrid: {
+      minWidth: '250px',
+      width: '100%',
+      padding: theme.spacing(1),
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
+      justifyContent: 'center',
+      columnGap: theme.spacing(2),
+      rowGap: theme.spacing(2),
+    },
+  }),
+);
 
-const SelectBookInfoThumbnailDialog = (
-  props: SelectThumbnailDialogProps,
-) => {
+const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
   const classes = useStyles(props);
-  const {
-    open,
-    infoId,
-    onEdit,
-    onClose,
-  } = props;
+  const { open, infoId, onEdit, onClose } = props;
 
   const {
     loading: infoLoading,
@@ -62,18 +57,19 @@ const SelectBookInfoThumbnailDialog = (
     },
   });
 
-  const [
-    changeThumbnail,
-    { loading: changeLoading },
-  ] = useEditBookInfoThumbnailMutation({
-    onCompleted(d) {
-      if (!d) return;
-      if (d.edit.success && onClose) onClose();
-      if (d.edit.success && onEdit) onEdit(d.edit.bookInfo);
-    },
-  });
+  const [changeThumbnail, { loading: changeLoading }] =
+    useEditBookInfoThumbnailMutation({
+      onCompleted(d) {
+        if (!d) return;
+        if (d.edit.success && onClose) onClose();
+        if (d.edit.success && onEdit) onEdit(d.edit.bookInfo);
+      },
+    });
 
-  const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);
+  const loading = React.useMemo(
+    () => infoLoading || changeLoading,
+    [infoLoading, changeLoading],
+  );
 
   const closeDialog = () => {
     if (loading) return;
@@ -82,21 +78,19 @@ const SelectBookInfoThumbnailDialog = (
 
   const theme = useTheme();
   const fullscreen = useMediaQuery(theme.breakpoints.down('md'));
-  const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
+  const visibleMargin = React.useMemo(
+    () => `0px 0px ${theme.spacing(3)} 0px`,
+    [theme],
+  );
 
   return (
     <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
 
       <DialogContent>
-        {(loading) ? (
-          <div>Loading</div>
-        ) : null}
-        {(error && !data) ? (
-          <div>{error.message}</div>
-        ) : null}
-        {(!loading && data) ? (
+        {loading ? <div>Loading</div> : null}
+        {error && !data ? <div>{error.message}</div> : null}
+        {!loading && data ? (
           <div className={classes.selectGrid}>
             {data.bookInfo.books.map((book) => (
               // @ts-ignore

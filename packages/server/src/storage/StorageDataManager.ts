@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
-import { Stream } from 'stream';
 import { promises as fs } from 'fs';
-import { join } from 'path';
 import os from 'os';
+import { join } from 'path';
+import { Stream } from 'stream';
 
 import { move } from 'fs-extra';
 
@@ -18,7 +18,11 @@ export interface IStorageDataManager {
 
   getPageData(metadata: CacheablePageMetadata): Promise<PageData | undefined>;
 
-  writePage(metadata: CacheablePageMetadata, data: Buffer, overwrite: boolean): Promise<void>;
+  writePage(
+    metadata: CacheablePageMetadata,
+    data: Buffer,
+    overwrite: boolean,
+  ): Promise<void>;
 
   removeBook(bookId: string, cacheOnly: boolean): Promise<void>;
 
@@ -30,8 +34,8 @@ export interface IStorageDataManager {
 export const streamToBuffer = (
   stream: NodeJS.ReadableStream,
   onProgress: (downloadedBytes: number) => void,
-): Promise<Buffer> => new Promise(
-  (resolve, reject) => {
+): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
     const buffer: Buffer[] = [];
     stream.on('data', (chunk) => {
       buffer.push(chunk);
@@ -39,8 +43,7 @@ export const streamToBuffer = (
     });
     stream.on('end', () => resolve(Buffer.concat(buffer)));
     stream.on('error', reject);
-  },
-);
+  });
 
 export const withTemporaryFolder = async <T>(
   block: (
@@ -52,14 +55,11 @@ export const withTemporaryFolder = async <T>(
   let result: T;
   try {
     folderPath = await fs.mkdtemp(join(os.tmpdir(), 'book-reader'));
-    result = await block(
-      async (f, d) => {
-        const filePath = join(folderPath, f);
-        await fs.writeFile(filePath, d);
-        return filePath;
-      },
-      folderPath,
-    );
+    result = await block(async (f, d) => {
+      const filePath = join(folderPath, f);
+      await fs.writeFile(filePath, d);
+      return filePath;
+    }, folderPath);
   } finally {
     await fs.rm(folderPath, {
       recursive: true,
@@ -71,7 +71,10 @@ export const withTemporaryFolder = async <T>(
 
 export const withPageEditFolder = async <T>(
   bookId: string,
-  block: (folderPath: string, replaceNewFiles: () => Promise<void>) => Promise<T>,
+  block: (
+    folderPath: string,
+    replaceNewFiles: () => Promise<void>,
+  ) => Promise<T>,
 ): Promise<T> => {
   const oldFolderPath = join(bookFolderPath, bookId);
   const folderPath = `${oldFolderPath}_new`;
@@ -100,7 +103,8 @@ export const withPageEditFolder = async <T>(
           force: true,
         });
         break;
-      } catch (ignored) { /* ignored */
+      } catch (ignored) {
+        /* ignored */
       }
     }
   }
@@ -111,19 +115,16 @@ export const withPageEditFolder = async <T>(
   }
 };
 
-export const {
-  readFile,
-  writeFile,
-} = fs;
+export const { readFile, writeFile } = fs;
 
 export type PageMetadata = {
   bookId: string;
-  pageNumber: { pageIndex: number, totalPageCount: number } | string;
+  pageNumber: { pageIndex: number; totalPageCount: number } | string;
 };
 
 export type CacheablePageMetadata = PageMetadata & {
-  width: number; /* 0 = auto */
-  height: number; /* 0 = auto */
+  width: number /* 0 = auto */;
+  height: number /* 0 = auto */;
   extension: keyof typeof availableImageExtensionWithContentType;
 };
 
@@ -134,4 +135,5 @@ export type PageData = {
   lastModified: Date;
 };
 
-export const StorageDataManager: IStorageDataManager = new LocalStorageDataManager();
+export const StorageDataManager: IStorageDataManager =
+  new LocalStorageDataManager();

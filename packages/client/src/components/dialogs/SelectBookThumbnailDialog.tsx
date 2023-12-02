@@ -1,4 +1,3 @@
-import React, { useRef } from 'react';
 import {
   Button,
   Card,
@@ -11,13 +10,19 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import React, { useRef } from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { useBookPagesQuery, useEditBookThumbnailMutation } from '@syuchan1005/book-reader-graphql';
+import {
+  useBookPagesQuery,
+  useEditBookThumbnailMutation,
+} from '@syuchan1005/book-reader-graphql';
 
-import BookPageImage, { pageAspectRatio } from '@client/components/BookPageImage';
+import BookPageImage, {
+  pageAspectRatio,
+} from '@client/components/BookPageImage';
 import useVisible from '@client/hooks/useVisible';
 
 const pageStyle = { width: 125, height: pageAspectRatio(125) };
@@ -26,19 +31,19 @@ const BookPageCard = ({
   bookId,
   page,
   maxPage,
-}: { onClick: () => void, bookId: string, page: number, maxPage: number }) => {
+}: { onClick: () => void; bookId: string; page: number; maxPage: number }) => {
   const theme = useTheme();
-  const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
+  const visibleMargin = React.useMemo(
+    () => `0px 0px ${theme.spacing(3)} 0px`,
+    [theme],
+  );
   const ref = useRef();
   const isVisible = useVisible(ref, true, visibleMargin);
   return (
     <div style={pageStyle} ref={ref}>
-      {(isVisible) && (
+      {isVisible && (
         <Card>
-          <CardActionArea
-            onClick={onClick}
-          >
+          <CardActionArea onClick={onClick}>
             <BookPageImage
               bookId={bookId}
               pageIndex={page}
@@ -60,27 +65,24 @@ interface SelectThumbnailDialogProps {
   onEdit?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  selectGrid: {
-    minWidth: '250px',
-    width: '100%',
-    padding: theme.spacing(1),
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
-    justifyContent: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    selectGrid: {
+      minWidth: '250px',
+      width: '100%',
+      padding: theme.spacing(1),
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
+      justifyContent: 'center',
+      columnGap: theme.spacing(2),
+      rowGap: theme.spacing(2),
+    },
+  }),
+);
 
 const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
   const classes = useStyles(props);
-  const {
-    open,
-    bookId,
-    onEdit,
-    onClose,
-  } = props;
+  const { open, bookId, onEdit, onClose } = props;
 
   const {
     loading: infoLoading,
@@ -93,15 +95,19 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] = useEditBookThumbnailMutation({
-    onCompleted(d) {
-      if (!d) return;
-      if (d.edit.success && onClose) onClose();
-      if (d.edit.success && onEdit) onEdit();
-    },
-  });
+  const [changeThumbnail, { loading: changeLoading }] =
+    useEditBookThumbnailMutation({
+      onCompleted(d) {
+        if (!d) return;
+        if (d.edit.success && onClose) onClose();
+        if (d.edit.success && onEdit) onEdit();
+      },
+    });
 
-  const loading = React.useMemo(() => infoLoading || changeLoading, [infoLoading, changeLoading]);
+  const loading = React.useMemo(
+    () => infoLoading || changeLoading,
+    [infoLoading, changeLoading],
+  );
 
   const closeDialog = () => {
     if (loading) return;
@@ -116,29 +122,26 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
 
       <DialogContent>
-        {(loading) ? (
-          <div>Loading</div>
-        ) : null}
-        {(error && !data) ? (
-          <div>{error}</div>
-        ) : null}
-        {(!loading && data) ? (
+        {loading ? <div>Loading</div> : null}
+        {error && !data ? <div>{error}</div> : null}
+        {!loading && data ? (
           <div className={classes.selectGrid}>
-            {[...Array(data.book.pages).keys()]
-              .map((i) => (
-                <BookPageCard
-                  key={`${bookId}_${i}`}
-                  onClick={() => changeThumbnail({
+            {[...Array(data.book.pages).keys()].map((i) => (
+              <BookPageCard
+                key={`${bookId}_${i}`}
+                onClick={() =>
+                  changeThumbnail({
                     variables: {
                       id: bookId,
                       th: i,
                     },
-                  })}
-                  bookId={bookId}
-                  page={i}
-                  maxPage={data.book.pages}
-                />
-              ))}
+                  })
+                }
+                bookId={bookId}
+                page={i}
+                maxPage={data.book.pages}
+              />
+            ))}
           </div>
         ) : null}
       </DialogContent>

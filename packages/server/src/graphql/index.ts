@@ -1,17 +1,17 @@
-import { json } from 'body-parser';
-import { GraphQLSchema } from 'graphql';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
-import gql from 'graphql-tag';
 import { ApolloServer } from '@apollo/server';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
 import { mergeResolvers } from '@graphql-tools/merge';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { json } from 'body-parser';
+import { GraphQLSchema } from 'graphql';
+import gql from 'graphql-tag';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { WebSocketServer } from 'ws';
 
-import { schemaString } from '@syuchan1005/book-reader-graphql';
 import { resolvers } from '@server/graphql/resolvers';
+import { schemaString } from '@syuchan1005/book-reader-graphql';
 import BigInt from './scalar/BigInt';
 import IntRange from './scalar/IntRange';
 

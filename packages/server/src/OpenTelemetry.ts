@@ -1,22 +1,22 @@
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import api, { Tracer } from '@opentelemetry/api';
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
 import { CompositePropagator } from '@opentelemetry/core';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
+import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { JaegerPropagator } from '@opentelemetry/propagator-jaeger';
-import api, { Tracer } from '@opentelemetry/api';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { Resource } from '@opentelemetry/resources';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
   SimpleSpanProcessor,
 } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { Resource } from '@opentelemetry/resources';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
-import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
 
 const setup = (): Tracer => {
   const exportUrl = process.env.BOOKREADER_TRACE_URL;
@@ -41,7 +41,8 @@ const setup = (): Tracer => {
       break;
   }
 
-  const serviceName = process.env.BOOKREADER_TRACE_SERVICE_NAME ?? 'book-reader';
+  const serviceName =
+    process.env.BOOKREADER_TRACE_SERVICE_NAME ?? 'book-reader';
   const provider = new NodeTracerProvider({
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
@@ -52,8 +53,13 @@ const setup = (): Tracer => {
     const otlpTraceExporter = new OTLPTraceExporter({ url: exportUrl });
     provider.addSpanProcessor(new BatchSpanProcessor(otlpTraceExporter));
   }
-  if (process.env.NODE_ENV !== 'production' && process.env.BOOKREADER_TRACE_CONSOLE === 'true') {
-    provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.BOOKREADER_TRACE_CONSOLE === 'true'
+  ) {
+    provider.addSpanProcessor(
+      new SimpleSpanProcessor(new ConsoleSpanExporter()),
+    );
   }
 
   provider.register();

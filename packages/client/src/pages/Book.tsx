@@ -1,18 +1,18 @@
-import React, { CSSProperties } from 'react';
 import { Theme } from '@mui/material';
+import React, { CSSProperties } from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
-import { Virtual, Keyboard } from 'swiper';
-import { Swiper, SwiperSlide } from 'swiper/react';
+import { Keyboard, Virtual } from 'swiper';
 import 'swiper/css';
-import 'swiper/css/virtual';
 import 'swiper/css/keyboard';
+import 'swiper/css/virtual';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import {
-  useNavigate,
   useLocation,
+  useNavigate,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
@@ -21,155 +21,156 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { useBookQuery } from '@syuchan1005/book-reader-graphql';
 
-import db from '@client/indexedDb/Database';
-import usePrevNextBook from '@client/hooks/usePrevNextBook';
-import useBooleanState from '@client/hooks/useBooleanState';
 import BookPageImage from '@client/components/BookPageImage';
+import BookPageOverlay from '@client/components/BookPageOverlay';
+import { Remount } from '@client/components/Remount';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import useBooleanState from '@client/hooks/useBooleanState';
+import useDebounceValue from '@client/hooks/useDebounceValue';
+import useLazyDialog from '@client/hooks/useLazyDialog';
+import usePrevNextBook from '@client/hooks/usePrevNextBook';
+import { useTitle } from '@client/hooks/useTitle';
+import db from '@client/indexedDb/Database';
+import { workbox } from '@client/registerServiceWorker';
 import {
-  alertDataState, pageImageEffectState,
   ReadOrder,
+  alertDataState,
+  pageImageEffectState,
   readOrderState,
   showOriginalImageState,
 } from '@client/store/atoms';
-import useLazyDialog from '@client/hooks/useLazyDialog';
-import BookPageOverlay from '@client/components/BookPageOverlay';
-import { Remount } from '@client/components/Remount';
-import useDebounceValue from '@client/hooks/useDebounceValue';
-import { useTitle } from '@client/hooks/useTitle';
-import { workbox } from '@client/registerServiceWorker';
 
-const EditPagesDialog = React.lazy(() => import('@client/components/dialogs/EditPagesDialog'));
+const EditPagesDialog = React.lazy(
+  () => import('@client/components/dialogs/EditPagesDialog'),
+);
 
 interface BookProps {
   // eslint-disable-next-line react/no-unused-prop-types
   children?: React.ReactElement;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  '@global': {
-    body: {
-      overflow: 'hidden',
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    '@global': {
+      body: {
+        overflow: 'hidden',
+      },
     },
-  },
-  book: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.palette.grey['900'],
-  },
-  page: {
-    width: '100%',
-    minWidth: '100%',
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pageContainer: {
-    width: '100%',
-    height: '100%',
-    margin: '0 auto',
-    position: 'relative',
-    overflow: 'hidden',
-    listStyle: 'none',
-    padding: 0,
-    '& > .swiper-wrapper': {
-      zIndex: 'inherit',
+    book: {
+      width: '100%',
+      height: '100%',
+      backgroundColor: theme.palette.grey['900'],
     },
-    '& .swiper-slide > *': {
+    page: {
+      width: '100%',
+      minWidth: '100%',
+      height: '100%',
       display: 'flex',
       justifyContent: 'center',
+      alignItems: 'center',
     },
-    '& .swiper-slide.start > *': {
-      justifyContent: 'flex-start',
+    pageContainer: {
+      width: '100%',
+      height: '100%',
+      margin: '0 auto',
+      position: 'relative',
+      overflow: 'hidden',
+      listStyle: 'none',
+      padding: 0,
+      '& > .swiper-wrapper': {
+        zIndex: 'inherit',
+      },
+      '& .swiper-slide > *': {
+        display: 'flex',
+        justifyContent: 'center',
+      },
+      '& .swiper-slide.start > *': {
+        justifyContent: 'flex-start',
+      },
+      '& .swiper-slide.end > *': {
+        justifyContent: 'flex-end',
+      },
     },
-    '& .swiper-slide.end > *': {
-      justifyContent: 'flex-end',
+    loading: {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontSize: '2rem',
+      whiteSpace: 'pre-line',
+      textAlign: 'center',
     },
-  },
-  loading: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '2rem',
-    whiteSpace: 'pre-line',
-    textAlign: 'center',
-  },
-  pageProgress: {
-    display: 'inline-flex',
-    position: 'absolute',
-    width: '100%',
-    height: theme.spacing(0.5),
-    bottom: 0,
-    '& > div': {
-      height: 'inherit',
-      background: theme.palette.secondary.main,
+    pageProgress: {
+      display: 'inline-flex',
+      position: 'absolute',
+      width: '100%',
+      height: theme.spacing(0.5),
+      bottom: 0,
+      '& > div': {
+        height: 'inherit',
+        background: theme.palette.secondary.main,
+      },
     },
-  },
-}));
+  }),
+);
 
 const useDatabasePage = (
   bookId: string,
-  defaultPage: number = 0,
+  defaultPage = 0,
 ): [
   loading: boolean,
   page: number,
-  setPage: (
-    page: number,
-    infoId: string,
-  ) => Promise<void>,
+  setPage: (page: number, infoId: string) => Promise<void>,
 ] => {
   const [loading, setLoading] = React.useState(true);
   const [page, updatePageState] = React.useState(defaultPage);
 
   React.useEffect(() => {
     setLoading(true);
-    db.read.get(bookId)
-      .then((read) => {
-        if (read) {
-          updatePageState(read.page);
-        } else {
-          updatePageState(defaultPage);
-        }
-        setLoading(false);
-      });
+    db.read.get(bookId).then((read) => {
+      if (read) {
+        updatePageState(read.page);
+      } else {
+        updatePageState(defaultPage);
+      }
+      setLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
-  const setPage = React.useCallback((p: number, infoId: string): Promise<void> => {
-    if (loading) {
-      return Promise.reject();
-    }
+  const setPage = React.useCallback(
+    (p: number, infoId: string): Promise<void> => {
+      if (loading) {
+        return Promise.reject();
+      }
 
-    return db.read.put({
-      infoId,
-      bookId,
-      page: p,
-      updatedAt: new Date(),
-    })
-      .then(() => undefined);
-  }, [bookId, loading]);
+      return db.read
+        .put({
+          infoId,
+          bookId,
+          page: p,
+          updatedAt: new Date(),
+        })
+        .then(() => undefined);
+    },
+    [bookId, loading],
+  );
 
-  return [
-    loading,
-    page,
-    setPage,
-  ];
+  return [loading, page, setPage];
 };
 
 type PageStyles = keyof typeof PageStyle;
 
 export type PageStyleType = {
-  slidesPerView: number,
-  pageClass: (_index: number) => string,
-  normalizeCount: (i: number) => number,
+  slidesPerView: number;
+  pageClass: (_index: number) => string;
+  normalizeCount: (i: number) => number;
   icon: {
-    name: string,
-    style: Object,
-  },
-  prefixPage: number,
+    name: string;
+    style: Object;
+  };
+  prefixPage: number;
 };
 
 const PageStyle: { [key: string]: PageStyleType } = {
@@ -250,14 +251,16 @@ const Book = (props: BookProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbLoading]);
 
-  const [openEditDialog, canMountEditDialog,
-    setOpenEditDialog, setCloseEditDialog] = useLazyDialog(false);
-  const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] = useBooleanState(false);
+  const [
+    openEditDialog,
+    canMountEditDialog,
+    setOpenEditDialog,
+    setCloseEditDialog,
+  ] = useLazyDialog(false);
+  const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] =
+    useBooleanState(false);
   const [pageStyleKey, setPageStyle] = React.useState<PageStyles>('SinglePage');
-  const {
-    slidesPerView,
-    normalizeCount,
-  } = PageStyle[pageStyleKey];
+  const { slidesPerView, normalizeCount } = PageStyle[pageStyleKey];
 
   React.useEffect(() => {
     updatePage(0);
@@ -266,12 +269,7 @@ const Book = (props: BookProps) => {
 
   const windowSize = useWindowSize();
 
-  const {
-    loading,
-    error,
-    data,
-    refetch,
-  } = useBookQuery({
+  const { loading, error, data, refetch } = useBookQuery({
     variables: {
       id: bookId,
     },
@@ -298,11 +296,12 @@ const Book = (props: BookProps) => {
         openBook(data.book.info.id, nextBook);
       }
     } else if (isPageSet) {
-      setDbPage(page, data.book.info.id)
-        .catch((e) => setAlertData({
+      setDbPage(page, data.book.info.id).catch((e) =>
+        setAlertData({
           message: e,
           variant: 'error',
-        }));
+        }),
+      );
       const copiedSearchParams = new URLSearchParams(searchParams);
       copiedSearchParams.set('page', page.toString());
       setSearchParams(copiedSearchParams, {
@@ -314,19 +313,22 @@ const Book = (props: BookProps) => {
   }, [page, setAlertData]);
 
   const [pageUpdateRequest, setPageUpdateRequest] = React.useState(undefined);
-  const setPage = React.useCallback((s, time = 150) => {
-    let validatedPage = Math.max(s, 0);
-    if (maxPage > 0) {
-      const maxPageCount = maxPage - (nextBook ? 0 : 1);
-      validatedPage = Math.min(validatedPage, normalizeCount(maxPageCount));
-    }
-    validatedPage = normalizeCount(validatedPage);
-    setPageUpdateRequest({
-      page: validatedPage,
-      time,
-    });
-    updatePage(validatedPage);
-  }, [maxPage, normalizeCount, nextBook]);
+  const setPage = React.useCallback(
+    (s, time = 150) => {
+      let validatedPage = Math.max(s, 0);
+      if (maxPage > 0) {
+        const maxPageCount = maxPage - (nextBook ? 0 : 1);
+        validatedPage = Math.min(validatedPage, normalizeCount(maxPageCount));
+      }
+      validatedPage = normalizeCount(validatedPage);
+      setPageUpdateRequest({
+        page: validatedPage,
+        time,
+      });
+      updatePage(validatedPage);
+    },
+    [maxPage, normalizeCount, nextBook],
+  );
 
   const increment = React.useCallback(() => {
     setPage(page + slidesPerView);
@@ -353,42 +355,55 @@ const Book = (props: BookProps) => {
     }
   }, [pageImageEffect]);
 
-  const clickPage = React.useCallback((event) => {
-    if (openEditDialog) return;
-    const percentX = event.nativeEvent.x / windowSize.width;
-    switch (readOrder) {
-      case ReadOrder.LTR:
-        if (percentX <= 0.2) {
-          decrement();
-        } else if (percentX >= 0.8) {
-          increment();
-        } else {
+  const clickPage = React.useCallback(
+    (event) => {
+      if (openEditDialog) return;
+      const percentX = event.nativeEvent.x / windowSize.width;
+      switch (readOrder) {
+        case ReadOrder.LTR:
+          if (percentX <= 0.2) {
+            decrement();
+          } else if (percentX >= 0.8) {
+            increment();
+          } else {
+            toggleAppBar();
+          }
+          break;
+        case ReadOrder.RTL:
+          if (percentX <= 0.2) {
+            increment();
+          } else if (percentX >= 0.8) {
+            decrement();
+          } else {
+            toggleAppBar();
+          }
+          break;
+        default:
           toggleAppBar();
-        }
-        break;
-      case ReadOrder.RTL:
-        if (percentX <= 0.2) {
-          increment();
-        } else if (percentX >= 0.8) {
-          decrement();
-        } else {
-          toggleAppBar();
-        }
-        break;
-      default:
-        toggleAppBar();
-    }
-  }, [readOrder, increment, decrement, openEditDialog, toggleAppBar, windowSize.width]);
+      }
+    },
+    [
+      readOrder,
+      increment,
+      decrement,
+      openEditDialog,
+      toggleAppBar,
+      windowSize.width,
+    ],
+  );
 
-  const openBook = React.useCallback((infoId: string, targetBookId: string) => {
-    navigate(`/book/${targetBookId}`, {
-      state: {
-        // @ts-ignore
-        referrer: location.state?.referrer || location.pathname,
-      },
-      replace: true,
-    });
-  }, [navigate, location]);
+  const openBook = React.useCallback(
+    (infoId: string, targetBookId: string) => {
+      navigate(`/book/${targetBookId}`, {
+        state: {
+          // @ts-ignore
+          referrer: location.state?.referrer || location.pathname,
+        },
+        replace: true,
+      });
+    },
+    [navigate, location],
+  );
 
   const imageSize = React.useMemo(() => {
     if (showOriginalImage) {
@@ -414,10 +429,15 @@ const Book = (props: BookProps) => {
     return undefined;
   }, [data, openBook, prevBook]);
 
-  const setNextPageStyle = React
-    .useCallback(() => setPageStyle((p) => NextPageStyleMap[p]), []);
+  const setNextPageStyle = React.useCallback(
+    () => setPageStyle((p) => NextPageStyleMap[p]),
+    [],
+  );
 
-  const onPageSliderChanged = React.useCallback((p) => setPage(p, 0), [setPage]);
+  const onPageSliderChanged = React.useCallback(
+    (p) => setPage(p, 0),
+    [setPage],
+  );
 
   const [showSliderImage, setShowSliderImage] = React.useState(true);
   React.useEffect(() => {
@@ -427,16 +447,17 @@ const Book = (props: BookProps) => {
     Promise.all([
       refetch(),
       Promise.race([
-        (workbox ? workbox.messageSW({ type: 'PURGE_CACHE' }) : Promise.resolve()),
+        workbox
+          ? workbox.messageSW({ type: 'PURGE_CACHE' })
+          : Promise.resolve(),
         new Promise((r) => {
           setTimeout(r, 2000);
         }), // timeout: 1000ms
       ]),
-    ])
-      .finally(() => {
-        setCloseEditDialog();
-        setShowSliderImage(true);
-      });
+    ]).finally(() => {
+      setCloseEditDialog();
+      setShowSliderImage(true);
+    });
     // eslint-disable-next-line
   }, [showSliderImage]);
   const purgeCache = React.useCallback(() => {
@@ -451,8 +472,7 @@ const Book = (props: BookProps) => {
           <div className={classes.loading}>
             <div>
               {loading && 'Loading'}
-              {error && `${error.toString()
-                .replace(/:\s*/g, '\n')}`}
+              {error && `${error.toString().replace(/:\s*/g, '\n')}`}
             </div>
           </div>
         </main>
@@ -472,7 +492,7 @@ const Book = (props: BookProps) => {
 
       {/* eslint-disable-next-line */}
       <main className={classes.book} onClick={clickPage}>
-        {(canMountEditDialog) && (
+        {canMountEditDialog && (
           <EditPagesDialog
             open={openEditDialog}
             onClose={setCloseEditDialog}
@@ -514,7 +534,11 @@ const Book = (props: BookProps) => {
 
         <div
           className={classes.pageProgress}
-          style={{ justifyContent: `flex-${readOrder === ReadOrder.LTR ? 'start' : 'end'}` }}
+          style={{
+            justifyContent: `flex-${
+              readOrder === ReadOrder.LTR ? 'start' : 'end'
+            }`,
+          }}
         >
           <div style={{ width: `${(page / (maxPage - 1)) * 100}%` }} />
         </div>
@@ -531,16 +555,16 @@ type SwiperSliderProp = {
   imageSize: {
     width: number | undefined;
     height: number | undefined;
-  },
+  };
   page: number;
   hasNextBook: boolean;
   effectBackGround: CSSProperties | undefined;
   openEditDialog: boolean;
   classes: {
     pageContainer: string;
-  },
+  };
 
-  pageUpdateRequest: { page: number, time: number } | undefined;
+  pageUpdateRequest: { page: number; time: number } | undefined;
 
   onPageUpdated: (page: number) => void;
   onKeyPress: () => void;
@@ -565,11 +589,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     onKeyPress,
     showSliderImage,
   } = props;
-  const {
-    slidesPerView,
-    pageClass,
-    prefixPage,
-  } = PageStyle[pageStyleKey];
+  const { slidesPerView, pageClass, prefixPage } = PageStyle[pageStyleKey];
 
   const [swiper, setSwiper] = React.useState(null);
   const debouncePage = useDebounceValue(page, 300);
@@ -596,18 +616,24 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     // eslint-disable-next-line
   }, [openEditDialog, swiper]);
 
-  const updateSwiper = React.useCallback((s) => {
-    s?.slideTo(page, 0, false);
-    setSwiper(s);
-  }, [page]);
+  const updateSwiper = React.useCallback(
+    (s) => {
+      s?.slideTo(page, 0, false);
+      setSwiper(s);
+    },
+    [page],
+  );
 
-  const handleSlideChange = React.useCallback((s) => {
-    if (requestRef.current?.page !== s.activeIndex) {
-      onPageUpdated(s.activeIndex);
-    } else {
-      requestRef.current = undefined;
-    }
-  }, [onPageUpdated]);
+  const handleSlideChange = React.useCallback(
+    (s) => {
+      if (requestRef.current?.page !== s.activeIndex) {
+        onPageUpdated(s.activeIndex);
+      } else {
+        requestRef.current = undefined;
+      }
+    },
+    [onPageUpdated],
+  );
 
   return (
     <Remount remountKey={`${bookId}:${pageStyleKey}:${readOrder}`}>
@@ -649,19 +675,31 @@ const SwiperSlider = (props: SwiperSliderProp) => {
             )}
           </SwiperSlide>
         ))}
-        {[...new Array(((maxPage + prefixPage) % slidesPerView)).keys()].map((i) => (
-          <SwiperSlide
-            key={`virtual-${maxPage + prefixPage + i}`}
-            virtualIndex={maxPage + prefixPage + i}
-          />
-        ))}
-        {(hasNextBook) && [...new Array(slidesPerView).keys()].map((i) => (
-          <SwiperSlide
-            key={`virtual-${maxPage + prefixPage + ((maxPage + prefixPage) % slidesPerView) + i}`}
-            virtualIndex={maxPage + prefixPage
-              + ((maxPage + prefixPage) % slidesPerView) + i}
-          />
-        ))}
+        {[...new Array((maxPage + prefixPage) % slidesPerView).keys()].map(
+          (i) => (
+            <SwiperSlide
+              key={`virtual-${maxPage + prefixPage + i}`}
+              virtualIndex={maxPage + prefixPage + i}
+            />
+          ),
+        )}
+        {hasNextBook &&
+          [...new Array(slidesPerView).keys()].map((i) => (
+            <SwiperSlide
+              key={`virtual-${
+                maxPage +
+                prefixPage +
+                ((maxPage + prefixPage) % slidesPerView) +
+                i
+              }`}
+              virtualIndex={
+                maxPage +
+                prefixPage +
+                ((maxPage + prefixPage) % slidesPerView) +
+                i
+              }
+            />
+          ))}
       </Swiper>
     </Remount>
   );

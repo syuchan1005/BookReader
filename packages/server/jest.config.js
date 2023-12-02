@@ -1,7 +1,5 @@
 module.exports = {
-  roots: [
-    '<rootDir>/src/database/sequelize',
-  ],
+  roots: ['<rootDir>/src/database/sequelize'],
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)',

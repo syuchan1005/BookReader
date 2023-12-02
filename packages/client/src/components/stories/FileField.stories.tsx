@@ -1,10 +1,10 @@
-import React from 'react';
 import { ListItem } from '@mui/material';
 import { ComponentMeta } from '@storybook/react';
+import React from 'react';
 
 import FileField from '../FileField';
 
-export default {
+export default ({
   title: 'Components/FileField',
   argTypes: {
     file: {
@@ -14,9 +14,9 @@ export default {
     onChange: { action: 'onChange' },
     style: {},
   },
-} as ComponentMeta<typeof FileField>;
+} as ComponentMeta<typeof FileField>);
 
-const Template = (args) => (<FileField {...args} />);
+const Template = (args) => <FileField {...args} />;
 
 export const NotSelected = Template.bind({});
 
@@ -34,5 +34,7 @@ SelectedLongName.decorators = [
   ),
 ];
 SelectedLongName.args = {
-  file: { name: 'LongLongLongLongLongLongLongLongLongLongLongLongLongLongLongName.rar' },
+  file: {
+    name: 'LongLongLongLongLongLongLongLongLongLongLongLongLongLongLongName.rar',
+  },
 };

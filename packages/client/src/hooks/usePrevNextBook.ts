@@ -1,22 +1,33 @@
-import React from 'react';
 import { useApolloClient } from '@apollo/client';
+import React from 'react';
 
 import {
+  BookInfoDocument,
+  BookInfoQuery,
+  BookInfoQueryVariables,
   BookOrder,
-  BookInfoDocument, BookInfoQuery, BookInfoQueryVariables,
 } from '@syuchan1005/book-reader-graphql';
 
-const usePrevNextBook = (infoId, bookId): [prev: string | undefined, next: string | undefined] => {
+const usePrevNextBook = (
+  infoId,
+  bookId,
+): [prev: string | undefined, next: string | undefined] => {
   const client = useApolloClient();
   const [bookInfo, setBookInfo] = React.useState(undefined);
-  const [books, setBooks] = React.useState<[string, string]>([undefined, undefined]);
+  const [books, setBooks] = React.useState<[string, string]>([
+    undefined,
+    undefined,
+  ]);
 
   React.useEffect(() => {
     if (!infoId) {
       setBookInfo(undefined);
     } else {
       try {
-        const readQuery = client.cache.readQuery<BookInfoQuery, BookInfoQueryVariables>({
+        const readQuery = client.cache.readQuery<
+          BookInfoQuery,
+          BookInfoQueryVariables
+        >({
           query: BookInfoDocument,
           variables: {
             id: infoId,

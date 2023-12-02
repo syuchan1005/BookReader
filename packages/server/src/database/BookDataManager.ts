@@ -1,4 +1,3 @@
-import { INSTANCE } from './prisma';
 import {
   Book,
   BookEditableValue,
@@ -15,22 +14,28 @@ import {
   SortableBookInfoProperties,
 } from './models/BookInfo';
 import {
-  Genre,
-  GenreName,
   DeleteGenreError,
+  Genre,
   GenreEditableValue,
+  GenreName,
 } from './models/Genre';
+import { INSTANCE } from './prisma';
 
-export type RequireAtLeastOne<ObjectType,
+export type RequireAtLeastOne<
+  ObjectType,
   KeysType extends keyof ObjectType = keyof ObjectType,
-  > = {
+> = {
   [Key in KeysType]-?: Required<Pick<ObjectType, Key>> &
-  Partial<Pick<ObjectType, Exclude<KeysType, Key>>>;
-}[KeysType] & Pick<ObjectType, Exclude<keyof ObjectType, KeysType>>;
+    Partial<Pick<ObjectType, Exclude<KeysType, Key>>>;
+}[KeysType] &
+  Pick<ObjectType, Exclude<keyof ObjectType, KeysType>>;
 
-export function maybeRequireAtLeastOne<T extends {}>(obj: T): RequireAtLeastOne<T> | undefined {
-  const hasValue = Object.keys(obj)
-    .some((key) => obj[key] !== undefined && obj !== null);
+export function maybeRequireAtLeastOne<T extends {}>(
+  obj: T,
+): RequireAtLeastOne<T> | undefined {
+  const hasValue = Object.keys(obj).some(
+    (key) => obj[key] !== undefined && obj !== null,
+  );
   return !hasValue ? undefined : (obj as RequireAtLeastOne<T>);
 }
 
@@ -45,7 +50,10 @@ export interface IBookDataManager {
 
   addBook(book: InputBook): Promise<BookId>;
 
-  editBook(bookId: BookId, value: RequireAtLeastOne<BookEditableValue>): Promise<void>;
+  editBook(
+    bookId: BookId,
+    value: RequireAtLeastOne<BookEditableValue>,
+  ): Promise<void>;
 
   deleteBooks(infoId: InfoId, bookIds: Array<BookId>): Promise<void>;
 
@@ -63,26 +71,31 @@ export interface IBookDataManager {
 
   getBookInfoBooks(
     infoId: InfoId,
-    sort: Array<[SortableBookProperties, SortKey]>, /* = [['updatedAt', 'asc']] */
+    sort: Array<
+      [SortableBookProperties, SortKey]
+    > /* = [['updatedAt', 'asc']] */,
   ): Promise<Array<Book>>;
 
   getBookInfos(option: {
-    limit?: number,
+    limit?: number;
     filter: {
-      genres?: Array<GenreName>,
+      genres?: Array<GenreName>;
       name: {
-        include?: string,
-        between?: [string | undefined, string | undefined],
-      },
-      createdAt?: [number | undefined, number | undefined],
-      updatedAt?: [number | undefined, number | undefined],
-    },
-    sort?: Array<[SortableBookInfoProperties, SortKey]>,
+        include?: string;
+        between?: [string | undefined, string | undefined];
+      };
+      createdAt?: [number | undefined, number | undefined];
+      updatedAt?: [number | undefined, number | undefined];
+    };
+    sort?: Array<[SortableBookInfoProperties, SortKey]>;
   }): Promise<Array<BookInfo>>;
 
   addBookInfo(bookInfo: InputBookInfo): Promise<InfoId>;
 
-  editBookInfo(infoId: InfoId, bookInfo: RequireAtLeastOne<BookInfoEditableValue>): Promise<void>;
+  editBookInfo(
+    infoId: InfoId,
+    bookInfo: RequireAtLeastOne<BookInfoEditableValue>,
+  ): Promise<void>;
 
   deleteBookInfo(infoId: InfoId): Promise<void>;
 
@@ -101,7 +114,9 @@ export interface IBookDataManager {
     getBookIds(): Promise<Array<BookId>>;
     getBookInfoCount(): Promise<number>;
     getBookInfos(): Promise<(BookInfo & { genres: Genre[] })[]>;
-    getBookInfo(infoId: string): Promise<(BookInfo & { genres: Genre[] }) | undefined>;
+    getBookInfo(
+      infoId: string,
+    ): Promise<(BookInfo & { genres: Genre[] }) | undefined>;
   };
 }
 

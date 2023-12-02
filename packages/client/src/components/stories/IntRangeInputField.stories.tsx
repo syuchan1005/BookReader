@@ -1,9 +1,9 @@
-import React from 'react';
 import { ComponentMeta } from '@storybook/react';
+import React from 'react';
 
 import IntRangeInputField from '../IntRangeInputField';
 
-export default {
+export default ({
   title: 'Components/IntRangeInputField',
   argTypes: {
     maxPage: {
@@ -15,9 +15,9 @@ export default {
       control: { type: 'boolean' },
     },
   },
-} as ComponentMeta<typeof IntRangeInputField>;
+} as ComponentMeta<typeof IntRangeInputField>);
 
-const Template = (args) => (<IntRangeInputField {...args} />);
+const Template = (args) => <IntRangeInputField {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {

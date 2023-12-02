@@ -2,7 +2,7 @@ import { MutableRefObject, useEffect, useState } from 'react';
 
 export const useVisible = (
   ref: MutableRefObject<any>,
-  keepVisible: boolean = true,
+  keepVisible = true,
   rootMargin?: string,
 ) => {
   const [isIntersecting, setIntersecting] = useState(false);
@@ -21,7 +21,8 @@ export const useVisible = (
         } else {
           setIntersecting(entry.isIntersecting);
         }
-      }, {
+      },
+      {
         rootMargin,
       },
     );

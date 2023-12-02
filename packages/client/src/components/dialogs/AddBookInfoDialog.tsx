@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   CircularProgress,
@@ -9,6 +8,7 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
+import React from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -26,47 +26,44 @@ interface AddBookInfoDialogProps {
   onClose?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  dialog: {
-    width: '100%',
-    height: '100%',
-  },
-  addContent: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  listItem: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: '1fr 50px 48px',
-    marginBottom: theme.spacing(0.5),
-  },
-  historyListItem: {
-    width: '100%',
-    display: 'grid',
-    gridColumnGap: theme.spacing(1),
-    gridTemplateColumns: '1fr 55px 30px',
-  },
-  addBookInfoProgress: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  progressMessage: {
-    marginTop: theme.spacing(2),
-    gridColumn: '1 / end',
-    textAlign: 'center',
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    dialog: {
+      width: '100%',
+      height: '100%',
+    },
+    addContent: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    listItem: {
+      width: '100%',
+      display: 'grid',
+      gridTemplateColumns: '1fr 50px 48px',
+      marginBottom: theme.spacing(0.5),
+    },
+    historyListItem: {
+      width: '100%',
+      display: 'grid',
+      gridColumnGap: theme.spacing(1),
+      gridTemplateColumns: '1fr 55px 30px',
+    },
+    addBookInfoProgress: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    progressMessage: {
+      marginTop: theme.spacing(2),
+      gridColumn: '1 / end',
+      textAlign: 'center',
+    },
+  }),
+);
 
 const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
   const classes = useStyles(props);
-  const {
-    onAdded,
-    onClose,
-    open,
-    name: argName,
-  } = props;
+  const { onAdded, onClose, open, name: argName } = props;
   const [name, setName] = React.useState('');
   const [selectGenres, setSelectGenres] = React.useState<string[]>([]);
 
@@ -102,10 +99,8 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
     <Dialog open={open} onClose={() => !loading && closeDialog()}>
       <DialogTitle>Add book info</DialogTitle>
 
-      {(loading) ? (
-        <DialogContent
-          className={classes.addBookInfoProgress}
-        >
+      {loading ? (
+        <DialogContent className={classes.addBookInfoProgress}>
           <CircularProgress color="secondary" />
         </DialogContent>
       ) : (

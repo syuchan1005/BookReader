@@ -1,6 +1,6 @@
-import React from 'react';
 import { TextField } from '@mui/material';
 import { IntRange } from '@syuchan1005/book-reader-graphql';
+import React from 'react';
 
 interface IntRangeInputFieldProps {
   maxPage: number;
@@ -10,38 +10,33 @@ interface IntRangeInputFieldProps {
 }
 
 const parseIntRange = (pages: string, maxPage: number): IntRange | string => {
-  const pageList = pages
-    .split(/,\s*/)
-    .map((s) => {
-      const m = s.match(/(\d+)(-(\d+))?$/);
-      if (!m) return undefined;
-      if (m[3]) {
-        const arr = [Number(m[1]), Number(m[3])];
-        return [Math.min(...arr) - 1, Math.max(...arr) - 1] as [number, number];
-      }
-      return Number(m[1]) - 1;
-    });
+  const pageList = pages.split(/,\s*/).map((s) => {
+    const m = s.match(/(\d+)(-(\d+))?$/);
+    if (!m) return undefined;
+    if (m[3]) {
+      const arr = [Number(m[1]), Number(m[3])];
+      return [Math.min(...arr) - 1, Math.max(...arr) - 1] as [number, number];
+    }
+    return Number(m[1]) - 1;
+  });
   if (!pageList.every((s) => s !== undefined)) {
     return 'Format error';
   }
-  if (!pageList.every((s) => {
-    if (Array.isArray(s)) {
-      return s[0] >= 0 && s[0] < maxPage && s[1] >= 0 && s[1] < maxPage;
-    }
-    return s >= 0 && s < maxPage;
-  })) {
+  if (
+    !pageList.every((s) => {
+      if (Array.isArray(s)) {
+        return s[0] >= 0 && s[0] < maxPage && s[1] >= 0 && s[1] < maxPage;
+      }
+      return s >= 0 && s < maxPage;
+    })
+  ) {
     return 'Range error';
   }
   return pageList;
 };
 
 const IntRangeInputField = (props: IntRangeInputFieldProps) => {
-  const {
-    maxPage,
-    onChange,
-    initValue,
-    ...forwardProps
-  } = props;
+  const { maxPage, onChange, initValue, ...forwardProps } = props;
   const [inputText, setInputText] = React.useState('');
   const errorText = React.useMemo(() => {
     if (inputText === '') {

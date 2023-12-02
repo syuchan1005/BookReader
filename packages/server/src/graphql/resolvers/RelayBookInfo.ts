@@ -1,14 +1,14 @@
-import {
-  BookInfosOption,
-  BookInfoOrder,
-  SearchMode,
-  QueryRelayBookInfosArgs,
-  BookInfoPartialList,
-  Resolvers,
-  BookInfo as BookInfoGQLModel,
-} from '@syuchan1005/book-reader-graphql';
 import { BookDataManager, SortKey } from '@server/database/BookDataManager';
-import { meiliSearchClient, elasticSearchClient } from '@server/search';
+import { elasticSearchClient, meiliSearchClient } from '@server/search';
+import {
+  BookInfo as BookInfoGQLModel,
+  BookInfoOrder,
+  BookInfoPartialList,
+  BookInfosOption,
+  QueryRelayBookInfosArgs,
+  Resolvers,
+  SearchMode,
+} from '@syuchan1005/book-reader-graphql';
 
 const DefaultOptions: BookInfosOption = {
   search: undefined,
@@ -21,17 +21,19 @@ const getCursor = (
   order: BookInfoOrder,
   before?: string,
   after?: string,
-): [
-  cursorKey: 'name',
-  sqlOrder: SortKey,
-  beforeValue?: string,
-  afterValue?: string,
-] | [
-  cursorKey: 'createdAt' | 'updatedAt',
-  sqlOrder: SortKey,
-  beforeValue?: number,
-  afterValue?: number,
-] => {
+):
+  | [
+      cursorKey: 'name',
+      sqlOrder: SortKey,
+      beforeValue?: string,
+      afterValue?: string,
+    ]
+  | [
+      cursorKey: 'createdAt' | 'updatedAt',
+      sqlOrder: SortKey,
+      beforeValue?: number,
+      afterValue?: number,
+    ] => {
   let cursor;
   switch (order) {
     case BookInfoOrder.UpdateNewest:
@@ -85,13 +87,13 @@ const searchBookInfosByDB = async ({
   before: argBefore,
   option = DefaultOptions,
 }: Partial<QueryRelayBookInfosArgs>) => {
-  const {
-    search,
-    genres,
-    order: bookInfoOrder,
-  } = option;
+  const { search, genres, order: bookInfoOrder } = option;
 
-  const [cursorKey, sqlOrder, before, after] = getCursor(bookInfoOrder, argBefore, argAfter);
+  const [cursorKey, sqlOrder, before, after] = getCursor(
+    bookInfoOrder,
+    argBefore,
+    argAfter,
+  );
   let paginationWhere;
   if (after === undefined && before === undefined) {
     paginationWhere = undefined;
@@ -104,20 +106,22 @@ const searchBookInfosByDB = async ({
     }
   }
 
-  const bookInfos = (await BookDataManager.getBookInfos({
+  const bookInfos = await BookDataManager.getBookInfos({
     limit: first !== undefined ? first + 1 : undefined,
     filter: {
       genres,
       name: {
         include: search,
-        between: (cursorKey === 'name') ? paginationWhere : undefined,
+        between: cursorKey === 'name' ? paginationWhere : undefined,
       },
-      ...(cursorKey !== 'name' ? {
-        [cursorKey]: paginationWhere,
-      } : undefined),
+      ...(cursorKey !== 'name'
+        ? {
+            [cursorKey]: paginationWhere,
+          }
+        : undefined),
     },
     sort: [[cursorKey, sqlOrder]],
-  }));
+  });
   let edges = bookInfos;
   if (first !== undefined) {
     if (first < 0) {
@@ -155,7 +159,11 @@ const searchBookInfosByMeiliSearch = async ({
   first,
   option = DefaultOptions,
 }: Partial<QueryRelayBookInfosArgs>) => {
-  const infoIds = await meiliSearchClient.search(option.search, option.genres, first);
+  const infoIds = await meiliSearchClient.search(
+    option.search,
+    option.genres,
+    first,
+  );
   const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
   return {
     edges: bookInfos.map((bookInfo) => ({
@@ -176,7 +184,11 @@ const searchBookInfosByElasticSearch = async ({
   first,
   option = DefaultOptions,
 }: Partial<QueryRelayBookInfosArgs>) => {
-  const infoIds = await elasticSearchClient.search(option.search, option.genres, first);
+  const infoIds = await elasticSearchClient.search(
+    option.search,
+    option.genres,
+    first,
+  );
   const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
   return {
     edges: bookInfos.map((bookInfo) => ({

@@ -1,10 +1,15 @@
-import React from 'react';
-import {
-  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,
-} from '@mui/material';
-import { Cropper } from 'react-cropper';
-import 'cropperjs/dist/cropper.css';
 import { createBookPageUrl } from '@client/components/BookPageImage';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from '@mui/material';
+import 'cropperjs/dist/cropper.css';
+import React from 'react';
+import { Cropper } from 'react-cropper';
 
 interface CropImageDialogProps {
   open: boolean;
@@ -14,12 +19,7 @@ interface CropImageDialogProps {
 }
 
 const CropImageDialog = (props: CropImageDialogProps) => {
-  const {
-    open,
-    bookId,
-    maxPage,
-    onClose,
-  } = props;
+  const { open, bookId, maxPage, onClose } = props;
   const [pageIndex, setPageIndex] = React.useState(1);
   const url = React.useMemo(
     () => createBookPageUrl(bookId, pageIndex - 1, maxPage),
@@ -60,7 +60,9 @@ const CropImageDialog = (props: CropImageDialogProps) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose(undefined)}>Close</Button>
-        <Button variant="outlined" color="secondary" onClick={onFinishClicked}>Finish</Button>
+        <Button variant="outlined" color="secondary" onClick={onFinishClicked}>
+          Finish
+        </Button>
       </DialogActions>
     </Dialog>
   );

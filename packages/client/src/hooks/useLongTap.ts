@@ -8,7 +8,9 @@ import {
 
 function isTouchEvent(event: ReactTouchEvent): event is ReactTouchEvent {
   const { nativeEvent } = event;
-  return window.TouchEvent ? nativeEvent instanceof TouchEvent : 'touches' in nativeEvent;
+  return window.TouchEvent
+    ? nativeEvent instanceof TouchEvent
+    : 'touches' in nativeEvent;
 }
 
 type Coordinates = {
@@ -29,11 +31,13 @@ function getCurrentPosition(event: ReactTouchEvent): Coordinates {
 
 export type LongTapCallback = (event?: ReactTouchEvent) => void;
 
-export type LongTapResult = {
-  onTouchStart: TouchEventHandler;
-  onTouchMove: TouchEventHandler;
-  onTouchEnd: TouchEventHandler;
-} | {};
+export type LongTapResult =
+  | {
+      onTouchStart: TouchEventHandler;
+      onTouchMove: TouchEventHandler;
+      onTouchEnd: TouchEventHandler;
+    }
+  | {};
 
 export interface LongTapOptions {
   threshold?: number;
@@ -122,7 +126,10 @@ export function useLongTap(
             y: Math.abs(currentPosition.y - startPosition.current.y),
           };
 
-          if (movedDistance.x > moveThreshold || movedDistance.y > moveThreshold) {
+          if (
+            movedDistance.x > moveThreshold ||
+            movedDistance.y > moveThreshold
+          ) {
             cancel(event);
           }
         }

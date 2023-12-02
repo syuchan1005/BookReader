@@ -16,12 +16,12 @@ import { workbox } from './registerServiceWorker';
 if (process.env.NODE_ENV !== 'production' && false) {
   import('@welldone-software/why-did-you-render')
     // @ts-ignore
-    .then(({ default: whyDidYouRender }) => whyDidYouRender(React, {
-      trackAllPureComponents: true,
-      exclude: [
-        /Remount/,
-      ],
-    }));
+    .then(({ default: whyDidYouRender }) =>
+      whyDidYouRender(React, {
+        trackAllPureComponents: true,
+        exclude: [/Remount/],
+      }),
+    );
 }
 
 (async () => {
@@ -30,13 +30,11 @@ if (process.env.NODE_ENV !== 'production' && false) {
   await setUpApollo();
 
   ReactDOM.render(
-    (
-      <RecoilRoot>
-        <ApolloProvider client={apolloClient}>
-          <App />
-        </ApolloProvider>
-      </RecoilRoot>
-    ),
+    <RecoilRoot>
+      <ApolloProvider client={apolloClient}>
+        <App />
+      </ApolloProvider>
+    </RecoilRoot>,
     document.getElementById('app'),
   );
 })();

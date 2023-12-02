@@ -1,11 +1,11 @@
+import fs from 'fs';
 /* eslint-disable no-console */
 import { resolve } from 'path';
-import fs from 'fs';
 
-import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
 import bundleVisualizer from 'rollup-plugin-visualizer';
+import { Plugin, defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 const serviceWorkerFileName = 'service-worker.ts';
 const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
@@ -36,7 +36,7 @@ const TimePlugin = (): Plugin => {
   let buildEndTime: number;
   let renderStartTime: number;
 
-  const period = (s: number, e: number) => (Math.abs((e - s)) / 1000).toFixed(3);
+  const period = (s: number, e: number) => (Math.abs(e - s) / 1000).toFixed(3);
 
   return {
     name: 'vite-plugin-build-time',
@@ -75,7 +75,11 @@ export default defineConfig({
     dedupe: ['@apollo/client'],
     alias: {
       '@client': resolve(__dirname, 'src'),
-      '@syuchan1005/book-reader-graphql': resolve(__dirname, 'generated', 'GQLQueries.ts'),
+      '@syuchan1005/book-reader-graphql': resolve(
+        __dirname,
+        'generated',
+        'GQLQueries.ts',
+      ),
     },
   },
   build: {

@@ -1,13 +1,7 @@
-import React from 'react';
-import {
-  AppBar,
-  Box,
-  Tabs,
-  Tab,
-  useTheme,
-} from '@mui/material';
 import useMediaQuery from '@client/hooks/useMediaQuery';
-import { useLocation, Outlet, Link } from 'react-router-dom';
+import { AppBar, Box, Tab, Tabs, useTheme } from '@mui/material';
+import React from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const TabItems = [
   {

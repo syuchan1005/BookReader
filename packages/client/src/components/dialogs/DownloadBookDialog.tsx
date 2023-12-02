@@ -1,4 +1,4 @@
-import React from 'react';
+import { createBookPageUrl } from '@client/components/BookPageImage';
 import {
   Button,
   Dialog,
@@ -7,10 +7,10 @@ import {
   DialogTitle,
   LinearProgress,
 } from '@mui/material';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
-import { createBookPageUrl } from '@client/components/BookPageImage';
+import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
+import React from 'react';
 
 interface DownloadBookDialogProps {
   open: boolean;
@@ -21,38 +21,36 @@ interface DownloadBookDialogProps {
 }
 
 const DownloadBookDialog = (props: DownloadBookDialogProps) => {
-  const {
-    open,
-    onClose,
-    number,
-    bookId,
-    pages,
-  } = props;
+  const { open, onClose, number, bookId, pages } = props;
 
-  const [downloadImages, setDownloadImages] = React.useState<boolean | number>(false);
-  const [compressPercent, setCompressPercent] = React.useState<number | undefined>(undefined);
+  const [downloadImages, setDownloadImages] = React.useState<boolean | number>(
+    false,
+  );
+  const [compressPercent, setCompressPercent] = React.useState<
+    number | undefined
+  >(undefined);
 
   const onClickDownload = React.useCallback(() => {
     setDownloadImages(0);
     const zip = new JSZip();
 
     let num = 0;
-    Promise.all([...Array(pages)
-      .keys()].map((i) => {
-      const url = createBookPageUrl(bookId, i, pages);
-      const name = i.toString(10)
-        .padStart(pages.toString(10).length, '0');
-      return fetch(url)
-        .then((res) => {
+    Promise.all(
+      [...Array(pages).keys()].map((i) => {
+        const url = createBookPageUrl(bookId, i, pages);
+        const name = i.toString(10).padStart(pages.toString(10).length, '0');
+        return fetch(url).then((res) => {
           num += 1;
           setDownloadImages(num);
           zip.file(`${name}.${defaultStoredImageExtension}`, res.blob());
         });
-    }))
-      .then(() => zip.generateAsync(
-        { type: 'blob' },
-        ({ percent }) => setCompressPercent(percent),
-      ))
+      }),
+    )
+      .then(() =>
+        zip.generateAsync({ type: 'blob' }, ({ percent }) =>
+          setCompressPercent(percent),
+        ),
+      )
       .then((content) => {
         saveAs(content, `book-${number}.zip`);
         setCompressPercent(undefined);
@@ -61,10 +59,13 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
   }, [bookId, number, pages]);
 
   return (
-    <Dialog open={open} onClose={downloadImages !== false ? undefined : onClose}>
+    <Dialog
+      open={open}
+      onClose={downloadImages !== false ? undefined : onClose}
+    >
       <DialogTitle>Download Book</DialogTitle>
       <DialogContent>
-        {(typeof downloadImages === 'boolean') ? (
+        {typeof downloadImages === 'boolean' ? (
           `Would you like to download No.${number}?`
         ) : (
           <>
@@ -73,11 +74,11 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
               color="secondary"
               value={(downloadImages / pages) * 100}
             />
-            <div style={{ textAlign: 'center' }}>{`${downloadImages} / ${pages}`}</div>
-            {(compressPercent) && (
-              <div
-                style={{ textAlign: 'center' }}
-              >
+            <div
+              style={{ textAlign: 'center' }}
+            >{`${downloadImages} / ${pages}`}</div>
+            {compressPercent && (
+              <div style={{ textAlign: 'center' }}>
                 {`Compressing: ${Math.round(compressPercent)}%`}
               </div>
             )}
@@ -85,7 +86,9 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={downloadImages !== false}>Close</Button>
+        <Button onClick={onClose} disabled={downloadImages !== false}>
+          Close
+        </Button>
         <Button
           onClick={onClickDownload}
           color="secondary"

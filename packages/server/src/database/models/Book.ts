@@ -1,5 +1,5 @@
-import { Id } from './Id';
 import { InfoId } from './BookInfo';
+import { Id } from './Id';
 
 export type BookId = Id;
 
@@ -9,13 +9,15 @@ export type Book = {
   number: string;
   pageCount: number;
   infoId: InfoId;
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type SortableBookProperties = 'updatedAt';
 
-export type BookEditableValue = Partial<Pick<Book, 'thumbnailPage' | 'number' | 'pageCount'>>;
+export type BookEditableValue = Partial<
+  Pick<Book, 'thumbnailPage' | 'number' | 'pageCount'>
+>;
 
 type BookRequiredProps = 'number' | 'pageCount' | 'infoId';
 export type InputBook = Pick<Book, BookRequiredProps> &

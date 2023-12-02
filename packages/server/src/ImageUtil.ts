@@ -1,24 +1,33 @@
-import sharp from 'sharp';
 import { Buffer } from 'buffer';
-import { availableImageExtensionWithContentType, defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
+import {
+  availableImageExtensionWithContentType,
+  defaultStoredImageExtension,
+} from '@syuchan1005/book-reader-common';
+import sharp from 'sharp';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getOrConvertImage = async (
   bookId: string,
   pageNumber: string,
-  info: { ext: keyof typeof availableImageExtensionWithContentType, size?: { width: number, height: number } },
+  info: {
+    ext: keyof typeof availableImageExtensionWithContentType;
+    size?: { width: number; height: number };
+  },
   isSave: boolean,
-): Promise<{
-  success: true,
-  type: typeof availableImageExtensionWithContentType[keyof typeof availableImageExtensionWithContentType],
-  body: Buffer,
-  byteLength: number,
-  lastModified: Date,
-} | {
-  success: false,
-  body?: string | Error,
-}> => {
+): Promise<
+  | {
+      success: true;
+      type: (typeof availableImageExtensionWithContentType)[keyof typeof availableImageExtensionWithContentType];
+      body: Buffer;
+      byteLength: number;
+      lastModified: Date;
+    }
+  | {
+      success: false;
+      body?: string | Error;
+    }
+> => {
   const metadata = {
     bookId,
     pageNumber,
@@ -30,14 +39,17 @@ export const getOrConvertImage = async (
   if (cachePageData) {
     return {
       success: true,
-      type: availableImageExtensionWithContentType[cachePageData.contentExtension],
+      type: availableImageExtensionWithContentType[
+        cachePageData.contentExtension
+      ],
       body: cachePageData.data,
       byteLength: cachePageData.contentLength,
       lastModified: cachePageData.lastModified,
     };
   }
 
-  const originalPageData = await StorageDataManager.getOriginalPageData(metadata);
+  const originalPageData =
+    await StorageDataManager.getOriginalPageData(metadata);
   if (!originalPageData) {
     return {
       success: false,
@@ -79,9 +91,12 @@ export const getOrConvertImage = async (
 
 export const convertToDefaultImageType = (
   srcBuffer: Buffer,
-): Promise<Buffer | undefined> => sharp(srcBuffer).toFormat(defaultStoredImageExtension).toBuffer();
+): Promise<Buffer | undefined> =>
+  sharp(srcBuffer).toFormat(defaultStoredImageExtension).toBuffer();
 
-export const getImageSize = async (data: Buffer): Promise<{ width: number, height: number }> => {
+export const getImageSize = async (
+  data: Buffer,
+): Promise<{ width: number; height: number }> => {
   const { width, height } = await sharp(data).metadata();
   return { width, height };
 };
@@ -91,8 +106,12 @@ export const purgeImageCache = () => {
   sharp.cache(true);
 };
 
-const getLeftTopPixelData = async (src: Buffer): Promise<{ r: number, g: number, b: number }> => {
-  const { data: [r, g, b] } = await sharp(src)
+const getLeftTopPixelData = async (
+  src: Buffer,
+): Promise<{ r: number; g: number; b: number }> => {
+  const {
+    data: [r, g, b],
+  } = await sharp(src)
     .extract({
       left: 0,
       top: 0,
@@ -104,7 +123,10 @@ const getLeftTopPixelData = async (src: Buffer): Promise<{ r: number, g: number,
   return { r, g, b };
 };
 
-export const joinImagesAndSaveImage = async (srcBuffers: Buffer[], dist: string) => {
+export const joinImagesAndSaveImage = async (
+  srcBuffers: Buffer[],
+  dist: string,
+) => {
   if (srcBuffers.length < 1) {
     return;
   }

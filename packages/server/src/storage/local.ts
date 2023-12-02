@@ -1,6 +1,6 @@
-import { promises as fs } from 'fs';
 import { Buffer } from 'buffer';
-import { join, dirname } from 'path';
+import { promises as fs } from 'fs';
+import { dirname, join } from 'path';
 
 import {
   availableImageExtensions,
@@ -8,9 +8,9 @@ import {
   optionalImageExtensions,
 } from '@syuchan1005/book-reader-common';
 import {
+  CacheablePageMetadata,
   IStorageDataManager,
   PageData,
-  CacheablePageMetadata,
   PageMetadata,
 } from './StorageDataManager';
 
@@ -24,8 +24,8 @@ const userDownloadFolderName = 'downloads';
 const IgnoreErrorFunc = () => undefined;
 
 type FilePath = {
-  path: string,
-  isOriginalFolderPath: boolean,
+  path: string;
+  isOriginalFolderPath: boolean;
 };
 
 export class LocalStorageDataManager implements IStorageDataManager {
@@ -35,8 +35,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
       fs.mkdir(cacheBookFolderName, { recursive: true }),
       fs.mkdir(downloadFolderName, { recursive: true }),
       fs.mkdir(userDownloadFolderName, { recursive: true }),
-    ])
-      .then(IgnoreErrorFunc);
+    ]).then(IgnoreErrorFunc);
   }
 
   getStaticFolders(): string[] {
@@ -48,7 +47,10 @@ export class LocalStorageDataManager implements IStorageDataManager {
     pageNumber,
   }: PageMetadata): Promise<PageData | undefined> {
     // eslint-disable-next-line no-restricted-syntax
-    for (const extension of [defaultStoredImageExtension, ...optionalImageExtensions]) {
+    for (const extension of [
+      defaultStoredImageExtension,
+      ...optionalImageExtensions,
+    ]) {
       // eslint-disable-next-line no-await-in-loop
       const pageData = await this.getPageData({
         bookId,
@@ -65,21 +67,21 @@ export class LocalStorageDataManager implements IStorageDataManager {
     return undefined;
   }
 
-  async getPageData(metadata: CacheablePageMetadata): Promise<PageData | undefined> {
+  async getPageData(
+    metadata: CacheablePageMetadata,
+  ): Promise<PageData | undefined> {
     const filePaths = LocalStorageDataManager.getMayExistFilePaths(metadata);
     // eslint-disable-next-line no-restricted-syntax
     for (const filePath of filePaths) {
       // eslint-disable-next-line no-await-in-loop
-      const stat = await fs.stat(filePath.path)
-        .catch(IgnoreErrorFunc);
+      const stat = await fs.stat(filePath.path).catch(IgnoreErrorFunc);
       if (!stat?.isFile()) {
         // eslint-disable-next-line no-continue
         continue;
       }
 
       // eslint-disable-next-line no-await-in-loop
-      const data = await fs.readFile(filePath.path)
-        .catch(IgnoreErrorFunc);
+      const data = await fs.readFile(filePath.path).catch(IgnoreErrorFunc);
       if (!data) {
         // eslint-disable-next-line no-continue
         continue;
@@ -103,7 +105,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
   ): Promise<void> {
     const filePaths = LocalStorageDataManager.getMayExistFilePaths(metadata);
     const fileExists = await Promise.all(
-      filePaths.map(((f) => LocalStorageDataManager.existFile(f.path))),
+      filePaths.map((f) => LocalStorageDataManager.existFile(f.path)),
     );
     if (!overwrite && fileExists.some((e) => e)) {
       return Promise.resolve();
@@ -113,27 +115,31 @@ export class LocalStorageDataManager implements IStorageDataManager {
     await fs.mkdir(dirname(filePath.path), { recursive: true });
     await fs.writeFile(filePath.path, data);
     if (filePath.isOriginalFolderPath) {
-      const extensions = availableImageExtensions.filter((e) => e !== metadata.extension);
-      await Promise.allSettled(extensions
-        .flatMap((e) => LocalStorageDataManager.getMayExistFilePaths({
-          ...metadata,
-          extension: e,
-        })
-          .map((f) => fs.rm(f.path, { force: true }))));
+      const extensions = availableImageExtensions.filter(
+        (e) => e !== metadata.extension,
+      );
+      await Promise.allSettled(
+        extensions.flatMap((e) =>
+          LocalStorageDataManager.getMayExistFilePaths({
+            ...metadata,
+            extension: e,
+          }).map((f) => fs.rm(f.path, { force: true })),
+        ),
+      );
     }
     return undefined;
   }
 
   private static existFile(filePath: string): Promise<boolean> {
-    return fs.stat(filePath)
+    return fs
+      .stat(filePath)
       .then((s) => s.isFile())
       .catch(() => false);
   }
 
   getUserStoredArchive(fileName: string): Promise<Buffer | undefined> {
     const filePath = join(userDownloadFolderName, fileName);
-    return fs.readFile(filePath)
-      .catch(IgnoreErrorFunc);
+    return fs.readFile(filePath).catch(IgnoreErrorFunc);
   }
 
   removeBook(bookId: string, cacheOnly: boolean): Promise<void> {
@@ -150,30 +156,42 @@ export class LocalStorageDataManager implements IStorageDataManager {
         recursive: true,
         force: true,
       }),
-    ])
-      .then(IgnoreErrorFunc);
+    ]).then(IgnoreErrorFunc);
   }
 
   getStoredBookIds(): Promise<Array<string>> {
     return fs.readdir(bookFolderPath);
   }
 
-  private static getMayExistFilePaths(metadata: CacheablePageMetadata): FilePath[] {
-    const pageName = typeof metadata.pageNumber === 'string'
-      ? metadata.pageNumber
-      : metadata.pageNumber.pageIndex.toString(10)
-        .padStart(metadata.pageNumber.totalPageCount.toString(10).length, '0');
+  private static getMayExistFilePaths(
+    metadata: CacheablePageMetadata,
+  ): FilePath[] {
+    const pageName =
+      typeof metadata.pageNumber === 'string'
+        ? metadata.pageNumber
+        : metadata.pageNumber.pageIndex
+            .toString(10)
+            .padStart(
+              metadata.pageNumber.totalPageCount.toString(10).length,
+              '0',
+            );
 
     const filePaths: FilePath[] = [];
     const hasNotSizeOption = metadata.width === 0 && metadata.height === 0;
     if (hasNotSizeOption) {
       filePaths.push({
-        path: join(bookFolderPath, metadata.bookId, `${pageName}.${metadata.extension}`),
+        path: join(
+          bookFolderPath,
+          metadata.bookId,
+          `${pageName}.${metadata.extension}`,
+        ),
         isOriginalFolderPath: true,
       });
     }
 
-    const sizeSuffix = hasNotSizeOption ? '' : `_${metadata.width}x${metadata.height}`;
+    const sizeSuffix = hasNotSizeOption
+      ? ''
+      : `_${metadata.width}x${metadata.height}`;
     filePaths.push({
       path: join(
         cacheBookFolderName,

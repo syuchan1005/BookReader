@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { defaultTitle } from '@syuchan1005/book-reader-common';
+import { useEffect, useRef } from 'react';
 
 type Options = {
   restoreOnUnmount: boolean;

@@ -1,29 +1,31 @@
-import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme, useTheme } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
+import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import useMediaQuery from '@client/hooks/useMediaQuery';
-import db, { BookInfoFavorite } from '@client/indexedDb/Database';
-import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
-import BookInfo from '@client/components/BookInfo';
 import { useTitle } from '@client/hooks/useTitle';
+import db, { BookInfoFavorite } from '@client/indexedDb/Database';
+import { Theme, useTheme } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
+import React from 'react';
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  grid: {
-    padding: theme.spacing(1),
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-    justifyContent: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    grid: {
+      padding: theme.spacing(1),
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+      justifyContent: 'center',
+      columnGap: theme.spacing(2),
+      rowGap: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+      },
     },
-  },
-}));
+  }),
+);
 
 const defaultLoadBookInfosCount = 20;
 
@@ -34,7 +36,9 @@ const Favorite = () => {
 
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [favoriteBookInfos, setFavoriteBookInfos] = React.useState<BookInfoFavorite[]>([]);
+  const [favoriteBookInfos, setFavoriteBookInfos] = React.useState<
+    BookInfoFavorite[]
+  >([]);
   const [favoriteLoading, setFavoriteLoading] = React.useState(false);
   const getFavoriteBookInfos = React.useCallback(() => {
     let after;
@@ -42,14 +46,12 @@ const Favorite = () => {
       after = favoriteBookInfos[favoriteBookInfos.length - 1].createdAt;
     }
     setFavoriteLoading(true);
-    db.bookInfoFavorite.getAll(
-      defaultLoadBookInfosCount,
-      {
+    db.bookInfoFavorite
+      .getAll(defaultLoadBookInfosCount, {
         key: 'createdAt',
         direction: 'prev',
         after,
-      },
-    )
+      })
       .then((bookInfos) => {
         setFavoriteBookInfos((p) => [...p, ...bookInfos]);
         setFavoriteLoading(false);
@@ -62,10 +64,7 @@ const Favorite = () => {
     getFavoriteBookInfos();
     // eslint-disable-next-line
   }, []);
-  const {
-    loading,
-    data,
-  } = useBookInfosQuery({
+  const { loading, data } = useBookInfosQuery({
     skip: favoriteBookInfos.length === 0,
     variables: {
       ids: favoriteBookInfos.map((bookInfo) => bookInfo.infoId),

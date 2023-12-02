@@ -2,7 +2,9 @@ import { useCallback, useState } from 'react';
 
 type Creator<T> = ((i: T, p: T) => T) | T;
 
-const useStateWithReset = <T>(initValue: T): [T, (c: Creator<T>) => void, () => void] => {
+const useStateWithReset = <T>(
+  initValue: T,
+): [T, (c: Creator<T>) => void, () => void] => {
   const [state, setState] = useState(initValue);
   const reset = useCallback(() => {
     setState(initValue);

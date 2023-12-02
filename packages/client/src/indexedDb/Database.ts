@@ -15,11 +15,11 @@ export interface BookRead {
 }
 
 export interface Read {
-  infoId: string; /* index */
-  bookId: string; /* keyPath */
+  infoId: string /* index */;
+  bookId: string /* keyPath */;
   page: number;
 
-  updatedAt: Date; /* index */
+  updatedAt: Date /* index */;
 }
 
 export interface BookInfoFavorite {
@@ -28,7 +28,7 @@ export interface BookInfoFavorite {
 }
 
 export interface Revision {
-  count: number; /* id */
+  count: number /* id */;
   localSyncedAt: Date;
   serverSyncedAt: Date;
 }
@@ -60,9 +60,9 @@ export class StoreWrapper<T> {
     });
   }
 
-  getAll<K extends (keyof T & string)>(
+  getAll<K extends keyof T & string>(
     limit: number,
-    sort?: { key: K, direction?: 'next' | 'prev', after?: T[K] },
+    sort?: { key: K; direction?: 'next' | 'prev'; after?: T[K] },
     indexValue?: T[K] | undefined,
   ): Promise<T[]> {
     if (limit <= 0) {
@@ -132,7 +132,10 @@ export class StoreWrapper<T> {
     });
   }
 
-  put(value: T, options: { replace: boolean } = { replace: true }): Promise<IDBValidKey> {
+  put(
+    value: T,
+    options: { replace: boolean } = { replace: true },
+  ): Promise<IDBValidKey> {
     return new Promise<IDBValidKey>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readwrite');
       const store = tx.objectStore(this.storeName);
@@ -172,7 +175,10 @@ export class StoreWrapper<T> {
     });
   }
 
-  deleteByIndex<K extends keyof T & string>(index: K, value: string): Promise<IDBValidKey> {
+  deleteByIndex<K extends keyof T & string>(
+    index: K,
+    value: string,
+  ): Promise<IDBValidKey> {
     return new Promise<IDBValidKey>((resolve) => {
       const tx = this.db.transaction(this.storeName, 'readwrite');
       const store = tx.objectStore(this.storeName);
@@ -228,7 +234,9 @@ const UpgradeTask = [
       .createIndex('updatedAt', 'updatedAt');
   },
   (db: IDBDatabase) => {
-    const bookInfoFavoriteStore = db.createObjectStore('bookInfoFavorite', { keyPath: 'infoId' });
+    const bookInfoFavoriteStore = db.createObjectStore('bookInfoFavorite', {
+      keyPath: 'infoId',
+    });
     bookInfoFavoriteStore.createIndex('createdAt', 'createdAt');
   },
   (db: IDBDatabase) => {
@@ -307,8 +315,9 @@ export class Database {
       request.onupgradeneeded = (event) => {
         // @ts-ignore
         this._db = event.target.result;
-        UpgradeTask.slice(event.oldVersion + 1, event.newVersion + 1)
-          .forEach((task) => task(this._db, request));
+        UpgradeTask.slice(event.oldVersion + 1, event.newVersion + 1).forEach(
+          (task) => task(this._db, request),
+        );
       };
       request.onerror = (event) => {
         reject(event);
@@ -316,7 +325,11 @@ export class Database {
       request.onsuccess = () => {
         // @ts-ignore
         this._db = request.result;
-        this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>('bookInfoFavorite', 'infoId', this._db);
+        this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>(
+          'bookInfoFavorite',
+          'infoId',
+          this._db,
+        );
         this._read = new StoreWrapper<Read>('read', 'bookId', this._db);
 
         resolve(this._db);

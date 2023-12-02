@@ -1,54 +1,61 @@
-import sharp from 'sharp';
-import throttle from 'lodash.throttle';
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import lodashChunk from 'lodash.chunk';
+import throttle from 'lodash.throttle';
+import sharp from 'sharp';
 
-import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
-import {
-  Maybe,
-  Result,
-  SplitType,
-  EditAction,
-  Scalars,
-  EditType,
-  Resolvers,
-} from '@syuchan1005/book-reader-graphql';
-import { SubscriptionKeys } from '@server/graphql';
 import Errors from '@server/Errors';
 import { BookDataManager } from '@server/database/BookDataManager';
+import { SubscriptionKeys } from '@server/graphql';
 import {
   StorageDataManager,
   withPageEditFolder,
   writeFile,
 } from '@server/storage/StorageDataManager';
-import { chunkedRange, flatRange } from '../scalar/IntRange';
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import {
-  purgeImageCache,
+  EditAction,
+  EditType,
+  Maybe,
+  Resolvers,
+  Result,
+  Scalars,
+  SplitType,
+} from '@syuchan1005/book-reader-graphql';
+import {
   getImageSize,
   joinImagesAndSaveImage,
+  purgeImageCache,
 } from '../../ImageUtil';
+import { chunkedRange, flatRange } from '../scalar/IntRange';
 
 const throttleMs = 500;
 
 type Clean<T> = T;
 
 type Merge<L, R> = Clean<{
-  [K in keyof L | keyof R]: (K extends keyof L ? L[K] : never) | (K extends keyof R ? R[K] : never);
+  [K in keyof L | keyof R]:
+    | (K extends keyof L ? L[K] : never)
+    | (K extends keyof R ? R[K] : never);
 }>;
 
 export type StrictEditAction = {
-  [T in EditType]:
-  Merge<{ editType: T },
+  [T in EditType]: Merge<
+    { editType: T },
     {
-      [L in Lowercase<T> & keyof EditAction]:
-      EditAction[L] extends Maybe<infer A> | undefined
+      [L in Lowercase<T> & keyof EditAction]: EditAction[L] extends
+        | Maybe<infer A>
+        | undefined
         ? A
-        : never
-    }>
+        : never;
+    }
+  >;
 }[EditType];
 
 const editTypeConstraint: {
-  [key in EditType]: [/* is terminal operation */ boolean, /* is single operation */ boolean]
+  [key in EditType]: [
+    /* is terminal operation */ boolean,
+    /* is single operation */ boolean,
+  ];
 } = {
   [EditType.Crop]: [false, false],
   [EditType.Replace]: [false, false],
@@ -59,10 +66,10 @@ const editTypeConstraint: {
 };
 
 type CropValue = {
-  top: number,
-  bottom: number,
-  left: number,
-  right: number,
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
 };
 
 type TransformFn = (width: number, height: number) => CropValue;
@@ -72,11 +79,11 @@ type TransformFn = (width: number, height: number) => CropValue;
  * at the upper end of the list.
  */
 type ImageEditAction = {
-  pageIndex: number,
+  pageIndex: number;
   willDelete: boolean;
-  image?: Scalars['Upload'],
-  cropTransforms?: TransformFn[],
-  compositePages?: number[],
+  image?: Scalars['Upload'];
+  cropTransforms?: TransformFn[];
+  compositePages?: number[];
 };
 
 const createImageEditAction = (pageIndex: number): ImageEditAction => ({
@@ -87,7 +94,9 @@ const createImageEditAction = (pageIndex: number): ImageEditAction => ({
   compositePages: undefined,
 });
 
-const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefined => {
+const validateEditActions = (
+  actions: EditAction[],
+): StrictEditAction[] | undefined => {
   const isValid = actions.every((action, index, arr) => {
     const constraint = editTypeConstraint[action.editType];
     if (!constraint) {
@@ -103,7 +112,9 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
 
     switch (action.editType) {
       case EditType.Crop:
-        return !['top', 'bottom', 'left', 'right'].every((k) => !action.crop[k]);
+        return !['top', 'bottom', 'left', 'right'].every(
+          (k) => !action.crop[k],
+        );
       case EditType.Delete:
       case EditType.Put:
       case EditType.Replace:
@@ -114,7 +125,7 @@ const validateEditActions = (actions: EditAction[]): StrictEditAction[] | undefi
         return false;
     }
   });
-  return isValid ? actions as StrictEditAction[] : undefined;
+  return isValid ? (actions as StrictEditAction[]) : undefined;
 };
 
 const calculateEditActions = (
@@ -146,67 +157,81 @@ const calculateEditActions = (
         const pageRange = flatRange(action.delete.pageRange);
         imageEditActions.forEach((imageEditAction, i) => {
           // eslint-disable-next-line no-param-reassign
-          imageEditAction.willDelete = imageEditAction.willDelete || pageRange.includes(i);
+          imageEditAction.willDelete =
+            imageEditAction.willDelete || pageRange.includes(i);
         });
         break;
       }
       case EditType.Put: {
         const newImageEditAction: ImageEditAction = createImageEditAction(-1);
         newImageEditAction.image = action.put.image;
-        imageEditActions.splice(action.put.pageIndex + 1, 0, newImageEditAction);
+        imageEditActions.splice(
+          action.put.pageIndex + 1,
+          0,
+          newImageEditAction,
+        );
         break;
       }
       case EditType.Split: {
         const pageRange = flatRange(action.split.pageRange);
         const { splitCount } = action.split;
-        imageEditActions = imageEditActions.flatMap((imageEditAction, pageIndex) => {
-          if (!pageRange.includes(pageIndex)) {
-            return imageEditAction;
-          }
-          switch (action.split.splitType) {
-            case SplitType.Vertical:
-              return [...Array(splitCount)
-                .keys()].reverse()
-                .map((i): ImageEditAction => ({
-                  ...imageEditAction,
-                  pageIndex: imageEditAction.pageIndex ?? pageIndex,
-                  cropTransforms: [
-                    ...(imageEditAction.cropTransforms ?? []),
-                    (width, height) => {
-                      const widthPerPage = width / splitCount;
-                      const left = Math.round(widthPerPage * i);
-                      return {
-                        left,
-                        right: Math.min(width, Math.round(widthPerPage * (i + 1))),
-                        top: 0,
-                        bottom: height,
-                      };
-                    },
-                  ],
-                }));
-            case SplitType.Horizontal:
-              return [...Array(splitCount)
-                .keys()].map((i): ImageEditAction => ({
-                ...imageEditAction,
-                pageIndex: imageEditAction.pageIndex ?? pageIndex,
-                cropTransforms: [
-                  ...(imageEditAction.cropTransforms ?? []),
-                  (width, height) => {
-                    const heightPerPage = height / splitCount;
-                    const top = Math.round(heightPerPage * i);
-                    return {
-                      left: 0,
-                      right: width,
-                      top,
-                      bottom: Math.min(height, Math.round(heightPerPage * (i + 1))),
-                    };
-                  },
-                ],
-              }));
-            default:
-              throw new Error(`Unknown SplitType ${action.split.splitType}`);
-          }
-        });
+        imageEditActions = imageEditActions.flatMap(
+          (imageEditAction, pageIndex) => {
+            if (!pageRange.includes(pageIndex)) {
+              return imageEditAction;
+            }
+            switch (action.split.splitType) {
+              case SplitType.Vertical:
+                return [...Array(splitCount).keys()].reverse().map(
+                  (i): ImageEditAction => ({
+                    ...imageEditAction,
+                    pageIndex: imageEditAction.pageIndex ?? pageIndex,
+                    cropTransforms: [
+                      ...(imageEditAction.cropTransforms ?? []),
+                      (width, height) => {
+                        const widthPerPage = width / splitCount;
+                        const left = Math.round(widthPerPage * i);
+                        return {
+                          left,
+                          right: Math.min(
+                            width,
+                            Math.round(widthPerPage * (i + 1)),
+                          ),
+                          top: 0,
+                          bottom: height,
+                        };
+                      },
+                    ],
+                  }),
+                );
+              case SplitType.Horizontal:
+                return [...Array(splitCount).keys()].map(
+                  (i): ImageEditAction => ({
+                    ...imageEditAction,
+                    pageIndex: imageEditAction.pageIndex ?? pageIndex,
+                    cropTransforms: [
+                      ...(imageEditAction.cropTransforms ?? []),
+                      (width, height) => {
+                        const heightPerPage = height / splitCount;
+                        const top = Math.round(heightPerPage * i);
+                        return {
+                          left: 0,
+                          right: width,
+                          top,
+                          bottom: Math.min(
+                            height,
+                            Math.round(heightPerPage * (i + 1)),
+                          ),
+                        };
+                      },
+                    ],
+                  }),
+                );
+              default:
+                throw new Error(`Unknown SplitType ${action.split.splitType}`);
+            }
+          },
+        );
         break;
       }
       case EditType.Replace:
@@ -220,8 +245,7 @@ const calculateEditActions = (
           throw new Error('has duplicate range');
         }
         const chunkedPageRange: [number, number][] = inputChunkedPageRange
-          .map((pages) => lodashChunk(pages, 2))
-          .flat(1)
+          .flatMap((pages) => lodashChunk(pages, 2))
           .filter((arr) => arr.length === 2);
         chunkedPageRange.forEach((pages) => {
           imageEditActions[pages[0]].compositePages = [...pages].reverse();
@@ -240,31 +264,34 @@ const calculateCropTransforms = (
   transforms: TransformFn[],
   imageWidth: number,
   imageHeight: number,
-): CropValue => transforms.reduce((prev, transformFn) => {
-  const w = prev.right - prev.left;
-  const h = prev.bottom - prev.top;
-  const croppedValue = transformFn(w, h);
-  return {
-    top: prev.top + croppedValue.top,
-    left: prev.left + croppedValue.left,
-    right: prev.right - (w - croppedValue.right),
-    bottom: prev.bottom - (h - croppedValue.bottom),
-  };
-}, {
-  top: 0,
-  left: 0,
-  right: imageWidth,
-  bottom: imageHeight,
-} as CropValue);
+): CropValue =>
+  transforms.reduce(
+    (prev, transformFn) => {
+      const w = prev.right - prev.left;
+      const h = prev.bottom - prev.top;
+      const croppedValue = transformFn(w, h);
+      return {
+        top: prev.top + croppedValue.top,
+        left: prev.left + croppedValue.left,
+        right: prev.right - (w - croppedValue.right),
+        bottom: prev.bottom - (h - croppedValue.bottom),
+      };
+    },
+    {
+      top: 0,
+      left: 0,
+      right: imageWidth,
+      bottom: imageHeight,
+    } as CropValue,
+  );
 
-const streamToBuffer = (
-  stream: NodeJS.ReadableStream,
-): Promise<Buffer> => new Promise((resolve, reject) => {
-  const buffer = [];
-  stream.on('data', (chunk) => buffer.push(chunk));
-  stream.on('end', () => resolve(Buffer.concat(buffer)));
-  stream.on('error', (err) => reject(err));
-});
+const streamToBuffer = (stream: NodeJS.ReadableStream): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    const buffer = [];
+    stream.on('data', (chunk) => buffer.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(buffer)));
+    stream.on('error', (err) => reject(err));
+  });
 
 const executeEditActions = async (
   editActions: ImageEditAction[],
@@ -273,16 +300,17 @@ const executeEditActions = async (
   bookPages: number,
   log: (string) => void,
 ): Promise<Result> => {
-  const executableEditActions = editActions.filter(({ willDelete }) => !willDelete);
+  const executableEditActions = editActions.filter(
+    ({ willDelete }) => !willDelete,
+  );
 
   let count = 0;
-  const promises = executableEditActions
-    .map(async ({
-      pageIndex,
-      image,
-      cropTransforms,
-      compositePages,
-    }, index, arr): Promise<Result> => {
+  const promises = executableEditActions.map(
+    async (
+      { pageIndex, image, cropTransforms, compositePages },
+      index,
+      arr,
+    ): Promise<Result> => {
       const srcFileData = await StorageDataManager.getOriginalPageData({
         bookId,
         pageNumber: {
@@ -290,19 +318,26 @@ const executeEditActions = async (
           totalPageCount: bookPages,
         },
       });
-      const distFileName = `${index.toString(10)
-        .padStart(arr.length.toString(10).length, '0')}.${defaultStoredImageExtension}`;
+      const distFileName = `${index
+        .toString(10)
+        .padStart(
+          arr.length.toString(10).length,
+          '0',
+        )}.${defaultStoredImageExtension}`;
       const distFilePath = `${editFolderPath}/${distFileName}`;
       try {
         if (image) {
           const buffer = await image
             .then(({ createReadStream }) => createReadStream())
             .then(streamToBuffer);
-          await sharp(buffer)
-            .toFile(distFilePath);
+          await sharp(buffer).toFile(distFilePath);
         } else if (cropTransforms) {
           const size = await getImageSize(srcFileData.data);
-          const cropValue = calculateCropTransforms(cropTransforms, size.width, size.height);
+          const cropValue = calculateCropTransforms(
+            cropTransforms,
+            size.width,
+            size.height,
+          );
           await sharp(srcFileData.data)
             .extract({
               top: cropValue.top,
@@ -313,16 +348,23 @@ const executeEditActions = async (
             .toFile(distFilePath);
         } else if (compositePages) {
           const pageDataList = await Promise.all(
-            compositePages.map((i) => StorageDataManager.getOriginalPageData({
-              bookId,
-              pageNumber: {
-                pageIndex: i,
-                totalPageCount: bookPages,
-              },
-            })),
+            compositePages.map((i) =>
+              StorageDataManager.getOriginalPageData({
+                bookId,
+                pageNumber: {
+                  pageIndex: i,
+                  totalPageCount: bookPages,
+                },
+              }),
+            ),
           );
-          await joinImagesAndSaveImage(pageDataList.map((p) => p.data), distFilePath);
-        } else if (srcFileData.contentExtension === defaultStoredImageExtension) {
+          await joinImagesAndSaveImage(
+            pageDataList.map((p) => p.data),
+            distFilePath,
+          );
+        } else if (
+          srcFileData.contentExtension === defaultStoredImageExtension
+        ) {
           await writeFile(distFilePath, srcFileData.data);
         } else {
           await sharp(srcFileData.data).toFile(distFilePath);
@@ -338,7 +380,8 @@ const executeEditActions = async (
         count += 1;
         log(`${count} / ${executableEditActions.length}`);
       }
-    });
+    },
+  );
   try {
     await Promise.all(promises);
     return { success: true };
@@ -351,10 +394,7 @@ const pubsub = new PubSub();
 
 export const resolvers: Resolvers = {
   Mutation: {
-    bulkEditPage: async (_, {
-      id: bookId,
-      actions,
-    }) => {
+    bulkEditPage: async (_, { id: bookId, actions }) => {
       const book = await BookDataManager.getBook(bookId);
       if (!book) {
         return {
@@ -365,10 +405,11 @@ export const resolvers: Resolvers = {
       }
 
       const log = throttle(
-        (message: string) => pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
-          id: bookId,
-          bulkEditPage: message,
-        }),
+        (message: string) =>
+          pubsub.publish(SubscriptionKeys.BULK_EDIT_PAGE, {
+            id: bookId,
+            bulkEditPage: message,
+          }),
         throttleMs,
       );
 
@@ -384,10 +425,8 @@ export const resolvers: Resolvers = {
       log('Calculate edit actions');
       const editActions = calculateEditActions(
         strictEditActions,
-        [...Array(book.pageCount)
-          .keys()].map(createImageEditAction),
-      )
-        .filter(({ willDelete }) => !willDelete);
+        [...Array(book.pageCount).keys()].map(createImageEditAction),
+      ).filter(({ willDelete }) => !willDelete);
 
       return withPageEditFolder(bookId, async (folderPath, replaceNewFiles) => {
         log('Processing edit actions');
@@ -404,9 +443,9 @@ export const resolvers: Resolvers = {
 
         log('Move processed images');
         try {
-          await StorageDataManager.removeBook(bookId, true)
-            .catch(() => { /* ignored */
-            });
+          await StorageDataManager.removeBook(bookId, true).catch(() => {
+            /* ignored */
+          });
           purgeImageCache();
           await replaceNewFiles();
         } catch (e) {

@@ -1,26 +1,27 @@
-import React, { MouseEventHandler } from 'react';
 import {
   Button,
   Icon,
   IconButton,
   Menu,
   MenuItem,
-  ThemeProvider,
-  StyledEngineProvider,
   Slider,
+  StyledEngineProvider,
   Theme,
+  ThemeProvider,
 } from '@mui/material';
+import { orange } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { orange } from '@mui/material/colors';
+import React, { MouseEventHandler } from 'react';
 import { useRecoilState } from 'recoil';
 
 import { commonTheme } from '@client/App';
 import useMenuAnchor from '@client/hooks/useMenuAnchor';
 import { PageStyleType } from '@client/pages/Book';
 import {
-  pageImageEffectState, PageImageEffectType,
+  PageImageEffectType,
   ReadOrder,
+  pageImageEffectState,
   readOrderState,
   showOriginalImageState,
 } from '@client/store/atoms';
@@ -37,57 +38,59 @@ interface BookPageOverlayProps {
   onEditClick: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  overlay: {
-    zIndex: 2,
-    top: '0',
-    position: 'fixed',
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    userSelect: 'none',
-  },
-  overlayContent: {
-    userSelect: 'none',
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    display: 'grid',
-    gridTemplateRows: '1fr',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    '& > div': {
-      textAlign: 'center',
-    },
-    padding: theme.spacing(1),
-    borderRadius: theme.spacing(1),
-    position: 'absolute',
-    '&.top': {
-      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}`),
-      whiteSpace: 'nowrap',
-    },
-    '&.bottom': {
-      width: '80%',
-      gridTemplateRows: 'auto auto',
-      gridTemplateColumns: '1fr 1fr 1fr 1fr',
-      bottom: theme.spacing(2),
-    },
-    '&.center': {
-      background: 'inherit',
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    overlay: {
+      zIndex: 2,
+      top: '0',
+      position: 'fixed',
+      width: '100%',
       height: '100%',
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-      '& > button + button': {
-        marginTop: theme.spacing(1),
+      userSelect: 'none',
+    },
+    overlayContent: {
+      userSelect: 'none',
+      background: 'rgba(0, 0, 0, 0.7)',
+      color: 'white',
+      display: 'grid',
+      gridTemplateRows: '1fr',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      '& > div': {
+        textAlign: 'center',
+      },
+      padding: theme.spacing(1),
+      borderRadius: theme.spacing(1),
+      position: 'absolute',
+      '&.top': {
+        ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}`),
+        whiteSpace: 'nowrap',
+      },
+      '&.bottom': {
+        width: '80%',
+        gridTemplateRows: 'auto auto',
+        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+        bottom: theme.spacing(2),
+      },
+      '&.center': {
+        background: 'inherit',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        '& > button + button': {
+          marginTop: theme.spacing(1),
+        },
       },
     },
-  },
-  bottomSlider: {
-    gridColumn: '1 / span 4',
-    margin: theme.spacing(0, 2),
-  },
-}));
+    bottomSlider: {
+      gridColumn: '1 / span 4',
+      margin: theme.spacing(0, 2),
+    },
+  }),
+);
 
 const stopPropagationListener: MouseEventHandler<any> = (e) => {
   e.stopPropagation();
@@ -108,67 +111,95 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   } = props;
 
   const [readOrder, setReadOrder] = useRecoilState(readOrderState);
-  const [showOriginalImage, setShowOriginalImage] = useRecoilState(showOriginalImageState);
-  const [pageImageEffect, setPageImageEffect] = useRecoilState(pageImageEffectState);
-  const [settingsMenuAnchor, setSettingsMenuAnchor, resetSettingMenuAnchor] = useMenuAnchor();
-  const [effectMenuAnchor, setEffectMenuAnchor, resetEffectMenuAnchor] = useMenuAnchor();
+  const [showOriginalImage, setShowOriginalImage] = useRecoilState(
+    showOriginalImageState,
+  );
+  const [pageImageEffect, setPageImageEffect] =
+    useRecoilState(pageImageEffectState);
+  const [settingsMenuAnchor, setSettingsMenuAnchor, resetSettingMenuAnchor] =
+    useMenuAnchor();
+  const [effectMenuAnchor, setEffectMenuAnchor, resetEffectMenuAnchor] =
+    useMenuAnchor();
 
   const toggleOriginalImage = React.useCallback(() => {
     setShowOriginalImage((v) => !v);
   }, [setShowOriginalImage]);
 
-  const clickEffect = React.useCallback((type: PageImageEffectType | undefined) => {
-    if (type) {
-      setPageImageEffect((e) => ({
-        type,
-        percent: e?.percent || 0,
-      }));
-    } else {
-      setPageImageEffect(undefined);
-    }
-    resetEffectMenuAnchor();
-  }, [setPageImageEffect, resetEffectMenuAnchor]);
+  const clickEffect = React.useCallback(
+    (type: PageImageEffectType | undefined) => {
+      if (type) {
+        setPageImageEffect((e) => ({
+          type,
+          percent: e?.percent || 0,
+        }));
+      } else {
+        setPageImageEffect(undefined);
+      }
+      resetEffectMenuAnchor();
+    },
+    [setPageImageEffect, resetEffectMenuAnchor],
+  );
 
-  const clickJumpPrevBook = React.useCallback((e) => {
-    e.stopPropagation();
-    if (goPreviousBook) {
-      goPreviousBook();
-    }
-  }, [goPreviousBook]);
+  const clickJumpPrevBook = React.useCallback(
+    (e) => {
+      e.stopPropagation();
+      if (goPreviousBook) {
+        goPreviousBook();
+      }
+    },
+    [goPreviousBook],
+  );
 
-  const clickJumpNextBook = React.useCallback((e) => {
-    e.stopPropagation();
-    if (goNextBook) {
-      goNextBook();
-    }
-  }, [goNextBook]);
+  const clickJumpNextBook = React.useCallback(
+    (e) => {
+      e.stopPropagation();
+      if (goNextBook) {
+        goNextBook();
+      }
+    },
+    [goNextBook],
+  );
 
   return (
     // eslint-disable-next-line
-    <div
-      className={classes.overlay}
-      onClick={setHideAppBar}
-    >
+    <div className={classes.overlay} onClick={setHideAppBar}>
       {/* eslint-disable-next-line */}
       <div className={`${classes.overlayContent} center`}>
-        {(goPreviousBook && currentPage === 0) && (
-          <Button variant="contained" color="secondary" onClick={clickJumpPrevBook}>
+        {goPreviousBook && currentPage === 0 && (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={clickJumpPrevBook}
+          >
             to Prev book
           </Button>
         )}
-        {(goNextBook && maxPages
-          && Math.abs(maxPages - currentPage) <= pageStyle.slidesPerView) && (
-          <Button variant="contained" color="secondary" onClick={clickJumpNextBook}>
-            to Next book
-          </Button>
-        )}
+        {goNextBook &&
+          maxPages &&
+          Math.abs(maxPages - currentPage) <= pageStyle.slidesPerView && (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={clickJumpNextBook}
+            >
+              to Next book
+            </Button>
+          )}
       </div>
       {/* eslint-disable-next-line */}
-      <div className={`${classes.overlayContent} top`} onClick={stopPropagationListener}>
-        <div style={{ gridColumn: '1 / span 3' }}>{`${currentPage + 1} / ${maxPages}`}</div>
+      <div
+        className={`${classes.overlayContent} top`}
+        onClick={stopPropagationListener}
+      >
+        <div style={{ gridColumn: '1 / span 3' }}>{`${
+          currentPage + 1
+        } / ${maxPages}`}</div>
       </div>
       {/* eslint-disable-next-line */}
-      <div className={`${classes.overlayContent} bottom`} onClick={stopPropagationListener}>
+      <div
+        className={`${classes.overlayContent} bottom`}
+        onClick={stopPropagationListener}
+      >
         <div
           style={{
             display: 'flex',
@@ -217,9 +248,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           >
             Edit pages
           </MenuItem>
-          <MenuItem
-            onClick={toggleOriginalImage}
-          >
+          <MenuItem onClick={toggleOriginalImage}>
             {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
           </MenuItem>
         </Menu>
@@ -283,7 +312,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
             </ThemeProvider>
           </StyledEngineProvider>
         </div>
-        {(pageImageEffect) && (
+        {pageImageEffect && (
           <div className={classes.bottomSlider}>
             <StyledEngineProvider injectFirst>
               <ThemeProvider
@@ -303,9 +332,9 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                   max={100}
                   min={0}
                   value={pageImageEffect.percent}
-                  onChange={(e, percent: number) => setPageImageEffect(
-                    { ...pageImageEffect, percent },
-                  )}
+                  onChange={(e, percent: number) =>
+                    setPageImageEffect({ ...pageImageEffect, percent })
+                  }
                 />
               </ThemeProvider>
             </StyledEngineProvider>

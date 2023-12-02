@@ -1,4 +1,3 @@
-import React, { ChangeEvent, useCallback } from 'react';
 import {
   AppBar,
   Chip,
@@ -16,113 +15,117 @@ import {
   useTheme,
 } from '@mui/material';
 import { red } from '@mui/material/colors';
+import { alpha } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { alpha } from '@mui/material/styles';
+import React, { ChangeEvent, useCallback } from 'react';
 
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
-import { useRecoilState } from 'recoil';
 import { genresState } from '@client/store/atoms';
 import {
   SearchMode,
   useAvailableSearchModesQuery,
   useGenresQuery,
 } from '@syuchan1005/book-reader-graphql';
+import { useRecoilState } from 'recoil';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
   searchText?: string;
-  searchMode: SearchMode,
+  searchMode: SearchMode;
   onChangeSearchText?: (text: string, searchMode: SearchMode) => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  appBar: {
-    paddingTop: commonTheme.safeArea.top,
-  },
-  search: {
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    appBar: {
+      paddingTop: commonTheme.safeArea.top,
     },
-    color: theme.palette.common.white,
-    marginLeft: 0,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
+    search: {
+      position: 'relative',
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: alpha(theme.palette.common.white, 0.15),
+      '&:hover': {
+        backgroundColor: alpha(theme.palette.common.white, 0.25),
+      },
+      color: theme.palette.common.white,
+      marginLeft: 0,
+      width: '100%',
+      [theme.breakpoints.up('sm')]: {
+        marginLeft: theme.spacing(1),
+        width: 'auto',
+      },
+    },
+    searchIcon: {
+      width: theme.spacing(7),
+      height: '100%',
+      position: 'absolute',
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputRoot: {
+      color: 'inherit',
+      width: '100%',
+    },
+    inputInput: {
+      padding: theme.spacing(1, 1, 1, 7),
+      transition: theme.transitions.create('width'),
+      width: '100%',
+      [theme.breakpoints.up('sm')]: {
+        width: 350,
+      },
+    },
+    sortIcon: {
       marginLeft: theme.spacing(1),
-      width: 'auto',
+      color: 'white',
     },
-  },
-  searchIcon: {
-    width: theme.spacing(7),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputRoot: {
-    color: 'inherit',
-    width: '100%',
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 7),
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      width: 350,
+    inputFilter: {
+      width: '100%',
+      minWidth: 200,
+      [theme.breakpoints.up('sm')]: {
+        width: 350,
+      },
     },
-  },
-  sortIcon: {
-    marginLeft: theme.spacing(1),
-    color: 'white',
-  },
-  inputFilter: {
-    width: '100%',
-    minWidth: 200,
-    [theme.breakpoints.up('sm')]: {
-      width: 350,
+    chips: {
+      display: 'flex',
+      flexWrap: 'wrap',
     },
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: 2,
-  },
-}));
+    chip: {
+      margin: 2,
+    },
+  }),
+);
 
 const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
-  const {
-    onClickMenuIcon,
-    searchText,
-    searchMode,
-    onChangeSearchText,
-  } = props;
+  const { onClickMenuIcon, searchText, searchMode, onChangeSearchText } = props;
 
   const { data } = useAvailableSearchModesQuery();
-  const handleSearchModeChange = useCallback((e) => {
-    const selectedSearchMode = e.target.value;
-    let mode = SearchMode.Database;
-    if (Object.values(SearchMode).includes(selectedSearchMode)) {
-      mode = selectedSearchMode;
-    }
-    onChangeSearchText?.(searchText, mode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText]);
+  const handleSearchModeChange = useCallback(
+    (e) => {
+      const selectedSearchMode = e.target.value;
+      let mode = SearchMode.Database;
+      if (Object.values(SearchMode).includes(selectedSearchMode)) {
+        mode = selectedSearchMode;
+      }
+      onChangeSearchText?.(searchText, mode);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [searchText],
+  );
 
-  const handleSearchText = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    onChangeSearchText?.(event.target.value, searchMode);
+  const handleSearchText = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      onChangeSearchText?.(event.target.value, searchMode);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onChangeSearchText]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [onChangeSearchText],
+  );
 
   const clearSearchText = useCallback(() => {
     onChangeSearchText?.('', searchMode);
@@ -132,7 +135,8 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const elevation = useAppBarScrollElevation();
 
   const searchInputRef = React.useRef(null);
-  const [searchFilterPopoverAnchorEl, setSearchFilterPopoverAnchorEl] = React.useState(null);
+  const [searchFilterPopoverAnchorEl, setSearchFilterPopoverAnchorEl] =
+    React.useState(null);
   const handleSearchFilterClick = React.useCallback(() => {
     setSearchFilterPopoverAnchorEl(searchInputRef.current);
   }, []);
@@ -140,18 +144,27 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const { data: genreData } = useGenresQuery();
   // TODO: Update genres state in caller side
   const [genres, setGenres] = useRecoilState(genresState);
-  const handleGenresChange = React.useCallback((event) => {
-    setGenres(event.target.value);
-  }, [setGenres]);
-  const handleDeleteGenre = React.useCallback((index) => {
-    setGenres((currentGenres) => {
-      const newGenres = [...currentGenres];
-      newGenres.splice(index, 1);
-      return newGenres;
-    });
-  }, [setGenres]);
+  const handleGenresChange = React.useCallback(
+    (event) => {
+      setGenres(event.target.value);
+    },
+    [setGenres],
+  );
+  const handleDeleteGenre = React.useCallback(
+    (index) => {
+      setGenres((currentGenres) => {
+        const newGenres = [...currentGenres];
+        newGenres.splice(index, 1);
+        return newGenres;
+      });
+    },
+    [setGenres],
+  );
 
-  const hasSearchFilter = React.useMemo(() => genres.length > 0, [genres.length]);
+  const hasSearchFilter = React.useMemo(
+    () => genres.length > 0,
+    [genres.length],
+  );
 
   return (
     <AppBar elevation={elevation} className={classes.appBar}>
@@ -169,9 +182,9 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
               input: classes.inputInput,
             }}
             inputProps={{ 'aria-label': 'search' }}
-            endAdornment={(
+            endAdornment={
               <InputAdornment position="end">
-                {(searchText) && (
+                {searchText && (
                   <IconButton
                     size="small"
                     style={{ color: theme.palette.common.white }}
@@ -184,7 +197,9 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
                 <IconButton
                   size="small"
                   style={{
-                    color: hasSearchFilter ? red['600'] : theme.palette.common.white,
+                    color: hasSearchFilter
+                      ? red['600']
+                      : theme.palette.common.white,
                   }}
                   onClick={handleSearchFilterClick}
                   aria-label="filter genres"
@@ -192,7 +207,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
                   <Icon>filter_list</Icon>
                 </IconButton>
               </InputAdornment>
-            )}
+            }
             value={searchText}
             onChange={handleSearchText}
           />
@@ -230,11 +245,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
               ))}
             </Select>
           </FormControl>
-          <FormControl
-            fullWidth
-            margin="dense"
-            className={classes.inputFilter}
-          >
+          <FormControl fullWidth margin="dense" className={classes.inputFilter}>
             <InputLabel>Genre</InputLabel>
             <Select
               multiple
@@ -269,7 +280,9 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
 
         <IconButton
           className={classes.sortIcon}
-          onClick={(event) => (onClickMenuIcon && onClickMenuIcon(event.currentTarget))}
+          onClick={(event) =>
+            onClickMenuIcon && onClickMenuIcon(event.currentTarget)
+          }
           aria-label="sort"
           size="large"
         >

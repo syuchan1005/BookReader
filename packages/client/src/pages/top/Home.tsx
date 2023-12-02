@@ -1,13 +1,7 @@
-import React from 'react';
-import {
-  CircularProgress,
-  Fab,
-  Icon,
-  Theme,
-  useTheme,
-} from '@mui/material';
+import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
+import React from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
 import {
@@ -20,23 +14,25 @@ import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import useDebounceValue from '@client/hooks/useDebounceValue';
 
-import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
-import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
+import { EmptyScreen } from '@client/components/EmptyScreen';
+import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
+import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import useBooleanState from '@client/hooks/useBooleanState';
-import useStateWithReset from '@client/hooks/useStateWithReset';
 import useMediaQuery from '@client/hooks/useMediaQuery';
+import useStateWithReset from '@client/hooks/useStateWithReset';
+import { useTitle } from '@client/hooks/useTitle';
+import db from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
 import {
   genresState,
+  homeLastSeenBookPosition,
+  searchModeState,
+  showBookInfoNameState,
   sortOrderState,
-  showBookInfoNameState, homeLastSeenBookPosition, searchModeState,
 } from '@client/store/atoms';
-import { EmptyScreen } from '@client/components/EmptyScreen';
-import db from '@client/indexedDb/Database';
-import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
-import { useTitle } from '@client/hooks/useTitle';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 interface HomeProps {
   children?: React.ReactElement;
@@ -44,60 +40,66 @@ interface HomeProps {
 
 const bottomNavigationHeight = 7;
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  home: {
-    height: '100%',
-    ...commonTheme.appbar(theme, 'paddingTop'),
-  },
-  homeGrid: {
-    padding: theme.spacing(1),
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-    justifyContent: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(2),
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    home: {
+      height: '100%',
+      ...commonTheme.appbar(theme, 'paddingTop'),
     },
-  },
-  loading: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '2rem',
-    whiteSpace: 'pre-line',
-    textAlign: 'center',
-  },
-  fab: {
-    position: 'fixed',
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2 + bottomNavigationHeight)})`,
-    right: theme.spacing(2),
-    zIndex: 2,
-    fallbacks: {
-      bottom: theme.spacing(2 + bottomNavigationHeight),
+    homeGrid: {
+      padding: theme.spacing(1),
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+      justifyContent: 'center',
+      columnGap: theme.spacing(2),
+      rowGap: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+      },
     },
-  },
-  addButton: {
-    position: 'fixed',
-    right: theme.spacing(2),
-    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11 + bottomNavigationHeight)})`,
-    background: theme.palette.background.paper,
-    color: theme.palette.secondary.main,
-    zIndex: 2,
-    fallbacks: {
-      bottom: theme.spacing(11 + bottomNavigationHeight),
+    loading: {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontSize: '2rem',
+      whiteSpace: 'pre-line',
+      textAlign: 'center',
     },
-  },
-  loadMoreProgress: {
-    gridColumn: '1 / end',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
+    fab: {
+      position: 'fixed',
+      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(
+        2 + bottomNavigationHeight,
+      )})`,
+      right: theme.spacing(2),
+      zIndex: 2,
+      fallbacks: {
+        bottom: theme.spacing(2 + bottomNavigationHeight),
+      },
+    },
+    addButton: {
+      position: 'fixed',
+      right: theme.spacing(2),
+      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(
+        11 + bottomNavigationHeight,
+      )})`,
+      background: theme.palette.background.paper,
+      color: theme.palette.secondary.main,
+      zIndex: 2,
+      fallbacks: {
+        bottom: theme.spacing(11 + bottomNavigationHeight),
+      },
+    },
+    loadMoreProgress: {
+      gridColumn: '1 / end',
+      display: 'flex',
+      justifyContent: 'center',
+    },
+  }),
+);
 
 const defaultLoadBookInfoCount = 60;
 const loadMoreThreshold = 15;
@@ -110,45 +112,63 @@ const Home = (props: HomeProps) => {
   const classes = useStyles(props);
   const theme = useTheme();
 
-  const [lastSeenPosition, setLastSeenPosition] = useRecoilState(homeLastSeenBookPosition);
-  const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] = React.useState(false);
+  const [lastSeenPosition, setLastSeenPosition] = useRecoilState(
+    homeLastSeenBookPosition,
+  );
+  const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] =
+    React.useState(false);
 
   // eslint-disable-next-line
-  const lastSeenPositionIndex = React.useMemo(() => (lastSeenPosition?.index ?? 0), []);
+  const lastSeenPositionIndex = React.useMemo(
+    () => lastSeenPosition?.index ?? 0,
+    [],
+  );
 
   const gridRef = React.useRef<HTMLDivElement>();
-  const visibleMargin = React
-    .useMemo(() => `0px 0px ${theme.spacing(3)} 0px`, [theme]);
-  const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] = useStateWithReset(null);
+  const visibleMargin = React.useMemo(
+    () => `0px 0px ${theme.spacing(3)} 0px`,
+    [theme],
+  );
+  const [menuAnchorEl, setMenuAnchor, closeMenuAnchor] =
+    useStateWithReset(null);
   const [open, setOpen, setClose] = useBooleanState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const searchText = React.useMemo(() => searchParams.get('search'), [searchParams]);
-  const setSearchText = React.useCallback((text?: string, type: 'push' | 'replace' = 'replace') => {
-    const urlSearchParams = new URLSearchParams(searchParams);
-    if (text) {
-      urlSearchParams.set('search', text);
-    } else {
-      urlSearchParams.delete('search');
-    }
-    setSearchParams(urlSearchParams, {
-      replace: type === 'replace',
-      state: location.state,
-    });
-  }, [searchParams, setSearchParams, location]);
+  const searchText = React.useMemo(
+    () => searchParams.get('search'),
+    [searchParams],
+  );
+  const setSearchText = React.useCallback(
+    (text?: string, type: 'push' | 'replace' = 'replace') => {
+      const urlSearchParams = new URLSearchParams(searchParams);
+      if (text) {
+        urlSearchParams.set('search', text);
+      } else {
+        urlSearchParams.delete('search');
+      }
+      setSearchParams(urlSearchParams, {
+        replace: type === 'replace',
+        state: location.state,
+      });
+    },
+    [searchParams, setSearchParams, location],
+  );
   const debounceSearch = useDebounceValue(searchText, 800);
   const [searchMode, setSearchMode] = useRecoilState(searchModeState);
-  const handleSearchText = React.useCallback((text: string, mode: SearchMode) => {
-    if (!text) {
-      setSearchText(undefined);
-    } else if (searchText === undefined) {
-      setSearchText(text, 'push');
-    } else {
-      setSearchText(text, 'replace');
-    }
-    setSearchMode(mode);
-  }, [searchText, setSearchText, setSearchMode]);
+  const handleSearchText = React.useCallback(
+    (text: string, mode: SearchMode) => {
+      if (!text) {
+        setSearchText(undefined);
+      } else if (searchText === undefined) {
+        setSearchText(text, 'push');
+      } else {
+        setSearchText(text, 'replace');
+      }
+      setSearchMode(mode);
+    },
+    [searchText, setSearchText, setSearchMode],
+  );
 
   const [isSkipQuery, setSkipQuery] = React.useState(true);
   React.useEffect(() => {
@@ -156,13 +176,7 @@ const Home = (props: HomeProps) => {
   }, []);
 
   const [infos, setInfos] = React.useState<HomeBookInfoFragment[]>([]);
-  const {
-    refetch,
-    loading,
-    error,
-    data,
-    fetchMore,
-  } = useRelayBookInfosQuery({
+  const { refetch, loading, error, data, fetchMore } = useRelayBookInfosQuery({
     skip: isSkipQuery,
     variables: {
       first: lastSeenPositionIndex + defaultLoadBookInfoCount,
@@ -202,36 +216,43 @@ const Home = (props: HomeProps) => {
     // noinspection JSIgnoredPromiseFromCall
     db.read.bulkDelete(books.map((b) => b.id));
     if (workbox) {
-      books.map(({
-        id: bookId,
-        pages,
-      }) => workbox.messageSW({
-        type: 'BOOK_REMOVE',
-        bookId,
-        pages,
-      }));
+      books.map(({ id: bookId, pages }) =>
+        workbox.messageSW({
+          type: 'BOOK_REMOVE',
+          bookId,
+          pages,
+        }),
+      );
     }
   }, []);
 
-  const handleEditBookInfo = React.useCallback((homeBookInfo: HomeBookInfoFragment) => {
-    setInfos((currentInfos) => [
-      homeBookInfo,
-      ...currentInfos.filter((i) => i.id !== homeBookInfo.id),
-    ]);
-  }, []);
+  const handleEditBookInfo = React.useCallback(
+    (homeBookInfo: HomeBookInfoFragment) => {
+      setInfos((currentInfos) => [
+        homeBookInfo,
+        ...currentInfos.filter((i) => i.id !== homeBookInfo.id),
+      ]);
+    },
+    [],
+  );
 
   const handleLoadMore = React.useCallback(
-    () => fetchMore({
-      variables: {
-        after: data.bookInfos.edges[data.bookInfos.edges.length - 1].cursor,
-      },
-    }),
+    () =>
+      fetchMore({
+        variables: {
+          after: data.bookInfos.edges[data.bookInfos.edges.length - 1].cursor,
+        },
+      }),
     [data, fetchMore],
   );
 
-  const refetchAll = React.useCallback(() => refetch({
-    first: infos.length || defaultLoadBookInfoCount,
-  }), [refetch, infos]);
+  const refetchAll = React.useCallback(
+    () =>
+      refetch({
+        first: infos.length || defaultLoadBookInfoCount,
+      }),
+    [refetch, infos],
+  );
 
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -242,8 +263,14 @@ const Home = (props: HomeProps) => {
       }
 
       if (isFirstVisible) {
-        const isOverLoadMoreThreshold = infos.length - i - 1 < loadMoreThreshold;
-        if (isOverLoadMoreThreshold && !loading && data && data.bookInfos.pageInfo.hasNextPage) {
+        const isOverLoadMoreThreshold =
+          infos.length - i - 1 < loadMoreThreshold;
+        if (
+          isOverLoadMoreThreshold &&
+          !loading &&
+          data &&
+          data.bookInfos.pageInfo.hasNextPage
+        ) {
           handleLoadMore();
         }
       }
@@ -262,22 +289,34 @@ const Home = (props: HomeProps) => {
         });
       }
     },
-    [data, handleLoadMore, infos.length, isLastSeenPositionLoaded, loading, setLastSeenPosition],
+    [
+      data,
+      handleLoadMore,
+      infos.length,
+      isLastSeenPositionLoaded,
+      loading,
+      setLastSeenPosition,
+    ],
   );
 
-  const openInfoPage = React.useCallback(({ id }: HomeBookInfoFragment) => navigate(`/info/${id}?add`, {
-    state: {
-      referrer: location.pathname,
-    },
-  }), [navigate, location.pathname]);
+  const openInfoPage = React.useCallback(
+    ({ id }: HomeBookInfoFragment) =>
+      navigate(`/info/${id}?add`, {
+        state: {
+          referrer: location.pathname,
+        },
+      }),
+    [navigate, location.pathname],
+  );
 
   const [readingInfoId, setReadingInfoId] = React.useState('');
   React.useEffect(() => {
     let cancelled = false;
-    db.read.getAll(1, {
-      key: 'updatedAt',
-      direction: 'prev',
-    })
+    db.read
+      .getAll(1, {
+        key: 'updatedAt',
+        direction: 'prev',
+      })
       .then((reads) => {
         if (cancelled) {
           return;
@@ -300,10 +339,9 @@ const Home = (props: HomeProps) => {
       />
       <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
       <main className={classes.home}>
-        {(error && !data) ? (
+        {error && !data ? (
           <div className={classes.loading}>
-            {`${error.toString()
-              .replace(/:\s*/g, '\n')}`}
+            {`${error.toString().replace(/:\s*/g, '\n')}`}
           </div>
         ) : (
           <>
@@ -323,14 +361,14 @@ const Home = (props: HomeProps) => {
                     isReading={info.id === readingInfoId}
                   />
                 ))}
-                {(loading && infos.length === 0) && (
+                {loading && infos.length === 0 && (
                   <div className={classes.loadMoreProgress}>
                     <CircularProgress color="secondary" />
                   </div>
                 )}
               </div>
             )}
-            {(!loading && infos.length === 0) && (<EmptyScreen />)}
+            {!loading && infos.length === 0 && <EmptyScreen />}
 
             {/* eslint-disable-next-line jsx-a11y/no-access-key */}
             <Fab

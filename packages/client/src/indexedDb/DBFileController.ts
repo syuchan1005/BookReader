@@ -4,19 +4,17 @@ export const exportDbJson = async () => {
   const { Dexie } = await import('dexie');
   await import('dexie-export-import');
   const db = new Dexie(DB_NAME);
-  const {
-    verno,
-    tables,
-  } = await db.open();
+  const { verno, tables } = await db.open();
   db.close();
 
   const readDB = new Dexie(DB_NAME);
-  readDB.version(verno)
-    .stores(tables.reduce((p, c) => {
+  readDB.version(verno).stores(
+    tables.reduce((p, c) => {
       // eslint-disable-next-line no-param-reassign
       p[c.name] = c.schema.primKey.keyPath || '';
       return p;
-    }, {}));
+    }, {}),
+  );
   const jsonBlob = await readDB.export();
   const { saveAs } = await import('file-saver');
   saveAs(jsonBlob, 'indexedDB.json');
@@ -53,11 +51,12 @@ export const importDbJson = async () => {
   db.close();
   const readDB = new Dexie(DB_NAME);
   await import('dexie-export-import');
-  readDB.version(verno)
-    .stores(tables.reduce((p, c) => {
+  readDB.version(verno).stores(
+    tables.reduce((p, c) => {
       // eslint-disable-next-line no-param-reassign
       p[c.name] = c.schema.primKey.keyPath || '';
       return p;
-    }, {}));
+    }, {}),
+  );
   await readDB.import(jsonBlob, { overwriteValues: true });
 };

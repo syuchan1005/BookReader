@@ -1,15 +1,15 @@
-import React from 'react';
+import { goToAuthPage } from '@client/auth';
+import { Remount } from '@client/components/Remount';
+import useDebounceValue from '@client/hooks/useDebounceValue';
+import { Theme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import useDebounceValue from '@client/hooks/useDebounceValue';
-import { Remount } from '@client/components/Remount';
-import { Theme } from '@mui/material';
 import {
-  availableImageExtensions,
   availableImageExtensionWithContentType,
+  availableImageExtensions,
   defaultStoredImageExtension,
 } from '@syuchan1005/book-reader-common';
-import { goToAuthPage } from '@client/auth';
+import React from 'react';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -27,21 +27,26 @@ interface BookPageImageProps {
   skip?: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  pictureFull: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFull: {
-    ...theme.typography.h5,
-    width: '100%',
-    height: '100%',
-    display: 'block',
-    objectFit: 'contain',
-  },
-}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    pictureFull: {
+      width: '100%',
+      height: '100%',
+    },
+    imageFull: {
+      ...theme.typography.h5,
+      width: '100%',
+      height: '100%',
+      display: 'block',
+      objectFit: 'contain',
+    },
+  }),
+);
 
-const createSizeUrlSuffix = (width?: number, height?: number) => ((!width && !height) ? '' : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`);
+const createSizeUrlSuffix = (width?: number, height?: number) =>
+  !width && !height
+    ? ''
+    : `_${Math.ceil(width) || 0}x${Math.ceil(height) || 0}`;
 
 export const createBookPageUrl = (
   bookId: string,
@@ -51,7 +56,8 @@ export const createBookPageUrl = (
   height?: number,
   extension: keyof typeof availableImageExtensionWithContentType = defaultStoredImageExtension,
 ) => {
-  const pageFileName = pageIndex.toString(10)
+  const pageFileName = pageIndex
+    .toString(10)
     .padStart(bookPageCount.toString(10).length, '0');
   const sizeString = createSizeUrlSuffix(width, height);
 
@@ -59,7 +65,8 @@ export const createBookPageUrl = (
 };
 
 // B6判
-export const pageAspectRatio = (width: number) => Math.ceil((width / 128) * 182);
+export const pageAspectRatio = (width: number) =>
+  Math.ceil((width / 128) * 182);
 
 interface SourceSet {
   imgSrc: string | undefined;
@@ -75,7 +82,7 @@ const ImageState = {
   ERROR: 'ERROR',
   UNSET: 'UNSET',
 } as const;
-type ImageStateType = typeof ImageState[keyof typeof ImageState];
+type ImageStateType = (typeof ImageState)[keyof typeof ImageState];
 
 const BookPageImage = (props: BookPageImageProps) => {
   const classes = useStyles(props);
@@ -102,61 +109,76 @@ const BookPageImage = (props: BookPageImageProps) => {
     [argDebounceWidth, argDebounceHeight],
   );
   const requestImageHeight = React.useMemo(
-    () => (argDebounceWidth < argDebounceHeight ? undefined : argDebounceHeight),
+    () =>
+      argDebounceWidth < argDebounceHeight ? undefined : argDebounceHeight,
     [argDebounceWidth, argDebounceHeight],
   );
 
-  const imageSourceSet = React.useMemo<SourceSet>(
-    () => {
-      if ([bookId, pageIndex, bookPageCount]
-        .findIndex((a) => a === null || a === undefined) !== -1) {
-        return {
-          imgSrc: undefined,
-          sources: [],
-        };
-      }
-      const suffix = noSave ? '?nosave' : '';
-      const defaultSrc = createBookPageUrl(
-        bookId,
-        pageIndex,
-        bookPageCount,
-        requestImageWidth,
-        requestImageHeight,
-        defaultStoredImageExtension,
-      );
+  const imageSourceSet = React.useMemo<SourceSet>(() => {
+    if (
+      [bookId, pageIndex, bookPageCount].findIndex(
+        (a) => a === null || a === undefined,
+      ) !== -1
+    ) {
+      return {
+        imgSrc: undefined,
+        sources: [],
+      };
+    }
+    const suffix = noSave ? '?nosave' : '';
+    const defaultSrc = createBookPageUrl(
+      bookId,
+      pageIndex,
+      bookPageCount,
+      requestImageWidth,
+      requestImageHeight,
+      defaultStoredImageExtension,
+    );
 
-      const sources = [];
-      if (requestImageWidth !== undefined || requestImageHeight !== undefined) {
-        const sizeRatio = [1, 1.5, 2, 3];
+    const sources = [];
+    if (requestImageWidth !== undefined || requestImageHeight !== undefined) {
+      const sizeRatio = [1, 1.5, 2, 3];
 
-        availableImageExtensions.forEach((imageType) => {
-          const srcSet = sizeRatio.map((ratio) => {
+      availableImageExtensions.forEach((imageType) => {
+        const srcSet = sizeRatio
+          .map((ratio) => {
             const src = createBookPageUrl(
               bookId,
               pageIndex,
               bookPageCount,
-              requestImageWidth !== undefined ? Math.ceil(requestImageWidth * ratio) : undefined,
-              requestImageHeight !== undefined ? Math.ceil(requestImageHeight * ratio) : undefined,
+              requestImageWidth !== undefined
+                ? Math.ceil(requestImageWidth * ratio)
+                : undefined,
+              requestImageHeight !== undefined
+                ? Math.ceil(requestImageHeight * ratio)
+                : undefined,
               imageType,
             );
             return `${src}${suffix} ${ratio}x`;
           })
-            .join(',');
-          sources.push({
-            type: availableImageExtensionWithContentType[imageType],
-            srcSet,
-          });
+          .join(',');
+        sources.push({
+          type: availableImageExtensionWithContentType[imageType],
+          srcSet,
         });
-      }
-      return {
-        imgSrc: `${defaultSrc}${suffix}`,
-        sources,
-      };
-    },
-    [bookId, pageIndex, bookPageCount, requestImageWidth, requestImageHeight, noSave],
-  );
+      });
+    }
+    return {
+      imgSrc: `${defaultSrc}${suffix}`,
+      sources,
+    };
+  }, [
+    bookId,
+    pageIndex,
+    bookPageCount,
+    requestImageWidth,
+    requestImageHeight,
+    noSave,
+  ]);
 
-  const [imageState, setImageState] = React.useState<ImageStateType>(ImageState.LOADING);
+  const [imageState, setImageState] = React.useState<ImageStateType>(
+    ImageState.LOADING,
+  );
   React.useEffect(() => {
     if (!imageSourceSet.imgSrc && imageState !== ImageState.UNSET) {
       setImageState(ImageState.UNSET);
@@ -180,23 +202,20 @@ const BookPageImage = (props: BookPageImageProps) => {
   const [isRetried, setRetried] = React.useState(false);
 
   const checkAuthenticate = React.useCallback(() => {
-    fetch('/auth')
-      .then((res) => {
-        if (res.status === 401) {
-          goToAuthPage();
-        }
-      });
+    fetch('/auth').then((res) => {
+      if (res.status === 401) {
+        goToAuthPage();
+      }
+    });
   }, []);
 
   return (
     <Remount remountKey={`${isRetried}`}>
       <picture className={classes.pictureFull}>
-        {!skip && imageSourceSet.sources.map(({
-          type,
-          srcSet,
-        }) => (
-          <source key={type} type={type} srcSet={srcSet} />
-        ))}
+        {!skip &&
+          imageSourceSet.sources.map(({ type, srcSet }) => (
+            <source key={type} type={type} srcSet={srcSet} />
+          ))}
         {!skip && (
           <img
             ref={imageRef}

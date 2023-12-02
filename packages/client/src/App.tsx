@@ -1,28 +1,28 @@
-import React, {
-  useEffect, useMemo, lazy, Suspense, useCallback,
-} from 'react';
-import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import { useApolloClient } from '@apollo/client';
 import {
+  Alert,
   CssBaseline,
-  ThemeProvider,
+  Snackbar,
   StyledEngineProvider,
   Theme,
-  Snackbar, Alert,
+  ThemeProvider,
 } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
 import * as colors from '@mui/material/colors';
-import { useApolloClient } from '@apollo/client';
+import { createTheme } from '@mui/material/styles';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
+import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
+import useMediaQuery from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
   alertDataState,
-  alertOpenState, innerAlertDataState,
+  alertOpenState,
+  innerAlertDataState,
   primaryColorState,
   secondaryColorState,
 } from '@client/store/atoms';
-import useMediaQuery from '@client/hooks/useMediaQuery';
-import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
@@ -42,63 +42,78 @@ export const commonTheme = {
     right: 'env(safe-area-inset-right)',
     left: 'env(safe-area-inset-left)',
   },
-  appbar: (
-    theme: Theme,
-    styleName: string,
-    calcOption?: string,
-  ) => Object.keys(theme.mixins.toolbar)
-    .map((key) => {
-      const val = theme.mixins.toolbar[key];
-      if (key === 'minHeight') {
-        return [
-          [styleName, `calc(${commonTheme.safeArea.top} + ${val}px${calcOption || ''})`],
-          ['fallbacks', {
-            [styleName]: (calcOption) ? `calc(${val}px${calcOption})` : val,
-          }],
-        ];
-      }
-      // @ts-ignore
-      if (val.minHeight !== undefined) {
-        return [
-          [key, {
-            // @ts-ignore
-            [styleName]: `calc(${commonTheme.safeArea.top} + ${val.minHeight}px${calcOption || ''})`,
-            fallbacks: {
-              // @ts-ignore
-              [styleName]: (calcOption) ? `calc(${val.minHeight}px${calcOption})` : val.minHeight,
-            },
-          }],
-        ];
-      }
-      return [];
-    })
-    .reduce((o, props) => {
-      props.forEach(([k, v]) => {
+  appbar: (theme: Theme, styleName: string, calcOption?: string) =>
+    Object.keys(theme.mixins.toolbar)
+      .map((key) => {
+        const val = theme.mixins.toolbar[key];
+        if (key === 'minHeight') {
+          return [
+            [
+              styleName,
+              `calc(${commonTheme.safeArea.top} + ${val}px${calcOption || ''})`,
+            ],
+            [
+              'fallbacks',
+              {
+                [styleName]: calcOption ? `calc(${val}px${calcOption})` : val,
+              },
+            ],
+          ];
+        }
         // @ts-ignore
-        // eslint-disable-next-line no-param-reassign
-        o[k] = v;
-      });
-      return o;
-    }, {}),
+        if (val.minHeight !== undefined) {
+          return [
+            [
+              key,
+              {
+                // @ts-ignore
+                [styleName]: `calc(${commonTheme.safeArea.top} + ${
+                  val.minHeight
+                }px${calcOption || ''})`,
+                fallbacks: {
+                  // @ts-ignore
+                  [styleName]: calcOption
+                    ? `calc(${val.minHeight}px${calcOption})`
+                    : val.minHeight,
+                },
+              },
+            ],
+          ];
+        }
+        return [];
+      })
+      .reduce((o, props) => {
+        props.forEach(([k, v]) => {
+          // @ts-ignore
+          // eslint-disable-next-line no-param-reassign
+          o[k] = v;
+        });
+        return o;
+      }, {}),
 };
 
 const App = () => {
   const primaryColor = useRecoilValue(primaryColorState);
   const secondaryColor = useRecoilValue(secondaryColorState);
 
-  const isSystemDarkTheme = useMediaQuery('@media (prefers-color-scheme: dark)');
+  const isSystemDarkTheme = useMediaQuery(
+    '@media (prefers-color-scheme: dark)',
+  );
 
   const apolloClient = useApolloClient();
 
   const openAlert = useRecoilValue(alertOpenState);
   const alertData = useRecoilValue(innerAlertDataState);
   const setAlertData = useSetRecoilState(alertDataState);
-  const closeAlert = useCallback((event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setAlertData(undefined);
-  }, [setAlertData]);
+  const closeAlert = useCallback(
+    (event, reason?: string) => {
+      if (reason === 'clickaway') {
+        return;
+      }
+      setAlertData(undefined);
+    },
+    [setAlertData],
+  );
 
   useEffect(() => {
     // @ts-ignore
@@ -127,18 +142,20 @@ const App = () => {
   }, [apolloClient, setAlertData]);
 
   const provideTheme = useMemo(
-    () => createTheme({
-      palette: {
-        mode: isSystemDarkTheme ? 'dark' : 'light',
-        primary: colors[primaryColor],
-        secondary: colors[secondaryColor],
-      },
-    }),
+    () =>
+      createTheme({
+        palette: {
+          mode: isSystemDarkTheme ? 'dark' : 'light',
+          primary: colors[primaryColor],
+          secondary: colors[secondaryColor],
+        },
+      }),
     [isSystemDarkTheme, primaryColor, secondaryColor],
   );
 
   useEffect(() => {
-    document.querySelector('meta[name="theme-color"]')
+    document
+      .querySelector('meta[name="theme-color"]')
       ?.setAttribute(
         'content',
         isSystemDarkTheme
@@ -155,78 +172,78 @@ const App = () => {
           <Routes>
             <Route
               path="/"
-              element={(
+              element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Top />
                 </Suspense>
-              )}
+              }
             >
               <Route
                 index
-                element={(
+                element={
                   <Suspense fallback={<HeaderWithBookListSkeleton />}>
                     <Home />
                   </Suspense>
-                )}
+                }
               />
               <Route
                 path="bookshelf"
-                element={(
+                element={
                   <Suspense fallback={<HeaderWithBookListSkeleton />}>
                     <BookShelf />
                   </Suspense>
-                )}
+                }
               >
                 <Route
                   index
-                  element={(
+                  element={
                     <Suspense fallback={<HeaderWithBookListSkeleton />}>
                       <Favorite />
                     </Suspense>
-                  )}
+                  }
                 />
                 <Route
                   path="history"
-                  element={(
+                  element={
                     <Suspense fallback={<HeaderWithBookListSkeleton />}>
                       <History />
                     </Suspense>
-                  )}
+                  }
                 />
               </Route>
             </Route>
 
             <Route
               path="info/:id"
-              element={(
+              element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Info />
                 </Suspense>
-              )}
+              }
             />
             <Route
               path="book/:id"
-              element={(
+              element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Book />
                 </Suspense>
-              )}
+              }
             />
             <Route
               path="setting"
-              element={(
+              element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Setting />
                 </Suspense>
-              )}
+              }
             />
             <Route
               path="*"
-              element={(
+              element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
                   <Error />
                 </Suspense>
-              )}
+              }
             />
           </Routes>
         </BrowserRouter>

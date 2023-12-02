@@ -1,6 +1,6 @@
+import '@testing-library/jest-dom/extend-expect';
 /* eslint-disable import/no-extraneous-dependencies */
 import React from 'react';
-import '@testing-library/jest-dom/extend-expect';
 
 import { renderWithRouter } from '../../testUtil';
 

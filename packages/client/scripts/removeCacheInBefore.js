@@ -41,11 +41,18 @@ const readdirRecursively = async (dir, files = []) => {
 (async () => {
   const files = await readdirRecursively('./storage');
 
-  await asyncForEach(files.filter((s) => s.includes('_200x'))
-    .map((s) => [s, s.replace('/storage', '/storage/cache').replace('_200x', '_200x0')]), async (s) => {
-    await mkdirpIfNotExists(path.join(s[1], '..'));
-    await fs.rename(s[0], s[1]);
-  });
+  await asyncForEach(
+    files
+      .filter((s) => s.includes('_200x'))
+      .map((s) => [
+        s,
+        s.replace('/storage', '/storage/cache').replace('_200x', '_200x0'),
+      ]),
+    async (s) => {
+      await mkdirpIfNotExists(path.join(s[1], '..'));
+      await fs.rename(s[0], s[1]);
+    },
+  );
 
   console.log('==END==');
 })();

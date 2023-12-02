@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   Dialog,
@@ -7,6 +6,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import React from 'react';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -21,15 +21,7 @@ interface DeleteDialogProps {
 }
 
 const DeleteDialog = (props: DeleteDialogProps) => {
-  const {
-    open,
-    loading,
-    book,
-    bookInfo,
-    page,
-    onClose,
-    onClickDelete,
-  } = props;
+  const { open, loading, book, bookInfo, page, onClose, onClickDelete } = props;
 
   return (
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
@@ -44,10 +36,7 @@ const DeleteDialog = (props: DeleteDialogProps) => {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={onClose}
-          disabled={loading}
-        >
+        <Button onClick={onClose} disabled={loading}>
           close
         </Button>
         <Button
