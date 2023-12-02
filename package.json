@@ -21,7 +21,8 @@
       "build": "npm run build:client && npm run build:storybook && npm run build:server",
       "start": "node dist/server",
       "script:prisma-migrate": "npm run prisma-migrate --workspace=\"packages/server\"",
-      "gql-gen": "npm run gql-gen --workspace=\"packages/server\" && npm run gql-gen --workspace=\"packages/client\""
+      "gql-gen": "npm run gql-gen --workspace=\"packages/server\" && npm run gql-gen --workspace=\"packages/client\"",
+      "lint": "biome check --apply ."
    },
    "devDependencies": {
       "@biomejs/biome": "1.4.0",
