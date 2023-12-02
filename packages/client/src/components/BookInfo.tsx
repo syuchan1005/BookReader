@@ -246,7 +246,6 @@ const BookInfo = (props: BookInfoProps) => {
     if (isVisible) {
       setKeepVisible(true);
     }
-    // eslint-disable-next-line
   }, [isVisible]);
 
   const [deleteBookInfo, { loading: delLoading }] = useDeleteBookInfoMutation({

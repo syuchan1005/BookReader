@@ -111,7 +111,6 @@ export const apolloClient = new ApolloClient({
         // @ts-ignore
         if (apolloClient.snackbar)
           apolloClient.snackbar(message, { variant: 'error' });
-        // eslint-disable-next-line
         console.log(message);
       };
       if (graphQLErrors) {

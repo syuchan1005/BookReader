@@ -1,5 +1,4 @@
 import fs from 'fs';
-/* eslint-disable no-console */
 import { resolve } from 'path';
 
 import react from '@vitejs/plugin-react';

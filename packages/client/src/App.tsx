@@ -85,7 +85,6 @@ export const commonTheme = {
       .reduce((o, props) => {
         props.forEach(([k, v]) => {
           // @ts-ignore
-          // eslint-disable-next-line no-param-reassign
           o[k] = v;
         });
         return o;

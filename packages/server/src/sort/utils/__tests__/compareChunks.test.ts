@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 import compareChunks from '../compareChunks';
 describe('compareChunks()', () => {
   it('should return -1', () => {

@@ -4,7 +4,6 @@ import {
   BookOrder,
   SearchMode,
 } from '@syuchan1005/book-reader-graphql';
-/* eslint-disable import/prefer-default-export */
 import { atom, selector } from 'recoil';
 
 export const genresState = atom<string[]>({

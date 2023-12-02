@@ -10,7 +10,6 @@ export const exportDbJson = async () => {
   const readDB = new Dexie(DB_NAME);
   readDB.version(verno).stores(
     tables.reduce((p, c) => {
-      // eslint-disable-next-line no-param-reassign
       p[c.name] = c.schema.primKey.keyPath || '';
       return p;
     }, {}),
@@ -53,7 +52,6 @@ export const importDbJson = async () => {
   await import('dexie-export-import');
   readDB.version(verno).stores(
     tables.reduce((p, c) => {
-      // eslint-disable-next-line no-param-reassign
       p[c.name] = c.schema.primKey.keyPath || '';
       return p;
     }, {}),

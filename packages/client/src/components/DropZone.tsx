@@ -48,7 +48,6 @@ const DropZone = (props: FileFieldProps) => {
     if (!isDragActive && ref.current) {
       setWidth(Math.max(width || -1, ref.current.offsetWidth));
     }
-    // eslint-disable-next-line
   }, [isDragActive]);
 
   const os = useOS();

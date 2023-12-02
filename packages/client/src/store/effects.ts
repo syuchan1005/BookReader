@@ -1,12 +1,10 @@
 import { AtomEffect, DefaultValue } from 'recoil';
 
-// eslint-disable-next-line import/prefer-default-export
 export const logEffect =
   <T>(): AtomEffect<T> =>
   ({ node, onSet }) => {
     if (process.env.NODE_ENV !== 'production') {
       onSet((newValue, oldValue) => {
-        // eslint-disable-next-line no-console
         console.log(
           `%cUpdate%c ${node.key}`,
           'color: red',

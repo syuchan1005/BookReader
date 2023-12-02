@@ -161,9 +161,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   );
 
   return (
-    // eslint-disable-next-line
     <div className={classes.overlay} onClick={setHideAppBar}>
-      {/* eslint-disable-next-line */}
       <div className={`${classes.overlayContent} center`}>
         {goPreviousBook && currentPage === 0 && (
           <Button
@@ -186,7 +184,6 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
             </Button>
           )}
       </div>
-      {/* eslint-disable-next-line */}
       <div
         className={`${classes.overlayContent} top`}
         onClick={stopPropagationListener}
@@ -195,7 +192,6 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           currentPage + 1
         } / ${maxPages}`}</div>
       </div>
-      {/* eslint-disable-next-line */}
       <div
         className={`${classes.overlayContent} bottom`}
         onClick={stopPropagationListener}

@@ -209,18 +209,15 @@ export const resolvers: Resolvers = {
   Query: {
     // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
     relayBookInfos: (_parent, args) => {
-      // eslint-disable-next-line default-case
       switch ((args.option || DefaultOptions).searchMode) {
         case SearchMode.Meilisearch:
           if (args.option.search && meiliSearchClient.isAvailable()) {
             return searchBookInfosByMeiliSearch(args);
           }
-        // eslint-disable-next-line no-fallthrough
         case SearchMode.Elasticsearch:
           if (args.option.search && elasticSearchClient.isAvailable()) {
             return searchBookInfosByElasticSearch(args);
           }
-        // eslint-disable-next-line no-fallthrough
         case SearchMode.Database:
           return searchBookInfosByDB(args);
       }

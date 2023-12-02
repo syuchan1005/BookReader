@@ -6,7 +6,6 @@ import {
 } from '@syuchan1005/book-reader-common';
 import sharp from 'sharp';
 
-// eslint-disable-next-line import/prefer-default-export
 export const getOrConvertImage = async (
   bookId: string,
   pageNumber: string,

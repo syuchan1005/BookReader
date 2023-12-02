@@ -139,7 +139,6 @@ const calculateEditActions = (
         const pageRange = flatRange(action.crop.pageRange);
         imageEditActions.forEach((imageEditAction, i) => {
           if (pageRange.includes(i)) {
-            // eslint-disable-next-line no-param-reassign
             imageEditAction.cropTransforms = [
               ...(imageEditAction.cropTransforms ?? []),
               (w, h) => ({
@@ -156,7 +155,6 @@ const calculateEditActions = (
       case EditType.Delete: {
         const pageRange = flatRange(action.delete.pageRange);
         imageEditActions.forEach((imageEditAction, i) => {
-          // eslint-disable-next-line no-param-reassign
           imageEditAction.willDelete =
             imageEditAction.willDelete || pageRange.includes(i);
         });

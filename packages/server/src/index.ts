@@ -127,7 +127,6 @@ import GraphQL from './graphql/index';
         await next();
         return;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_full, pageNum, sizeExists, width, height, ext] = match;
       const isNotSave = req.query.nosave === '';
       const extension =
@@ -175,7 +174,6 @@ import GraphQL from './graphql/index';
 
   const port = process.env.PORT || 8081;
   httpServer.listen(port, () => {
-    /* eslint-disable no-console */
     console.log(`👔 listen  at: http://localhost:${port}`);
     console.log(`🚀 graphql at: http://localhost:${port}/graphql`);
   });

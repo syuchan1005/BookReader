@@ -51,7 +51,6 @@ const Template = (args) => (
         },
         result: {
           data: {
-            // eslint-disable-next-line react/destructuring-assignment
             genres: args.genres,
           },
         },

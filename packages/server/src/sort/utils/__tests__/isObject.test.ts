@@ -1,6 +1,5 @@
 import isObject from '../isObject';
 
-/* eslint-disable no-new-wrappers */
 describe('isObject()', () => {
   it('should return true', () => {
     expect(isObject({})).toBe(true);

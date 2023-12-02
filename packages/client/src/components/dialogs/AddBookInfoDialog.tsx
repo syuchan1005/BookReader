@@ -71,7 +71,6 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
     if (open && argName) {
       setName(argName);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
   const closeDialog = React.useCallback(() => {
     if (onClose) onClose();

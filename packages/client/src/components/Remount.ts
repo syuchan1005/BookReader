@@ -18,5 +18,4 @@ const RemountInner = ({ remountKey, children }: RemountProps) => {
 };
 
 // @ts-ignore
-// eslint-disable-next-line import/prefer-default-export
 export const Remount = memo(RemountInner);

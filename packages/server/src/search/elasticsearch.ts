@@ -30,7 +30,6 @@ export class ElasticSearchClient {
       if (isHealthy) {
         this.client = client;
       }
-      // eslint-disable-next-line no-empty
     } catch (ignored) {}
   }
 
@@ -158,7 +157,6 @@ export class ElasticSearchClient {
       },
       _source: ['id'],
     });
-    // eslint-disable-next-line no-underscore-dangle
     return result.hits.hits.map((h) => h._source.id);
   }
 }

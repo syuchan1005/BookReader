@@ -4,7 +4,6 @@ describe('PrismaBookDataManager', () => {
   const target = new PrismaBookDataManager();
 
   function getClient() {
-    // eslint-disable-next-line dot-notation
     return target['prismaClient'];
   }
 

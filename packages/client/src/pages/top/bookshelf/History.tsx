@@ -46,7 +46,6 @@ const History = () => {
     React.useMemo(
       () =>
         (data?.books ?? []).reduce((map, book) => {
-          // eslint-disable-next-line no-param-reassign
           map[book.id] = book;
           return map;
         }, {}),
@@ -89,7 +88,6 @@ const History = () => {
 
   React.useEffect(() => {
     getHistoryBooks();
-    // eslint-disable-next-line
   }, []);
 
   return (

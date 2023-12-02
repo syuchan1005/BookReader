@@ -118,7 +118,6 @@ const Home = (props: HomeProps) => {
   const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] =
     React.useState(false);
 
-  // eslint-disable-next-line
   const lastSeenPositionIndex = React.useMemo(
     () => lastSeenPosition?.index ?? 0,
     [],
@@ -370,7 +369,6 @@ const Home = (props: HomeProps) => {
             )}
             {!loading && infos.length === 0 && <EmptyScreen />}
 
-            {/* eslint-disable-next-line jsx-a11y/no-access-key */}
             <Fab
               className={classes.addButton}
               onClick={setOpen}

@@ -1,4 +1,3 @@
-/* eslint-disable no-new-wrappers */
 import stringify from '../stringify';
 describe('stringify()', () => {
   it('should return number converted to a string', () => {

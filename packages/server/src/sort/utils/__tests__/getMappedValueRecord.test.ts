@@ -1,4 +1,3 @@
-/* eslint-disable no-new-wrappers */
 import getMappedValueRecord from '../getMappedValueRecord';
 describe('getMappedValueRecord()', () => {
   it('should call stringify(), numberify() and createChunksList() and return record for a numeric value', () => {

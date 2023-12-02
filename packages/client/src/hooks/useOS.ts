@@ -35,7 +35,6 @@ const useOS = () => {
   React.useEffect(() => {
     const preOS = getOS();
     if (os !== preOS) setOS(preOS);
-    // eslint-disable-next-line
   }, []);
 
   return os;

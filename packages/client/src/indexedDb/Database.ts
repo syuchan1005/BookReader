@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 const VERSION = 7;
 
 interface InfoRead {

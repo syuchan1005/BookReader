@@ -278,7 +278,6 @@ const Book = (props: BookProps) => {
           className={`${classes.card} ${overlayClassName || ''}`}
           sx={{ height: '100%' }}
         >
-          {/* eslint-disable-next-line no-nested-ternary */}
           {simple ? (
             children ? (
               <CardActions className={classes.headerMenu}>

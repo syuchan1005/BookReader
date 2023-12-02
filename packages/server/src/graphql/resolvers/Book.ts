@@ -1,4 +1,3 @@
-/* eslint no-underscore-dangle: ["error", { "allow": ["__resolveType"] }] */
 import path from 'path';
 import { Book as BookDBModel } from '@server/database/models/Book';
 import { generateId } from '@server/database/models/Id';

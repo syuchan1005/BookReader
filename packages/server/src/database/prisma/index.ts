@@ -1,4 +1,3 @@
-/* eslint no-underscore-dangle: ["error", { "allow": ["_count"] }] */
 import {
   Book as PBook,
   BookInfo as PBookInfo,
@@ -99,7 +98,6 @@ export class PrismaBookDataManager implements IBookDataManager {
         return undefined;
       }
 
-      // eslint-disable-next-line no-param-reassign
       delete book.thumbnailById;
       return book;
     });
@@ -353,7 +351,6 @@ export class PrismaBookDataManager implements IBookDataManager {
       },
     });
     return bookInfo?.books?.map((b) => {
-      // eslint-disable-next-line no-param-reassign
       delete b.thumbnailById;
       return b;
     });

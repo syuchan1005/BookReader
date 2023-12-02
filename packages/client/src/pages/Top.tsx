@@ -29,7 +29,6 @@ const Top = () => {
       ({ path }) => path !== '/' && location.pathname.startsWith(path),
     );
     setTabIndex(Math.max(0, i));
-    // eslint-disable-next-line
   }, []);
 
   return (

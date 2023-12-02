@@ -8,7 +8,6 @@ const useStateWithReset = <T>(
   const [state, setState] = useState(initValue);
   const reset = useCallback(() => {
     setState(initValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setValue = useCallback((creator: Creator<T>) => {
@@ -19,7 +18,6 @@ const useStateWithReset = <T>(
       }
       return creator;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return [state, setValue, reset];

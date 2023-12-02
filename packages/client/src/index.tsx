@@ -12,7 +12,6 @@ import db from './indexedDb/Database';
 import { workbox } from './registerServiceWorker';
 
 // Disabled. not work properly when use with react-router-dom v6.
-// eslint-disable-next-line no-constant-condition
 if (process.env.NODE_ENV !== 'production' && false) {
   import('@welldone-software/why-did-you-render')
     // @ts-ignore

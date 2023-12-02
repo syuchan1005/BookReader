@@ -1,6 +1,5 @@
 import baseOrderBy from '../baseOrderBy';
 
-/* eslint-disable no-new-wrappers */
 describe('baseOrderBy()', () => {
   describe('sorting flat arrays', () => {
     describe('character values', () => {

@@ -62,7 +62,6 @@ const Favorite = () => {
   }, [favoriteBookInfos]);
   React.useEffect(() => {
     getFavoriteBookInfos();
-    // eslint-disable-next-line
   }, []);
   const { loading, data } = useBookInfosQuery({
     skip: favoriteBookInfos.length === 0,

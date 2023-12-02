@@ -23,7 +23,6 @@ const BookShelf = () => {
   React.useEffect(() => {
     const i = TabItems.findIndex(({ path }) => location.pathname === path);
     setTabIndex(Math.max(0, i));
-    // eslint-disable-next-line
   }, []);
 
   return (

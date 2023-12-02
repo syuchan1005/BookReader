@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const { promises: fs } = require('fs');
 const { join } = require('path');
 

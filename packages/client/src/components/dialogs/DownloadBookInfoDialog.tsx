@@ -54,7 +54,6 @@ const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
       setDownloadBooks(i + 1);
       const bookFolder = zip.folder(book.number);
       let num = 0;
-      // eslint-disable-next-line no-await-in-loop
       await Promise.all(
         [...Array(book.pages).keys()].map((index) => {
           const url = createBookPageUrl(book.id, index, book.pages);

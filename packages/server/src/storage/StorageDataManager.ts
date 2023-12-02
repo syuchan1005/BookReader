@@ -92,12 +92,10 @@ export const withPageEditFolder = async <T>(
     error = e;
   } finally {
     for (let i = 0; i < 4; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
       await new Promise((resolve) => {
         setTimeout(resolve, 1500);
       });
       try {
-        // eslint-disable-next-line no-await-in-loop
         await fs.rm(folderPath, {
           recursive: true,
           force: true,

@@ -31,7 +31,6 @@ export class MeiliSearchClient {
       if (isHealthy) {
         this.client = client;
       }
-      // eslint-disable-next-line no-empty
     } catch (ignored) {}
   }
 

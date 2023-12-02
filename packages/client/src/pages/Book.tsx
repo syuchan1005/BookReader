@@ -45,7 +45,6 @@ const EditPagesDialog = React.lazy(
 );
 
 interface BookProps {
-  // eslint-disable-next-line react/no-unused-prop-types
   children?: React.ReactElement;
 }
 
@@ -136,7 +135,6 @@ const useDatabasePage = (
       }
       setLoading(false);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
   const setPage = React.useCallback(
@@ -248,7 +246,6 @@ const Book = (props: BookProps) => {
     setTimeout(() => {
       setPageSet(true);
     }, 210);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbLoading]);
 
   const [
@@ -309,7 +306,6 @@ const Book = (props: BookProps) => {
         state: location.state,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, setAlertData]);
 
   const [pageUpdateRequest, setPageUpdateRequest] = React.useState(undefined);
@@ -458,7 +454,6 @@ const Book = (props: BookProps) => {
       setCloseEditDialog();
       setShowSliderImage(true);
     });
-    // eslint-disable-next-line
   }, [showSliderImage]);
   const purgeCache = React.useCallback(() => {
     setShowSliderImage(false);
@@ -490,7 +485,6 @@ const Book = (props: BookProps) => {
         />
       )}
 
-      {/* eslint-disable-next-line */}
       <main className={classes.book} onClick={clickPage}>
         {canMountEditDialog && (
           <EditPagesDialog
@@ -600,7 +594,6 @@ const SwiperSlider = (props: SwiperSliderProp) => {
       requestRef.current = pageUpdateRequest;
       swiper.slideTo(pageUpdateRequest.page, pageUpdateRequest.time, false);
     }
-    // eslint-disable-next-line
   }, [pageUpdateRequest]);
 
   React.useEffect(() => {
@@ -613,7 +606,6 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     } else {
       swiper?.enable();
     }
-    // eslint-disable-next-line
   }, [openEditDialog, swiper]);
 
   const updateSwiper = React.useCallback(

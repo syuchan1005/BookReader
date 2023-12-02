@@ -126,7 +126,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     if (Object.keys(editContent).length > 0) {
       setEditContent({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addType]);
 
   const [isBlockUnload, setBlockUnload] = React.useState(false);
@@ -283,7 +282,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     setSubscriptionId(infoId);
     let count = 1;
     while (!subscriptionLoading && count <= 2) {
-      // eslint-disable-next-line no-await-in-loop,no-loop-func,no-promise-executor-return
       await new Promise((r) => setTimeout(r, 100 * count));
       count += 1;
     }

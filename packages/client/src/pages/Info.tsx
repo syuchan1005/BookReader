@@ -149,7 +149,6 @@ const Info = (props: InfoProps) => {
 
       showAddDialog();
     }
-    // eslint-disable-next-line
   }, []);
 
   const { refetch, loading, error, data } = useBookInfoQuery({
@@ -352,7 +351,6 @@ const Info = (props: InfoProps) => {
             )}
             {!loading && bookList.length === 0 && <EmptyScreen />}
 
-            {/* eslint-disable-next-line jsx-a11y/no-access-key */}
             <Fab
               className={classes.addButton}
               onClick={showAddDialog}

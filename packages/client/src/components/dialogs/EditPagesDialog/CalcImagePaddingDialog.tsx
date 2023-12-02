@@ -75,7 +75,6 @@ export const calcPadding = (
     );
   };
 
-  /* eslint-disable no-labels,no-restricted-syntax */
   let left = 0;
   const compareLeft = useCompareWithWhite
     ? isWhite
@@ -123,7 +122,6 @@ export const calcPadding = (
       }
     }
   }
-  /* eslint-enable no-labels,no-restricted-syntax */
 
   return {
     left,

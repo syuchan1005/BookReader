@@ -185,7 +185,6 @@ const BookPageImage = (props: BookPageImageProps) => {
     } else if (imageState !== ImageState.LOADING) {
       setImageState(ImageState.LOADING);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageSourceSet]);
   const alt = React.useMemo(() => {
     switch (imageState) {

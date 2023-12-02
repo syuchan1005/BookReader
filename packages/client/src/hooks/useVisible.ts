@@ -30,7 +30,6 @@ export const useVisible = (
     return () => {
       observer.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref, rootMargin]);
 
   return isIntersecting;

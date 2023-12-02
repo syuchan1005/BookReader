@@ -46,12 +46,10 @@ export class LocalStorageDataManager implements IStorageDataManager {
     bookId,
     pageNumber,
   }: PageMetadata): Promise<PageData | undefined> {
-    // eslint-disable-next-line no-restricted-syntax
     for (const extension of [
       defaultStoredImageExtension,
       ...optionalImageExtensions,
     ]) {
-      // eslint-disable-next-line no-await-in-loop
       const pageData = await this.getPageData({
         bookId,
         pageNumber,
@@ -71,19 +69,14 @@ export class LocalStorageDataManager implements IStorageDataManager {
     metadata: CacheablePageMetadata,
   ): Promise<PageData | undefined> {
     const filePaths = LocalStorageDataManager.getMayExistFilePaths(metadata);
-    // eslint-disable-next-line no-restricted-syntax
     for (const filePath of filePaths) {
-      // eslint-disable-next-line no-await-in-loop
       const stat = await fs.stat(filePath.path).catch(IgnoreErrorFunc);
       if (!stat?.isFile()) {
-        // eslint-disable-next-line no-continue
         continue;
       }
 
-      // eslint-disable-next-line no-await-in-loop
       const data = await fs.readFile(filePath.path).catch(IgnoreErrorFunc);
       if (!data) {
-        // eslint-disable-next-line no-continue
         continue;
       }
 

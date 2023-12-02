@@ -31,7 +31,6 @@ export const resolvers: Resolvers & {
     bookInfos: async (parent, { ids: infoIds }) => {
       const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
       const bookInfoMap = bookInfos.reduce((map, bookInfo) => {
-        // eslint-disable-next-line no-param-reassign
         map[bookInfo.id] = bookInfo;
         return map;
       }, {} as { [key: string]: BookInfoDBModel });

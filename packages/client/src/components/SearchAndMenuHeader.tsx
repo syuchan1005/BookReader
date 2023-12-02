@@ -113,7 +113,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
         mode = selectedSearchMode;
       }
       onChangeSearchText?.(searchText, mode);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [searchText],
   );
@@ -121,15 +120,12 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const handleSearchText = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       onChangeSearchText?.(event.target.value, searchMode);
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [onChangeSearchText],
   );
 
   const clearSearchText = useCallback(() => {
     onChangeSearchText?.('', searchMode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onChangeSearchText]);
 
   const elevation = useAppBarScrollElevation();

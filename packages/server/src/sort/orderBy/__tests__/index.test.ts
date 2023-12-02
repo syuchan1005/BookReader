@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 describe('orderBy()', () => {
   beforeEach(() => {
     jest.resetModules();

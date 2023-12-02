@@ -26,6 +26,5 @@ export const useTitle = (title: string, options: Options = DEFAULT_OPTIONS) => {
       };
     }
     return undefined;
-    // eslint-disable-next-line
   }, []);
 };

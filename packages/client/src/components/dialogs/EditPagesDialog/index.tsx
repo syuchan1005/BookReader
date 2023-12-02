@@ -89,7 +89,6 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     <Dialog open={open} fullWidth>
       <DialogTitle>Edit Pages</DialogTitle>
 
-      {/* eslint-disable-next-line no-nested-ternary */}
       {loading ? (
         <Box
           sx={{

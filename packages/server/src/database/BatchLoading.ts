@@ -1,4 +1,3 @@
-/* eslint-disable func-names */
 import DataLoader from 'dataloader';
 
 const loaders: { [batchId: string]: DataLoader<any, any> } = {};
@@ -11,7 +10,6 @@ export function BatchLoading<I, R>(
 
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originFn = descriptor.value;
-    // eslint-disable-next-line no-param-reassign
     descriptor.value = function (...args) {
       if (loaders[batchId]) {
         return loaders[batchId].load(args[0]);
@@ -27,7 +25,6 @@ export function BatchLoadingClear<T>(
 ) {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originFn = descriptor.value;
-    // eslint-disable-next-line no-param-reassign
     descriptor.value = function (...args) {
       loaders[batchId]?.clear(selector(args as unknown as T));
       return originFn.apply(this, args);
@@ -41,7 +38,6 @@ export function BatchLoadingClear<T>(
 export function BatchLoadingClearAll(batchId: string) {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originFn = descriptor.value;
-    // eslint-disable-next-line no-param-reassign
     descriptor.value = function (...args) {
       loaders[batchId]?.clearAll();
       return originFn.apply(this, args);

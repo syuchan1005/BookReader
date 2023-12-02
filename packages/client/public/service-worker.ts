@@ -1,5 +1,4 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-/* eslint-disable */
 import { clientsClaim, setCacheNameDetails, skipWaiting } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute } from 'workbox-precaching';
@@ -83,7 +82,6 @@ addEventListener('message', (event) => {
 
   const onMessage = async () => {
     switch (event.data.type) {
-      // eslint-disable-next-line default-case-last
       default:
       case 'SKIP_WAITING':
         skipWaiting();

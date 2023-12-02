@@ -33,7 +33,6 @@ const readImageFilePathsRecursively = async (
     if (dirent.isFile()) files.push(`${dir}/${dirent.name}`);
   });
   await asyncForEach(dirs, async (d) => {
-    // eslint-disable-next-line no-param-reassign
     files = await readImageFilePathsRecursively(d, files);
   });
   return (
@@ -207,13 +206,11 @@ const GQLUtil = {
     const bookFolders = [];
     for (let i = 0; i < 10; i += 1) {
       const tempBooksFolder = path.join(tempPath, booksFolderPath);
-      // eslint-disable-next-line no-await-in-loop
       const dirents = await fs.readdir(tempBooksFolder, {
         withFileTypes: true,
       });
       const dirs = dirents.filter((d) => d.isDirectory());
       if (dirs.length > 1) {
-        // eslint-disable-next-line no-await-in-loop
         await asyncForEach(dirs, async (d) => {
           const hasMulti = d.name.match(/(\d+)-(\d+)/);
           if (hasMulti) {
