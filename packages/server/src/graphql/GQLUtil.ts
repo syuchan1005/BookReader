@@ -248,7 +248,8 @@ const GQLUtil = {
           bookFolders.push(d.name);
         });
         break;
-      } else if (dirs.length === 1) {
+      }
+      if (dirs.length === 1) {
         booksFolderPath = path.join(booksFolderPath, dirs[0].name);
       } else {
         break;

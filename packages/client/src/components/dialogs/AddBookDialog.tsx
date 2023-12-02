@@ -164,8 +164,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     useAddCompressBookMutation({
       variables: {
         id: infoId,
-        file: (addBooks[0] || {}).file,
-        path: (addBooks[0] || {}).path,
+        file: addBooks[0]?.file,
+        path: addBooks[0]?.path,
       },
       onCompleted(d) {
         if (!d) return;

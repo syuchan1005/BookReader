@@ -117,7 +117,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
         }}
         anchorEl={anchorEl}
         open={!!anchorEl}
-        onClose={() => onClose && onClose()}
+        onClose={() => onClose?.()}
       >
         <MenuItem onClick={(e) => setSortAnchorEl(e.currentTarget)}>
           {`Sort: ${sortOrder}`}

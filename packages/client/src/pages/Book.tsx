@@ -480,7 +480,7 @@ const Book = (props: BookProps) => {
       {showAppBar && (
         <TitleAndBackHeader
           backRoute={data && `/info/${data.book.info.id}`}
-          title={data && data.book.info.name}
+          title={data?.book.info.name}
           subTitle={data && `No.${data.book.number}`}
         />
       )}

@@ -4,6 +4,7 @@ describe('PrismaBookDataManager', () => {
   const target = new PrismaBookDataManager();
 
   function getClient() {
+    // biome-ignore lint/complexity/useLiteralKeys: private property
     return target['prismaClient'];
   }
 

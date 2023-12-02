@@ -72,7 +72,7 @@ const GenresSelect = (props: GenresSelectProps) => {
           multiple
           value={value}
           /* (event) => setSelectGenres(event.target.value as string[]) */
-          onChange={(e) => onChange && onChange(e.target.value as string[])}
+          onChange={(e) => onChange?.(e.target.value as string[])}
           onOpen={() => {
             if (!called) loadGenres();
           }}

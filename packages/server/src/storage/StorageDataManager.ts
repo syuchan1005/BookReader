@@ -108,9 +108,8 @@ export const withPageEditFolder = async <T>(
   }
   if (error) {
     throw error;
-  } else {
-    return result;
   }
+  return result;
 };
 
 export const { readFile, writeFile } = fs;

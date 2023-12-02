@@ -49,10 +49,7 @@ const usePrevNextBook = (
       if (i === -1) {
         setBooks([undefined, undefined]);
       } else {
-        setBooks([
-          (bookInfo.books[i - 1] || {}).id,
-          (bookInfo.books[i + 1] || {}).id,
-        ]);
+        setBooks([bookInfo.books[i - 1]?.id, bookInfo.books[i + 1]?.id]);
       }
     }
   }, [bookInfo, bookId]);

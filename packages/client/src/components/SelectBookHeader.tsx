@@ -103,7 +103,7 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
             <Toolbar>
               <IconButton
                 className={classes.iconButton}
-                onClick={() => onClose && onClose()}
+                onClick={() => onClose?.()}
                 size="large"
               >
                 <Icon>clear</Icon>

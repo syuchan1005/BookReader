@@ -82,7 +82,6 @@ addEventListener('message', (event) => {
 
   const onMessage = async () => {
     switch (event.data.type) {
-      default:
       case 'SKIP_WAITING':
         skipWaiting();
         break;
