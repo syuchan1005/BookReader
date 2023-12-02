@@ -194,8 +194,11 @@ const BookPageImage = (props: BookPageImageProps) => {
         return `Error ${argAlt}`;
       case ImageState.UNSET:
       case ImageState.LOADED:
-      default:
         return argAlt;
+      default: {
+        const _exhaustiveCheck: never = imageState;
+        return _exhaustiveCheck;
+      }
     }
   }, [argAlt, imageState]);
   const [isRetried, setRetried] = React.useState(false);

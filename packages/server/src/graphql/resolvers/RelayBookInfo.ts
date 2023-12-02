@@ -46,9 +46,12 @@ const getCursor = (
       break;
     case BookInfoOrder.NameAsc:
     case BookInfoOrder.NameDesc:
-    default:
       cursor = 'name';
       break;
+    default: {
+      const _exhaustiveCheck: never = order;
+      return _exhaustiveCheck;
+    }
   }
   let sqlOrder;
   switch (order) {
@@ -60,9 +63,12 @@ const getCursor = (
     case BookInfoOrder.UpdateNewest:
     case BookInfoOrder.AddNewest:
     case BookInfoOrder.NameDesc:
-    default:
       sqlOrder = 'desc';
       break;
+    default: {
+      const _exhaustiveCheck: never = order;
+      return _exhaustiveCheck;
+    }
   }
   switch (order) {
     case BookInfoOrder.UpdateOldest:
@@ -75,8 +81,11 @@ const getCursor = (
     }
     case BookInfoOrder.NameAsc:
     case BookInfoOrder.NameDesc:
-    default:
       return [cursor, sqlOrder, before, after];
+    default: {
+      const _exhaustiveCheck: never = order;
+      return _exhaustiveCheck;
+    }
   }
 };
 
@@ -209,17 +218,24 @@ export const resolvers: Resolvers = {
   Query: {
     // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
     relayBookInfos: (_parent, args) => {
-      switch ((args.option || DefaultOptions).searchMode) {
+      const searchMode = (args.option || DefaultOptions).searchMode;
+      switch (searchMode) {
         case SearchMode.Meilisearch:
           if (args.option.search && meiliSearchClient.isAvailable()) {
             return searchBookInfosByMeiliSearch(args);
           }
+          break;
         case SearchMode.Elasticsearch:
           if (args.option.search && elasticSearchClient.isAvailable()) {
             return searchBookInfosByElasticSearch(args);
           }
+          break;
         case SearchMode.Database:
           return searchBookInfosByDB(args);
+        default: {
+          const _exhaustiveCheck: never = searchMode;
+          return _exhaustiveCheck;
+        }
       }
       throw Error('Unknown searchMode');
     },

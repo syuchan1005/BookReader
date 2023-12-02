@@ -49,13 +49,16 @@ const FileField = (props: FileFieldProps) => {
       acceptTypeText = 'image/jpeg,image/png,image/webp';
       break;
     case 'archive':
-    default:
       acceptTypeText = `${Object.keys(archiveTypes).join(',')},${[
         ...new Set(Object.values(archiveTypes)),
       ]
         .map((a) => `.${a}`)
         .join(',')}`;
       break;
+    default: {
+      const _exhaustiveCheck: never = acceptType;
+      return _exhaustiveCheck;
+    }
   }
   return (
     <Button

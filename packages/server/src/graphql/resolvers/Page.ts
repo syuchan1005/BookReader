@@ -225,8 +225,10 @@ const calculateEditActions = (
                     ],
                   }),
                 );
-              default:
-                throw new Error(`Unknown SplitType ${action.split.splitType}`);
+              default: {
+                const _exhaustiveCheck: never = action.split.splitType;
+                return _exhaustiveCheck;
+              }
             }
           },
         );
