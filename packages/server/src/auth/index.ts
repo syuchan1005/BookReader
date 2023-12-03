@@ -75,10 +75,10 @@ export const isAuthenticatedMiddleware = (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction,
-): void => {
+): ReturnType<express.NextFunction> => {
   if (!oidcConfig || req.isAuthenticated()) {
     return next();
   }
   res.redirect('/auth');
-  return undefined;
+  return;
 };

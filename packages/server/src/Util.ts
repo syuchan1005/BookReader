@@ -1,12 +1,3 @@
-export const asyncForEach = async <T>(
-  arr: Array<T>,
-  callback: (item: T, index: number, array: Array<T>) => void,
-) => {
-  for (let i = 0; i < arr.length; i += 1) {
-    await callback(arr[i], i, arr);
-  }
-};
-
 export const asyncMap = async <T, E>(
   arr: Array<E>,
   transform: (e: E, index: number, array: Array<E>) => Promise<T>,

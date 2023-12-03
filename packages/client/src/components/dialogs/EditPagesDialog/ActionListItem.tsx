@@ -36,11 +36,15 @@ import CalcImagePaddingDialog, {
 } from './CalcImagePaddingDialog';
 
 interface ListItemProps {
+  // biome-ignore lint/suspicious/noExplicitAny: TODO
   draggableProps: any;
+  // biome-ignore lint/suspicious/noExplicitAny: TODO
   dragHandleProps?: any;
 
   bookId: string;
+  // biome-ignore lint/suspicious/noExplicitAny: TODO
   content: { [key: string]: any };
+  // biome-ignore lint/suspicious/noExplicitAny: TODO
   setContent: (key: string, content: any) => void;
   maxPage: number;
   onDelete: () => void;
@@ -352,6 +356,7 @@ const getPadding = async (
 export interface EditTypeContent {
   id: string;
   editType: EditType;
+  // biome-ignore lint/suspicious/noExplicitAny: TODO
   content: { [key: string]: any };
 }
 

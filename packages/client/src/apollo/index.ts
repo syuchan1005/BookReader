@@ -18,9 +18,11 @@ const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
 const schemaVersion = '1.3.1';
 const schemaVersionKey = 'apollo-cache-schema-version';
 
-type ReadFunc<T, K extends keyof T = any> = (k: K) => T[K];
+// biome-ignore lint/suspicious/noExplicitAny: we don't care about the type of Target
+type Target = any;
+type ReadFunc<T, K extends keyof T = Target> = (k: K) => T[K];
 
-const uniqueRelayStylePagination = <T = any>(
+const uniqueRelayStylePagination = <T = Target>(
   uniqueKey: keyof T,
   selector: (a: ReadFunc<T>, b: ReadFunc<T>) => boolean,
   keyArgs?: string[],
@@ -29,7 +31,7 @@ const uniqueRelayStylePagination = <T = any>(
   return {
     ...pagination,
     merge(existing, incoming, _a) {
-      const select = (target: any) => (k: keyof T) => {
+      const select = (target: Target) => (k: keyof T) => {
         const t = { ...target };
         if (isReference(t)) {
           return _a.readField(k, t);
@@ -109,8 +111,7 @@ export const apolloClient = new ApolloClient({
 
       const log = (message) => {
         // @ts-ignore
-        if (apolloClient.snackbar)
-          apolloClient.snackbar(message, { variant: 'error' });
+        apolloClient.snackbar?.(message, { variant: 'error' });
         console.log(message);
       };
       if (graphQLErrors) {

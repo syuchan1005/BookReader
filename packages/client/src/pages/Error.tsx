@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const Error = (props) => {
+const ErrorComponent = (props) => {
   useTitle('Error');
   const classes = useStyles(props);
   const navigate = useNavigate();
@@ -49,6 +49,7 @@ const Error = (props) => {
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 38 17"
       >
+        <title>Oops!</title>
         <defs>
           <linearGradient id="g">
             <stop stopColor="#FF0018" offset="0%" />
@@ -80,4 +81,4 @@ const Error = (props) => {
   );
 };
 
-export default Error;
+export default ErrorComponent;

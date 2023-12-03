@@ -301,6 +301,7 @@ export const resolvers: Resolvers & {
       subscribe: withFilter(
         () => pubsub.asyncIterator([SubscriptionKeys.ADD_BOOKS]),
         (payload, variables) => payload.id === variables.id,
+        // biome-ignore lint/suspicious/noExplicitAny: read above comment
       ) as any,
     },
   },

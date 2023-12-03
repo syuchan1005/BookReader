@@ -26,7 +26,7 @@ import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql';
 
 interface GenresSelectProps {
   value: string[];
-  onChange?: (genres: string[]) => any;
+  onChange?: (genres: string[]) => void;
   showAdd?: boolean;
 }
 

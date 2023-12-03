@@ -12,8 +12,8 @@ import { WebSocketServer } from 'ws';
 
 import { resolvers } from '@server/graphql/resolvers';
 import { schemaString } from '@syuchan1005/book-reader-graphql';
-import BigInt from './scalar/BigInt';
-import IntRange from './scalar/IntRange';
+import BigIntScalar from './scalar/BigIntScalar';
+import IntRangeScalar from './scalar/IntRange';
 
 export const SubscriptionKeys = {
   ADD_BOOKS: 'ADD_BOOKS',
@@ -34,8 +34,8 @@ export default class GraphQL {
       typeDefs: gql(schemaString),
       resolvers: mergeResolvers([
         {
-          BigInt,
-          IntRange,
+          BigInt: BigIntScalar,
+          IntRange: IntRangeScalar,
           Upload: uploadResolver,
         },
         resolvers,

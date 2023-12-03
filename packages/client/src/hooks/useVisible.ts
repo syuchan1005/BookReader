@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useState } from 'react';
 
 export const useVisible = (
-  ref: MutableRefObject<any>,
+  ref: MutableRefObject<Element>,
   keepVisible = true,
   rootMargin?: string,
 ) => {

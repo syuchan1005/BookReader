@@ -56,8 +56,8 @@ type StrictAddBooksSubscriptionResult<
 interface AddBookDialogProps {
   open: boolean;
   infoId: string;
-  onAdded?: Function;
-  onClose?: Function;
+  onAdded?: () => void;
+  onClose?: () => void;
 
   children?: React.ReactNode;
 }

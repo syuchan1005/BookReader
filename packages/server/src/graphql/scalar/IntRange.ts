@@ -33,6 +33,7 @@ export const chunkedRange = (range: Scalars['IntRange']): number[][] => {
   return arr;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: any
 const parseIntRange = (value: (number | number[])[] | any) => {
   if (
     !Array.isArray(value) ||

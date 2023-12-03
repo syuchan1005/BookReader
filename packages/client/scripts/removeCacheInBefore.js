@@ -16,23 +16,18 @@ const mkdirpIfNotExists = async (p) => {
   }
 };
 
-const asyncForEach = async (arr, callback) => {
-  for (let i = 0; i < arr.length; i += 1) {
-    await callback(arr[i], i, arr);
-  }
-};
-
-const readdirRecursively = async (dir, files = []) => {
+const readdirRecursively = async (dir, files) => {
+  let fileList = files || [];
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
   for (const dirent of dirents) {
     if (dirent.isDirectory()) dirs.push(`${dir}/${dirent.name}`);
-    if (dirent.isFile()) files.push(`${dir}/${dirent.name}`);
+    if (dirent.isFile()) fileList.push(`${dir}/${dirent.name}`);
   }
   for (const dir of dirs) {
-    files = await readdirRecursively(d, files);
+    fileList = await readdirRecursively(d, fileList);
   }
-  return Promise.resolve(files);
+  return Promise.resolve(fileList);
 };
 
 (async () => {

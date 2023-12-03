@@ -137,7 +137,7 @@ const calculateEditActions = (
     switch (action.editType) {
       case EditType.Crop: {
         const pageRange = flatRange(action.crop.pageRange);
-        for(const [i, imageEditAction] of imageEditActions.entries()) {
+        for (const [i, imageEditAction] of imageEditActions.entries()) {
           if (pageRange.includes(i)) {
             imageEditAction.cropTransforms = [
               ...(imageEditAction.cropTransforms ?? []),
@@ -154,7 +154,7 @@ const calculateEditActions = (
       }
       case EditType.Delete: {
         const pageRange = flatRange(action.delete.pageRange);
-        for(const [i, imageEditAction] of imageEditActions.entries()) {
+        for (const [i, imageEditAction] of imageEditActions.entries()) {
           imageEditAction.willDelete =
             imageEditAction.willDelete || pageRange.includes(i);
         }
@@ -256,7 +256,7 @@ const calculateEditActions = (
       default:
         throw new Error(`Unknown EditAction ${action}`);
     }
-  });
+  }
   return imageEditActions;
 };
 
@@ -469,6 +469,7 @@ export const resolvers: Resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
         (payload, variables) => payload.id === variables.id,
+        // biome-ignore lint/suspicious/noExplicitAny: any
       ) as any,
     },
   },

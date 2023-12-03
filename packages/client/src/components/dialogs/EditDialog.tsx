@@ -21,7 +21,7 @@ interface EditDialogProps {
 
   info?: boolean;
 
-  fieldValue: any;
+  fieldValue: unknown;
   genres?: string[];
   onChange?: (key: string, value: string | string[]) => void;
 

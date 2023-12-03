@@ -3,11 +3,11 @@ import React from 'react';
 
 import { renderWithRouter } from '../../testUtil';
 
-import Error from '../Error';
+import ErrorComponent from '../Error';
 
 describe('<Error>', () => {
   it('initial', () => {
-    const { getByTestId } = renderWithRouter(<Error />);
+    const { getByTestId } = renderWithRouter(<ErrorComponent />);
     expect(getByTestId('svg')).not.toBe(undefined);
     expect(getByTestId('text')).not.toBe(undefined);
     expect(getByTestId('button')).not.toBe(undefined);

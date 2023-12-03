@@ -25,8 +25,9 @@ const Top = () => {
   const [tabIndex, setTabIndex] = React.useState(0);
 
   React.useEffect(() => {
+    const pathname = location.pathname;
     const i = TabItems.findIndex(
-      ({ path }) => path !== '/' && location.pathname.startsWith(path),
+      ({ path }) => path !== '/' && pathname.startsWith(path),
     );
     setTabIndex(Math.max(0, i));
   }, []);

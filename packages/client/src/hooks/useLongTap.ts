@@ -37,7 +37,7 @@ export type LongTapResult =
       onTouchMove: TouchEventHandler;
       onTouchEnd: TouchEventHandler;
     }
-  | {};
+  | Record<string, never>;
 
 export interface LongTapOptions {
   threshold?: number;

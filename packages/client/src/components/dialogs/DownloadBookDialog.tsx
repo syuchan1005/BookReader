@@ -14,7 +14,7 @@ import React from 'react';
 
 interface DownloadBookDialogProps {
   open: boolean;
-  onClose?: () => any;
+  onClose?: () => void;
   number?: string;
   bookId?: string;
   pages?: number;

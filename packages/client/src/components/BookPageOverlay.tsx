@@ -33,8 +33,8 @@ interface BookPageOverlayProps {
   pageStyle: PageStyleType;
   onPageStyleClick: () => void;
   setHideAppBar: () => void;
-  goNextBook: () => void | undefined;
-  goPreviousBook: () => void | undefined;
+  goNextBook: () => void;
+  goPreviousBook: () => void;
   onEditClick: () => void;
 }
 
@@ -92,7 +92,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const stopPropagationListener: MouseEventHandler<any> = (e) => {
+const stopPropagationListener: MouseEventHandler<unknown> = (e) => {
   e.stopPropagation();
 };
 
@@ -161,6 +161,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   );
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: TODO
     <div className={classes.overlay} onClick={setHideAppBar}>
       <div className={`${classes.overlayContent} center`}>
         {goPreviousBook && currentPage === 0 && (
@@ -184,6 +185,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
             </Button>
           )}
       </div>
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
       <div
         className={`${classes.overlayContent} top`}
         onClick={stopPropagationListener}
@@ -192,6 +194,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           currentPage + 1
         } / ${maxPages}`}</div>
       </div>
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
       <div
         className={`${classes.overlayContent} bottom`}
         onClick={stopPropagationListener}

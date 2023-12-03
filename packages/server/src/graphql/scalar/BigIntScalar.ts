@@ -16,7 +16,7 @@ const parseBigInt = (value: string) => {
   return int;
 };
 
-const BigInt = new GraphQLScalarType({
+const BigIntScalar = new GraphQLScalarType({
   name: 'BigInt',
   description: 'BigInt scalar type can represent values more Int.',
   serialize: parseBigInt,
@@ -32,4 +32,4 @@ const BigInt = new GraphQLScalarType({
   },
 });
 
-export default BigInt;
+export default BigIntScalar;

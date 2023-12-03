@@ -13,7 +13,6 @@ import { Result, Scalars } from '@syuchan1005/book-reader-graphql';
 import Errors from '@server/Errors';
 import { convertToDefaultImageType } from '@server/ImageUtil';
 import { tracer } from '@server/OpenTelemetry';
-import { asyncForEach } from '@server/Util';
 import { BookDataManager } from '@server/database/BookDataManager';
 import {
   StorageDataManager,
@@ -24,19 +23,20 @@ import {
 
 const readImageFilePathsRecursively = async (
   dir,
-  files: string[] = [],
+  files: string[],
 ): Promise<string[]> => {
+  let fileList = files || [];
   const dirents = await fs.readdir(dir, { withFileTypes: true });
   const dirs = [];
   for (const dirent of dirents) {
     if (dirent.isDirectory()) dirs.push(`${dir}/${dirent.name}`);
-    if (dirent.isFile()) files.push(`${dir}/${dirent.name}`);
+    if (dirent.isFile()) fileList.push(`${dir}/${dirent.name}`);
   }
   for (const dir of dirs) {
-    files = await readImageFilePathsRecursively(dir, files);
+    fileList = await readImageFilePathsRecursively(dir, fileList);
   }
   return (
-    files
+    fileList
       // TODO: Filter node-sharp not supported types only
       .filter((f) => /^(?!.*__MACOSX).*\.(jpe?g|png|webp)$/i.test(f))
   );
@@ -53,7 +53,7 @@ const GQLUtil = {
     return tracer.startActiveSpan(
       'GQLUtil.addBookFromLocalPath',
       async (span) => {
-        let files = await readImageFilePathsRecursively(tempPath);
+        let files = await readImageFilePathsRecursively(tempPath, []);
         if (files.length <= 0) {
           span.setStatus({
             code: SpanStatusCode.ERROR,

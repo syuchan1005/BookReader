@@ -26,9 +26,9 @@ export const useLazyDialog = (
     [state, debounceState],
   );
 
-  const setTrue = useCallback(() => setState(true), [setState]);
-  const setFalse = useCallback(() => setState(false), [setState]);
-  const toggle = useCallback(() => setState(!state), [setState, state]);
+  const setTrue = useCallback(() => setState(true), []);
+  const setFalse = useCallback(() => setState(false), []);
+  const toggle = useCallback(() => setState((state) => !state), []);
 
   return [state, componentVisibleState, setTrue, setFalse, toggle, setState];
 };

@@ -9,7 +9,7 @@ import {
   availableImageExtensions,
   defaultStoredImageExtension,
 } from '@syuchan1005/book-reader-common';
-import React from 'react';
+import React, { CSSProperties } from 'react';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -19,7 +19,7 @@ interface BookPageImageProps {
   height: number;
   loading?: 'eager' | 'lazy';
   alt?: string;
-  style?: any;
+  style?: CSSProperties;
   noSave?: boolean;
 
   sizeDebounceDelay?: number;

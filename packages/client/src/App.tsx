@@ -33,7 +33,7 @@ const History = lazy(() => import('@client/pages/top/bookshelf/History'));
 const Info = lazy(() => import('@client/pages/Info'));
 const Book = lazy(() => import('@client/pages/Book'));
 const Setting = lazy(() => import('@client/pages/Setting'));
-const Error = lazy(() => import('@client/pages/Error'));
+const ErrorComponent = lazy(() => import('@client/pages/Error'));
 
 export const commonTheme = {
   safeArea: {
@@ -240,7 +240,7 @@ const App = () => {
               path="*"
               element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
-                  <Error />
+                  <ErrorComponent />
                 </Suspense>
               }
             />

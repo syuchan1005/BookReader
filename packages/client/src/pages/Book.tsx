@@ -166,7 +166,7 @@ export type PageStyleType = {
   normalizeCount: (i: number) => number;
   icon: {
     name: string;
-    style: Object;
+    style?: CSSProperties;
   };
   prefixPage: number;
 };
@@ -485,6 +485,7 @@ const Book = (props: BookProps) => {
         />
       )}
 
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
       <main className={classes.book} onClick={clickPage}>
         {canMountEditDialog && (
           <EditPagesDialog

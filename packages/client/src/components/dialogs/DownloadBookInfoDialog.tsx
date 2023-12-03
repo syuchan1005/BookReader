@@ -18,7 +18,7 @@ import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql';
 
 interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   open: boolean;
-  onClose?: () => any;
+  onClose?: () => void;
 }
 
 const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
