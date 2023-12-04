@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { ReactNode } from 'react';
+import { ReactNode, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { commonTheme } from '../App';
 
@@ -51,7 +51,7 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const location = useLocation();
   const { backRoute, title, subTitle, children } = props;
 
-  const clickBack = React.useCallback(() => {
+  const clickBack = useCallback(() => {
     // @ts-ignore
     if (!location.state?.referrer && backRoute) {
       navigate(backRoute, {

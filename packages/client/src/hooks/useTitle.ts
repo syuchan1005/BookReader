@@ -19,6 +19,7 @@ export const useTitle = (title: string, options: Options = DEFAULT_OPTIONS) => {
     document.title = title ? `${title} - ${suffix}` : suffix;
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: options.restoreOnUnmount
   useEffect(() => {
     if (options.restoreOnUnmount) {
       return () => {

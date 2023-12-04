@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
 import { useBeforeUnload } from 'react-use';
 
 import {
@@ -31,6 +30,16 @@ import {
 import DropZone from '@client/components/DropZone';
 import FileField from '@client/components/FileField';
 import { useTitle } from '@client/hooks/useTitle';
+import {
+  Children,
+  ReactElement,
+  ReactNode,
+  cloneElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 type StrictAddBooksSubscriptionResult<
   EnumType = typeof AddBooksSubscriptionType,
@@ -59,7 +68,7 @@ interface AddBookDialogProps {
   onAdded?: () => void;
   onClose?: () => void;
 
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -112,28 +121,27 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   const classes = useStyles(props);
   const { open, infoId, onAdded, onClose, children } = props;
 
-  const [addBooks, setAddBooks] = React.useState<InputBook[]>([]);
-  const [subscriptionId, setSubscriptionId] = React.useState<
-    string | undefined
-  >(undefined);
-
-  const [addType, setAddType] = React.useState('file');
-  const [nameType, setNameType] = React.useState<'number' | 'filename'>(
-    'number',
+  const [addBooks, setAddBooks] = useState<InputBook[]>([]);
+  const [subscriptionId, setSubscriptionId] = useState<string | undefined>(
+    undefined,
   );
-  const [editContent, setEditContent] = React.useState({});
-  React.useEffect(() => {
+
+  const [addType, setAddType] = useState('file');
+  const [nameType, setNameType] = useState<'number' | 'filename'>('number');
+  const [editContent, setEditContent] = useState({});
+  // biome-ignore lint/correctness/useExhaustiveDependencies: editContent, addType
+  useEffect(() => {
     if (Object.keys(editContent).length > 0) {
       setEditContent({});
     }
   }, [addType]);
 
-  const [isBlockUnload, setBlockUnload] = React.useState(false);
+  const [isBlockUnload, setBlockUnload] = useState(false);
   useBeforeUnload(isBlockUnload, 'In Process. Changes may not be saved.');
 
-  const [uploadingFileBytes, setUploadingFileBytes] = React.useState(0);
+  const [uploadingFileBytes, setUploadingFileBytes] = useState(0);
 
-  const mutateCloseDialog = React.useCallback(
+  const mutateCloseDialog = useCallback(
     (success) => {
       if (onClose && success) onClose();
       if (success && onAdded) onAdded();
@@ -176,7 +184,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       },
     });
 
-  const loading = React.useMemo(
+  const loading = useMemo(
     () => addBookLoading || addCompressBookLoading,
     [addBookLoading, addCompressBookLoading],
   );
@@ -188,7 +196,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         id: subscriptionId,
       },
     });
-  const subscriptionDataText = React.useMemo(() => {
+  const subscriptionDataText = useMemo(() => {
     const addBooksSubscriptionResult =
       subscriptionData?.addBooks as StrictAddBooksSubscriptionResult;
     if (!addBooksSubscriptionResult) {
@@ -239,7 +247,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     }
   };
 
-  const dropFiles = React.useCallback(
+  const dropFiles = useCallback(
     (files) => {
       setAddBooks([
         ...addBooks,
@@ -266,7 +274,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     [addBooks, addType, nameType],
   );
 
-  const changeAddBook = React.useCallback(
+  const changeAddBook = useCallback(
     (i, obj) => {
       const books = [...addBooks];
       books[i] = {
@@ -278,7 +286,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     [addBooks],
   );
 
-  const clickAddButton = React.useCallback(async () => {
+  const clickAddButton = useCallback(async () => {
     setSubscriptionId(infoId);
     let count = 1;
     while (!subscriptionLoading && count <= 2) {
@@ -442,10 +450,10 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       })()}
       <DialogActions>
         {children &&
-          React.Children.map<{ loading: boolean }, React.ReactElement>(
+          Children.map<{ loading: boolean }, ReactElement>(
             // @ts-ignore
             children,
-            (child) => React.cloneElement(child, { loading }),
+            (child) => cloneElement(child, { loading }),
           )}
         <Button onClick={closeDialog} disabled={loading}>
           close

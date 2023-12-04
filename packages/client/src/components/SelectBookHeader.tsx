@@ -19,7 +19,6 @@ import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
 
 import { commonTheme } from '@client/App';
 
@@ -27,6 +26,7 @@ import {
   useDeleteBooksMutation,
   useMoveBooksMutation,
 } from '@syuchan1005/book-reader-graphql';
+import { useState } from 'react';
 
 interface SelectBookHeaderProps {
   infoId: string;
@@ -67,8 +67,8 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const classes = useStyles(props);
   const { infoId, selectIds, onClose, onDeleteBooks, onMoveBooks } = props;
 
-  const [openMoveDialog, setOpenMoveDialog] = React.useState(false);
-  const [moveInfoId, setMoveInfoId] = React.useState(infoId);
+  const [openMoveDialog, setOpenMoveDialog] = useState(false);
+  const [moveInfoId, setMoveInfoId] = useState(infoId);
 
   const [doMoveBooks, { loading: moveBooksLoading }] = useMoveBooksMutation({
     variables: {
@@ -81,7 +81,7 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
     },
   });
 
-  const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const [doDeleteBooks, { loading: deleteBooksLoading }] =
     useDeleteBooksMutation({

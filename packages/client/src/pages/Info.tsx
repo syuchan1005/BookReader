@@ -10,7 +10,6 @@ import {
 import { common } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
@@ -25,19 +24,28 @@ import { pageAspectRatio } from '@client/components/BookPageImage';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import SelectBookHeader from '@client/components/SelectBookHeader';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
-import useLazyDialog from '@client/hooks/useLazyDialog';
-import useMediaQuery from '@client/hooks/useMediaQuery';
-import useMenuAnchor from '@client/hooks/useMenuAnchor';
+import { useLazyDialog } from '@client/hooks/useLazyDialog';
+import { useMediaQuery } from '@client/hooks/useMediaQuery';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useTitle } from '@client/hooks/useTitle';
 import { workbox } from '@client/registerServiceWorker';
 import { sortBookOrderState } from '@client/store/atoms';
+import {
+  MouseEvent,
+  ReactElement,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
-const AddBookDialog = React.lazy(
+const AddBookDialog = lazy(
   () => import('@client/components/dialogs/AddBookDialog'),
 );
 
 interface InfoProps {
-  children?: React.ReactElement;
+  children?: ReactElement;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -126,17 +134,18 @@ const Info = (props: InfoProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
-  const visibleMargin = React.useMemo(
+  const visibleMargin = useMemo(
     () => `0px 0px ${theme.spacing(3)} 0px`,
     [theme],
   );
   const [isShownAddDialog, canMountAddDialog, showAddDialog, hideAddDialog] =
     useLazyDialog(false);
-  const [mode, setMode] = React.useState<ScreenModeType>(ScreenMode.NORMAL);
-  const [selectIds, setSelectIds] = React.useState([]);
+  const [mode, setMode] = useState<ScreenModeType>(ScreenMode.NORMAL);
+  const [selectIds, setSelectIds] = useState([]);
 
-  const [isSkipQuery, setSkipQuery] = React.useState(true);
-  React.useEffect(() => {
+  const [isSkipQuery, setSkipQuery] = useState(true);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: location, searchParams, showAddDialog
+  useEffect(() => {
     setSkipQuery(false);
 
     if (searchParams.has('add')) {
@@ -159,13 +168,13 @@ const Info = (props: InfoProps) => {
     },
   });
 
-  const bookName = React.useMemo(() => data?.bookInfo?.name ?? '', [data]);
+  const bookName = useMemo(() => data?.bookInfo?.name ?? '', [data]);
   useTitle(bookName || undefined);
 
-  const bookList = React.useMemo(() => data?.bookInfo?.books ?? [], [data]);
+  const bookList = useMemo(() => data?.bookInfo?.books ?? [], [data]);
 
-  const [sortedReadBooks, setSortedReadBooks] = React.useState<Read[]>([]);
-  React.useEffect(() => {
+  const [sortedReadBooks, setSortedReadBooks] = useState<Read[]>([]);
+  useEffect(() => {
     let cancelled = false;
     db.read
       .getAll(
@@ -187,7 +196,7 @@ const Info = (props: InfoProps) => {
     };
   }, [infoId]);
 
-  const readId: string = React.useMemo(() => {
+  const readId: string = useMemo(() => {
     if (sortedReadBooks.length === 0) {
       return '';
     }
@@ -201,7 +210,7 @@ const Info = (props: InfoProps) => {
     );
   }, [bookList, sortedReadBooks]);
 
-  const onDeletedBook = React.useCallback(
+  const onDeletedBook = useCallback(
     (bookId: string, pages: number) => {
       // noinspection JSIgnoredPromiseFromCall
       refetch();
@@ -218,7 +227,7 @@ const Info = (props: InfoProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const toggleSelect = React.useCallback(
+  const toggleSelect = useCallback(
     (id: string) => {
       if (selectIds.includes(id)) {
         setSelectIds(selectIds.filter((i) => i !== id));
@@ -231,8 +240,8 @@ const Info = (props: InfoProps) => {
 
   const [sortEl, setSortEl, resetSortEl] = useMenuAnchor();
 
-  const handleBookClick = React.useCallback(
-    (event: React.MouseEvent, bookId: string) => {
+  const handleBookClick = useCallback(
+    (event: MouseEvent, bookId: string) => {
       if (mode === ScreenMode.SELECT) {
         event.preventDefault();
         toggleSelect(bookId);
@@ -241,7 +250,7 @@ const Info = (props: InfoProps) => {
     [mode, toggleSelect],
   );
 
-  const handleBookLongClick = React.useCallback(
+  const handleBookLongClick = useCallback(
     (event, bookId: string) => {
       event.preventDefault();
       setMode(ScreenMode.SELECT);
@@ -250,14 +259,14 @@ const Info = (props: InfoProps) => {
     [toggleSelect],
   );
 
-  const handleHeaderClose = React.useCallback(() => {
+  const handleHeaderClose = useCallback(() => {
     setMode(ScreenMode.NORMAL);
     if (selectIds.length > 0) {
       setSelectIds([]);
     }
   }, [selectIds]);
 
-  const handleSelectBookMutated = React.useCallback(() => {
+  const handleSelectBookMutated = useCallback(() => {
     setMode(ScreenMode.NORMAL);
     refetch();
     if (selectIds.length > 0) {

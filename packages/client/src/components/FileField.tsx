@@ -1,10 +1,10 @@
 import { Button, Theme } from '@mui/material';
-import React from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
 import { archiveTypes } from '@syuchan1005/book-reader-common';
+import { CSSProperties, useRef } from 'react';
 
 export type AcceptType = 'archive' | 'image';
 
@@ -12,7 +12,7 @@ interface FileFieldProps {
   acceptType?: AcceptType;
   file?: File;
   onChange?: (File) => void;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const FileField = (props: FileFieldProps) => {
   const classes = useStyles(props);
-  const inputRef = React.useRef(null);
+  const inputRef = useRef(null);
   const { acceptType = 'archive', file, onChange, style } = props;
 
   const onFilePicked = (event) => {

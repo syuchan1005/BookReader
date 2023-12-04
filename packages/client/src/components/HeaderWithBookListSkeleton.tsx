@@ -1,6 +1,5 @@
 import { Skeleton, Theme } from '@mui/material';
 import { createStyles, makeStyles } from '@mui/styles';
-import React from 'react';
 import { pageAspectRatio } from './BookPageImage';
 
 const useStyles = makeStyles((theme: Theme) =>

@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface CalcImagePaddingDialogProps {
   open: boolean;
@@ -131,18 +131,16 @@ export const calcPadding = (
 
 const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
   const { open, bookId, maxPage, onClose, left, right, onSizeChange } = props;
-  const [pageIndex, setPageIndex] = React.useState(1);
-  const [threshold, setThreshold] = React.useState(50);
-  const [verticalOffset, setVerticalOffset] = React.useState(200);
-  const [horizontalOffset, setHorizontalOffset] = React.useState(10);
-  const [useCompareWithWhite, setCompareWithWhite] = React.useState(false);
-  const [imageData, setImageData] = React.useState<ImageData | undefined>(
-    undefined,
-  );
-  const canvasRef = React.useRef<HTMLCanvasElement>();
-  const canvasContainerRef = React.useRef<HTMLDivElement>();
+  const [pageIndex, setPageIndex] = useState(1);
+  const [threshold, setThreshold] = useState(50);
+  const [verticalOffset, setVerticalOffset] = useState(200);
+  const [horizontalOffset, setHorizontalOffset] = useState(10);
+  const [useCompareWithWhite, setCompareWithWhite] = useState(false);
+  const [imageData, setImageData] = useState<ImageData | undefined>(undefined);
+  const canvasRef = useRef<HTMLCanvasElement>();
+  const canvasContainerRef = useRef<HTMLDivElement>();
 
-  const onDetectClick = React.useCallback(async () => {
+  const onDetectClick = useCallback(async () => {
     if (!onSizeChange) return;
     const url = createBookPageUrl(bookId, pageIndex - 1, maxPage);
     const rawImageData = await urlToImageData(url);
@@ -166,7 +164,8 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
     useCompareWithWhite,
   ]);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: canvasRef
+  useEffect(() => {
     if (!imageData || !canvasRef.current) return;
     const width = right - left;
     const { height } = imageData;

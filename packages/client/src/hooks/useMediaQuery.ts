@@ -12,5 +12,3 @@ export const useMediaQuery = (queryInput: string) => {
 
   return muiUseMediaQuery(queryInput, options);
 };
-
-export default useMediaQuery;

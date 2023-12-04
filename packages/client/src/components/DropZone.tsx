@@ -2,11 +2,11 @@ import { Theme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import * as React from 'react';
 import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 
-import useOS from '@client/hooks/useOS';
+import { useOS } from '@client/hooks/useOS';
 import { archiveTypes } from '@syuchan1005/book-reader-common';
+import { useEffect, useRef, useState } from 'react';
 
 interface FileFieldProps {
   onChange?: <T extends File>(
@@ -37,14 +37,15 @@ const DropZone = (props: FileFieldProps) => {
   const classes = useStyles(props);
   const { onChange } = props;
 
-  const [width, setWidth] = React.useState(undefined);
-  const ref = React.useRef<HTMLDivElement>();
+  const [width, setWidth] = useState(undefined);
+  const ref = useRef<HTMLDivElement>();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onChange,
   });
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: width
+  useEffect(() => {
     if (!isDragActive && ref.current) {
       setWidth(Math.max(width || -1, ref.current.offsetWidth));
     }

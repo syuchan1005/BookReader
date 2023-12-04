@@ -1,13 +1,13 @@
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
-import useMediaQuery from '@client/hooks/useMediaQuery';
+import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
 import db, { BookInfoFavorite } from '@client/indexedDb/Database';
 import { Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
-import React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -36,11 +36,11 @@ const Favorite = () => {
 
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [favoriteBookInfos, setFavoriteBookInfos] = React.useState<
+  const [favoriteBookInfos, setFavoriteBookInfos] = useState<
     BookInfoFavorite[]
   >([]);
-  const [favoriteLoading, setFavoriteLoading] = React.useState(false);
-  const getFavoriteBookInfos = React.useCallback(() => {
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const getFavoriteBookInfos = useCallback(() => {
     let after;
     if (favoriteBookInfos.length > 0) {
       after = favoriteBookInfos[favoriteBookInfos.length - 1].createdAt;
@@ -60,7 +60,8 @@ const Favorite = () => {
         setFavoriteLoading(false);
       });
   }, [favoriteBookInfos]);
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: getFavoriteBookInfos
+  useEffect(() => {
     getFavoriteBookInfos();
   }, []);
   const { loading, data } = useBookInfosQuery({

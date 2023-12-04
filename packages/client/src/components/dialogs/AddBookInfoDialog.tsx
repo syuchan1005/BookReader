@@ -8,7 +8,6 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
-import React from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -17,6 +16,7 @@ import {
   HomeBookInfoFragment,
   useAddBookInfoMutation,
 } from '@syuchan1005/book-reader-graphql';
+import { useCallback, useEffect, useState } from 'react';
 import GenresSelect from '../GenresSelect';
 
 interface AddBookInfoDialogProps {
@@ -64,15 +64,16 @@ const useStyles = makeStyles((theme: Theme) =>
 const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
   const classes = useStyles(props);
   const { onAdded, onClose, open, name: argName } = props;
-  const [name, setName] = React.useState('');
-  const [selectGenres, setSelectGenres] = React.useState<string[]>([]);
+  const [name, setName] = useState('');
+  const [selectGenres, setSelectGenres] = useState<string[]>([]);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: argName
+  useEffect(() => {
     if (open && argName) {
       setName(argName);
     }
   }, [open]);
-  const closeDialog = React.useCallback(() => {
+  const closeDialog = useCallback(() => {
     if (onClose) onClose();
     if (name !== '') {
       setName('');

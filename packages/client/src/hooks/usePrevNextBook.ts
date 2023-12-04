@@ -1,5 +1,5 @@
 import { useApolloClient } from '@apollo/client';
-import React from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   BookInfoDocument,
@@ -8,18 +8,15 @@ import {
   BookOrder,
 } from '@syuchan1005/book-reader-graphql';
 
-const usePrevNextBook = (
+export const usePrevNextBook = (
   infoId,
   bookId,
 ): [prev: string | undefined, next: string | undefined] => {
   const client = useApolloClient();
-  const [bookInfo, setBookInfo] = React.useState(undefined);
-  const [books, setBooks] = React.useState<[string, string]>([
-    undefined,
-    undefined,
-  ]);
+  const [bookInfo, setBookInfo] = useState(undefined);
+  const [books, setBooks] = useState<[string, string]>([undefined, undefined]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!infoId) {
       setBookInfo(undefined);
     } else {
@@ -41,7 +38,7 @@ const usePrevNextBook = (
     }
   }, [client, infoId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!bookId || !bookInfo) {
       setBooks([undefined, undefined]);
     } else {
@@ -56,5 +53,3 @@ const usePrevNextBook = (
 
   return books;
 };
-
-export default usePrevNextBook;

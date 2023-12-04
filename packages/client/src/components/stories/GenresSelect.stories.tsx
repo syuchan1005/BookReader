@@ -1,7 +1,6 @@
 import { MockedProvider } from '@apollo/client/testing';
 import { ListItem } from '@mui/material';
 import { ComponentMeta } from '@storybook/react';
-import React from 'react';
 
 import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import GenresSelect from '../GenresSelect';

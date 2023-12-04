@@ -9,11 +9,11 @@ import {
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
-import React, { Suspense, lazy, useCallback, useEffect, useMemo } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
-import useMediaQuery from '@client/hooks/useMediaQuery';
+import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
 import {
   alertDataState,

@@ -12,11 +12,11 @@ import {
 import { orange } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { MouseEventHandler } from 'react';
+import { MouseEventHandler, useCallback } from 'react';
 import { useRecoilState } from 'recoil';
 
 import { commonTheme } from '@client/App';
-import useMenuAnchor from '@client/hooks/useMenuAnchor';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { PageStyleType } from '@client/pages/Book';
 import {
   PageImageEffectType,
@@ -121,11 +121,11 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   const [effectMenuAnchor, setEffectMenuAnchor, resetEffectMenuAnchor] =
     useMenuAnchor();
 
-  const toggleOriginalImage = React.useCallback(() => {
+  const toggleOriginalImage = useCallback(() => {
     setShowOriginalImage((v) => !v);
   }, [setShowOriginalImage]);
 
-  const clickEffect = React.useCallback(
+  const clickEffect = useCallback(
     (type: PageImageEffectType | undefined) => {
       if (type) {
         setPageImageEffect((e) => ({
@@ -140,7 +140,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     [setPageImageEffect, resetEffectMenuAnchor],
   );
 
-  const clickJumpPrevBook = React.useCallback(
+  const clickJumpPrevBook = useCallback(
     (e) => {
       e.stopPropagation();
       if (goPreviousBook) {
@@ -150,7 +150,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     [goPreviousBook],
   );
 
-  const clickJumpNextBook = React.useCallback(
+  const clickJumpNextBook = useCallback(
     (e) => {
       e.stopPropagation();
       if (goNextBook) {

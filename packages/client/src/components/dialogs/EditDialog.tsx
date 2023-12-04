@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
+import { useCallback } from 'react';
 import GenresSelect from '../GenresSelect';
 
 interface EditDialogProps {
@@ -58,7 +58,7 @@ const EditDialog = (props: EditDialogProps) => {
   } = props;
   const classes = useStyles(props);
 
-  const handleChangeGenres = React.useCallback(
+  const handleChangeGenres = useCallback(
     (g) => {
       if (onChange) {
         onChange('genres', g);
@@ -67,7 +67,7 @@ const EditDialog = (props: EditDialogProps) => {
     [onChange],
   );
 
-  const handleTextChange = React.useCallback(
+  const handleTextChange = useCallback(
     (event) => {
       if (onChange) {
         onChange(info ? 'name' : 'number', event.target.value);

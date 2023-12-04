@@ -23,13 +23,19 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import React from 'react';
 
 import { createBookPageUrl } from '@client/components/BookPageImage';
 import FileField from '@client/components/FileField';
 import IntRangeInputField from '@client/components/IntRangeInputField';
 import CropImageDialog from '@client/components/dialogs/EditPagesDialog/CropImageDialog';
 import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
+import {
+  ForwardedRef,
+  ReactNode,
+  forwardRef,
+  useCallback,
+  useState,
+} from 'react';
 import CalcImagePaddingDialog, {
   calcPadding,
   urlToImageData,
@@ -51,10 +57,10 @@ interface ListItemProps {
 }
 
 interface ListItemCardProps extends ListItemProps {
-  ref: React.ForwardedRef<unknown>;
+  ref: ForwardedRef<unknown>;
   menuText: string;
 
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export const createInitValue = (editType: EditType) => {
@@ -89,7 +95,7 @@ export const createInitValue = (editType: EditType) => {
   }
 };
 
-const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
+const ListItemCard = forwardRef((props: ListItemCardProps, ref) => {
   const { draggableProps, dragHandleProps, menuText, onDelete, children } =
     props;
   const theme = useTheme();
@@ -134,10 +140,10 @@ const ListItemCard = React.forwardRef((props: ListItemCardProps, ref) => {
 });
 
 const ListItems = {
-  [EditType.Crop]: React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.Crop]: forwardRef((props: ListItemProps, ref) => {
     const { maxPage, content, setContent, bookId } = props;
     const theme = useTheme();
-    const [isOpen, setOpen] = React.useState(false);
+    const [isOpen, setOpen] = useState(false);
     return (
       <ListItemCard ref={ref} {...props} menuText="Crop">
         <IntRangeInputField
@@ -180,7 +186,7 @@ const ListItems = {
       </ListItemCard>
     );
   }),
-  [EditType.Replace]: React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.Replace]: forwardRef((props: ListItemProps, ref) => {
     const { maxPage, content, setContent } = props;
     return (
       <ListItemCard ref={ref} {...props} menuText="Replace">
@@ -198,7 +204,7 @@ const ListItems = {
       </ListItemCard>
     );
   }),
-  [EditType.Delete]: React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.Delete]: forwardRef((props: ListItemProps, ref) => {
     const { maxPage, content, setContent } = props;
     return (
       <ListItemCard ref={ref} {...props} menuText="Delete">
@@ -211,10 +217,10 @@ const ListItems = {
       </ListItemCard>
     );
   }),
-  [EditType.Put]: React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.Put]: forwardRef((props: ListItemProps, ref) => {
     const { bookId, maxPage, content, setContent } = props;
 
-    const [isOpen, setOpen] = React.useState(false);
+    const [isOpen, setOpen] = useState(false);
 
     return (
       <ListItemCard ref={ref} {...props} menuText="Put">
@@ -252,7 +258,7 @@ const ListItems = {
       </ListItemCard>
     );
   }),
-  [EditType.Split]: React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.Split]: forwardRef((props: ListItemProps, ref) => {
     const { maxPage, content, setContent } = props;
     const theme = useTheme();
     return (
@@ -287,7 +293,7 @@ const ListItems = {
       </ListItemCard>
     );
   }),
-  [EditType.HStack]: React.forwardRef((props: ListItemProps, ref) => {
+  [EditType.HStack]: forwardRef((props: ListItemProps, ref) => {
     const { maxPage, content, setContent } = props;
     return (
       <ListItemCard ref={ref} {...props} menuText="HStack">
@@ -302,7 +308,7 @@ const ListItems = {
   }),
 };
 
-const UnknownListItem = React.forwardRef((props: ListItemProps, ref) => (
+const UnknownListItem = forwardRef((props: ListItemProps, ref) => (
   <ListItemCard ref={ref} {...props} menuText="Unknown" />
 ));
 
@@ -312,7 +318,7 @@ interface AddItemListItemProps {
 
 export const AddItemListItem = (props: AddItemListItemProps) => {
   const { onAdded } = props;
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
   return (
     <>
       <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
@@ -443,10 +449,10 @@ interface AddTemplateListItemProps {
 
 export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
   const { bookId, maxPage, onAdded } = props;
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [selectedTemplate, setSelectedTemplate] = React.useState(null);
-  const [options, setOptions] = React.useState(null);
-  const handleClose = React.useCallback(() => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [options, setOptions] = useState(null);
+  const handleClose = useCallback(() => {
     setSelectedTemplate(null);
     setOptions(null);
     setAnchorEl(null);
@@ -530,14 +536,12 @@ export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
 };
 
 interface ActionListItemProps extends ListItemProps {
-  ref: React.ForwardedRef<unknown>;
+  ref: ForwardedRef<unknown>;
   editType?: EditType;
 }
 
-export const ActionListItem = React.forwardRef(
-  (props: ActionListItemProps, ref) => {
-    const { editType, ...forwardProps } = props;
-    const Item = ListItems[editType] ?? UnknownListItem;
-    return <Item ref={ref} {...forwardProps} />;
-  },
-);
+export const ActionListItem = forwardRef((props: ActionListItemProps, ref) => {
+  const { editType, ...forwardProps } = props;
+  const Item = ListItems[editType] ?? UnknownListItem;
+  return <Item ref={ref} {...forwardProps} />;
+});

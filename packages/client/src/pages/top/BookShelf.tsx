@@ -1,6 +1,6 @@
-import useMediaQuery from '@client/hooks/useMediaQuery';
+import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { AppBar, Box, Tab, Tabs, useTheme } from '@mui/material';
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const TabItems = [
@@ -19,8 +19,9 @@ const BookShelf = () => {
   const location = useLocation();
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [tabIndex, setTabIndex] = React.useState(0);
-  React.useEffect(() => {
+  const [tabIndex, setTabIndex] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: location
+  useEffect(() => {
     const i = TabItems.findIndex(({ path }) => location.pathname === path);
     setTabIndex(Math.max(0, i));
   }, []);

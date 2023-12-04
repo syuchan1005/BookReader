@@ -10,7 +10,7 @@ import {
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
-import React from 'react';
+import { useCallback, useState } from 'react';
 
 interface DownloadBookDialogProps {
   open: boolean;
@@ -23,14 +23,12 @@ interface DownloadBookDialogProps {
 const DownloadBookDialog = (props: DownloadBookDialogProps) => {
   const { open, onClose, number, bookId, pages } = props;
 
-  const [downloadImages, setDownloadImages] = React.useState<boolean | number>(
-    false,
+  const [downloadImages, setDownloadImages] = useState<boolean | number>(false);
+  const [compressPercent, setCompressPercent] = useState<number | undefined>(
+    undefined,
   );
-  const [compressPercent, setCompressPercent] = React.useState<
-    number | undefined
-  >(undefined);
 
-  const onClickDownload = React.useCallback(() => {
+  const onClickDownload = useCallback(() => {
     setDownloadImages(0);
     const zip = new JSZip();
 

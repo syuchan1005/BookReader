@@ -18,7 +18,7 @@ import { red } from '@mui/material/colors';
 import { alpha } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { ChangeEvent, useCallback } from 'react';
+import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
@@ -105,6 +105,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const { onClickMenuIcon, searchText, searchMode, onChangeSearchText } = props;
 
   const { data } = useAvailableSearchModesQuery();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: onChangeSearchText
   const handleSearchModeChange = useCallback(
     (e) => {
       const selectedSearchMode = e.target.value;
@@ -117,6 +118,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     [searchText],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: searchMode
   const handleSearchText = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       onChangeSearchText?.(event.target.value, searchMode);
@@ -124,29 +126,30 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     [onChangeSearchText],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: searchMode
   const clearSearchText = useCallback(() => {
     onChangeSearchText?.('', searchMode);
   }, [onChangeSearchText]);
 
   const elevation = useAppBarScrollElevation();
 
-  const searchInputRef = React.useRef(null);
+  const searchInputRef = useRef(null);
   const [searchFilterPopoverAnchorEl, setSearchFilterPopoverAnchorEl] =
-    React.useState(null);
-  const handleSearchFilterClick = React.useCallback(() => {
+    useState(null);
+  const handleSearchFilterClick = useCallback(() => {
     setSearchFilterPopoverAnchorEl(searchInputRef.current);
   }, []);
 
   const { data: genreData } = useGenresQuery();
   // TODO: Update genres state in caller side
   const [genres, setGenres] = useRecoilState(genresState);
-  const handleGenresChange = React.useCallback(
+  const handleGenresChange = useCallback(
     (event) => {
       setGenres(event.target.value);
     },
     [setGenres],
   );
-  const handleDeleteGenre = React.useCallback(
+  const handleDeleteGenre = useCallback(
     (index) => {
       setGenres((currentGenres) => {
         const newGenres = [...currentGenres];
@@ -157,10 +160,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     [setGenres],
   );
 
-  const hasSearchFilter = React.useMemo(
-    () => genres.length > 0,
-    [genres.length],
-  );
+  const hasSearchFilter = useMemo(() => genres.length > 0, [genres.length]);
 
   return (
     <AppBar elevation={elevation} className={classes.appBar}>

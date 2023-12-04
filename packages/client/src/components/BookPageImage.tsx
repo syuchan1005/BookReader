@@ -1,6 +1,6 @@
 import { goToAuthPage } from '@client/auth';
 import { Remount } from '@client/components/Remount';
-import useDebounceValue from '@client/hooks/useDebounceValue';
+import { useDebounceValue } from '@client/hooks/useDebounceValue';
 import { Theme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -9,7 +9,14 @@ import {
   availableImageExtensions,
   defaultStoredImageExtension,
 } from '@syuchan1005/book-reader-common';
-import React, { CSSProperties } from 'react';
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 interface BookPageImageProps {
   bookId?: string;
@@ -99,22 +106,22 @@ const BookPageImage = (props: BookPageImageProps) => {
     sizeDebounceDelay = 0,
     skip = false,
   } = props;
-  const imageRef = React.useRef<HTMLImageElement>();
+  const imageRef = useRef<HTMLImageElement>();
 
   const argDebounceWidth = useDebounceValue(argWidth, sizeDebounceDelay);
   const argDebounceHeight = useDebounceValue(argHeight, sizeDebounceDelay);
 
-  const requestImageWidth = React.useMemo(
+  const requestImageWidth = useMemo(
     () => (argDebounceWidth < argDebounceHeight ? argDebounceWidth : undefined),
     [argDebounceWidth, argDebounceHeight],
   );
-  const requestImageHeight = React.useMemo(
+  const requestImageHeight = useMemo(
     () =>
       argDebounceWidth < argDebounceHeight ? undefined : argDebounceHeight,
     [argDebounceWidth, argDebounceHeight],
   );
 
-  const imageSourceSet = React.useMemo<SourceSet>(() => {
+  const imageSourceSet = useMemo<SourceSet>(() => {
     if (
       [bookId, pageIndex, bookPageCount].findIndex(
         (a) => a === null || a === undefined,
@@ -176,17 +183,18 @@ const BookPageImage = (props: BookPageImageProps) => {
     noSave,
   ]);
 
-  const [imageState, setImageState] = React.useState<ImageStateType>(
+  const [imageState, setImageState] = useState<ImageStateType>(
     ImageState.LOADING,
   );
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: imageState
+  useEffect(() => {
     if (!imageSourceSet.imgSrc && imageState !== ImageState.UNSET) {
       setImageState(ImageState.UNSET);
     } else if (imageState !== ImageState.LOADING) {
       setImageState(ImageState.LOADING);
     }
   }, [imageSourceSet]);
-  const alt = React.useMemo(() => {
+  const alt = useMemo(() => {
     switch (imageState) {
       case ImageState.LOADING:
         return `Loading ${argAlt}`;
@@ -201,9 +209,9 @@ const BookPageImage = (props: BookPageImageProps) => {
       }
     }
   }, [argAlt, imageState]);
-  const [isRetried, setRetried] = React.useState(false);
+  const [isRetried, setRetried] = useState(false);
 
-  const checkAuthenticate = React.useCallback(() => {
+  const checkAuthenticate = useCallback(() => {
     fetch('/auth').then((res) => {
       if (res.status === 401) {
         goToAuthPage();

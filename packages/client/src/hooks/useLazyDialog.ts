@@ -1,4 +1,4 @@
-import useDebounceValue from '@client/hooks/useDebounceValue';
+import { useDebounceValue } from '@client/hooks/useDebounceValue';
 import { useTheme } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -32,5 +32,3 @@ export const useLazyDialog = (
 
   return [state, componentVisibleState, setTrue, setFalse, toggle, setState];
 };
-
-export default useLazyDialog;

@@ -2,13 +2,13 @@ import { useBooksLazyQuery } from '@syuchan1005/book-reader-graphql';
 
 import Book from '@client/components/Book';
 import { pageAspectRatio } from '@client/components/BookPageImage';
-import useMediaQuery from '@client/hooks/useMediaQuery';
+import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
 import db, { BookRead } from '@client/indexedDb/Database';
 import { Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -36,14 +36,14 @@ const History = () => {
   const theme = useTheme();
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [historyBooks, setHistoryBooks] = React.useState<BookRead[]>([]);
-  const [historyBookLoading, setHistoryBookLoading] = React.useState(false);
+  const [historyBooks, setHistoryBooks] = useState<BookRead[]>([]);
+  const [historyBookLoading, setHistoryBookLoading] = useState(false);
 
   const [getBooks, { loading, data, fetchMore }] = useBooksLazyQuery({
     fetchPolicy: 'network-only',
   });
   const mappedBooks: { [bookId: string]: (typeof data.books)[number] } =
-    React.useMemo(
+    useMemo(
       () =>
         (data?.books ?? []).reduce((map, book) => {
           map[book.id] = book;
@@ -52,7 +52,7 @@ const History = () => {
       [data?.books],
     );
 
-  const getHistoryBooks = React.useCallback(() => {
+  const getHistoryBooks = useCallback(() => {
     let after;
     if (historyBooks.length !== 0) {
       after = historyBooks[historyBooks.length - 1].updatedAt;
@@ -86,7 +86,8 @@ const History = () => {
       });
   }, [fetchMore, getBooks, historyBooks]);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: getHistoryBooks
+  useEffect(() => {
     getHistoryBooks();
   }, []);
 

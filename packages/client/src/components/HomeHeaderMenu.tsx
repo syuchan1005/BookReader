@@ -11,7 +11,6 @@ import {
   useTheme,
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 
@@ -32,6 +31,7 @@ import {
   showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
+import { useCallback, useState } from 'react';
 
 interface HeaderMenuProps {
   anchorEl: Element;
@@ -52,14 +52,14 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   );
   const theme = useTheme();
 
-  const [sortAnchorEl, setSortAnchorEl] = React.useState(null);
-  const [debugAnchorEl, setDebugAnchorEl] = React.useState(null);
-  const [openBookCounts, setOpenBookCounts] = React.useState(false);
-  const [openCacheControl, setOpenCacheControl] = React.useState(null);
-  const [openIndexedDBMenu, setOpenIndexedDBMenu] = React.useState(null);
+  const [sortAnchorEl, setSortAnchorEl] = useState(null);
+  const [debugAnchorEl, setDebugAnchorEl] = useState(null);
+  const [openBookCounts, setOpenBookCounts] = useState(false);
+  const [openCacheControl, setOpenCacheControl] = useState(null);
+  const [openIndexedDBMenu, setOpenIndexedDBMenu] = useState(null);
 
-  const [colorAnchorEl, setColorAnchorEl] = React.useState(null);
-  const [colorType, setColorType] = React.useState<'primary' | 'secondary'>(
+  const [colorAnchorEl, setColorAnchorEl] = useState(null);
+  const [colorType, setColorType] = useState<'primary' | 'secondary'>(
     undefined,
   );
 
@@ -75,7 +75,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     });
 
   /* i => [apollo, storage, all] */
-  const purgeCache = React.useCallback((i) => {
+  const purgeCache = useCallback((i) => {
     const isApollo = i === 0 || i === 2;
     const isStorage = i === 1 || i === 2;
     const wb = isStorage ? workbox : undefined;
@@ -90,8 +90,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     ]).finally(() => window.location.reload());
   }, []);
 
-  const [vConsole, setVConsole] = React.useState(undefined);
-  const handleShowVConsole = React.useCallback(() => {
+  const [vConsole, setVConsole] = useState(undefined);
+  const handleShowVConsole = useCallback(() => {
     if (vConsole === undefined) {
       import('vconsole').then(({ default: VConsole }) => {
         const console = new VConsole();

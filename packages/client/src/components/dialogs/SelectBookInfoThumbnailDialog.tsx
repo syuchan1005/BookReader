@@ -8,7 +8,6 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import React from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -19,6 +18,7 @@ import {
   useBookInfoQuery,
   useEditBookInfoThumbnailMutation,
 } from '@syuchan1005/book-reader-graphql';
+import { useMemo } from 'react';
 
 interface SelectThumbnailDialogProps {
   open: boolean;
@@ -66,7 +66,7 @@ const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
       },
     });
 
-  const loading = React.useMemo(
+  const loading = useMemo(
     () => infoLoading || changeLoading,
     [infoLoading, changeLoading],
   );
@@ -78,7 +78,7 @@ const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
 
   const theme = useTheme();
   const fullscreen = useMediaQuery(theme.breakpoints.down('md'));
-  const visibleMargin = React.useMemo(
+  const visibleMargin = useMemo(
     () => `0px 0px ${theme.spacing(3)} 0px`,
     [theme],
   );

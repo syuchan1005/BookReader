@@ -1,8 +1,6 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { StyledEngineProvider, createTheme } from '@mui/material/styles';
 import { Decorator } from '@storybook/react';
-// @ts-ignore
-import React from 'react';
 import { RecoilRoot } from 'recoil';
 
 export const parameters = {

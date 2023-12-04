@@ -1,6 +1,6 @@
 import { TextField } from '@mui/material';
 import { IntRange } from '@syuchan1005/book-reader-graphql';
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface IntRangeInputFieldProps {
   maxPage: number;
@@ -37,8 +37,9 @@ const parseIntRange = (pages: string, maxPage: number): IntRange | string => {
 
 const IntRangeInputField = (props: IntRangeInputFieldProps) => {
   const { maxPage, onChange, initValue, ...forwardProps } = props;
-  const [inputText, setInputText] = React.useState('');
-  const errorText = React.useMemo(() => {
+  const [inputText, setInputText] = useState('');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: maxPage
+  const errorText = useMemo(() => {
     if (inputText === '') {
       return undefined;
     }
@@ -48,14 +49,16 @@ const IntRangeInputField = (props: IntRangeInputFieldProps) => {
     }
     return undefined;
   }, [inputText]);
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: inputText, maxPage, onChange
+  useEffect(() => {
     const intRange = parseIntRange(inputText, maxPage);
     if (typeof intRange !== 'string' && onChange && initValue !== intRange) {
       onChange(intRange);
     }
   }, [inputText]);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initValue, inputText
+  useEffect(() => {
     if (!initValue || inputText) return;
     const text = initValue
       .map((e) => {

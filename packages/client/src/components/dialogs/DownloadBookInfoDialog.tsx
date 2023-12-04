@@ -9,12 +9,12 @@ import {
 } from '@mui/material';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
-import React from 'react';
 
 import { createBookPageUrl } from '@client/components/BookPageImage';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql';
+import { useCallback, useMemo, useState } from 'react';
 
 interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   open: boolean;
@@ -24,11 +24,11 @@ interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
 const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
   const { open, onClose, id } = props;
 
-  const [downloadBooks, setDownloadBooks] = React.useState<number>(undefined);
-  const [downloadImages, setDownloadImages] = React.useState<number>(undefined);
-  const [compressPercent, setCompressPercent] = React.useState<
-    number | undefined
-  >(undefined);
+  const [downloadBooks, setDownloadBooks] = useState<number>(undefined);
+  const [downloadImages, setDownloadImages] = useState<number>(undefined);
+  const [compressPercent, setCompressPercent] = useState<number | undefined>(
+    undefined,
+  );
 
   const { data, loading: booksLoading } = useDownloadBookInfosQuery({
     variables: {
@@ -36,14 +36,14 @@ const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
     },
   });
 
-  const loading = React.useMemo(
+  const loading = useMemo(
     () =>
       booksLoading ||
       (downloadImages !== undefined && downloadBooks !== undefined),
     [downloadImages, downloadBooks, booksLoading],
   );
 
-  const onClickDownload = React.useCallback(async () => {
+  const onClickDownload = useCallback(async () => {
     setDownloadBooks(0);
     setDownloadImages(0);
     const zip = new JSZip();

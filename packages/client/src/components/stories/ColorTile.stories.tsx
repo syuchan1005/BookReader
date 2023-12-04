@@ -1,7 +1,6 @@
 import { ListItem } from '@mui/material';
 import * as colors from '@mui/material/colors';
 import { ComponentMeta } from '@storybook/react';
-import React from 'react';
 
 import ColorTile from '../ColorTile';
 

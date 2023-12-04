@@ -1,9 +1,10 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 
-const useDebounceValue = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = React.useState(value);
+export const useDebounceValue = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: delay
+  useEffect(() => {
     if (delay <= 0) {
       setDebouncedValue(value);
       return undefined;
@@ -20,5 +21,3 @@ const useDebounceValue = (value, delay) => {
 
   return debouncedValue;
 };
-
-export default useDebounceValue;

@@ -8,7 +8,7 @@ import {
   TextField,
 } from '@mui/material';
 import 'cropperjs/dist/cropper.css';
-import React from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Cropper } from 'react-cropper';
 
 interface CropImageDialogProps {
@@ -20,14 +20,14 @@ interface CropImageDialogProps {
 
 const CropImageDialog = (props: CropImageDialogProps) => {
   const { open, bookId, maxPage, onClose } = props;
-  const [pageIndex, setPageIndex] = React.useState(1);
-  const url = React.useMemo(
+  const [pageIndex, setPageIndex] = useState(1);
+  const url = useMemo(
     () => createBookPageUrl(bookId, pageIndex - 1, maxPage),
     [bookId, pageIndex, maxPage],
   );
-  const cropperRef = React.useRef<HTMLImageElement>(null);
+  const cropperRef = useRef<HTMLImageElement>(null);
 
-  const onFinishClicked = React.useCallback(() => {
+  const onFinishClicked = useCallback(() => {
     // @ts-ignore
     const cropper = cropperRef?.current?.cropper;
     if (!cropper) return;

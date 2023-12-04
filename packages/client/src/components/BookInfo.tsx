@@ -12,7 +12,15 @@ import {
 import { yellow } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { useRef } from 'react';
+import {
+  CSSProperties,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import {
@@ -28,20 +36,20 @@ import db from '@client/indexedDb/Database';
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import useBooleanState from '@client/hooks/useBooleanState';
-import useLazyDialog from '@client/hooks/useLazyDialog';
-import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import useVisible from '@client/hooks/useVisible';
+import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useLazyDialog } from '@client/hooks/useLazyDialog';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
+import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 
-const DownloadDialog = React.lazy(
+const DownloadDialog = lazy(
   () => import('@client/components/dialogs/DownloadBookInfoDialog'),
 );
 
 interface BookInfoProps
   extends Pick<QLBookInfo, 'id' | 'name' | 'thumbnail' | 'count' | 'genres'> {
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   thumbnailSize: number;
   showName?: boolean;
   updatedAt?: string;
@@ -155,8 +163,8 @@ const useStyles = makeStyles((theme: Theme) =>
 const useFavorite = (
   infoId: string,
 ): [value: boolean, toggle: () => Promise<unknown>] => {
-  const [isFavorite, setFavorite] = React.useState(false);
-  const toggleFavorite = React.useCallback(() => {
+  const [isFavorite, setFavorite] = useState(false);
+  const toggleFavorite = useCallback(() => {
     let p: Promise<unknown>;
     if (isFavorite) {
       p = db.bookInfoFavorite.delete(infoId);
@@ -172,7 +180,7 @@ const useFavorite = (
     return p;
   }, [infoId, isFavorite]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     db.bookInfoFavorite
       .get(infoId)
       .then((r) => setFavorite(!!r))
@@ -207,7 +215,7 @@ const BookInfo = (props: BookInfoProps) => {
     isReading,
   } = props;
   const isVisible = useVisible(ref, false, visibleMargin);
-  const [keepVisible, setKeepVisible] = React.useState(false);
+  const [keepVisible, setKeepVisible] = useState(false);
 
   const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
   const [
@@ -224,14 +232,14 @@ const BookInfo = (props: BookInfoProps) => {
     ,
     setShowEditDialog,
   ] = useBooleanState(false);
-  const [editContent, setEditContent] = React.useState({
+  const [editContent, setEditContent] = useState({
     name,
     genres: genres.map((g) => g.name),
   });
-  const [selectDialog, setSelectDialog] = React.useState<string | undefined>(
+  const [selectDialog, setSelectDialog] = useState<string | undefined>(
     undefined,
   );
-  const hideSelectDialog = React.useCallback(() => {
+  const hideSelectDialog = useCallback(() => {
     setSelectDialog(undefined);
   }, []);
   const [
@@ -241,7 +249,8 @@ const BookInfo = (props: BookInfoProps) => {
     hideDownloadDialog,
   ] = useLazyDialog(false);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: index, keepVisible
+  useEffect(() => {
     onVisible(index, isVisible, isVisible && !keepVisible);
     if (isVisible) {
       setKeepVisible(true);
@@ -274,46 +283,46 @@ const BookInfo = (props: BookInfoProps) => {
     },
   });
 
-  const clickEditBookInfo = React.useCallback(() => {
+  const clickEditBookInfo = useCallback(() => {
     resetMenuAnchor();
     showEditDialog();
   }, [showEditDialog, resetMenuAnchor]);
 
-  const clickDeleteBookInfo = React.useCallback(() => {
+  const clickDeleteBookInfo = useCallback(() => {
     resetMenuAnchor();
     showDeleteDialog();
   }, [showDeleteDialog, resetMenuAnchor]);
 
-  const clickSelectThumbnailBookInfo = React.useCallback(() => {
+  const clickSelectThumbnailBookInfo = useCallback(() => {
     resetMenuAnchor();
     setSelectDialog(infoId);
   }, [infoId, resetMenuAnchor]);
 
-  const clickDownloadBook = React.useCallback(() => {
+  const clickDownloadBook = useCallback(() => {
     resetMenuAnchor();
     showDownloadDialog();
   }, [resetMenuAnchor, showDownloadDialog]);
 
-  const onChangeEvent = React.useCallback((k, e) => {
+  const onChangeEvent = useCallback((k, e) => {
     setEditContent((c) => ({
       ...c,
       [k]: e,
     }));
   }, []);
 
-  const resetEditContentName = React.useCallback(() => {
+  const resetEditContentName = useCallback(() => {
     setEditContent((c) => ({
       ...c,
       name,
     }));
   }, [name]);
 
-  const hasInvisibleGenre = React.useMemo(
+  const hasInvisibleGenre = useMemo(
     () => genres.some((g) => g.invisible),
     [genres],
   );
   const [isFavorite, toggleFavorite] = useFavorite(infoId);
-  const handleFavoriteClick = React.useCallback(() => {
+  const handleFavoriteClick = useCallback(() => {
     resetMenuAnchor();
     toggleFavorite();
   }, [resetMenuAnchor, toggleFavorite]);

@@ -4,7 +4,7 @@ import {
   Icon,
   Paper,
 } from '@mui/material';
-import React, { lazy } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const TabItems = [
@@ -22,12 +22,12 @@ const TabItems = [
 
 const Top = () => {
   const location = useLocation();
-  const [tabIndex, setTabIndex] = React.useState(0);
+  const [tabIndex, setTabIndex] = useState(0);
 
-  React.useEffect(() => {
-    const pathname = location.pathname;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: TODO: location
+  useEffect(() => {
     const i = TabItems.findIndex(
-      ({ path }) => path !== '/' && pathname.startsWith(path),
+      ({ path }) => path !== '/' && location.pathname.startsWith(path),
     );
     setTabIndex(Math.max(0, i));
   }, []);

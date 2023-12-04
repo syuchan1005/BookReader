@@ -12,9 +12,6 @@
       "recommended": true,
       "performance": {
         "noDelete": "off"
-      },
-      "correctness": {
-        "useExhaustiveDependencies": "off"
       }
     }
   },

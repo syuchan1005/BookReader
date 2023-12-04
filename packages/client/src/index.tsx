@@ -14,14 +14,15 @@ import { workbox } from './registerServiceWorker';
 // Disabled. not work properly when use with react-router-dom v6.
 // biome-ignore lint/correctness/noConstantCondition: read above
 if (process.env.NODE_ENV !== 'production' && false) {
-  import('@welldone-software/why-did-you-render')
-    // @ts-ignore
-    .then(({ default: whyDidYouRender }) =>
+  import('@welldone-software/why-did-you-render').then(
+    (
+      { default: whyDidYouRender }, // @ts-ignore
+    ) =>
       whyDidYouRender(React, {
         trackAllPureComponents: true,
         exclude: [/Remount/],
       }),
-    );
+  );
 }
 
 (async () => {

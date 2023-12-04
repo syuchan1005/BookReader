@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 
 const getOS = () => {
   const { userAgent, platform } = window.navigator;
@@ -27,17 +27,16 @@ const getOS = () => {
   return undefined;
 };
 
-const useOS = () => {
-  const [os, setOS] = React.useState<
+export const useOS = () => {
+  const [os, setOS] = useState<
     undefined | 'macOS' | 'Windows' | 'Linux' | 'iOS' | 'Android'
   >(undefined);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: os
+  useEffect(() => {
     const preOS = getOS();
     if (os !== preOS) setOS(preOS);
   }, []);
 
   return os;
 };
-
-export default useOS;

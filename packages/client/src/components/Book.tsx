@@ -1,4 +1,13 @@
-import React, { TouchEvent as ReactTouchEvent } from 'react';
+import {
+  MouseEvent,
+  ReactNode,
+  TouchEvent as ReactTouchEvent,
+  lazy,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Card,
@@ -24,15 +33,15 @@ import {
 
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
-import useBooleanState from '@client/hooks/useBooleanState';
-import useLazyDialog from '@client/hooks/useLazyDialog';
+import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useLazyDialog } from '@client/hooks/useLazyDialog';
 import { useLongTap } from '@client/hooks/useLongTap';
-import useMenuAnchor from '@client/hooks/useMenuAnchor';
-import useVisible from '@client/hooks/useVisible';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
+import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
-const DownloadDialog = React.lazy(
+const DownloadDialog = lazy(
   () => import('@client/components/dialogs/DownloadBookDialog'),
 );
 
@@ -44,7 +53,7 @@ interface BookProps
   name: string;
   updatedAt?: string;
   reading?: boolean;
-  onClick?: (event: React.MouseEvent, bookId: string) => void;
+  onClick?: (event: MouseEvent, bookId: string) => void;
   onDeleted?: (bookId: string, pages: number) => void;
   onEdit?: () => void;
 
@@ -55,12 +64,9 @@ interface BookProps
 
   overlayClassName?: string;
   disableRipple?: boolean;
-  onLongPress?: (
-    event: React.MouseEvent | ReactTouchEvent,
-    bookId: string,
-  ) => void;
+  onLongPress?: (event: MouseEvent | ReactTouchEvent, bookId: string) => void;
 
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -121,7 +127,7 @@ const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 const Book = (props: BookProps) => {
   const classes = useStyles(props);
   const location = useLocation();
-  const ref = React.useRef();
+  const ref = useRef();
   const {
     infoId,
     thumbnailSize,
@@ -144,7 +150,7 @@ const Book = (props: BookProps) => {
     onLongPress,
   } = props;
   const isVisible = useVisible(ref, true, visibleMargin);
-  React.useEffect(() => {
+  useEffect(() => {
     if (isVisible && onVisible) {
       onVisible();
     }
@@ -165,13 +171,13 @@ const Book = (props: BookProps) => {
     ,
     setShowEditDialog,
   ] = useBooleanState(false);
-  const [editContent, setEditContent] = React.useState({
+  const [editContent, setEditContent] = useState({
     number,
   });
-  const [selectDialog, setSelectDialog] = React.useState<string | undefined>(
+  const [selectDialog, setSelectDialog] = useState<string | undefined>(
     undefined,
   );
-  const hideSelectDialog = React.useCallback(() => {
+  const hideSelectDialog = useCallback(() => {
     setSelectDialog(undefined);
   }, []);
   const [
@@ -205,27 +211,27 @@ const Book = (props: BookProps) => {
     },
   });
 
-  const clickEditBook = React.useCallback(() => {
+  const clickEditBook = useCallback(() => {
     resetMenuAnchor();
     showEditDialog();
   }, [resetMenuAnchor, showEditDialog]);
 
-  const clickDeleteBook = React.useCallback(() => {
+  const clickDeleteBook = useCallback(() => {
     resetMenuAnchor();
     showDeleteDialog();
   }, [resetMenuAnchor, showDeleteDialog]);
 
-  const clickSelectThumbnailBook = React.useCallback(() => {
+  const clickSelectThumbnailBook = useCallback(() => {
     resetMenuAnchor();
     setSelectDialog(bookId);
   }, [bookId, resetMenuAnchor]);
 
-  const clickDownloadBook = React.useCallback(() => {
+  const clickDownloadBook = useCallback(() => {
     resetMenuAnchor();
     showDownloadDialog();
   }, [resetMenuAnchor, showDownloadDialog]);
 
-  const handleEditContentChange = React.useCallback(
+  const handleEditContentChange = useCallback(
     (k, e) =>
       setEditContent((c) => ({
         ...c,
@@ -234,7 +240,7 @@ const Book = (props: BookProps) => {
     [],
   );
 
-  const resetEditContentNumber = React.useCallback(
+  const resetEditContentNumber = useCallback(
     () =>
       setEditContent((c) => ({
         ...c,
@@ -243,8 +249,8 @@ const Book = (props: BookProps) => {
     [number],
   );
 
-  const handleBookClicked = React.useCallback(
-    (event: React.MouseEvent) => {
+  const handleBookClicked = useCallback(
+    (event: MouseEvent) => {
       if (event.shiftKey && onLongPress) {
         onLongPress(event, bookId);
       } else if (onClick) {
@@ -254,7 +260,7 @@ const Book = (props: BookProps) => {
     [onLongPress, onClick, bookId],
   );
 
-  const handleLongPressed = React.useCallback(
+  const handleLongPressed = useCallback(
     (event: ReactTouchEvent) => {
       if (onLongPress) {
         onLongPress(event, bookId);

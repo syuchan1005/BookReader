@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-const useMenuAnchor = () => {
+export const useMenuAnchor = () => {
   const [anchor, setAnchor] = useState(null);
   const setAnchorFromEvent = useCallback((e: MouseEvent) => {
     setAnchor(e.currentTarget);
@@ -10,5 +10,3 @@ const useMenuAnchor = () => {
   }, []);
   return [anchor, setAnchorFromEvent, resetAnchor];
 };
-
-export default useMenuAnchor;

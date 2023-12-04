@@ -1,7 +1,6 @@
 import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
 import {
@@ -12,16 +11,16 @@ import {
 
 import { commonTheme } from '@client/App';
 import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
-import useDebounceValue from '@client/hooks/useDebounceValue';
+import { useDebounceValue } from '@client/hooks/useDebounceValue';
 
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
-import useBooleanState from '@client/hooks/useBooleanState';
-import useMediaQuery from '@client/hooks/useMediaQuery';
-import useStateWithReset from '@client/hooks/useStateWithReset';
+import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useMediaQuery } from '@client/hooks/useMediaQuery';
+import { useStateWithReset } from '@client/hooks/useStateWithReset';
 import { useTitle } from '@client/hooks/useTitle';
 import db from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
@@ -32,10 +31,18 @@ import {
   showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
+import {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 interface HomeProps {
-  children?: React.ReactElement;
+  children?: ReactElement;
 }
 
 const bottomNavigationHeight = 7;
@@ -115,16 +122,13 @@ const Home = (props: HomeProps) => {
   const [lastSeenPosition, setLastSeenPosition] = useRecoilState(
     homeLastSeenBookPosition,
   );
-  const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] =
-    React.useState(false);
+  const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] = useState(false);
 
-  const lastSeenPositionIndex = React.useMemo(
-    () => lastSeenPosition?.index ?? 0,
-    [],
-  );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lastSeenPosition
+  const lastSeenPositionIndex = useMemo(() => lastSeenPosition?.index ?? 0, []);
 
-  const gridRef = React.useRef<HTMLDivElement>();
-  const visibleMargin = React.useMemo(
+  const gridRef = useRef<HTMLDivElement>();
+  const visibleMargin = useMemo(
     () => `0px 0px ${theme.spacing(3)} 0px`,
     [theme],
   );
@@ -134,11 +138,8 @@ const Home = (props: HomeProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const searchText = React.useMemo(
-    () => searchParams.get('search'),
-    [searchParams],
-  );
-  const setSearchText = React.useCallback(
+  const searchText = useMemo(() => searchParams.get('search'), [searchParams]);
+  const setSearchText = useCallback(
     (text?: string, type: 'push' | 'replace' = 'replace') => {
       const urlSearchParams = new URLSearchParams(searchParams);
       if (text) {
@@ -155,7 +156,7 @@ const Home = (props: HomeProps) => {
   );
   const debounceSearch = useDebounceValue(searchText, 800);
   const [searchMode, setSearchMode] = useRecoilState(searchModeState);
-  const handleSearchText = React.useCallback(
+  const handleSearchText = useCallback(
     (text: string, mode: SearchMode) => {
       if (!text) {
         setSearchText(undefined);
@@ -169,12 +170,12 @@ const Home = (props: HomeProps) => {
     [searchText, setSearchText, setSearchMode],
   );
 
-  const [isSkipQuery, setSkipQuery] = React.useState(true);
-  React.useEffect(() => {
+  const [isSkipQuery, setSkipQuery] = useState(true);
+  useEffect(() => {
     setSkipQuery(false);
   }, []);
 
-  const [infos, setInfos] = React.useState<HomeBookInfoFragment[]>([]);
+  const [infos, setInfos] = useState<HomeBookInfoFragment[]>([]);
   const { refetch, loading, error, data, fetchMore } = useRelayBookInfosQuery({
     skip: isSkipQuery,
     variables: {
@@ -191,7 +192,8 @@ const Home = (props: HomeProps) => {
     },
   });
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: infos
+  useEffect(() => {
     if (!lastSeenPosition) {
       setLastSeenPositionLoaded(true);
       return;
@@ -210,7 +212,7 @@ const Home = (props: HomeProps) => {
     }
   }, [loading, lastSeenPosition, isLastSeenPositionLoaded, infos]);
 
-  const handleDeletedBookInfo = React.useCallback((infoId: string, books) => {
+  const handleDeletedBookInfo = useCallback((infoId: string, books) => {
     setInfos((currentInfos) => currentInfos.filter((i) => i.id !== infoId));
     // noinspection JSIgnoredPromiseFromCall
     db.read.bulkDelete(books.map((b) => b.id));
@@ -225,7 +227,7 @@ const Home = (props: HomeProps) => {
     }
   }, []);
 
-  const handleEditBookInfo = React.useCallback(
+  const handleEditBookInfo = useCallback(
     (homeBookInfo: HomeBookInfoFragment) => {
       setInfos((currentInfos) => [
         homeBookInfo,
@@ -235,7 +237,7 @@ const Home = (props: HomeProps) => {
     [],
   );
 
-  const handleLoadMore = React.useCallback(
+  const handleLoadMore = useCallback(
     () =>
       fetchMore({
         variables: {
@@ -245,7 +247,7 @@ const Home = (props: HomeProps) => {
     [data, fetchMore],
   );
 
-  const refetchAll = React.useCallback(
+  const refetchAll = useCallback(
     () =>
       refetch({
         first: infos.length || defaultLoadBookInfoCount,
@@ -255,7 +257,7 @@ const Home = (props: HomeProps) => {
 
   const downXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleVisible = React.useCallback(
+  const handleVisible = useCallback(
     (i: number, isVisible: boolean, isFirstVisible: boolean) => {
       if (!isVisible) {
         return;
@@ -298,7 +300,7 @@ const Home = (props: HomeProps) => {
     ],
   );
 
-  const openInfoPage = React.useCallback(
+  const openInfoPage = useCallback(
     ({ id }: HomeBookInfoFragment) =>
       navigate(`/info/${id}?add`, {
         state: {
@@ -308,8 +310,8 @@ const Home = (props: HomeProps) => {
     [navigate, location.pathname],
   );
 
-  const [readingInfoId, setReadingInfoId] = React.useState('');
-  React.useEffect(() => {
+  const [readingInfoId, setReadingInfoId] = useState('');
+  useEffect(() => {
     let cancelled = false;
     db.read
       .getAll(1, {

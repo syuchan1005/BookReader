@@ -7,6 +7,7 @@ export const useVisible = (
 ) => {
   const [isIntersecting, setIntersecting] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isIntersecting, keepVisible
   useEffect(() => {
     if (!ref.current) {
       return undefined;
@@ -34,5 +35,3 @@ export const useVisible = (
 
   return isIntersecting;
 };
-
-export default useVisible;

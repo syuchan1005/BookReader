@@ -1,7 +1,6 @@
 import { useTheme } from '@mui/material';
 import * as colors from '@mui/material/colors';
-import React from 'react';
-import useTestId from '../hooks/useTestId';
+import { useTestId } from '../hooks/useTestId';
 
 interface ColorTileProps {
   color: string;

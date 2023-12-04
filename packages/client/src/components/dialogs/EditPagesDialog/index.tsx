@@ -10,13 +10,13 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import React from 'react';
 import { List as MovableList, arrayMove } from 'react-movable';
 
 import {
   useBulkEditPageProgressSubscription,
   useBulkEditPagesMutation,
 } from '@syuchan1005/book-reader-graphql';
+import { useCallback, useState } from 'react';
 import {
   ActionListItem,
   AddItemListItem,
@@ -35,12 +35,10 @@ interface EditPagesDialogProps {
 
 const EditPagesDialog = (props: EditPagesDialogProps) => {
   const { open, onClose, maxPage, bookId, onSuccess } = props;
-  const [actions, setActions] = React.useState<(EditTypeContent | undefined)[]>(
-    [],
-  );
-  const [subscriptionId, setSubscriptionId] = React.useState<string>(undefined);
+  const [actions, setActions] = useState<(EditTypeContent | undefined)[]>([]);
+  const [subscriptionId, setSubscriptionId] = useState<string>(undefined);
 
-  const handleDeleteAction = React.useCallback((index: number) => {
+  const handleDeleteAction = useCallback((index: number) => {
     setActions((a) => {
       const items = Array.from(a);
       items.splice(index, 1);
@@ -48,7 +46,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     });
   }, []);
 
-  const setContentValue = React.useCallback((actionIndex, key, c) => {
+  const setContentValue = useCallback((actionIndex, key, c) => {
     setActions((a) => {
       const items = Array.from(a);
       items[actionIndex].content[key] = c;
@@ -65,7 +63,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     },
   });
 
-  const handleEdit = React.useCallback(() => {
+  const handleEdit = useCallback(() => {
     setSubscriptionId(bookId);
     doBulkEditPages({
       variables: {

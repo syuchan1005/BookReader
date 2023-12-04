@@ -19,7 +19,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';

@@ -1,5 +1,14 @@
 import { Theme } from '@mui/material';
-import React, { CSSProperties } from 'react';
+import {
+  CSSProperties,
+  ReactElement,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -25,10 +34,10 @@ import BookPageImage from '@client/components/BookPageImage';
 import BookPageOverlay from '@client/components/BookPageOverlay';
 import { Remount } from '@client/components/Remount';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
-import useBooleanState from '@client/hooks/useBooleanState';
-import useDebounceValue from '@client/hooks/useDebounceValue';
-import useLazyDialog from '@client/hooks/useLazyDialog';
-import usePrevNextBook from '@client/hooks/usePrevNextBook';
+import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useDebounceValue } from '@client/hooks/useDebounceValue';
+import { useLazyDialog } from '@client/hooks/useLazyDialog';
+import { usePrevNextBook } from '@client/hooks/usePrevNextBook';
 import { useTitle } from '@client/hooks/useTitle';
 import db from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
@@ -40,12 +49,12 @@ import {
   showOriginalImageState,
 } from '@client/store/atoms';
 
-const EditPagesDialog = React.lazy(
+const EditPagesDialog = lazy(
   () => import('@client/components/dialogs/EditPagesDialog'),
 );
 
 interface BookProps {
-  children?: React.ReactElement;
+  children?: ReactElement;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -122,10 +131,11 @@ const useDatabasePage = (
   page: number,
   setPage: (page: number, infoId: string) => Promise<void>,
 ] => {
-  const [loading, setLoading] = React.useState(true);
-  const [page, updatePageState] = React.useState(defaultPage);
+  const [loading, setLoading] = useState(true);
+  const [page, updatePageState] = useState(defaultPage);
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: defaultPage
+  useEffect(() => {
     setLoading(true);
     db.read.get(bookId).then((read) => {
       if (read) {
@@ -137,7 +147,7 @@ const useDatabasePage = (
     });
   }, [bookId]);
 
-  const setPage = React.useCallback(
+  const setPage = useCallback(
     (p: number, infoId: string): Promise<void> => {
       if (loading) {
         return Promise.reject();
@@ -226,10 +236,11 @@ const Book = (props: BookProps) => {
   const setAlertData = useSetRecoilState(alertDataState);
   const { id: bookId } = useParams();
 
-  const [page, updatePage] = React.useState(0);
+  const [page, updatePage] = useState(0);
   const [dbLoading, dbPage, setDbPage] = useDatabasePage(bookId);
-  const [isPageSet, setPageSet] = React.useState(false);
-  React.useEffect(() => {
+  const [isPageSet, setPageSet] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: dbPage
+  useEffect(() => {
     if (dbLoading) {
       return;
     }
@@ -256,10 +267,11 @@ const Book = (props: BookProps) => {
   ] = useLazyDialog(false);
   const [showAppBar, setShowAppBar, setHideAppBar, toggleAppBar] =
     useBooleanState(false);
-  const [pageStyleKey, setPageStyle] = React.useState<PageStyles>('SinglePage');
+  const [pageStyleKey, setPageStyle] = useState<PageStyles>('SinglePage');
   const { slidesPerView, normalizeCount } = PageStyle[pageStyleKey];
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refresh page
+  useEffect(() => {
     updatePage(0);
     setPageSet(false);
   }, [bookId]);
@@ -281,13 +293,14 @@ const Book = (props: BookProps) => {
     },
   });
   useTitle(data ? `${data.book.info.name} No.${data.book.number}` : '');
-  const maxPage = React.useMemo(() => (data ? data.book.pages : 0), [data]);
+  const maxPage = useMemo(() => (data ? data.book.pages : 0), [data]);
   const [prevBook, nextBook] = usePrevNextBook(
     data ? data.book.info.id : undefined,
     bookId,
   );
 
-  React.useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: data, isPageSet, searchParams, setSearchParams, nextBook, setDbPage, maxPage, location
+  useEffect(() => {
     if (page >= maxPage) {
       if (nextBook && data) {
         openBook(data.book.info.id, nextBook);
@@ -308,8 +321,8 @@ const Book = (props: BookProps) => {
     }
   }, [page, setAlertData]);
 
-  const [pageUpdateRequest, setPageUpdateRequest] = React.useState(undefined);
-  const setPage = React.useCallback(
+  const [pageUpdateRequest, setPageUpdateRequest] = useState(undefined);
+  const setPage = useCallback(
     (s, time = 150) => {
       let validatedPage = Math.max(s, 0);
       if (maxPage > 0) {
@@ -326,17 +339,17 @@ const Book = (props: BookProps) => {
     [maxPage, normalizeCount, nextBook],
   );
 
-  const increment = React.useCallback(() => {
+  const increment = useCallback(() => {
     setPage(page + slidesPerView);
     setHideAppBar();
   }, [page, setPage, setHideAppBar, slidesPerView]);
 
-  const decrement = React.useCallback(() => {
+  const decrement = useCallback(() => {
     setPage(page - slidesPerView);
     setHideAppBar();
   }, [page, setHideAppBar, setPage, slidesPerView]);
 
-  const effectBackGround = React.useMemo(() => {
+  const effectBackGround = useMemo(() => {
     switch (pageImageEffect?.type) {
       case 'dark':
         return {
@@ -351,7 +364,7 @@ const Book = (props: BookProps) => {
     }
   }, [pageImageEffect]);
 
-  const clickPage = React.useCallback(
+  const clickPage = useCallback(
     (event) => {
       if (openEditDialog) return;
       const percentX = event.nativeEvent.x / windowSize.width;
@@ -388,7 +401,7 @@ const Book = (props: BookProps) => {
     ],
   );
 
-  const openBook = React.useCallback(
+  const openBook = useCallback(
     (infoId: string, targetBookId: string) => {
       navigate(`/book/${targetBookId}`, {
         state: {
@@ -401,7 +414,7 @@ const Book = (props: BookProps) => {
     [navigate, location],
   );
 
-  const imageSize = React.useMemo(() => {
+  const imageSize = useMemo(() => {
     if (showOriginalImage) {
       return {
         width: undefined,
@@ -411,32 +424,30 @@ const Book = (props: BookProps) => {
     return windowSize;
   }, [windowSize, showOriginalImage]);
 
-  const goNextBook = React.useMemo(() => {
+  const goNextBook = useMemo(() => {
     if (nextBook && data) {
       return () => openBook(data.book.info.id, nextBook);
     }
     return undefined;
   }, [data, openBook, nextBook]);
 
-  const goPreviousBook = React.useMemo(() => {
+  const goPreviousBook = useMemo(() => {
     if (prevBook && data) {
       return () => openBook(data.book.info.id, prevBook);
     }
     return undefined;
   }, [data, openBook, prevBook]);
 
-  const setNextPageStyle = React.useCallback(
+  const setNextPageStyle = useCallback(
     () => setPageStyle((p) => NextPageStyleMap[p]),
     [],
   );
 
-  const onPageSliderChanged = React.useCallback(
-    (p) => setPage(p, 0),
-    [setPage],
-  );
+  const onPageSliderChanged = useCallback((p) => setPage(p, 0), [setPage]);
 
-  const [showSliderImage, setShowSliderImage] = React.useState(true);
-  React.useEffect(() => {
+  const [showSliderImage, setShowSliderImage] = useState(true);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refetch, setCloseEditDialog
+  useEffect(() => {
     if (showSliderImage) {
       return;
     }
@@ -455,7 +466,7 @@ const Book = (props: BookProps) => {
       setShowSliderImage(true);
     });
   }, [showSliderImage]);
-  const purgeCache = React.useCallback(() => {
+  const purgeCache = useCallback(() => {
     setShowSliderImage(false);
   }, []);
 
@@ -586,18 +597,19 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   } = props;
   const { slidesPerView, pageClass, prefixPage } = PageStyle[pageStyleKey];
 
-  const [swiper, setSwiper] = React.useState(null);
+  const [swiper, setSwiper] = useState(null);
   const debouncePage = useDebounceValue(page, 300);
 
-  const requestRef = React.useRef<typeof pageUpdateRequest>();
-  React.useEffect(() => {
+  const requestRef = useRef<typeof pageUpdateRequest>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: swiper
+  useEffect(() => {
     if (pageUpdateRequest && swiper) {
       requestRef.current = pageUpdateRequest;
       swiper.slideTo(pageUpdateRequest.page, pageUpdateRequest.time, false);
     }
   }, [pageUpdateRequest]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!swiper?.params) {
       return;
     }
@@ -609,7 +621,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     }
   }, [openEditDialog, swiper]);
 
-  const updateSwiper = React.useCallback(
+  const updateSwiper = useCallback(
     (s) => {
       s?.slideTo(page, 0, false);
       setSwiper(s);
@@ -617,7 +629,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     [page],
   );
 
-  const handleSlideChange = React.useCallback(
+  const handleSlideChange = useCallback(
     (s) => {
       if (requestRef.current?.page !== s.activeIndex) {
         onPageUpdated(s.activeIndex);

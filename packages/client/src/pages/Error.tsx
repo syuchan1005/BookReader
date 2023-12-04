@@ -2,9 +2,8 @@ import { useTitle } from '@client/hooks/useTitle';
 import { Fab, Icon, Theme, Typography } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import useTestId from '../hooks/useTestId';
+import { useTestId } from '../hooks/useTestId';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

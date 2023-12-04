@@ -10,7 +10,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import React, { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -23,7 +23,7 @@ import {
 import BookPageImage, {
   pageAspectRatio,
 } from '@client/components/BookPageImage';
-import useVisible from '@client/hooks/useVisible';
+import { useVisible } from '@client/hooks/useVisible';
 
 const pageStyle = { width: 125, height: pageAspectRatio(125) };
 const BookPageCard = ({
@@ -33,7 +33,7 @@ const BookPageCard = ({
   maxPage,
 }: { onClick: () => void; bookId: string; page: number; maxPage: number }) => {
   const theme = useTheme();
-  const visibleMargin = React.useMemo(
+  const visibleMargin = useMemo(
     () => `0px 0px ${theme.spacing(3)} 0px`,
     [theme],
   );
@@ -104,7 +104,7 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
       },
     });
 
-  const loading = React.useMemo(
+  const loading = useMemo(
     () => infoLoading || changeLoading,
     [infoLoading, changeLoading],
   );

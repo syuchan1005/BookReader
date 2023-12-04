@@ -7,6 +7,7 @@ type RemountProps = {
 
 const RemountInner = ({ remountKey, children }: RemountProps) => {
   const [shouldUnmount, setShouldUnmount] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: remountKey
   useEffect(() => {
     setShouldUnmount(true);
     requestAnimationFrame(() => {
