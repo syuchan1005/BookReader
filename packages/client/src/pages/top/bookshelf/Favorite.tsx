@@ -83,7 +83,6 @@ const Favorite = () => {
         <BookInfo
           key={info.id}
           {...info}
-          simple
           thumbnailSize={downSm ? 150 : 200}
           showName
           index={i}

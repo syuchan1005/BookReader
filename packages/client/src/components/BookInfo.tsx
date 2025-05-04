@@ -53,7 +53,6 @@ interface BookInfoProps
   thumbnailSize: number;
   showName?: boolean;
   updatedAt?: string;
-  simple?: boolean;
   isReading?: boolean;
 
   onDeleted?: (infoId: string, books: { id: string; pages: number }[]) => void;
@@ -211,7 +210,6 @@ const BookInfo = (props: BookInfoProps) => {
     index,
     onVisible,
     visibleMargin,
-    simple,
     isReading,
   } = props;
   const isVisible = useVisible(ref, false, visibleMargin);
@@ -337,8 +335,7 @@ const BookInfo = (props: BookInfoProps) => {
     >
       {keepVisible && (
         <Card className={classes.card} style={style} sx={{ height: '100%' }}>
-          {!simple && (
-            <CardActions className={classes.headerMenu}>
+          <CardActions className={classes.headerMenu}>
               <IconButton
                 onClick={setMenuAnchor}
                 aria-label="menu"
@@ -362,7 +359,6 @@ const BookInfo = (props: BookInfoProps) => {
                 <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
               </Menu>
             </CardActions>
-          )}
           <Link
             className={classes.link}
             state={{ referrer: location.pathname }}
@@ -413,7 +409,7 @@ const BookInfo = (props: BookInfoProps) => {
               {Date.now() - Number(updatedAt) < NEW_BOOK_INFO_EXPIRED && (
                 <Icon className={classes.newLabel}>tips_and_updates</Icon>
               )}
-              {isReading && !simple ? (
+              {isReading ? (
                 <div
                   className={`${classes.labelContainer} ${classes.readLabel}`}
                 >
