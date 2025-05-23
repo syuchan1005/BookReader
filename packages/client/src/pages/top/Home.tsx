@@ -190,6 +190,9 @@ const Home = (props: HomeProps) => {
     onCompleted(d) {
       setInfos(d.bookInfos.edges.map((e) => e.node));
     },
+    onError() {
+      setInfos(data.bookInfos.edges.map((e) => e.node));
+    },
   });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: infos
