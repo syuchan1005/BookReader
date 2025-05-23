@@ -42,6 +42,7 @@ import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
+import { useConfirmDialog } from './dialogs/ConfirmDialog';
 
 const DownloadDialog = lazy(
   () => import('@client/components/dialogs/DownloadBookInfoDialog'),
@@ -57,6 +58,7 @@ interface BookInfoProps
 
   onDeleted?: (infoId: string, books: { id: string; pages: number }[]) => void;
   onEdit?: (homeBookInfo: HomeBookInfoFragment) => void;
+  onHistoryDeleted?: () => void;
   index: number;
   onVisible?: (
     index: number,
@@ -207,6 +209,7 @@ const BookInfo = (props: BookInfoProps) => {
     showName,
     onDeleted,
     onEdit,
+    onHistoryDeleted,
     index,
     onVisible,
     visibleMargin,
@@ -325,6 +328,29 @@ const BookInfo = (props: BookInfoProps) => {
     toggleFavorite();
   }, [resetMenuAnchor, toggleFavorite]);
 
+  const {
+    open: _openRemoveReadingHistoryDialog,
+    close: closeRemoveReadingHistoryDialog,
+    disable: disableRemoveReadingHistoryDialog,
+    dialogElement: removeReadingHistoryDialog,
+  } = useConfirmDialog({
+    title: 'Remove Reading History',
+    content: `Are you sure you want to remove the reading history of ${name}?`,
+    closeText: 'Cancel',
+    confirmText: 'Remove',
+    onClickConfirm: () => {
+      disableRemoveReadingHistoryDialog();
+      db.read.deleteByIndex('infoId', infoId).finally(() => {
+        if (onHistoryDeleted) onHistoryDeleted();
+        closeRemoveReadingHistoryDialog();
+      });
+    },
+  });
+  const openRemoveReadingHistoryDialog = () => {
+    resetMenuAnchor();
+    _openRemoveReadingHistoryDialog();
+  };
+
   return (
     <div
       ref={ref}
@@ -350,6 +376,9 @@ const BookInfo = (props: BookInfoProps) => {
               >
                 <MenuItem onClick={handleFavoriteClick}>
                   {isFavorite ? 'Remove from favorite' : 'Favorite'}
+                </MenuItem>
+                <MenuItem onClick={openRemoveReadingHistoryDialog}>
+                  Remove Reading History
                 </MenuItem>
                 <MenuItem onClick={clickSelectThumbnailBookInfo}>
                   Select Thumbnail
@@ -453,6 +482,8 @@ const BookInfo = (props: BookInfoProps) => {
               id={infoId}
             />
           )}
+
+          {removeReadingHistoryDialog}
         </Card>
       )}
     </div>

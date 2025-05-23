@@ -310,6 +310,7 @@ const Home = (props: HomeProps) => {
     [navigate, location.pathname],
   );
 
+  const [updateReadingInfo, setUpdateReadingInfo] = useState(0);
   const [readingInfoId, setReadingInfoId] = useState('');
   useEffect(() => {
     let cancelled = false;
@@ -328,7 +329,7 @@ const Home = (props: HomeProps) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [updateReadingInfo]);
 
   return (
     <>
@@ -354,6 +355,7 @@ const Home = (props: HomeProps) => {
                     {...info}
                     onDeleted={handleDeletedBookInfo}
                     onEdit={handleEditBookInfo}
+                    onHistoryDeleted={() => setUpdateReadingInfo((i) => i + 1)}
                     thumbnailSize={downXs ? 150 : 200}
                     showName={showBookInfoName}
                     visibleMargin={visibleMargin}

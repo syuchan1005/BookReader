@@ -173,6 +173,7 @@ const Info = (props: InfoProps) => {
 
   const bookList = useMemo(() => data?.bookInfo?.books ?? [], [data]);
 
+  const [updateReadBooks, setUpdateReadBooks] = useState(0);
   const [sortedReadBooks, setSortedReadBooks] = useState<Read[]>([]);
   useEffect(() => {
     let cancelled = false;
@@ -194,7 +195,7 @@ const Info = (props: InfoProps) => {
     return () => {
       cancelled = true;
     };
-  }, [infoId]);
+  }, [infoId, updateReadBooks]);
 
   const readId: string = useMemo(() => {
     if (sortedReadBooks.length === 0) {
@@ -333,6 +334,7 @@ const Info = (props: InfoProps) => {
                         onClick={handleBookClick}
                         onDeleted={onDeletedBook}
                         onEdit={refetch}
+                        onHistoryDeleted={() => setUpdateReadBooks((i) => i + 1)}
                         thumbnailSize={downXs ? 150 : 200}
                         thumbnailNoSave={false}
                         visibleMargin={visibleMargin}

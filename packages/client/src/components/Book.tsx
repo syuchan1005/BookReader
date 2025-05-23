@@ -40,6 +40,9 @@ import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
+import { useConfirmDialog } from './dialogs/ConfirmDialog';
+
+import db from '@client/indexedDb/Database';
 
 const DownloadDialog = lazy(
   () => import('@client/components/dialogs/DownloadBookDialog'),
@@ -56,6 +59,7 @@ interface BookProps
   onClick?: (event: MouseEvent, bookId: string) => void;
   onDeleted?: (bookId: string, pages: number) => void;
   onEdit?: () => void;
+  onHistoryDeleted?: () => void;
 
   simple?: boolean;
 
@@ -141,6 +145,7 @@ const Book = (props: BookProps) => {
     onClick,
     onDeleted,
     onEdit,
+    onHistoryDeleted,
     simple,
     children,
     visibleMargin,
@@ -271,6 +276,30 @@ const Book = (props: BookProps) => {
 
   const longTapEvents = useLongTap(handleLongPressed);
 
+  const {
+    open: _openRemoveReadingHistoryDialog,
+    close: closeRemoveReadingHistoryDialog,
+    disable: disableRemoveReadingHistoryDialog,
+    dialogElement: removeReadingHistoryDialog,
+  } = useConfirmDialog({
+    title: 'Remove Reading History',
+    content: 'Are you sure you want to remove the reading history?',
+    closeText: 'Cancel',
+    confirmText: 'Remove',
+    onClickConfirm: () => {
+      disableRemoveReadingHistoryDialog();
+      db.read.delete(bookId).finally(() => {
+        if (onHistoryDeleted) onHistoryDeleted();
+        closeRemoveReadingHistoryDialog();
+      });
+    }
+  });
+
+  const openRemoveReadingHistoryDialog = () => {
+    resetMenuAnchor();
+    _openRemoveReadingHistoryDialog();
+  };
+
   return (
     <div
       ref={ref}
@@ -304,6 +333,7 @@ const Book = (props: BookProps) => {
                 open={Boolean(menuAnchor)}
                 onClose={resetMenuAnchor}
               >
+                <MenuItem onClick={openRemoveReadingHistoryDialog}>Remove Reading History</MenuItem>
                 <MenuItem onClick={clickSelectThumbnailBook}>
                   Select Thumbnail
                 </MenuItem>
@@ -380,6 +410,8 @@ const Book = (props: BookProps) => {
               bookId={bookId}
             />
           )}
+
+          {removeReadingHistoryDialog}
         </Card>
       )}
     </div>
