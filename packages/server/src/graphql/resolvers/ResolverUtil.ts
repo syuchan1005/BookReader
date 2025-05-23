@@ -20,5 +20,5 @@ export type StrictResolver<
   G,
   D,
   R,
-  K extends keyof R = ShouldResolveKeys<G, D>,
+  K extends keyof R = ShouldResolveKeys<G, D> & keyof R,
 > = Required<Pick<R, K>> & Omit<R, K>;
