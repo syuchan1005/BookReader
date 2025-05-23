@@ -120,7 +120,6 @@ const App = () => {
       setAlertData({
         message,
         variant: opt.variant,
-        persist: true,
       });
     };
 
