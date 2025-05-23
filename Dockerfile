@@ -1,4 +1,4 @@
-FROM node:18.8.0-alpine as base
+FROM node:23.11.1-slim as base
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
@@ -45,7 +45,9 @@ EXPOSE 80
 
 ENV DEBUG="" NODE_ENV="production" PORT=80
 
-RUN apk add --no-cache p7zip tini
+RUN apt-get update && apt-get install -y p7zip-full tini openssl \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /bookReader
 
@@ -65,4 +67,4 @@ RUN chmod +x docker-entrypoint.sh
 # "/bookReader/production.sqlite" is file
 VOLUME ["/bookReader/storage"]
 
-ENTRYPOINT ["/sbin/tini", "--", "/bookReader/docker-entrypoint.sh"]
+ENTRYPOINT ["tini", "--", "/bookReader/docker-entrypoint.sh"]
