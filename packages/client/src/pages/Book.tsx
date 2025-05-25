@@ -514,7 +514,6 @@ const Book = (props: BookProps) => {
             maxPages={maxPage}
             pageStyle={PageStyle[pageStyleKey]}
             onPageStyleClick={setNextPageStyle}
-            setHideAppBar={setHideAppBar}
             goNextBook={goNextBook}
             goPreviousBook={goPreviousBook}
             onEditClick={setOpenEditDialog}

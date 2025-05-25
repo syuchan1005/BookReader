@@ -32,7 +32,6 @@ interface BookPageOverlayProps {
   maxPages: number | undefined;
   pageStyle: PageStyleType;
   onPageStyleClick: () => void;
-  setHideAppBar: () => void;
   goNextBook: () => void;
   goPreviousBook: () => void;
   onEditClick: () => void;
@@ -102,7 +101,6 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     currentPage,
     maxPages,
     pageStyle,
-    setHideAppBar,
     goNextBook,
     goPreviousBook,
     onPageStyleClick,
@@ -162,7 +160,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
 
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: TODO
-    <div className={classes.overlay} onClick={setHideAppBar}>
+    <div className={classes.overlay}>
       <div className={`${classes.overlayContent} center`}>
         {goPreviousBook && currentPage === 0 && (
           <Button
