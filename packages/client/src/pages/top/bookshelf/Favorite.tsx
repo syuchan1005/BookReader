@@ -3,7 +3,7 @@ import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
 import db, { BookInfoFavorite } from '@client/indexedDb/Database';
-import { Theme, useTheme } from '@mui/material';
+import { Theme, Typography, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
@@ -78,25 +78,35 @@ const Favorite = () => {
   });
 
   return (
-    <div className={classes.grid}>
-      {(data?.bookInfos ?? []).map((info, i, arr) => (
-        <BookInfo
-          key={info.id}
-          {...info}
-          thumbnailSize={downSm ? 150 : 200}
-          showName
-          index={i}
-          onVisible={(index, isVisible, isFirstVisible) => {
-            if (!isFirstVisible) {
-              return;
-            }
-            if (arr.length - 1 === index && !loading && !favoriteLoading) {
-              getFavoriteBookInfos();
-            }
-          }}
-        />
-      ))}
-    </div>
+    <>
+      {(data?.bookInfos) && (
+        <Typography
+          variant='h6'
+          sx={{ margin: theme.spacing(1) }}
+        >
+          Favorites
+        </Typography>
+      )}
+      <div className={classes.grid}>
+        {(data?.bookInfos ?? []).map((info, i, arr) => (
+          <BookInfo
+            key={info.id}
+            {...info}
+            thumbnailSize={downSm ? 150 : 200}
+            showName
+            index={i}
+            onVisible={(index, isVisible, isFirstVisible) => {
+              if (!isFirstVisible) {
+                return;
+              }
+              if (arr.length - 1 === index && !loading && !favoriteLoading) {
+                getFavoriteBookInfos();
+              }
+            }}
+          />
+        ))}
+      </div>
+    </>
   );
 };
 
