@@ -2,12 +2,16 @@ import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
-import db, { BookInfoFavorite } from '@client/indexedDb/Database';
-import { Theme, Typography, useTheme } from '@mui/material';
+import db, { BookInfoFavorite, DownloadedBook } from '@client/indexedDb/Database';
+import { Card, CardActionArea, Icon, IconButton, Menu, MenuItem, Theme, Typography, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
-import { useCallback, useEffect, useState } from 'react';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import zIndex from '@mui/material/styles/zIndex';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,8 +33,120 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const defaultLoadBookInfosCount = 20;
 
-const Favorite = () => {
+const BookShelfContent = () => {
   useTitle('BookShelf');
+
+  return (
+    <>
+      <DownloadedBooks />
+      <Favorite />
+    </>
+  );
+};
+
+const DownloadedBooks = () => {
+  const classes = useStyles();
+  const theme = useTheme();
+
+  const [downloadedBooks, setDownloadedBooks] = useState<Omit<DownloadedBook, 'bookZipArchive'>[]>([]);
+  const [updateDownloadedBooks, setUpdateDownloadedBooks] = useState(0);
+  useEffect(() => {
+    db.downloadedBook.getAll(
+      Number.MAX_SAFE_INTEGER,
+      { key: 'createdAt', direction: 'prev' },
+      undefined,
+      ({ bookZipArchive, ...v }) => v,
+    ).then((books) => {
+      setDownloadedBooks(books);
+    });
+  }, [updateDownloadedBooks]);
+
+
+  const handleDelete = useCallback((bookId: string) => {
+    db.downloadedBook.delete(bookId).then(() => {
+      setUpdateDownloadedBooks((prev) => prev + 1);
+    });
+  }, []);
+
+  return (
+    <>
+      <Typography
+        variant='h6'
+        sx={{ margin: theme.spacing(1) }}
+      >
+        Downloads
+      </Typography>
+      <div className={classes.grid}>
+        {downloadedBooks.map((book) => (
+          <Book
+            key={book.bookId}
+            book={book}
+            onDelete={() => handleDelete(book.bookId)}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
+const Book = (
+  props: {
+    book: Omit<DownloadedBook, 'bookZipArchive'>,
+    onDelete: () => void,
+  },
+) => {
+  const { book, onDelete } = props;
+  const theme = useTheme();
+  const downSm = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
+  return (
+    <Card key={book.bookId}>
+      <CardActionArea style={{ zIndex: 1 }}>
+        <IconButton
+          onClick={setMenuAnchor}
+          aria-label="menu"
+          size="large"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+          }}
+        >
+          <Icon>more_vert</Icon>
+        </IconButton>
+        <Menu
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={resetMenuAnchor}
+        >
+          <MenuItem
+            onClick={() => {
+              resetMenuAnchor();
+              onDelete();
+            }}
+          >
+            Delete download cache
+          </MenuItem>
+        </Menu>
+      </CardActionArea>
+      <CardActionArea
+        component={Link}
+        to={`/book/${book.bookId}`}
+        style={{ height: '100%' }}
+      >
+        <img
+          src={URL.createObjectURL(book.thumbnail)}
+          width={downSm ? 150 : 200}
+          height="100%"
+          style={{ objectFit: 'contain' }}
+        />
+      </CardActionArea>
+    </Card>
+  );
+};
+
+const Favorite = () => {
   const classes = useStyles();
   const theme = useTheme();
 
@@ -110,4 +226,4 @@ const Favorite = () => {
   );
 };
 
-export default Favorite;
+export default BookShelfContent;

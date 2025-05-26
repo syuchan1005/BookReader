@@ -27,7 +27,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
 const BookShelf = lazy(() => import('@client/pages/top/BookShelf'));
-const Favorite = lazy(() => import('@client/pages/top/bookshelf/Favorite'));
+const BookShelfContent = lazy(() => import('@client/pages/top/bookshelf/index'));
 const History = lazy(() => import('@client/pages/top/bookshelf/History'));
 
 const Info = lazy(() => import('@client/pages/Info'));
@@ -196,7 +196,7 @@ const App = () => {
                   index
                   element={
                     <Suspense fallback={<HeaderWithBookListSkeleton />}>
-                      <Favorite />
+                      <BookShelfContent />
                     </Suspense>
                   }
                 />
