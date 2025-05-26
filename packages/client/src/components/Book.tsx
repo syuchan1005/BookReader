@@ -43,6 +43,7 @@ import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
 
 import db from '@client/indexedDb/Database';
+import { useDownloadBookDialog } from './dialogs/DownloadBookDialog';
 
 const DownloadZipDialog = lazy(
   () => import('@client/components/dialogs/DownloadZipBookDialog'),
@@ -134,6 +135,7 @@ const Book = (props: BookProps) => {
   const ref = useRef();
   const {
     infoId,
+    name,
     thumbnailSize,
     thumbnailNoSave,
     thumbnail,
@@ -300,6 +302,19 @@ const Book = (props: BookProps) => {
     _openRemoveReadingHistoryDialog();
   };
 
+  const {
+    open: openDownloadDownloadDialog,
+    dialogElement: downloadDownloadDialog,
+  } = useDownloadBookDialog({
+    infoId,
+    bookId,
+    infoName: name,
+    bookName: number,
+    thumbnailPageIndex: thumbnail,
+    totalPageCount: pages,
+    serverUpdatedAt: new Date(Number(updatedAt)),
+  });
+
   return (
     <div
       ref={ref}
@@ -339,7 +354,15 @@ const Book = (props: BookProps) => {
                 </MenuItem>
                 <MenuItem onClick={clickEditBook}>Edit</MenuItem>
                 <MenuItem onClick={clickDeleteBook}>Delete</MenuItem>
-                <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    resetMenuAnchor();
+                    openDownloadDownloadDialog();
+                  }}
+                >
+                  Download
+                </MenuItem>
+                <MenuItem onClick={clickDownloadBook}>Download Zip</MenuItem>
               </Menu>
             </CardActions>
           )}
@@ -412,6 +435,8 @@ const Book = (props: BookProps) => {
           )}
 
           {removeReadingHistoryDialog}
+
+          {downloadDownloadDialog}
         </Card>
       )}
     </div>

@@ -1,4 +1,4 @@
-const VERSION = 7;
+const VERSION = 8;
 
 interface InfoRead {
   infoId: string;
@@ -31,6 +31,18 @@ export interface Revision {
   serverSyncedAt: Date;
 }
 
+export interface DownloadedBook {
+  infoId: string; /* index */
+  bookId: string; /* keyPath */
+  infoName: string;
+  bookName: string;
+  totalPageCount: number;
+  thumbnail: Blob;
+  bookZipArchive: Blob;
+  createdAt: Date; /* index */
+  serverUpdatedAt: Date;
+}
+
 export class StoreWrapper<T> {
   private readonly storeName: string;
 
@@ -58,16 +70,17 @@ export class StoreWrapper<T> {
     });
   }
 
-  getAll<K extends keyof T & string>(
+  getAll<K extends keyof T & string, R>(
     limit: number,
     sort?: { key: K; direction?: 'next' | 'prev'; after?: T[K] },
     indexValue?: T[K] | undefined,
-  ): Promise<T[]> {
+    valueMapper?: (value: T) => R,
+  ): Promise<R[]> {
     if (limit <= 0) {
       return Promise.resolve([]);
     }
 
-    return new Promise<T[]>((resolve, reject) => {
+    return new Promise<R[]>((resolve, reject) => {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
       if (sort) {
@@ -86,7 +99,7 @@ export class StoreWrapper<T> {
         } else {
           request = store.index(sort.key).openCursor(query, sort.direction);
         }
-        const results: T[] = [];
+        const results: R[] = [];
         request.onsuccess = (event) => {
           // @ts-ignore
           const cursor: IDBCursorWithValue = event.target.result;
@@ -95,7 +108,7 @@ export class StoreWrapper<T> {
             return;
           }
 
-          results.push(cursor.value);
+          results.push(valueMapper ? valueMapper(cursor.value) : cursor.value);
           cursor.continue();
         };
         request.onerror = (e) => reject(e);
@@ -280,6 +293,11 @@ const UpgradeTask = [
       cursor.continue();
     };
   },
+  (db: IDBDatabase) => {
+    const downloadedBookStore = db.createObjectStore('downloadedBook', { keyPath: 'bookId' });
+    downloadedBookStore.createIndex('infoId', 'infoId');
+    downloadedBookStore.createIndex('createdAt', 'createdAt');
+  },
 ];
 
 export const DB_NAME = 'BookReader--DB';
@@ -291,6 +309,7 @@ export class Database {
 
   private _bookInfoFavorite: StoreWrapper<BookInfoFavorite>;
   private _read: StoreWrapper<Read>;
+  private _downloadedBook: StoreWrapper<DownloadedBook>;
 
   constructor(dbName = DB_NAME) {
     this.dbName = dbName;
@@ -302,6 +321,10 @@ export class Database {
 
   get read() {
     return this._read;
+  }
+
+  get downloadedBook() {
+    return this._downloadedBook;
   }
 
   connect(): Promise<IDBDatabase> {
@@ -332,6 +355,11 @@ export class Database {
           this._db,
         );
         this._read = new StoreWrapper<Read>('read', 'bookId', this._db);
+        this._downloadedBook = new StoreWrapper<DownloadedBook>(
+          'downloadedBook',
+          'bookId',
+          this._db,
+        );
 
         resolve(this._db);
       };

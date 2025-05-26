@@ -168,8 +168,8 @@ const Info = (props: InfoProps) => {
     },
   });
 
-  const bookName = useMemo(() => data?.bookInfo?.name ?? '', [data]);
-  useTitle(bookName || undefined);
+  const bookInfoName = useMemo(() => data?.bookInfo?.name ?? '', [data]);
+  useTitle(bookInfoName || undefined);
 
   const bookList = useMemo(() => data?.bookInfo?.books ?? [], [data]);
 
@@ -278,7 +278,7 @@ const Info = (props: InfoProps) => {
   return (
     <>
       {mode === ScreenMode.NORMAL ? (
-        <TitleAndBackHeader backRoute="/" title={bookName}>
+        <TitleAndBackHeader backRoute="/" title={bookInfoName}>
           <IconButton
             style={{ color: common.white }}
             onClick={setSortEl}
@@ -329,7 +329,7 @@ const Info = (props: InfoProps) => {
                         infoId={infoId}
                         simple={mode === ScreenMode.SELECT}
                         {...book}
-                        name={bookName}
+                        name={bookInfoName}
                         reading={readId === book.id}
                         onClick={handleBookClick}
                         onDeleted={onDeletedBook}
