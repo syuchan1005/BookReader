@@ -16,12 +16,12 @@ import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useMemo, useState } from 'react';
 
-interface DownloadBookInfoDialogProps extends Pick<BookInfo, 'id'> {
+interface DownloadZipBookInfoDialogProps extends Pick<BookInfo, 'id'> {
   open: boolean;
   onClose?: () => void;
 }
 
-const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
+const DownloadZipBookInfoDialog = (props: DownloadZipBookInfoDialogProps) => {
   const { open, onClose, id } = props;
 
   const [downloadBooks, setDownloadBooks] = useState<number>(undefined);
@@ -141,4 +141,4 @@ const DownloadBookInfoDialog = (props: DownloadBookInfoDialogProps) => {
   );
 };
 
-export default DownloadBookInfoDialog;
+export default DownloadZipBookInfoDialog;

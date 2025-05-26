@@ -44,8 +44,8 @@ import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
 
-const DownloadDialog = lazy(
-  () => import('@client/components/dialogs/DownloadBookInfoDialog'),
+const DownloadZipDialog = lazy(
+  () => import('@client/components/dialogs/DownloadZipBookInfoDialog'),
 );
 
 interface BookInfoProps
@@ -476,7 +476,7 @@ const BookInfo = (props: BookInfoProps) => {
           />
 
           {canMountDownloadDialog && (
-            <DownloadDialog
+            <DownloadZipDialog
               open={isShownDownloadDialog}
               onClose={hideDownloadDialog}
               id={infoId}

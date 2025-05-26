@@ -12,7 +12,7 @@ import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { useCallback, useState } from 'react';
 
-interface DownloadBookDialogProps {
+interface DownloadZipBookDialogProps {
   open: boolean;
   onClose?: () => void;
   number?: string;
@@ -20,7 +20,7 @@ interface DownloadBookDialogProps {
   pages?: number;
 }
 
-const DownloadBookDialog = (props: DownloadBookDialogProps) => {
+const DownloadZipBookDialog = (props: DownloadZipBookDialogProps) => {
   const { open, onClose, number, bookId, pages } = props;
 
   const [downloadImages, setDownloadImages] = useState<boolean | number>(false);
@@ -100,4 +100,4 @@ const DownloadBookDialog = (props: DownloadBookDialogProps) => {
   );
 };
 
-export default DownloadBookDialog;
+export default DownloadZipBookDialog;

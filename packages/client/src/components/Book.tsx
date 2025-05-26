@@ -44,8 +44,8 @@ import { useConfirmDialog } from './dialogs/ConfirmDialog';
 
 import db from '@client/indexedDb/Database';
 
-const DownloadDialog = lazy(
-  () => import('@client/components/dialogs/DownloadBookDialog'),
+const DownloadZipDialog = lazy(
+  () => import('@client/components/dialogs/DownloadZipBookDialog'),
 );
 
 interface BookProps
@@ -402,7 +402,7 @@ const Book = (props: BookProps) => {
           />
 
           {canMountDownloadDialog && (
-            <DownloadDialog
+            <DownloadZipDialog
               open={isShownDownloadDialog}
               onClose={hideDownloadDialog}
               number={number}
