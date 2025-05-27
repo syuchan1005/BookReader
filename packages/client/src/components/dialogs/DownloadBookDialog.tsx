@@ -54,14 +54,16 @@ export const DownloadBookDialog = (props: DownloadBookDialogProps) => {
                     <div>Would you like to download the book "{infoName}/{bookName}"?</div>
                 )}
                 {downloadStatus !== undefined && (
-                    <CircularProgress color="secondary" />
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                        <CircularProgress color="secondary" />
+                    </div>
                 )}
                 {downloadStatus && (
                     <div style={{ textAlign: 'center' }}>{downloadStatus}</div>
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onAbort={onClose} disabled={downloadStatus !== undefined}>
+                <Button onClick={onClose} disabled={downloadStatus !== undefined}>
                     Close
                 </Button>
                 <Button

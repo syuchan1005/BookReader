@@ -360,7 +360,7 @@ const Book = (props: BookProps) => {
                     openDownloadDownloadDialog();
                   }}
                 >
-                  Download
+                  Download Book (for offline)
                 </MenuItem>
                 <MenuItem onClick={clickDownloadBook}>Download Zip</MenuItem>
               </Menu>
