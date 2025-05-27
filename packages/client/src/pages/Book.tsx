@@ -1,6 +1,7 @@
 import { Theme } from '@mui/material';
 import {
   CSSProperties,
+  Fragment,
   ReactElement,
   lazy,
   useCallback,
@@ -9,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import JSZip from 'jszip';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -28,7 +30,7 @@ import {
 import { useWindowSize } from 'react-use';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
-import { useBookQuery } from '@syuchan1005/book-reader-graphql';
+import { BookQuery, useBookQuery } from '@syuchan1005/book-reader-graphql';
 
 import BookPageImage from '@client/components/BookPageImage';
 import BookPageOverlay from '@client/components/BookPageOverlay';
@@ -39,7 +41,7 @@ import { useDebounceValue } from '@client/hooks/useDebounceValue';
 import { useLazyDialog } from '@client/hooks/useLazyDialog';
 import { usePrevNextBook } from '@client/hooks/usePrevNextBook';
 import { useTitle } from '@client/hooks/useTitle';
-import db from '@client/indexedDb/Database';
+import db, { DownloadedBook } from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
 import {
   ReadOrder,
@@ -127,10 +129,10 @@ const useDatabasePage = (
   bookId: string,
   defaultPage = 0,
 ): [
-  loading: boolean,
-  page: number,
-  setPage: (page: number, infoId: string) => Promise<void>,
-] => {
+    loading: boolean,
+    page: number,
+    setPage: (page: number, infoId: string) => Promise<void>,
+  ] => {
   const [loading, setLoading] = useState(true);
   const [page, updatePageState] = useState(defaultPage);
 
@@ -277,25 +279,22 @@ const Book = (props: BookProps) => {
   }, [bookId]);
 
   const windowSize = useWindowSize();
-
-  const { loading, error, data, refetch } = useBookQuery({
-    variables: {
-      id: bookId,
-    },
-    onCompleted(d) {
-      if (!d) return;
-      if (isPageSet && page >= d.book.pages) {
-        setPage(d.book.pages - 1, 0);
+  const { loading, error, data, refetch, ImageComponent } = useBookData({
+    bookId,
+    onCompleted: (data) => {
+      if (!data) return;
+      if (isPageSet && page >= data.totalPageCount) {
+        setPage(data.totalPageCount - 1, 0);
       }
     },
-    onError() {
+    onError: () => {
       setShowAppBar();
     },
   });
-  useTitle(data ? `${data.book.info.name} No.${data.book.number}` : '');
-  const maxPage = useMemo(() => (data ? data.book.pages : 0), [data]);
+  useTitle(data ? `${data.infoName} No.${data.bookNumber}` : '');
+  const maxPage = useMemo(() => (data ? data.totalPageCount : 0), [data]);
   const [prevBook, nextBook] = usePrevNextBook(
-    data ? data.book.info.id : undefined,
+    data ? data.infoId : undefined,
     bookId,
   );
 
@@ -303,10 +302,10 @@ const Book = (props: BookProps) => {
   useEffect(() => {
     if (page >= maxPage) {
       if (nextBook && data) {
-        openBook(data.book.info.id, nextBook);
+        openBook(data.infoId, nextBook);
       }
     } else if (isPageSet) {
-      setDbPage(page, data.book.info.id).catch((e) =>
+      setDbPage(page, data.infoId).catch((e) =>
         setAlertData({
           message: e,
           variant: 'error',
@@ -426,14 +425,14 @@ const Book = (props: BookProps) => {
 
   const goNextBook = useMemo(() => {
     if (nextBook && data) {
-      return () => openBook(data.book.info.id, nextBook);
+      return () => openBook(data.infoId, nextBook);
     }
     return undefined;
   }, [data, openBook, nextBook]);
 
   const goPreviousBook = useMemo(() => {
     if (prevBook && data) {
-      return () => openBook(data.book.info.id, prevBook);
+      return () => openBook(data.infoId, prevBook);
     }
     return undefined;
   }, [data, openBook, prevBook]);
@@ -490,9 +489,9 @@ const Book = (props: BookProps) => {
     <>
       {showAppBar && (
         <TitleAndBackHeader
-          backRoute={data && `/info/${data.book.info.id}`}
-          title={data?.book.info.name}
-          subTitle={data && `No.${data.book.number}`}
+          backRoute={data && `/info/${data.infoId}`}
+          title={data?.infoName}
+          subTitle={data && `No.${data.bookNumber}`}
         />
       )}
 
@@ -531,6 +530,7 @@ const Book = (props: BookProps) => {
           effectBackGround={effectBackGround}
           openEditDialog={openEditDialog}
           classes={classes}
+          ImageComponent={ImageComponent}
           pageUpdateRequest={pageUpdateRequest}
           onPageUpdated={updatePage}
           onKeyPress={setHideAppBar}
@@ -540,9 +540,8 @@ const Book = (props: BookProps) => {
         <div
           className={classes.pageProgress}
           style={{
-            justifyContent: `flex-${
-              readOrder === ReadOrder.LTR ? 'start' : 'end'
-            }`,
+            justifyContent: `flex-${readOrder === ReadOrder.LTR ? 'start' : 'end'
+              }`,
           }}
         >
           <div style={{ width: `${(page / (maxPage - 1)) * 100}%` }} />
@@ -550,6 +549,179 @@ const Book = (props: BookProps) => {
       </main>
     </>
   );
+};
+
+type BookData = {
+  infoId: string;
+  totalPageCount: number;
+  infoName: string;
+  bookNumber: string;
+};
+const convertToBookData = (
+  data: BookQuery,
+): BookData | undefined => {
+  if (!data || !data.book) return undefined;
+  return {
+    infoId: data.book.info.id,
+    totalPageCount: data.book.pages,
+    infoName: data.book.info.name,
+    bookNumber: data.book.number,
+  };
+};
+
+const useBookData = (
+  props: {
+    bookId: string;
+    onCompleted: (data: BookData) => void;
+    onError: () => void;
+  },
+): {
+  loading: boolean;
+  error: Error | undefined;
+  data: BookData | undefined;
+  refetch: () => void;
+  ImageComponent: (
+    props: {
+      style: CSSProperties | undefined;
+      pageIndex: number;
+      imageSize: {
+        width: number;
+        height: number;
+      };
+      skip: boolean;
+    }
+  ) => ReactElement;
+} => {
+  const { bookId, onCompleted, onError } = props;
+  const [downloadedBook, setDownloadedBook] = useState<DownloadedBook | null | undefined>(undefined);
+  useEffect(() => {
+    db.downloadedBook
+      .get(bookId)
+      .then((book) => {
+        if (book) {
+          setDownloadedBook(book);
+          onCompleted({
+            infoId: book.infoId,
+            totalPageCount: book.totalPageCount,
+            infoName: book.infoName,
+            bookNumber: book.bookName,
+          });
+        } else {
+          setDownloadedBook(null);
+        }
+      })
+      .catch(() => {
+        setDownloadedBook(null);
+      });
+  }, [bookId]);
+  const { loading, error, data, refetch } = useBookQuery({
+    variables: {
+      id: bookId,
+    },
+    onCompleted(d) {
+      onCompleted(convertToBookData(d));
+    },
+    onError: onError,
+    skip: downloadedBook !== null,
+  });
+  const convertedData = useMemo(() => {
+    if (!data) return null;
+    return convertToBookData(data);
+  }, [data]);
+
+  const [bookImageProvider, setBookImageProvider] = useState<((filePath: string) => Promise<string>)>(() => (() => Promise.resolve('')));
+  useEffect(() => {
+    if (!downloadedBook) return;
+    const promises = {};
+    new JSZip().loadAsync(downloadedBook.bookZipArchive)
+      .then((zip) => {
+        setBookImageProvider(() => (filePath) => {
+          if (!zip.file(filePath)) {
+            return Promise.resolve(undefined);
+          }
+          if (promises[filePath]) {
+            return promises[filePath];
+          }
+          promises[filePath] = zip.file(filePath).async('base64').then((b) => `data:image/webp;base64,${b}`);
+          return promises[filePath];
+        });
+      });
+  }, [downloadedBook]);
+
+  if (downloadedBook === undefined) {
+    return {
+      loading: true,
+      error: undefined,
+      data: undefined,
+      refetch: () => { },
+      ImageComponent: () => undefined,
+    };
+  }
+
+  if (downloadedBook) {
+    return {
+      loading: false,
+      error: undefined,
+      data: {
+        infoId: downloadedBook.infoId,
+        totalPageCount: downloadedBook.totalPageCount,
+        infoName: downloadedBook.infoName,
+        bookNumber: downloadedBook.bookName,
+      },
+      refetch: () => { },
+      ImageComponent: (props) => {
+        const pageFileName = props.pageIndex
+          .toString(10)
+          .padStart(downloadedBook.totalPageCount.toString(10).length, '0');
+        const src = usePromise(bookImageProvider(`${pageFileName}.webp`).catch(() => undefined));
+        return (
+          <img
+            style={{
+              ...props.style,
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
+            }}
+            src={src}
+          />
+        );
+      },
+    }
+  }
+
+  return {
+    loading,
+    error,
+    data: convertedData,
+    refetch,
+    ImageComponent: (props) => (
+      <BookPageImage
+        {...props}
+        {...props.imageSize}
+        bookId={bookId}
+        bookPageCount={data.book?.pages || 0}
+        alt={(props.pageIndex + 1).toString(10)}
+        loading="eager"
+        sizeDebounceDelay={300}
+      />
+    ),
+  };
+};
+
+const usePromise = <T,>(promise: Promise<T>): (T | undefined) => {
+  const [result, setResult] = useState<T | undefined>(undefined);
+  useEffect(() => {
+    let isMounted = true;
+    promise
+      .then((res) => {
+        if (isMounted) setResult(res)
+      })
+      .catch(() => setResult(undefined));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  return result;
 };
 
 type SwiperSliderProp = {
@@ -568,6 +740,8 @@ type SwiperSliderProp = {
   classes: {
     pageContainer: string;
   };
+
+  ImageComponent: ReturnType<typeof useBookData>['ImageComponent'];
 
   pageUpdateRequest: { page: number; time: number } | undefined;
 
@@ -589,6 +763,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     effectBackGround,
     openEditDialog,
     classes,
+    ImageComponent,
     pageUpdateRequest,
     onPageUpdated,
     onKeyPress,
@@ -665,15 +840,10 @@ const SwiperSlider = (props: SwiperSliderProp) => {
             className={pageClass(index)}
           >
             {showSliderImage && (
-              <BookPageImage
+              <ImageComponent
                 style={effectBackGround}
-                bookId={bookId}
                 pageIndex={i}
-                bookPageCount={maxPage}
-                {...imageSize}
-                alt={(i + 1).toString(10)}
-                loading="eager"
-                sizeDebounceDelay={300}
+                imageSize={imageSize}
                 skip={Math.abs(index - debouncePage) > slidesPerView}
               />
             )}
@@ -690,12 +860,11 @@ const SwiperSlider = (props: SwiperSliderProp) => {
         {hasNextBook &&
           [...new Array(slidesPerView).keys()].map((i) => (
             <SwiperSlide
-              key={`virtual-${
-                maxPage +
+              key={`virtual-${maxPage +
                 prefixPage +
                 ((maxPage + prefixPage) % slidesPerView) +
                 i
-              }`}
+                }`}
               virtualIndex={
                 maxPage +
                 prefixPage +
@@ -709,4 +878,11 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   );
 };
 
-export default Book;
+export default () => {
+  const { id: bookId } = useParams();
+  return (
+    <Fragment key={bookId}>
+      <Book />
+    </Fragment>
+  );
+};
