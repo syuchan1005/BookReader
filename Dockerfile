@@ -43,7 +43,7 @@ FROM base
 
 EXPOSE 80
 
-ENV DEBUG="" NODE_ENV="production" PORT=80
+ENV DEBUG="" NODE_ENV="production" PORT=80 HUSKY="0"
 
 RUN apt-get update && apt-get install -y p7zip-full tini openssl \
  && apt-get clean \

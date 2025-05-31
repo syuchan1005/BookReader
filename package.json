@@ -1,37 +1,39 @@
 {
-   "name": "@syuchan1005/book-reader",
-   "private": true,
-   "author": "syuchan1005<syuchan.dev@gmail.com>",
-   "license": "MIT",
-   "workspaces": [
-      "packages/common",
-      "packages/server",
-      "packages/client"
-   ],
-   "scripts": {
-      "serve:client": "npm run serve --workspace=\"packages/client\"",
-      "serve:client:prod": "npm run serve:prod --workspace=\"packages/client\"",
-      "build:client": "npm run build --workspace=\"packages/client\"",
-      "test:client": "npm run test --workspace=\"packages/client\"",
-      "serve:storybook": "npm run storybook --workspace=\"packages/client\"",
-      "build:storybook": "npm run build-storybook --workspace=\"packages/client\"",
-      "serve:server": "npm run serve --workspace=\"packages/server\"",
-      "build:server": "npm run build --workspace=\"packages/server\"",
-      "test:server": "npm run test --workspace=\"packages/server\"",
-      "build": "npm run build:client && npm run build:storybook && npm run build:server",
-      "start": "node dist/server",
-      "script:prisma-migrate": "npm run prisma-migrate --workspace=\"packages/server\"",
-      "gql-gen": "npm run gql-gen --workspace=\"packages/server\" && npm run gql-gen --workspace=\"packages/client\"",
-      "lint": "biome check --apply-unsafe ."
-   },
-   "devDependencies": {
-      "@biomejs/biome": "1.4.0",
-      "@types/jest": "^29.2.5",
-      "jest": "^29.3.1",
-      "ts-jest": "^29.0.5"
-   },
-   "dependencies": {
-      "graphql": "^16.6.0",
-      "typescript": "^4.9.4"
-   }
+  "name": "@syuchan1005/book-reader",
+  "private": true,
+  "author": "syuchan1005<syuchan.dev@gmail.com>",
+  "license": "MIT",
+  "workspaces": [
+    "packages/common",
+    "packages/server",
+    "packages/client"
+  ],
+  "scripts": {
+    "serve:client": "npm run serve --workspace=\"packages/client\"",
+    "serve:client:prod": "npm run serve:prod --workspace=\"packages/client\"",
+    "build:client": "npm run build --workspace=\"packages/client\"",
+    "test:client": "npm run test --workspace=\"packages/client\"",
+    "serve:storybook": "npm run storybook --workspace=\"packages/client\"",
+    "build:storybook": "npm run build-storybook --workspace=\"packages/client\"",
+    "serve:server": "npm run serve --workspace=\"packages/server\"",
+    "build:server": "npm run build --workspace=\"packages/server\"",
+    "test:server": "npm run test --workspace=\"packages/server\"",
+    "build": "npm run build:client && npm run build:storybook && npm run build:server",
+    "start": "node dist/server",
+    "script:prisma-migrate": "npm run prisma-migrate --workspace=\"packages/server\"",
+    "gql-gen": "npm run gql-gen --workspace=\"packages/server\" && npm run gql-gen --workspace=\"packages/client\"",
+    "lint": "biome check --apply-unsafe .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.4.0",
+    "@types/jest": "^29.2.5",
+    "jest": "^29.3.1",
+    "ts-jest": "^29.0.5"
+  },
+  "dependencies": {
+    "graphql": "^16.6.0",
+    "husky": "^9.1.7",
+    "typescript": "^4.9.4"
+  }
 }
