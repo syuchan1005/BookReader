@@ -334,7 +334,9 @@ const Info = (props: InfoProps) => {
                         onClick={handleBookClick}
                         onDeleted={onDeletedBook}
                         onEdit={refetch}
-                        onHistoryDeleted={() => setUpdateReadBooks((i) => i + 1)}
+                        onHistoryDeleted={() =>
+                          setUpdateReadBooks((i) => i + 1)
+                        }
                         thumbnailSize={downXs ? 150 : 200}
                         thumbnailNoSave={false}
                         visibleMargin={visibleMargin}

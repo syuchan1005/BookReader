@@ -39,8 +39,8 @@ import { useLongTap } from '@client/hooks/useLongTap';
 import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
-import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
+import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
 import db from '@client/indexedDb/Database';
 import { useDownloadBookDialog } from './dialogs/DownloadBookDialog';
@@ -294,7 +294,7 @@ const Book = (props: BookProps) => {
         if (onHistoryDeleted) onHistoryDeleted();
         closeRemoveReadingHistoryDialog();
       });
-    }
+    },
   });
 
   const openRemoveReadingHistoryDialog = () => {
@@ -348,7 +348,9 @@ const Book = (props: BookProps) => {
                 open={Boolean(menuAnchor)}
                 onClose={resetMenuAnchor}
               >
-                <MenuItem onClick={openRemoveReadingHistoryDialog}>Remove Reading History</MenuItem>
+                <MenuItem onClick={openRemoveReadingHistoryDialog}>
+                  Remove Reading History
+                </MenuItem>
                 <MenuItem onClick={clickSelectThumbnailBook}>
                   Select Thumbnail
                 </MenuItem>

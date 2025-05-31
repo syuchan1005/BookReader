@@ -1,4 +1,13 @@
-import { AppBar, Box, Button, Toolbar, Typography, IconButton, Icon, useTheme } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  Button,
+  Icon,
+  IconButton,
+  Toolbar,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const BookShelf = () => {
@@ -21,12 +30,7 @@ const BookShelf = () => {
               <Icon>arrow_back</Icon>
             </IconButton>
           )}
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1 }}
-          >
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {isHistory ? 'History' : 'BookShelf'}
           </Typography>
           {!isHistory && (

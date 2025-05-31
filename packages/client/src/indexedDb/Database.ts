@@ -32,14 +32,14 @@ export interface Revision {
 }
 
 export interface DownloadedBook {
-  infoId: string; /* index */
-  bookId: string; /* keyPath */
+  infoId: string /* index */;
+  bookId: string /* keyPath */;
   infoName: string;
   bookName: string;
   totalPageCount: number;
   thumbnail: Blob;
   bookZipArchive: Blob;
-  createdAt: Date; /* index */
+  createdAt: Date /* index */;
   serverUpdatedAt: Date;
 }
 
@@ -294,7 +294,9 @@ const UpgradeTask = [
     };
   },
   (db: IDBDatabase) => {
-    const downloadedBookStore = db.createObjectStore('downloadedBook', { keyPath: 'bookId' });
+    const downloadedBookStore = db.createObjectStore('downloadedBook', {
+      keyPath: 'bookId',
+    });
     downloadedBookStore.createIndex('infoId', 'infoId');
     downloadedBookStore.createIndex('createdAt', 'createdAt');
   },

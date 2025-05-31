@@ -1,17 +1,30 @@
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useTitle } from '@client/hooks/useTitle';
-import db, { BookInfoFavorite, DownloadedBook } from '@client/indexedDb/Database';
-import { Card, CardActionArea, Icon, IconButton, Menu, MenuItem, Theme, Typography, useTheme } from '@mui/material';
+import db, {
+  BookInfoFavorite,
+  DownloadedBook,
+} from '@client/indexedDb/Database';
+import {
+  Card,
+  CardActionArea,
+  Icon,
+  IconButton,
+  Menu,
+  MenuItem,
+  Theme,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
-import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 
+import zIndex from '@mui/material/styles/zIndex';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import zIndex from '@mui/material/styles/zIndex';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,19 +61,22 @@ const DownloadedBooks = () => {
   const classes = useStyles();
   const theme = useTheme();
 
-  const [downloadedBooks, setDownloadedBooks] = useState<Omit<DownloadedBook, 'bookZipArchive'>[]>([]);
+  const [downloadedBooks, setDownloadedBooks] = useState<
+    Omit<DownloadedBook, 'bookZipArchive'>[]
+  >([]);
   const [updateDownloadedBooks, setUpdateDownloadedBooks] = useState(0);
   useEffect(() => {
-    db.downloadedBook.getAll(
-      Number.MAX_SAFE_INTEGER,
-      { key: 'createdAt', direction: 'prev' },
-      undefined,
-      ({ bookZipArchive, ...v }) => v,
-    ).then((books) => {
-      setDownloadedBooks(books);
-    });
+    db.downloadedBook
+      .getAll(
+        Number.MAX_SAFE_INTEGER,
+        { key: 'createdAt', direction: 'prev' },
+        undefined,
+        ({ bookZipArchive, ...v }) => v,
+      )
+      .then((books) => {
+        setDownloadedBooks(books);
+      });
   }, [updateDownloadedBooks]);
-
 
   const handleDelete = useCallback((bookId: string) => {
     db.downloadedBook.delete(bookId).then(() => {
@@ -70,10 +86,7 @@ const DownloadedBooks = () => {
 
   return (
     <>
-      <Typography
-        variant='h6'
-        sx={{ margin: theme.spacing(1) }}
-      >
+      <Typography variant="h6" sx={{ margin: theme.spacing(1) }}>
         Downloads
       </Typography>
       <div className={classes.grid}>
@@ -89,12 +102,10 @@ const DownloadedBooks = () => {
   );
 };
 
-const Book = (
-  props: {
-    book: Omit<DownloadedBook, 'bookZipArchive'>,
-    onDelete: () => void,
-  },
-) => {
+const Book = (props: {
+  book: Omit<DownloadedBook, 'bookZipArchive'>;
+  onDelete: () => void;
+}) => {
   const { book, onDelete } = props;
   const theme = useTheme();
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
@@ -195,11 +206,8 @@ const Favorite = () => {
 
   return (
     <>
-      {(data?.bookInfos) && (
-        <Typography
-          variant='h6'
-          sx={{ margin: theme.spacing(1) }}
-        >
+      {data?.bookInfos && (
+        <Typography variant="h6" sx={{ margin: theme.spacing(1) }}>
           Favorites
         </Typography>
       )}

@@ -1,4 +1,5 @@
 import { Theme } from '@mui/material';
+import JSZip from 'jszip';
 import {
   CSSProperties,
   Fragment,
@@ -10,7 +11,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import JSZip from 'jszip';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -129,10 +129,10 @@ const useDatabasePage = (
   bookId: string,
   defaultPage = 0,
 ): [
-    loading: boolean,
-    page: number,
-    setPage: (page: number, infoId: string) => Promise<void>,
-  ] => {
+  loading: boolean,
+  page: number,
+  setPage: (page: number, infoId: string) => Promise<void>,
+] => {
   const [loading, setLoading] = useState(true);
   const [page, updatePageState] = useState(defaultPage);
 
@@ -540,8 +540,9 @@ const Book = (props: BookProps) => {
         <div
           className={classes.pageProgress}
           style={{
-            justifyContent: `flex-${readOrder === ReadOrder.LTR ? 'start' : 'end'
-              }`,
+            justifyContent: `flex-${
+              readOrder === ReadOrder.LTR ? 'start' : 'end'
+            }`,
           }}
         >
           <div style={{ width: `${(page / (maxPage - 1)) * 100}%` }} />
@@ -557,9 +558,7 @@ type BookData = {
   infoName: string;
   bookNumber: string;
 };
-const convertToBookData = (
-  data: BookQuery,
-): BookData | undefined => {
+const convertToBookData = (data: BookQuery): BookData | undefined => {
   if (!data || !data.book) return undefined;
   return {
     infoId: data.book.info.id,
@@ -569,31 +568,29 @@ const convertToBookData = (
   };
 };
 
-const useBookData = (
-  props: {
-    bookId: string;
-    onCompleted: (data: BookData) => void;
-    onError: () => void;
-  },
-): {
+const useBookData = (props: {
+  bookId: string;
+  onCompleted: (data: BookData) => void;
+  onError: () => void;
+}): {
   loading: boolean;
   error: Error | undefined;
   data: BookData | undefined;
   refetch: () => void;
-  ImageComponent: (
-    props: {
-      style: CSSProperties | undefined;
-      pageIndex: number;
-      imageSize: {
-        width: number;
-        height: number;
-      };
-      skip: boolean;
-    }
-  ) => ReactElement;
+  ImageComponent: (props: {
+    style: CSSProperties | undefined;
+    pageIndex: number;
+    imageSize: {
+      width: number;
+      height: number;
+    };
+    skip: boolean;
+  }) => ReactElement;
 } => {
   const { bookId, onCompleted, onError } = props;
-  const [downloadedBook, setDownloadedBook] = useState<DownloadedBook | null | undefined>(undefined);
+  const [downloadedBook, setDownloadedBook] = useState<
+    DownloadedBook | null | undefined
+  >(undefined);
   useEffect(() => {
     db.downloadedBook
       .get(bookId)
@@ -629,23 +626,27 @@ const useBookData = (
     return convertToBookData(data);
   }, [data]);
 
-  const [bookImageProvider, setBookImageProvider] = useState<((filePath: string) => Promise<string>)>(() => (() => Promise.resolve('')));
+  const [bookImageProvider, setBookImageProvider] = useState<
+    (filePath: string) => Promise<string>
+  >(() => () => Promise.resolve(''));
   useEffect(() => {
     if (!downloadedBook) return;
     const promises = {};
-    new JSZip().loadAsync(downloadedBook.bookZipArchive)
-      .then((zip) => {
-        setBookImageProvider(() => (filePath) => {
-          if (!zip.file(filePath)) {
-            return Promise.resolve(undefined);
-          }
-          if (promises[filePath]) {
-            return promises[filePath];
-          }
-          promises[filePath] = zip.file(filePath).async('base64').then((b) => `data:image/webp;base64,${b}`);
+    new JSZip().loadAsync(downloadedBook.bookZipArchive).then((zip) => {
+      setBookImageProvider(() => (filePath) => {
+        if (!zip.file(filePath)) {
+          return Promise.resolve(undefined);
+        }
+        if (promises[filePath]) {
           return promises[filePath];
-        });
+        }
+        promises[filePath] = zip
+          .file(filePath)
+          .async('base64')
+          .then((b) => `data:image/webp;base64,${b}`);
+        return promises[filePath];
       });
+    });
   }, [downloadedBook]);
 
   if (downloadedBook === undefined) {
@@ -653,7 +654,7 @@ const useBookData = (
       loading: true,
       error: undefined,
       data: undefined,
-      refetch: () => { },
+      refetch: () => {},
       ImageComponent: () => undefined,
     };
   }
@@ -668,25 +669,27 @@ const useBookData = (
         infoName: downloadedBook.infoName,
         bookNumber: downloadedBook.bookName,
       },
-      refetch: () => { },
+      refetch: () => {},
       ImageComponent: (props) => {
         const pageFileName = props.pageIndex
           .toString(10)
           .padStart(downloadedBook.totalPageCount.toString(10).length, '0');
-        const src = usePromise(bookImageProvider(`${pageFileName}.webp`).catch(() => undefined));
+        const src = usePromise(
+          bookImageProvider(`${pageFileName}.webp`).catch(() => undefined),
+        );
         return (
           <img
             style={{
               ...props.style,
               width: '100%',
               height: '100%',
-              objectFit: 'contain'
+              objectFit: 'contain',
             }}
             src={src}
           />
         );
       },
-    }
+    };
   }
 
   return {
@@ -708,13 +711,13 @@ const useBookData = (
   };
 };
 
-const usePromise = <T,>(promise: Promise<T>): (T | undefined) => {
+const usePromise = <T,>(promise: Promise<T>): T | undefined => {
   const [result, setResult] = useState<T | undefined>(undefined);
   useEffect(() => {
     let isMounted = true;
     promise
       .then((res) => {
-        if (isMounted) setResult(res)
+        if (isMounted) setResult(res);
       })
       .catch(() => setResult(undefined));
     return () => {
@@ -860,11 +863,12 @@ const SwiperSlider = (props: SwiperSliderProp) => {
         {hasNextBook &&
           [...new Array(slidesPerView).keys()].map((i) => (
             <SwiperSlide
-              key={`virtual-${maxPage +
+              key={`virtual-${
+                maxPage +
                 prefixPage +
                 ((maxPage + prefixPage) % slidesPerView) +
                 i
-                }`}
+              }`}
               virtualIndex={
                 maxPage +
                 prefixPage +

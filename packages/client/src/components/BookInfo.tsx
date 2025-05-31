@@ -41,8 +41,8 @@ import { useLazyDialog } from '@client/hooks/useLazyDialog';
 import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
-import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
+import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
 
 const DownloadZipDialog = lazy(
   () => import('@client/components/dialogs/DownloadZipBookInfoDialog'),
@@ -362,32 +362,28 @@ const BookInfo = (props: BookInfoProps) => {
       {keepVisible && (
         <Card className={classes.card} style={style} sx={{ height: '100%' }}>
           <CardActions className={classes.headerMenu}>
-              <IconButton
-                onClick={setMenuAnchor}
-                aria-label="menu"
-                size="large"
-              >
-                <Icon>more_vert</Icon>
-              </IconButton>
-              <Menu
-                anchorEl={menuAnchor}
-                open={Boolean(menuAnchor)}
-                onClose={resetMenuAnchor}
-              >
-                <MenuItem onClick={handleFavoriteClick}>
-                  {isFavorite ? 'Remove from favorite' : 'Favorite'}
-                </MenuItem>
-                <MenuItem onClick={openRemoveReadingHistoryDialog}>
-                  Remove Reading History
-                </MenuItem>
-                <MenuItem onClick={clickSelectThumbnailBookInfo}>
-                  Select Thumbnail
-                </MenuItem>
-                <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
-                <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
-                <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
-              </Menu>
-            </CardActions>
+            <IconButton onClick={setMenuAnchor} aria-label="menu" size="large">
+              <Icon>more_vert</Icon>
+            </IconButton>
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={resetMenuAnchor}
+            >
+              <MenuItem onClick={handleFavoriteClick}>
+                {isFavorite ? 'Remove from favorite' : 'Favorite'}
+              </MenuItem>
+              <MenuItem onClick={openRemoveReadingHistoryDialog}>
+                Remove Reading History
+              </MenuItem>
+              <MenuItem onClick={clickSelectThumbnailBookInfo}>
+                Select Thumbnail
+              </MenuItem>
+              <MenuItem onClick={clickEditBookInfo}>Edit</MenuItem>
+              <MenuItem onClick={clickDeleteBookInfo}>Delete</MenuItem>
+              <MenuItem onClick={clickDownloadBook}>Download</MenuItem>
+            </Menu>
+          </CardActions>
           <Link
             className={classes.link}
             state={{ referrer: location.pathname }}
