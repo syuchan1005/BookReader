@@ -65,6 +65,7 @@ const DownloadedBooks = () => {
     Omit<DownloadedBook, 'bookZipArchive'>[]
   >([]);
   const [updateDownloadedBooks, setUpdateDownloadedBooks] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateDownloadedBooks
   useEffect(() => {
     db.downloadedBook
       .getAll(
@@ -148,6 +149,7 @@ const Book = (props: {
       >
         <img
           src={URL.createObjectURL(book.thumbnail)}
+          alt={book.bookName}
           width={downSm ? 150 : 200}
           height="100%"
           style={{ objectFit: 'contain' }}

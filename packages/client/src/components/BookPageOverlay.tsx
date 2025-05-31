@@ -159,7 +159,6 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   );
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: TODO
     <div className={classes.overlay}>
       <div className={`${classes.overlayContent} center`}>
         {goPreviousBook && currentPage === 0 && (

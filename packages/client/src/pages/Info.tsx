@@ -175,6 +175,7 @@ const Info = (props: InfoProps) => {
 
   const [updateReadBooks, setUpdateReadBooks] = useState(0);
   const [sortedReadBooks, setSortedReadBooks] = useState<Read[]>([]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateReadBooks
   useEffect(() => {
     let cancelled = false;
     db.read

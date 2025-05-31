@@ -591,6 +591,7 @@ const useBookData = (props: {
   const [downloadedBook, setDownloadedBook] = useState<
     DownloadedBook | null | undefined
   >(undefined);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: onCompleted
   useEffect(() => {
     db.downloadedBook
       .get(bookId)
@@ -686,6 +687,7 @@ const useBookData = (props: {
               objectFit: 'contain',
             }}
             src={src}
+            alt={`${pageFileName}.webp`}
           />
         );
       },
@@ -723,7 +725,7 @@ const usePromise = <T,>(promise: Promise<T>): T | undefined => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [promise]);
   return result;
 };
 

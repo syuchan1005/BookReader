@@ -70,7 +70,7 @@ export class StoreWrapper<T> {
     });
   }
 
-  getAll<K extends keyof T & string, R>(
+  getAll<K extends keyof T & string, R = T>(
     limit: number,
     sort?: { key: K; direction?: 'next' | 'prev'; after?: T[K] },
     indexValue?: T[K] | undefined,

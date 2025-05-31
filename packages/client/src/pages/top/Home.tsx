@@ -315,6 +315,7 @@ const Home = (props: HomeProps) => {
 
   const [updateReadingInfo, setUpdateReadingInfo] = useState(0);
   const [readingInfoId, setReadingInfoId] = useState('');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateReadingInfo
   useEffect(() => {
     let cancelled = false;
     db.read
