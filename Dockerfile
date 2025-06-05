@@ -45,7 +45,11 @@ EXPOSE 80
 
 ENV DEBUG="" NODE_ENV="production" PORT=80 HUSKY="0"
 
-RUN apt-get update && apt-get install -y p7zip-full tini openssl \
+RUN apt-get update \
+ && apt-get install -y ca-certificates \
+ && echo "deb https://deb.debian.org/debian sid main non-free non-free-firmware" > /etc/apt/sources.list \
+ && apt-get update \
+ && apt-get install -y 7zip 7zip-rar tini openssl \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
