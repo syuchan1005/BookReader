@@ -568,6 +568,16 @@ const convertToBookData = (data: BookQuery): BookData | undefined => {
   };
 };
 
+type ImageComponentProps = {
+  style: CSSProperties | undefined;
+  pageIndex: number;
+  imageSize: {
+    width: number;
+    height: number;
+  };
+  skip: boolean;
+};
+
 const useBookData = (props: {
   bookId: string;
   onCompleted: (data: BookData) => void;
@@ -577,41 +587,88 @@ const useBookData = (props: {
   error: Error | undefined;
   data: BookData | undefined;
   refetch: () => void;
-  ImageComponent: (props: {
-    style: CSSProperties | undefined;
-    pageIndex: number;
-    imageSize: {
-      width: number;
-      height: number;
-    };
-    skip: boolean;
-  }) => ReactElement;
+  ImageComponent: (props: ImageComponentProps) => ReactElement;
 } => {
   const { bookId, onCompleted, onError } = props;
+  // A data representing the book information that is downloaded.
+  // If the book is not downloaded, it will be null.
   const [downloadedBook, setDownloadedBook] = useState<
     DownloadedBook | null | undefined
   >(undefined);
+  const [bookImageProvider, setBookImageProvider] = useState<
+    (filePath: string) => Promise<string>
+  >(() => () => Promise.resolve(''));
   // biome-ignore lint/correctness/useExhaustiveDependencies: onCompleted
   useEffect(() => {
-    db.downloadedBook
-      .get(bookId)
-      .then((book) => {
-        if (book) {
-          setDownloadedBook(book);
-          onCompleted({
-            infoId: book.infoId,
-            totalPageCount: book.totalPageCount,
-            infoName: book.infoName,
-            bookNumber: book.bookName,
-          });
-        } else {
-          setDownloadedBook(null);
-        }
-      })
-      .catch(() => {
+    (async () => {
+      const book: DownloadedBook | undefined = await db.downloadedBook
+        .get(bookId)
+        .catch(() => undefined);
+      if (!book) {
         setDownloadedBook(null);
+        return;
+      }
+      setDownloadedBook(book);
+      onCompleted({
+        infoId: book.infoId,
+        totalPageCount: book.totalPageCount,
+        infoName: book.infoName,
+        bookNumber: book.bookName,
       });
+
+      const promises = {};
+      const zip: JSZip | undefined = await new JSZip()
+        .loadAsync(book.bookZipArchive)
+        .catch(() => undefined);
+      if (!zip) {
+        setBookImageProvider(() => () => Promise.resolve(''));
+        return;
+      }
+      setBookImageProvider(() => (filePath) => {
+        if (!zip.file(filePath)) {
+          return Promise.resolve(undefined);
+        }
+        if (promises[filePath]) {
+          return promises[filePath];
+        }
+        promises[filePath] = zip
+          .file(filePath)
+          .async('base64')
+          .then((b) => `data:image/webp;base64,${b}`);
+        return promises[filePath];
+      });
+    })();
   }, [bookId]);
+
+  const DownloadedBookPageComponent = useMemo(() => {
+    if (!downloadedBook) return undefined;
+
+    return (props: ImageComponentProps) => {
+      const pageFileName = props.pageIndex
+        .toString(10)
+        .padStart(downloadedBook.totalPageCount.toString(10).length, '0');
+      const src: string | undefined = usePromise(
+        props.skip
+          ? Promise.resolve(undefined)
+          : bookImageProvider(`${pageFileName}.webp`).catch(() => undefined),
+      );
+
+      if (!src) return null;
+      return (
+        <img
+          style={{
+            ...props.style,
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+          }}
+          src={src}
+          alt={`${pageFileName}.webp`}
+        />
+      );
+    };
+  }, [downloadedBook, bookImageProvider]);
+
   const { loading, error, data, refetch } = useBookQuery({
     variables: {
       id: bookId,
@@ -626,29 +683,6 @@ const useBookData = (props: {
     if (!data) return null;
     return convertToBookData(data);
   }, [data]);
-
-  const [bookImageProvider, setBookImageProvider] = useState<
-    (filePath: string) => Promise<string>
-  >(() => () => Promise.resolve(''));
-  useEffect(() => {
-    if (!downloadedBook) return;
-    const promises = {};
-    new JSZip().loadAsync(downloadedBook.bookZipArchive).then((zip) => {
-      setBookImageProvider(() => (filePath) => {
-        if (!zip.file(filePath)) {
-          return Promise.resolve(undefined);
-        }
-        if (promises[filePath]) {
-          return promises[filePath];
-        }
-        promises[filePath] = zip
-          .file(filePath)
-          .async('base64')
-          .then((b) => `data:image/webp;base64,${b}`);
-        return promises[filePath];
-      });
-    });
-  }, [downloadedBook]);
 
   if (downloadedBook === undefined) {
     return {
@@ -671,26 +705,7 @@ const useBookData = (props: {
         bookNumber: downloadedBook.bookName,
       },
       refetch: () => {},
-      ImageComponent: (props) => {
-        const pageFileName = props.pageIndex
-          .toString(10)
-          .padStart(downloadedBook.totalPageCount.toString(10).length, '0');
-        const src = usePromise(
-          bookImageProvider(`${pageFileName}.webp`).catch(() => undefined),
-        );
-        return (
-          <img
-            style={{
-              ...props.style,
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-            }}
-            src={src}
-            alt={`${pageFileName}.webp`}
-          />
-        );
-      },
+      ImageComponent: DownloadedBookPageComponent,
     };
   }
 
