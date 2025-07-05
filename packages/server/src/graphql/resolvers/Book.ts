@@ -196,8 +196,7 @@ export const resolvers: Resolvers & {
             }),
         );
 
-        const { booksFolderPath, bookFolders } =
-          await GQLUtil.searchBookFolders(tempPath);
+        const { booksFolderPath, bookFolders } = await GQLUtil.searchBookFolders(tempPath);
         if (bookFolders.length === 0) {
           return {
             success: false,
