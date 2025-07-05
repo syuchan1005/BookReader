@@ -201,7 +201,9 @@ const GQLUtil = {
       },
     );
   },
-  async searchBookFolders(tempPath: string): Promise<{ booksFolderPath: string; bookFolders: string[] }> {
+  async searchBookFolders(
+    tempPath: string,
+  ): Promise<{ booksFolderPath: string; bookFolders: string[] }> {
     let booksFolderPath = '/';
     const bookFolders: string[] = [];
     for (let i = 0; i < 10; i += 1) {
@@ -248,7 +250,8 @@ const GQLUtil = {
           }
         }
         break;
-      } else if (dirs.length === 1) {
+      }
+      if (dirs.length === 1) {
         booksFolderPath = path.join(booksFolderPath, dirs[0].name);
       } else {
         break;
