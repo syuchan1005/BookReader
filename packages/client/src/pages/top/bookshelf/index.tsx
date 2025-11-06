@@ -1,5 +1,6 @@
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
+import { useConfirmDialog } from '@client/components/dialogs/ConfirmDialog';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useTitle } from '@client/hooks/useTitle';
@@ -85,11 +86,34 @@ const DownloadedBooks = () => {
     });
   }, []);
 
+  const { open, close, dialogElement } = useConfirmDialog({
+    title: 'Delete All Downloads',
+    content: 'Are you sure you want to delete all downloaded books?',
+    confirmText: 'Delete All',
+    onClickConfirm: async () => {
+      await db.downloadedBook.clear();
+      setUpdateDownloadedBooks((prev) => prev + 1);
+      close();
+    },
+  });
+
   return (
     <>
-      <Typography variant="h6" sx={{ margin: theme.spacing(1) }}>
-        Downloads
-      </Typography>
+      {dialogElement}
+      {downloadedBooks.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            margin: theme.spacing(1),
+          }}
+        >
+          <Typography variant="h6">Downloads</Typography>
+          <IconButton onClick={open} aria-label="delete all downloads">
+            <Icon>delete_sweep</Icon>
+          </IconButton>
+        </div>
+      )}
       <div className={classes.grid}>
         {downloadedBooks.map((book) => (
           <Book
