@@ -5,6 +5,7 @@ const argEnv = process.argv[2] || 'development';
 
 // noinspection JSIgnoredPromiseFromCall
 build({
+  tsconfig: 'tsconfig.json',
   entryPoints: ['src/index.ts'],
   bundle: true,
   outbase: './src',
