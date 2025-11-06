@@ -1,9 +1,9 @@
-FROM node:23.11.1-slim as base
+FROM node:25.1.0-slim AS base
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
 
-FROM base as build-client
+FROM base AS build-client
 
 ENV NODE_ENV="production"
 
@@ -20,7 +20,7 @@ RUN npm run build:client && npm run build:storybook
 
 # Result: /build/packages/client/dist
 
-FROM base as build-server
+FROM base AS build-server
 
 ENV NODE_ENV="production"
 
@@ -38,6 +38,41 @@ RUN npm run build:server
 # Result: /build/packages/server/dist/index.js
 #         /build/packages/server/scripts
 #         /build/packages/server/prisma
+
+FROM oven/bun:1.3.1-slim AS bun
+
+EXPOSE 80
+
+ENV DEBUG="" NODE_ENV="production" PORT=80 HUSKY="0"
+
+RUN apt-get update \
+ && apt-get install -y ca-certificates \
+ && echo "deb https://deb.debian.org/debian sid main non-free non-free-firmware" > /etc/apt/sources.list \
+ && apt-get update \
+ && apt-get install -y 7zip 7zip-rar tini openssl \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /bookReader
+
+COPY packages/server/package.json packages/server/
+COPY packages/client/package.json packages/client/
+COPY packages/common/package.json packages/common/
+COPY package*.json ./
+RUN bun install --filter=./packages/server
+RUN rm package*.json && cp packages/server/package.json . && rm -rf packages
+
+COPY --from=build-client /build/packages/client/dist public
+COPY --from=build-server /build/packages/server/dist/index.js ./
+COPY --from=build-server /build/packages/server/scripts scripts
+COPY --from=build-server /build/packages/server/prisma prisma
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+# "/bookReader/production.sqlite" is file
+VOLUME ["/bookReader/storage"]
+
+ENTRYPOINT ["tini", "--", "/bookReader/docker-entrypoint.sh"]
 
 FROM base
 

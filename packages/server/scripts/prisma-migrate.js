@@ -23,13 +23,15 @@ const env =
     ? 'production'
     : 'development';
 
+const PM = process.env.PM || 'npm';
+
 (async () => {
   console.log(`[MIGRATION] start env: ${env}`);
 
-  await execp('npm run prisma -- generate');
+  await execp(`${PM} run prisma -- generate`);
 
   await execp(
-    'npm run prisma -- migrate resolve --applied 20210807095937_init',
+    `${PM} run prisma -- migrate resolve --applied 20210807095937_init`,
     {
       env: { ...process.env, DB_FILE: `file:../${env}.sqlite` },
     },
@@ -37,7 +39,7 @@ const env =
     /* ignored */
   });
 
-  await execp('npm run prisma -- migrate deploy', {
+  await execp(`${PM} run prisma -- migrate deploy`, {
     env: { ...process.env, DB_FILE: `file:../${env}.sqlite` },
   });
 })();
