@@ -163,6 +163,11 @@ const Book = (props: BookProps) => {
     }
   }, [onVisible, isVisible]);
 
+  const [isDownloaded, setIsDownloaded] = useState(false);
+  useEffect(() => {
+    db.downloadedBook.get(bookId).then((book) => setIsDownloaded(!!book));
+  }, [bookId]);
+
   const [menuAnchor, setMenuAnchor, resetMenuAnchor] = useMenuAnchor();
   const [
     isShownDeleteDialog,
@@ -313,6 +318,11 @@ const Book = (props: BookProps) => {
     thumbnailPageIndex: thumbnail,
     totalPageCount: pages,
     serverUpdatedAt: new Date(Number(updatedAt)),
+    onClose: () => {
+      db.downloadedBook.get(bookId).then((book) => {
+        setIsDownloaded(!!book);
+      });
+    },
   });
 
   return (
@@ -359,10 +369,18 @@ const Book = (props: BookProps) => {
                 <MenuItem
                   onClick={() => {
                     resetMenuAnchor();
-                    openDownloadDownloadDialog();
+                    if (isDownloaded) {
+                      db.downloadedBook.delete(bookId).then(() => {
+                        setIsDownloaded(false);
+                      });
+                    } else {
+                      openDownloadDownloadDialog();
+                    }
                   }}
                 >
-                  Download Book (for offline)
+                  {isDownloaded
+                    ? 'Remove book (for offline)'
+                    : 'Download Book (for offline)'}
                 </MenuItem>
                 <MenuItem onClick={clickDownloadBook}>Download Zip</MenuItem>
               </Menu>

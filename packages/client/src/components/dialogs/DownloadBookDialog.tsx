@@ -26,7 +26,7 @@ export interface DownloadBookDialogProps {
 }
 
 export const useDownloadBookDialog = (
-  props: Omit<DownloadBookDialogProps, 'open' | 'onClose'>,
+  props: Omit<DownloadBookDialogProps, 'open'>,
 ) => {
   const [open, setOpen] = useState(false);
 
@@ -36,7 +36,10 @@ export const useDownloadBookDialog = (
       <DownloadBookDialog
         {...props}
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          if (props.onClose) props.onClose();
+          setOpen(false);
+        }}
       />
     ),
   };
