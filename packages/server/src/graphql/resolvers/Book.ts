@@ -215,9 +215,10 @@ export const resolvers: Resolvers & {
         const addedNums = [];
         const results = await asyncMap(bookFolders, async (p, i) => {
           const folderPath = path.join(tempPath, booksFolderPath, p);
-          let nums = p.match(/\d+/g);
-          if (nums) {
-            nums = Number(nums[nums.length - 1]).toString(10);
+          const numsMatch = p.match(/\d+/g);
+          let nums: string;
+          if (numsMatch) {
+            nums = Number(numsMatch[numsMatch.length - 1]).toString(10);
           } else {
             nums = `${i + 1}`;
           }
