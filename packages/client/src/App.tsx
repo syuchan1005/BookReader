@@ -9,8 +9,15 @@ import {
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
-import { Suspense, lazy, useCallback, useEffect, useMemo } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import {
+  Fragment,
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
+import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
 
 import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
@@ -217,7 +224,9 @@ const App = () => {
               path="info/:id"
               element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
-                  <Info />
+                  <RemountByParams>
+                    <Info />
+                  </RemountByParams>
                 </Suspense>
               }
             />
@@ -225,7 +234,9 @@ const App = () => {
               path="book/:id"
               element={
                 <Suspense fallback={<HeaderWithBookListSkeleton />}>
-                  <Book />
+                  <RemountByParams>
+                    <Book />
+                  </RemountByParams>
                 </Suspense>
               }
             />
@@ -263,6 +274,11 @@ const App = () => {
       </ThemeProvider>
     </StyledEngineProvider>
   );
+};
+
+const RemountByParams = ({ children }: { children: React.ReactNode }) => {
+  const params = useParams();
+  return <Fragment key={Object.values(params).join('_')}>{children}</Fragment>;
 };
 
 export default App;
