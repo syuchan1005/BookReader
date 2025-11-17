@@ -1,8 +1,8 @@
-import { Scalars } from '@syuchan1005/book-reader-graphql';
+import { IntRange } from '@syuchan1005/book-reader-graphql';
 import { GraphQLScalarType, IntValueNode } from 'graphql';
 import { Kind } from 'graphql/language/kinds';
 
-export const flatRange = (range: Scalars['IntRange']): number[] => {
+export const flatRange = (range: IntRange): number[] => {
   if (!range) return [];
   let arr = [];
   for (const a of range) {
@@ -19,7 +19,7 @@ export const flatRange = (range: Scalars['IntRange']): number[] => {
     .sort((a, b) => a - b);
 };
 
-export const chunkedRange = (range: Scalars['IntRange']): number[][] => {
+export const chunkedRange = (range: IntRange): number[][] => {
   if (!range) return [];
   const arr: number[][] = [];
   for (const a of range) {
@@ -50,7 +50,7 @@ const parseIntRange = (value: (number | number[])[] | any) => {
   return value;
 };
 
-const IntRange = new GraphQLScalarType({
+const IntRangeScalar = new GraphQLScalarType({
   name: 'IntRange',
   description: 'Int or Int[2] has array',
   serialize: parseIntRange,
@@ -91,4 +91,4 @@ const IntRange = new GraphQLScalarType({
   },
 });
 
-export default IntRange;
+export default IntRangeScalar;

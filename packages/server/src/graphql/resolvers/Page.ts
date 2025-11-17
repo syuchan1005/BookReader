@@ -18,8 +18,8 @@ import {
   Maybe,
   Resolvers,
   Result,
-  Scalars,
   SplitType,
+  Upload,
 } from '@syuchan1005/book-reader-graphql';
 import {
   getImageSize,
@@ -81,7 +81,7 @@ type TransformFn = (width: number, height: number) => CropValue;
 type ImageEditAction = {
   pageIndex: number;
   willDelete: boolean;
-  image?: Scalars['Upload'];
+  image?: Upload;
   cropTransforms?: TransformFn[];
   compositePages?: number[];
 };

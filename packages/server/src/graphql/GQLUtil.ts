@@ -8,7 +8,7 @@ import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
 
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
-import { Result, Scalars } from '@syuchan1005/book-reader-graphql';
+import { Result, Scalars, Upload } from '@syuchan1005/book-reader-graphql';
 
 import Errors from '@server/Errors';
 import { convertToDefaultImageType } from '@server/ImageUtil';
@@ -147,7 +147,7 @@ const GQLUtil = {
   },
   async getArchiveFile(
     onProgress: (downloadedBytes: number) => void,
-    file?: Scalars['Upload'],
+    file?: Upload,
     localPath?: string,
   ): Promise<({ success: false } & Result) | { success: true; data: Buffer }> {
     return tracer.startActiveSpan(

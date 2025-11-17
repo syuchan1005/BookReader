@@ -6,32 +6,34 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 export type BigInt = number;
 export type IntRange = (number | [number, number])[];
 export type Upload = File;
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  BigInt: BigInt;
-  IntRange: IntRange;
-  Upload: Upload;
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  BigInt: { input: BigInt; output: BigInt; }
+  IntRange: { input: IntRange; output: IntRange; }
+  Upload: { input: Upload; output: Upload; }
 };
 
 export type AddBookInfoResult = {
   __typename?: 'AddBookInfoResult';
   bookInfo?: Maybe<BookInfo>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type AddBooksSubscriptionResult = {
-  bookNumber?: Maybe<Scalars['String']>;
+  bookNumber?: Maybe<Scalars['String']['output']>;
   type: AddBooksSubscriptionType;
 };
 
@@ -44,29 +46,29 @@ export const AddBooksSubscriptionType = {
 export type AddBooksSubscriptionType = typeof AddBooksSubscriptionType[keyof typeof AddBooksSubscriptionType];
 export type Auth0 = {
   __typename?: 'Auth0';
-  clientId: Scalars['String'];
-  domain: Scalars['String'];
+  clientId: Scalars['String']['output'];
+  domain: Scalars['String']['output'];
 };
 
 export type Book = {
   __typename?: 'Book';
-  id: Scalars['ID'];
+  id: Scalars['ID']['output'];
   info?: Maybe<BookInfo>;
-  number: Scalars['String'];
-  pages: Scalars['Int'];
-  thumbnail?: Maybe<Scalars['Int']>;
-  updatedAt: Scalars['String'];
+  number: Scalars['String']['output'];
+  pages: Scalars['Int']['output'];
+  thumbnail?: Maybe<Scalars['Int']['output']>;
+  updatedAt: Scalars['String']['output'];
 };
 
 export type BookInfo = {
   __typename?: 'BookInfo';
   books: Array<Book>;
-  count: Scalars['Int'];
+  count: Scalars['Int']['output'];
   genres: Array<Genre>;
-  id: Scalars['ID'];
-  name: Scalars['String'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
   thumbnail?: Maybe<BookInfoThumbnail>;
-  updatedAt: Scalars['String'];
+  updatedAt: Scalars['String']['output'];
 };
 
 
@@ -76,13 +78,13 @@ export type BookInfoBooksArgs = {
 
 export type BookInfoEdge = {
   __typename?: 'BookInfoEdge';
-  cursor: Scalars['String'];
+  cursor: Scalars['String']['output'];
   node: BookInfo;
 };
 
 export type BookInfoList = {
   __typename?: 'BookInfoList';
-  hasNext: Scalars['Boolean'];
+  hasNext: Scalars['Boolean']['output'];
   infos: Array<BookInfo>;
 };
 
@@ -104,15 +106,15 @@ export type BookInfoPartialList = {
 
 export type BookInfoThumbnail = {
   __typename?: 'BookInfoThumbnail';
-  bookId: Scalars['ID'];
-  bookPageCount: Scalars['Int'];
-  pageIndex: Scalars['Int'];
+  bookId: Scalars['ID']['output'];
+  bookPageCount: Scalars['Int']['output'];
+  pageIndex: Scalars['Int']['output'];
 };
 
 export type BookInfosOption = {
-  genres?: InputMaybe<Array<Scalars['String']>>;
+  genres?: InputMaybe<Array<Scalars['String']['input']>>;
   order?: InputMaybe<BookInfoOrder>;
-  search?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']['input']>;
   searchMode?: InputMaybe<SearchMode>;
 };
 
@@ -125,29 +127,29 @@ export const BookOrder = {
 
 export type BookOrder = typeof BookOrder[keyof typeof BookOrder];
 export type CropEditAction = {
-  bottom?: InputMaybe<Scalars['Int']>;
-  left?: InputMaybe<Scalars['Int']>;
-  pageRange: Scalars['IntRange'];
-  right?: InputMaybe<Scalars['Int']>;
-  top?: InputMaybe<Scalars['Int']>;
+  bottom?: InputMaybe<Scalars['Int']['input']>;
+  left?: InputMaybe<Scalars['Int']['input']>;
+  pageRange: Scalars['IntRange']['input'];
+  right?: InputMaybe<Scalars['Int']['input']>;
+  top?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type Debug_BookCounts = {
   __typename?: 'Debug_BookCounts';
-  bookCount: Scalars['Int'];
-  bookInfoCount: Scalars['Int'];
+  bookCount: Scalars['Int']['output'];
+  bookInfoCount: Scalars['Int']['output'];
 };
 
 export type DeleteBookInfoResult = {
   __typename?: 'DeleteBookInfoResult';
   books: Array<Book>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type DeleteEditAction = {
-  pageRange: Scalars['IntRange'];
+  pageRange: Scalars['IntRange']['input'];
 };
 
 export type EditAction = {
@@ -163,9 +165,9 @@ export type EditAction = {
 export type EditBookInfoResult = {
   __typename?: 'EditBookInfoResult';
   bookInfo?: Maybe<BookInfo>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export const EditType = {
@@ -180,39 +182,39 @@ export const EditType = {
 export type EditType = typeof EditType[keyof typeof EditType];
 export type ExtractingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
   __typename?: 'ExtractingAddBooksSubscriptionResult';
-  bookNumber?: Maybe<Scalars['String']>;
-  progressPercent: Scalars['Int'];
+  bookNumber?: Maybe<Scalars['String']['output']>;
+  progressPercent: Scalars['Int']['output'];
   type: AddBooksSubscriptionType;
 };
 
 export type Genre = {
   __typename?: 'Genre';
-  invisible: Scalars['Boolean'];
-  name: Scalars['ID'];
+  invisible: Scalars['Boolean']['output'];
+  name: Scalars['ID']['output'];
 };
 
 export type HStackEditAction = {
-  pageRange: Scalars['IntRange'];
+  pageRange: Scalars['IntRange']['input'];
 };
 
 export type InputBook = {
-  file?: InputMaybe<Scalars['Upload']>;
-  number: Scalars['String'];
-  path?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  number: Scalars['String']['input'];
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type InputRead = {
-  bookId: Scalars['ID'];
-  infoId: Scalars['ID'];
-  page: Scalars['Int'];
-  updatedAt: Scalars['String'];
+  bookId: Scalars['ID']['input'];
+  infoId: Scalars['ID']['input'];
+  page: Scalars['Int']['input'];
+  updatedAt: Scalars['String']['input'];
 };
 
 export type MovingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
   __typename?: 'MovingAddBooksSubscriptionResult';
-  bookNumber?: Maybe<Scalars['String']>;
-  movedPageCount: Scalars['Int'];
-  totalPageCount: Scalars['Int'];
+  bookNumber?: Maybe<Scalars['String']['output']>;
+  movedPageCount: Scalars['Int']['output'];
+  totalPageCount: Scalars['Int']['output'];
   type: AddBooksSubscriptionType;
 };
 
@@ -235,79 +237,79 @@ export type Mutation = {
 
 
 export type MutationAddBookInfoArgs = {
-  genres?: InputMaybe<Array<Scalars['String']>>;
-  name: Scalars['String'];
+  genres?: InputMaybe<Array<Scalars['String']['input']>>;
+  name: Scalars['String']['input'];
 };
 
 
 export type MutationAddBooksArgs = {
   books: Array<InputBook>;
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type MutationAddCompressBookArgs = {
-  file?: InputMaybe<Scalars['Upload']>;
-  id: Scalars['ID'];
-  path?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  id: Scalars['ID']['input'];
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type MutationBulkEditPageArgs = {
   actions: Array<EditAction>;
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteBookInfoArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteBooksArgs = {
-  ids: Array<Scalars['ID']>;
-  infoId: Scalars['ID'];
+  ids: Array<Scalars['ID']['input']>;
+  infoId: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteGenreArgs = {
-  genre: Scalars['String'];
+  genre: Scalars['String']['input'];
 };
 
 
 export type MutationEditBookArgs = {
-  id: Scalars['ID'];
-  number?: InputMaybe<Scalars['String']>;
-  thumbnail?: InputMaybe<Scalars['Int']>;
+  id: Scalars['ID']['input'];
+  number?: InputMaybe<Scalars['String']['input']>;
+  thumbnail?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type MutationEditBookInfoArgs = {
-  genres?: InputMaybe<Array<Scalars['String']>>;
-  id: Scalars['ID'];
-  name?: InputMaybe<Scalars['String']>;
-  thumbnail?: InputMaybe<Scalars['ID']>;
+  genres?: InputMaybe<Array<Scalars['String']['input']>>;
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  thumbnail?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type MutationEditGenreArgs = {
-  invisible?: InputMaybe<Scalars['Boolean']>;
-  newName?: InputMaybe<Scalars['String']>;
-  oldName: Scalars['String'];
+  invisible?: InputMaybe<Scalars['Boolean']['input']>;
+  newName?: InputMaybe<Scalars['String']['input']>;
+  oldName: Scalars['String']['input'];
 };
 
 
 export type MutationMoveBooksArgs = {
-  ids: Array<Scalars['ID']>;
-  infoId: Scalars['ID'];
+  ids: Array<Scalars['ID']['input']>;
+  infoId: Scalars['ID']['input'];
 };
 
 export type PageInfo = {
   __typename?: 'PageInfo';
-  endCursor: Scalars['String'];
-  hasNextPage: Scalars['Boolean'];
-  hasPreviousPage: Scalars['Boolean'];
-  startCursor: Scalars['String'];
+  endCursor: Scalars['String']['output'];
+  hasNextPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
+  startCursor: Scalars['String']['output'];
 };
 
 export type Query = {
@@ -324,39 +326,39 @@ export type Query = {
 
 
 export type QueryBookArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type QueryBookInfoArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type QueryBookInfosArgs = {
-  ids: Array<Scalars['ID']>;
+  ids: Array<Scalars['ID']['input']>;
 };
 
 
 export type QueryBooksArgs = {
-  ids: Array<Scalars['ID']>;
+  ids: Array<Scalars['ID']['input']>;
 };
 
 
 export type QueryRelayBookInfosArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
   option?: InputMaybe<BookInfosOption>;
 };
 
 export type Read = {
   __typename?: 'Read';
-  bookId: Scalars['ID'];
-  infoId: Scalars['ID'];
-  page: Scalars['Int'];
-  updatedAt: Scalars['String'];
+  bookId: Scalars['ID']['output'];
+  infoId: Scalars['ID']['output'];
+  page: Scalars['Int']['output'];
+  updatedAt: Scalars['String']['output'];
 };
 
 export type ReadList = {
@@ -367,23 +369,23 @@ export type ReadList = {
 
 export type Result = {
   __typename?: 'Result';
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type ResultWithBookResults = {
   __typename?: 'ResultWithBookResults';
   bookResults?: Maybe<Array<Result>>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type Revision = {
   __typename?: 'Revision';
-  count: Scalars['Int'];
-  syncedAt: Scalars['String'];
+  count: Scalars['Int']['output'];
+  syncedAt: Scalars['String']['output'];
 };
 
 export const SearchMode = {
@@ -394,8 +396,8 @@ export const SearchMode = {
 
 export type SearchMode = typeof SearchMode[keyof typeof SearchMode];
 export type SplitEditAction = {
-  pageRange: Scalars['IntRange'];
-  splitCount?: InputMaybe<Scalars['Int']>;
+  pageRange: Scalars['IntRange']['input'];
+  splitCount?: InputMaybe<Scalars['Int']['input']>;
   splitType: SplitType;
 };
 
@@ -408,33 +410,33 @@ export type SplitType = typeof SplitType[keyof typeof SplitType];
 export type Subscription = {
   __typename?: 'Subscription';
   addBooks: AddBooksSubscriptionResult;
-  bulkEditPage: Scalars['String'];
+  bulkEditPage: Scalars['String']['output'];
 };
 
 
 export type SubscriptionAddBooksArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type SubscriptionBulkEditPageArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 export type UploadEditAction = {
-  image: Scalars['Upload'];
-  pageIndex: Scalars['Int'];
+  image: Scalars['Upload']['input'];
+  pageIndex: Scalars['Int']['input'];
 };
 
 export type UploadingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
   __typename?: 'UploadingAddBooksSubscriptionResult';
-  bookNumber?: Maybe<Scalars['String']>;
-  downloadedBytes: Scalars['Int'];
+  bookNumber?: Maybe<Scalars['String']['output']>;
+  downloadedBytes: Scalars['Int']['output'];
   type: AddBooksSubscriptionType;
 };
 
 export type AddBooksMutationVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
   books: Array<InputBook> | InputBook;
 }>;
 
@@ -442,24 +444,28 @@ export type AddBooksMutationVariables = Exact<{
 export type AddBooksMutation = { __typename?: 'Mutation', adds: Array<{ __typename?: 'Result', success: boolean, code?: string | null }> };
 
 export type AddBooksProgressSubscriptionVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 }>;
 
 
-export type AddBooksProgressSubscription = { __typename?: 'Subscription', addBooks: { __typename?: 'ExtractingAddBooksSubscriptionResult', progressPercent: number, type: AddBooksSubscriptionType, bookNumber?: string | null } | { __typename?: 'MovingAddBooksSubscriptionResult', movedPageCount: number, totalPageCount: number, type: AddBooksSubscriptionType, bookNumber?: string | null } | { __typename?: 'UploadingAddBooksSubscriptionResult', downloadedBytes: number, type: AddBooksSubscriptionType, bookNumber?: string | null } };
+export type AddBooksProgressSubscription = { __typename?: 'Subscription', addBooks:
+    | { __typename?: 'ExtractingAddBooksSubscriptionResult', progressPercent: number, type: AddBooksSubscriptionType, bookNumber?: string | null }
+    | { __typename?: 'MovingAddBooksSubscriptionResult', movedPageCount: number, totalPageCount: number, type: AddBooksSubscriptionType, bookNumber?: string | null }
+    | { __typename?: 'UploadingAddBooksSubscriptionResult', downloadedBytes: number, type: AddBooksSubscriptionType, bookNumber?: string | null }
+   };
 
 export type AddCompressBookMutationVariables = Exact<{
-  id: Scalars['ID'];
-  file?: InputMaybe<Scalars['Upload']>;
-  path?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID']['input'];
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  path?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type AddCompressBookMutation = { __typename?: 'Mutation', add: { __typename?: 'ResultWithBookResults', success: boolean, code?: string | null } };
 
 export type AddBookInfoMutationVariables = Exact<{
-  name: Scalars['String'];
-  genres: Array<Scalars['String']> | Scalars['String'];
+  name: Scalars['String']['input'];
+  genres: Array<Scalars['String']['input']> | Scalars['String']['input'];
 }>;
 
 
@@ -481,38 +487,38 @@ export type RebuildMeiliSearchMutationVariables = Exact<{ [key: string]: never; 
 export type RebuildMeiliSearchMutation = { __typename?: 'Mutation', debug_rebuildMeiliSearch: { __typename?: 'Result', success: boolean } };
 
 export type DeleteBookInfoMutationVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 }>;
 
 
 export type DeleteBookInfoMutation = { __typename?: 'Mutation', del: { __typename?: 'DeleteBookInfoResult', success: boolean, code?: string | null, books: Array<{ __typename?: 'Book', id: string, pages: number }> } };
 
 export type EditBookInfoMutationVariables = Exact<{
-  id: Scalars['ID'];
-  name?: InputMaybe<Scalars['String']>;
-  genres: Array<Scalars['String']> | Scalars['String'];
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  genres: Array<Scalars['String']['input']> | Scalars['String']['input'];
 }>;
 
 
 export type EditBookInfoMutation = { __typename?: 'Mutation', edit: { __typename?: 'EditBookInfoResult', success: boolean, code?: string | null, bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null } };
 
 export type EditBookMutationVariables = Exact<{
-  id: Scalars['ID'];
-  number?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID']['input'];
+  number?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type EditBookMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type DownloadBookInfosQueryVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 }>;
 
 
 export type DownloadBookInfosQuery = { __typename?: 'Query', bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, books: Array<{ __typename?: 'Book', id: string, number: string, pages: number }> } | null };
 
 export type BulkEditPagesMutationVariables = Exact<{
-  bookId: Scalars['ID'];
+  bookId: Scalars['ID']['input'];
   editActions: Array<EditAction> | EditAction;
 }>;
 
@@ -520,14 +526,14 @@ export type BulkEditPagesMutationVariables = Exact<{
 export type BulkEditPagesMutation = { __typename?: 'Mutation', bulkEditPage: { __typename?: 'Result', success: boolean, code?: string | null, message?: string | null } };
 
 export type BulkEditPageProgressSubscriptionVariables = Exact<{
-  bookId: Scalars['ID'];
+  bookId: Scalars['ID']['input'];
 }>;
 
 
 export type BulkEditPageProgressSubscription = { __typename?: 'Subscription', bulkEditPage: string };
 
 export type BookQueryVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 }>;
 
 
@@ -536,8 +542,8 @@ export type BookQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id
 export type HomeBookInfoFragment = { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> };
 
 export type RelayBookInfosQueryVariables = Exact<{
-  first?: InputMaybe<Scalars['Int']>;
-  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
   option: BookInfosOption;
 }>;
 
@@ -545,30 +551,30 @@ export type RelayBookInfosQueryVariables = Exact<{
 export type RelayBookInfosQuery = { __typename?: 'Query', bookInfos: { __typename?: 'BookInfoPartialList', edges: Array<{ __typename?: 'BookInfoEdge', cursor: string, node: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor: string, endCursor: string } } };
 
 export type DeleteGenreMutationVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type DeleteGenreMutation = { __typename?: 'Mutation', deleteGenre: { __typename?: 'Result', code?: string | null, success: boolean, message?: string | null } };
 
 export type EditGenreMutationVariables = Exact<{
-  oldName: Scalars['String'];
-  newName?: InputMaybe<Scalars['String']>;
-  invisible?: InputMaybe<Scalars['Boolean']>;
+  oldName: Scalars['String']['input'];
+  newName?: InputMaybe<Scalars['String']['input']>;
+  invisible?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
 export type EditGenreMutation = { __typename?: 'Mutation', editGenre: { __typename?: 'Result', code?: string | null, success: boolean, message?: string | null } };
 
 export type BookInfosQueryVariables = Exact<{
-  ids: Array<Scalars['ID']> | Scalars['ID'];
+  ids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
 }>;
 
 
 export type BookInfosQuery = { __typename?: 'Query', bookInfos: Array<{ __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null> };
 
 export type BooksQueryVariables = Exact<{
-  ids: Array<Scalars['ID']> | Scalars['ID'];
+  ids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
 }>;
 
 
@@ -580,46 +586,46 @@ export type AvailableSearchModesQueryVariables = Exact<{ [key: string]: never; }
 export type AvailableSearchModesQuery = { __typename?: 'Query', availableSearchModes: Array<SearchMode> };
 
 export type DeleteBooksMutationVariables = Exact<{
-  infoId: Scalars['ID'];
-  ids: Array<Scalars['ID']> | Scalars['ID'];
+  infoId: Scalars['ID']['input'];
+  ids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
 }>;
 
 
 export type DeleteBooksMutation = { __typename?: 'Mutation', deleteBooks: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type MoveBooksMutationVariables = Exact<{
-  infoId: Scalars['ID'];
-  ids: Array<Scalars['ID']> | Scalars['ID'];
+  infoId: Scalars['ID']['input'];
+  ids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
 }>;
 
 
 export type MoveBooksMutation = { __typename?: 'Mutation', moveBooks: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type EditBookInfoThumbnailMutationVariables = Exact<{
-  id: Scalars['ID'];
-  thumbnail?: InputMaybe<Scalars['ID']>;
+  id: Scalars['ID']['input'];
+  thumbnail?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
 export type EditBookInfoThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'EditBookInfoResult', success: boolean, code?: string | null, bookInfo?: { __typename?: 'BookInfo', id: string, name: string, count: number, updatedAt: string, thumbnail?: { __typename?: 'BookInfoThumbnail', bookId: string, pageIndex: number, bookPageCount: number } | null, genres: Array<{ __typename?: 'Genre', name: string, invisible: boolean }> } | null } };
 
 export type BookPagesQueryVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 }>;
 
 
 export type BookPagesQuery = { __typename?: 'Query', book?: { __typename?: 'Book', id: string, pages: number } | null };
 
 export type EditBookThumbnailMutationVariables = Exact<{
-  id: Scalars['ID'];
-  th?: InputMaybe<Scalars['Int']>;
+  id: Scalars['ID']['input'];
+  th?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
 export type EditBookThumbnailMutation = { __typename?: 'Mutation', edit: { __typename?: 'Result', success: boolean, code?: string | null } };
 
 export type BookInfoQueryVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
   order?: InputMaybe<BookOrder>;
 }>;
 
@@ -718,7 +724,7 @@ export const AddBooksProgressDocument = gql`
  *   },
  * });
  */
-export function useAddBooksProgressSubscription(baseOptions: Apollo.SubscriptionHookOptions<AddBooksProgressSubscription, AddBooksProgressSubscriptionVariables>) {
+export function useAddBooksProgressSubscription(baseOptions: Apollo.SubscriptionHookOptions<AddBooksProgressSubscription, AddBooksProgressSubscriptionVariables> & ({ variables: AddBooksProgressSubscriptionVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useSubscription<AddBooksProgressSubscription, AddBooksProgressSubscriptionVariables>(AddBooksProgressDocument, options);
       }
@@ -830,8 +836,13 @@ export function useDebugBookCountsLazyQuery(baseOptions?: Apollo.LazyQueryHookOp
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<DebugBookCountsQuery, DebugBookCountsQueryVariables>(DebugBookCountsDocument, options);
         }
+export function useDebugBookCountsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DebugBookCountsQuery, DebugBookCountsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<DebugBookCountsQuery, DebugBookCountsQueryVariables>(DebugBookCountsDocument, options);
+        }
 export type DebugBookCountsQueryHookResult = ReturnType<typeof useDebugBookCountsQuery>;
 export type DebugBookCountsLazyQueryHookResult = ReturnType<typeof useDebugBookCountsLazyQuery>;
+export type DebugBookCountsSuspenseQueryHookResult = ReturnType<typeof useDebugBookCountsSuspenseQuery>;
 export type DebugBookCountsQueryResult = Apollo.QueryResult<DebugBookCountsQuery, DebugBookCountsQueryVariables>;
 export const DeleteUnusedFoldersDocument = gql`
     mutation deleteUnusedFolders {
@@ -1041,7 +1052,7 @@ export const DownloadBookInfosDocument = gql`
  *   },
  * });
  */
-export function useDownloadBookInfosQuery(baseOptions: Apollo.QueryHookOptions<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>) {
+export function useDownloadBookInfosQuery(baseOptions: Apollo.QueryHookOptions<DownloadBookInfosQuery, DownloadBookInfosQueryVariables> & ({ variables: DownloadBookInfosQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>(DownloadBookInfosDocument, options);
       }
@@ -1049,8 +1060,13 @@ export function useDownloadBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHook
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>(DownloadBookInfosDocument, options);
         }
+export function useDownloadBookInfosSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>(DownloadBookInfosDocument, options);
+        }
 export type DownloadBookInfosQueryHookResult = ReturnType<typeof useDownloadBookInfosQuery>;
 export type DownloadBookInfosLazyQueryHookResult = ReturnType<typeof useDownloadBookInfosLazyQuery>;
+export type DownloadBookInfosSuspenseQueryHookResult = ReturnType<typeof useDownloadBookInfosSuspenseQuery>;
 export type DownloadBookInfosQueryResult = Apollo.QueryResult<DownloadBookInfosQuery, DownloadBookInfosQueryVariables>;
 export const BulkEditPagesDocument = gql`
     mutation bulkEditPages($bookId: ID!, $editActions: [EditAction!]!) {
@@ -1110,7 +1126,7 @@ export const BulkEditPageProgressDocument = gql`
  *   },
  * });
  */
-export function useBulkEditPageProgressSubscription(baseOptions: Apollo.SubscriptionHookOptions<BulkEditPageProgressSubscription, BulkEditPageProgressSubscriptionVariables>) {
+export function useBulkEditPageProgressSubscription(baseOptions: Apollo.SubscriptionHookOptions<BulkEditPageProgressSubscription, BulkEditPageProgressSubscriptionVariables> & ({ variables: BulkEditPageProgressSubscriptionVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useSubscription<BulkEditPageProgressSubscription, BulkEditPageProgressSubscriptionVariables>(BulkEditPageProgressDocument, options);
       }
@@ -1146,7 +1162,7 @@ export const BookDocument = gql`
  *   },
  * });
  */
-export function useBookQuery(baseOptions: Apollo.QueryHookOptions<BookQuery, BookQueryVariables>) {
+export function useBookQuery(baseOptions: Apollo.QueryHookOptions<BookQuery, BookQueryVariables> & ({ variables: BookQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<BookQuery, BookQueryVariables>(BookDocument, options);
       }
@@ -1154,8 +1170,13 @@ export function useBookLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BookQ
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<BookQuery, BookQueryVariables>(BookDocument, options);
         }
+export function useBookSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BookQuery, BookQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BookQuery, BookQueryVariables>(BookDocument, options);
+        }
 export type BookQueryHookResult = ReturnType<typeof useBookQuery>;
 export type BookLazyQueryHookResult = ReturnType<typeof useBookLazyQuery>;
+export type BookSuspenseQueryHookResult = ReturnType<typeof useBookSuspenseQuery>;
 export type BookQueryResult = Apollo.QueryResult<BookQuery, BookQueryVariables>;
 export const RelayBookInfosDocument = gql`
     query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!) {
@@ -1194,7 +1215,7 @@ export const RelayBookInfosDocument = gql`
  *   },
  * });
  */
-export function useRelayBookInfosQuery(baseOptions: Apollo.QueryHookOptions<RelayBookInfosQuery, RelayBookInfosQueryVariables>) {
+export function useRelayBookInfosQuery(baseOptions: Apollo.QueryHookOptions<RelayBookInfosQuery, RelayBookInfosQueryVariables> & ({ variables: RelayBookInfosQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<RelayBookInfosQuery, RelayBookInfosQueryVariables>(RelayBookInfosDocument, options);
       }
@@ -1202,8 +1223,13 @@ export function useRelayBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<RelayBookInfosQuery, RelayBookInfosQueryVariables>(RelayBookInfosDocument, options);
         }
+export function useRelayBookInfosSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<RelayBookInfosQuery, RelayBookInfosQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<RelayBookInfosQuery, RelayBookInfosQueryVariables>(RelayBookInfosDocument, options);
+        }
 export type RelayBookInfosQueryHookResult = ReturnType<typeof useRelayBookInfosQuery>;
 export type RelayBookInfosLazyQueryHookResult = ReturnType<typeof useRelayBookInfosLazyQuery>;
+export type RelayBookInfosSuspenseQueryHookResult = ReturnType<typeof useRelayBookInfosSuspenseQuery>;
 export type RelayBookInfosQueryResult = Apollo.QueryResult<RelayBookInfosQuery, RelayBookInfosQueryVariables>;
 export const DeleteGenreDocument = gql`
     mutation DeleteGenre($name: String!) {
@@ -1313,7 +1339,7 @@ export const BookInfosDocument = gql`
  *   },
  * });
  */
-export function useBookInfosQuery(baseOptions: Apollo.QueryHookOptions<BookInfosQuery, BookInfosQueryVariables>) {
+export function useBookInfosQuery(baseOptions: Apollo.QueryHookOptions<BookInfosQuery, BookInfosQueryVariables> & ({ variables: BookInfosQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
       }
@@ -1321,8 +1347,13 @@ export function useBookInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
         }
+export function useBookInfosSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BookInfosQuery, BookInfosQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BookInfosQuery, BookInfosQueryVariables>(BookInfosDocument, options);
+        }
 export type BookInfosQueryHookResult = ReturnType<typeof useBookInfosQuery>;
 export type BookInfosLazyQueryHookResult = ReturnType<typeof useBookInfosLazyQuery>;
+export type BookInfosSuspenseQueryHookResult = ReturnType<typeof useBookInfosSuspenseQuery>;
 export type BookInfosQueryResult = Apollo.QueryResult<BookInfosQuery, BookInfosQueryVariables>;
 export const BooksDocument = gql`
     query books($ids: [ID!]!) {
@@ -1356,7 +1387,7 @@ export const BooksDocument = gql`
  *   },
  * });
  */
-export function useBooksQuery(baseOptions: Apollo.QueryHookOptions<BooksQuery, BooksQueryVariables>) {
+export function useBooksQuery(baseOptions: Apollo.QueryHookOptions<BooksQuery, BooksQueryVariables> & ({ variables: BooksQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<BooksQuery, BooksQueryVariables>(BooksDocument, options);
       }
@@ -1364,8 +1395,13 @@ export function useBooksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Book
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<BooksQuery, BooksQueryVariables>(BooksDocument, options);
         }
+export function useBooksSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BooksQuery, BooksQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BooksQuery, BooksQueryVariables>(BooksDocument, options);
+        }
 export type BooksQueryHookResult = ReturnType<typeof useBooksQuery>;
 export type BooksLazyQueryHookResult = ReturnType<typeof useBooksLazyQuery>;
+export type BooksSuspenseQueryHookResult = ReturnType<typeof useBooksSuspenseQuery>;
 export type BooksQueryResult = Apollo.QueryResult<BooksQuery, BooksQueryVariables>;
 export const AvailableSearchModesDocument = gql`
     query availableSearchModes {
@@ -1396,8 +1432,13 @@ export function useAvailableSearchModesLazyQuery(baseOptions?: Apollo.LazyQueryH
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>(AvailableSearchModesDocument, options);
         }
+export function useAvailableSearchModesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>(AvailableSearchModesDocument, options);
+        }
 export type AvailableSearchModesQueryHookResult = ReturnType<typeof useAvailableSearchModesQuery>;
 export type AvailableSearchModesLazyQueryHookResult = ReturnType<typeof useAvailableSearchModesLazyQuery>;
+export type AvailableSearchModesSuspenseQueryHookResult = ReturnType<typeof useAvailableSearchModesSuspenseQuery>;
 export type AvailableSearchModesQueryResult = Apollo.QueryResult<AvailableSearchModesQuery, AvailableSearchModesQueryVariables>;
 export const DeleteBooksDocument = gql`
     mutation deleteBooks($infoId: ID!, $ids: [ID!]!) {
@@ -1532,7 +1573,7 @@ export const BookPagesDocument = gql`
  *   },
  * });
  */
-export function useBookPagesQuery(baseOptions: Apollo.QueryHookOptions<BookPagesQuery, BookPagesQueryVariables>) {
+export function useBookPagesQuery(baseOptions: Apollo.QueryHookOptions<BookPagesQuery, BookPagesQueryVariables> & ({ variables: BookPagesQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<BookPagesQuery, BookPagesQueryVariables>(BookPagesDocument, options);
       }
@@ -1540,8 +1581,13 @@ export function useBookPagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<BookPagesQuery, BookPagesQueryVariables>(BookPagesDocument, options);
         }
+export function useBookPagesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BookPagesQuery, BookPagesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BookPagesQuery, BookPagesQueryVariables>(BookPagesDocument, options);
+        }
 export type BookPagesQueryHookResult = ReturnType<typeof useBookPagesQuery>;
 export type BookPagesLazyQueryHookResult = ReturnType<typeof useBookPagesLazyQuery>;
+export type BookPagesSuspenseQueryHookResult = ReturnType<typeof useBookPagesSuspenseQuery>;
 export type BookPagesQueryResult = Apollo.QueryResult<BookPagesQuery, BookPagesQueryVariables>;
 export const EditBookThumbnailDocument = gql`
     mutation editBookThumbnail($id: ID!, $th: Int) {
@@ -1614,7 +1660,7 @@ export const BookInfoDocument = gql`
  *   },
  * });
  */
-export function useBookInfoQuery(baseOptions: Apollo.QueryHookOptions<BookInfoQuery, BookInfoQueryVariables>) {
+export function useBookInfoQuery(baseOptions: Apollo.QueryHookOptions<BookInfoQuery, BookInfoQueryVariables> & ({ variables: BookInfoQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<BookInfoQuery, BookInfoQueryVariables>(BookInfoDocument, options);
       }
@@ -1622,8 +1668,13 @@ export function useBookInfoLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<B
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<BookInfoQuery, BookInfoQueryVariables>(BookInfoDocument, options);
         }
+export function useBookInfoSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BookInfoQuery, BookInfoQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BookInfoQuery, BookInfoQueryVariables>(BookInfoDocument, options);
+        }
 export type BookInfoQueryHookResult = ReturnType<typeof useBookInfoQuery>;
 export type BookInfoLazyQueryHookResult = ReturnType<typeof useBookInfoLazyQuery>;
+export type BookInfoSuspenseQueryHookResult = ReturnType<typeof useBookInfoSuspenseQuery>;
 export type BookInfoQueryResult = Apollo.QueryResult<BookInfoQuery, BookInfoQueryVariables>;
 export const GenresDocument = gql`
     query genres {
@@ -1657,6 +1708,11 @@ export function useGenresLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Gen
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GenresQuery, GenresQueryVariables>(GenresDocument, options);
         }
+export function useGenresSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GenresQuery, GenresQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GenresQuery, GenresQueryVariables>(GenresDocument, options);
+        }
 export type GenresQueryHookResult = ReturnType<typeof useGenresQuery>;
 export type GenresLazyQueryHookResult = ReturnType<typeof useGenresLazyQuery>;
+export type GenresSuspenseQueryHookResult = ReturnType<typeof useGenresSuspenseQuery>;
 export type GenresQueryResult = Apollo.QueryResult<GenresQuery, GenresQueryVariables>;

@@ -7,6 +7,8 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 export type BigInt = number;
@@ -14,26 +16,26 @@ export type IntRange = (number | [number, number])[];
 export type Upload = Promise<{ filename: string, mimetype: string, encoding: string, createReadStream: () => NodeJS.ReadableStream }>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  BigInt: BigInt;
-  IntRange: IntRange;
-  Upload: Upload;
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  BigInt: { input: BigInt; output: BigInt; }
+  IntRange: { input: IntRange; output: IntRange; }
+  Upload: { input: Upload; output: Upload; }
 };
 
 export type AddBookInfoResult = {
   __typename?: 'AddBookInfoResult';
   bookInfo?: Maybe<BookInfo>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type AddBooksSubscriptionResult = {
-  bookNumber?: Maybe<Scalars['String']>;
+  bookNumber?: Maybe<Scalars['String']['output']>;
   type: AddBooksSubscriptionType;
 };
 
@@ -46,29 +48,29 @@ export const AddBooksSubscriptionType = {
 export type AddBooksSubscriptionType = typeof AddBooksSubscriptionType[keyof typeof AddBooksSubscriptionType];
 export type Auth0 = {
   __typename?: 'Auth0';
-  clientId: Scalars['String'];
-  domain: Scalars['String'];
+  clientId: Scalars['String']['output'];
+  domain: Scalars['String']['output'];
 };
 
 export type Book = {
   __typename?: 'Book';
-  id: Scalars['ID'];
+  id: Scalars['ID']['output'];
   info?: Maybe<BookInfo>;
-  number: Scalars['String'];
-  pages: Scalars['Int'];
-  thumbnail?: Maybe<Scalars['Int']>;
-  updatedAt: Scalars['String'];
+  number: Scalars['String']['output'];
+  pages: Scalars['Int']['output'];
+  thumbnail?: Maybe<Scalars['Int']['output']>;
+  updatedAt: Scalars['String']['output'];
 };
 
 export type BookInfo = {
   __typename?: 'BookInfo';
   books: Array<Book>;
-  count: Scalars['Int'];
+  count: Scalars['Int']['output'];
   genres: Array<Genre>;
-  id: Scalars['ID'];
-  name: Scalars['String'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
   thumbnail?: Maybe<BookInfoThumbnail>;
-  updatedAt: Scalars['String'];
+  updatedAt: Scalars['String']['output'];
 };
 
 
@@ -78,13 +80,13 @@ export type BookInfoBooksArgs = {
 
 export type BookInfoEdge = {
   __typename?: 'BookInfoEdge';
-  cursor: Scalars['String'];
+  cursor: Scalars['String']['output'];
   node: BookInfo;
 };
 
 export type BookInfoList = {
   __typename?: 'BookInfoList';
-  hasNext: Scalars['Boolean'];
+  hasNext: Scalars['Boolean']['output'];
   infos: Array<BookInfo>;
 };
 
@@ -106,15 +108,15 @@ export type BookInfoPartialList = {
 
 export type BookInfoThumbnail = {
   __typename?: 'BookInfoThumbnail';
-  bookId: Scalars['ID'];
-  bookPageCount: Scalars['Int'];
-  pageIndex: Scalars['Int'];
+  bookId: Scalars['ID']['output'];
+  bookPageCount: Scalars['Int']['output'];
+  pageIndex: Scalars['Int']['output'];
 };
 
 export type BookInfosOption = {
-  genres?: InputMaybe<Array<Scalars['String']>>;
+  genres?: InputMaybe<Array<Scalars['String']['input']>>;
   order?: InputMaybe<BookInfoOrder>;
-  search?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']['input']>;
   searchMode?: InputMaybe<SearchMode>;
 };
 
@@ -127,29 +129,29 @@ export const BookOrder = {
 
 export type BookOrder = typeof BookOrder[keyof typeof BookOrder];
 export type CropEditAction = {
-  bottom?: InputMaybe<Scalars['Int']>;
-  left?: InputMaybe<Scalars['Int']>;
-  pageRange: Scalars['IntRange'];
-  right?: InputMaybe<Scalars['Int']>;
-  top?: InputMaybe<Scalars['Int']>;
+  bottom?: InputMaybe<Scalars['Int']['input']>;
+  left?: InputMaybe<Scalars['Int']['input']>;
+  pageRange: Scalars['IntRange']['input'];
+  right?: InputMaybe<Scalars['Int']['input']>;
+  top?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type Debug_BookCounts = {
   __typename?: 'Debug_BookCounts';
-  bookCount: Scalars['Int'];
-  bookInfoCount: Scalars['Int'];
+  bookCount: Scalars['Int']['output'];
+  bookInfoCount: Scalars['Int']['output'];
 };
 
 export type DeleteBookInfoResult = {
   __typename?: 'DeleteBookInfoResult';
   books: Array<Book>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type DeleteEditAction = {
-  pageRange: Scalars['IntRange'];
+  pageRange: Scalars['IntRange']['input'];
 };
 
 export type EditAction = {
@@ -165,9 +167,9 @@ export type EditAction = {
 export type EditBookInfoResult = {
   __typename?: 'EditBookInfoResult';
   bookInfo?: Maybe<BookInfo>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export const EditType = {
@@ -182,39 +184,39 @@ export const EditType = {
 export type EditType = typeof EditType[keyof typeof EditType];
 export type ExtractingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
   __typename?: 'ExtractingAddBooksSubscriptionResult';
-  bookNumber?: Maybe<Scalars['String']>;
-  progressPercent: Scalars['Int'];
+  bookNumber?: Maybe<Scalars['String']['output']>;
+  progressPercent: Scalars['Int']['output'];
   type: AddBooksSubscriptionType;
 };
 
 export type Genre = {
   __typename?: 'Genre';
-  invisible: Scalars['Boolean'];
-  name: Scalars['ID'];
+  invisible: Scalars['Boolean']['output'];
+  name: Scalars['ID']['output'];
 };
 
 export type HStackEditAction = {
-  pageRange: Scalars['IntRange'];
+  pageRange: Scalars['IntRange']['input'];
 };
 
 export type InputBook = {
-  file?: InputMaybe<Scalars['Upload']>;
-  number: Scalars['String'];
-  path?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  number: Scalars['String']['input'];
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type InputRead = {
-  bookId: Scalars['ID'];
-  infoId: Scalars['ID'];
-  page: Scalars['Int'];
-  updatedAt: Scalars['String'];
+  bookId: Scalars['ID']['input'];
+  infoId: Scalars['ID']['input'];
+  page: Scalars['Int']['input'];
+  updatedAt: Scalars['String']['input'];
 };
 
 export type MovingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
   __typename?: 'MovingAddBooksSubscriptionResult';
-  bookNumber?: Maybe<Scalars['String']>;
-  movedPageCount: Scalars['Int'];
-  totalPageCount: Scalars['Int'];
+  bookNumber?: Maybe<Scalars['String']['output']>;
+  movedPageCount: Scalars['Int']['output'];
+  totalPageCount: Scalars['Int']['output'];
   type: AddBooksSubscriptionType;
 };
 
@@ -237,79 +239,79 @@ export type Mutation = {
 
 
 export type MutationAddBookInfoArgs = {
-  genres?: InputMaybe<Array<Scalars['String']>>;
-  name: Scalars['String'];
+  genres?: InputMaybe<Array<Scalars['String']['input']>>;
+  name: Scalars['String']['input'];
 };
 
 
 export type MutationAddBooksArgs = {
   books: Array<InputBook>;
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type MutationAddCompressBookArgs = {
-  file?: InputMaybe<Scalars['Upload']>;
-  id: Scalars['ID'];
-  path?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  id: Scalars['ID']['input'];
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type MutationBulkEditPageArgs = {
   actions: Array<EditAction>;
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteBookInfoArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteBooksArgs = {
-  ids: Array<Scalars['ID']>;
-  infoId: Scalars['ID'];
+  ids: Array<Scalars['ID']['input']>;
+  infoId: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteGenreArgs = {
-  genre: Scalars['String'];
+  genre: Scalars['String']['input'];
 };
 
 
 export type MutationEditBookArgs = {
-  id: Scalars['ID'];
-  number?: InputMaybe<Scalars['String']>;
-  thumbnail?: InputMaybe<Scalars['Int']>;
+  id: Scalars['ID']['input'];
+  number?: InputMaybe<Scalars['String']['input']>;
+  thumbnail?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type MutationEditBookInfoArgs = {
-  genres?: InputMaybe<Array<Scalars['String']>>;
-  id: Scalars['ID'];
-  name?: InputMaybe<Scalars['String']>;
-  thumbnail?: InputMaybe<Scalars['ID']>;
+  genres?: InputMaybe<Array<Scalars['String']['input']>>;
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  thumbnail?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type MutationEditGenreArgs = {
-  invisible?: InputMaybe<Scalars['Boolean']>;
-  newName?: InputMaybe<Scalars['String']>;
-  oldName: Scalars['String'];
+  invisible?: InputMaybe<Scalars['Boolean']['input']>;
+  newName?: InputMaybe<Scalars['String']['input']>;
+  oldName: Scalars['String']['input'];
 };
 
 
 export type MutationMoveBooksArgs = {
-  ids: Array<Scalars['ID']>;
-  infoId: Scalars['ID'];
+  ids: Array<Scalars['ID']['input']>;
+  infoId: Scalars['ID']['input'];
 };
 
 export type PageInfo = {
   __typename?: 'PageInfo';
-  endCursor: Scalars['String'];
-  hasNextPage: Scalars['Boolean'];
-  hasPreviousPage: Scalars['Boolean'];
-  startCursor: Scalars['String'];
+  endCursor: Scalars['String']['output'];
+  hasNextPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
+  startCursor: Scalars['String']['output'];
 };
 
 export type Query = {
@@ -326,39 +328,39 @@ export type Query = {
 
 
 export type QueryBookArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type QueryBookInfoArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type QueryBookInfosArgs = {
-  ids: Array<Scalars['ID']>;
+  ids: Array<Scalars['ID']['input']>;
 };
 
 
 export type QueryBooksArgs = {
-  ids: Array<Scalars['ID']>;
+  ids: Array<Scalars['ID']['input']>;
 };
 
 
 export type QueryRelayBookInfosArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
   option?: InputMaybe<BookInfosOption>;
 };
 
 export type Read = {
   __typename?: 'Read';
-  bookId: Scalars['ID'];
-  infoId: Scalars['ID'];
-  page: Scalars['Int'];
-  updatedAt: Scalars['String'];
+  bookId: Scalars['ID']['output'];
+  infoId: Scalars['ID']['output'];
+  page: Scalars['Int']['output'];
+  updatedAt: Scalars['String']['output'];
 };
 
 export type ReadList = {
@@ -369,23 +371,23 @@ export type ReadList = {
 
 export type Result = {
   __typename?: 'Result';
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type ResultWithBookResults = {
   __typename?: 'ResultWithBookResults';
   bookResults?: Maybe<Array<Result>>;
-  code?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type Revision = {
   __typename?: 'Revision';
-  count: Scalars['Int'];
-  syncedAt: Scalars['String'];
+  count: Scalars['Int']['output'];
+  syncedAt: Scalars['String']['output'];
 };
 
 export const SearchMode = {
@@ -396,8 +398,8 @@ export const SearchMode = {
 
 export type SearchMode = typeof SearchMode[keyof typeof SearchMode];
 export type SplitEditAction = {
-  pageRange: Scalars['IntRange'];
-  splitCount?: InputMaybe<Scalars['Int']>;
+  pageRange: Scalars['IntRange']['input'];
+  splitCount?: InputMaybe<Scalars['Int']['input']>;
   splitType: SplitType;
 };
 
@@ -410,28 +412,28 @@ export type SplitType = typeof SplitType[keyof typeof SplitType];
 export type Subscription = {
   __typename?: 'Subscription';
   addBooks: AddBooksSubscriptionResult;
-  bulkEditPage: Scalars['String'];
+  bulkEditPage: Scalars['String']['output'];
 };
 
 
 export type SubscriptionAddBooksArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type SubscriptionBulkEditPageArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 export type UploadEditAction = {
-  image: Scalars['Upload'];
-  pageIndex: Scalars['Int'];
+  image: Scalars['Upload']['input'];
+  pageIndex: Scalars['Int']['input'];
 };
 
 export type UploadingAddBooksSubscriptionResult = AddBooksSubscriptionResult & {
   __typename?: 'UploadingAddBooksSubscriptionResult';
-  bookNumber?: Maybe<Scalars['String']>;
-  downloadedBytes: Scalars['Int'];
+  bookNumber?: Maybe<Scalars['String']['output']>;
+  downloadedBytes: Scalars['Int']['output'];
   type: AddBooksSubscriptionType;
 };
 
@@ -443,7 +445,7 @@ export type ResolverTypeWrapper<T> = Promise<T> | T;
 export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
 };
-export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
+export type Resolver<TResult, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -480,21 +482,21 @@ export type SubscriptionObject<TResult, TKey extends string, TParent, TContext, 
   | SubscriptionSubscriberObject<TResult, TKey, TParent, TContext, TArgs>
   | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>;
 
-export type SubscriptionResolver<TResult, TKey extends string, TParent = {}, TContext = {}, TArgs = {}> =
+export type SubscriptionResolver<TResult, TKey extends string, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> =
   | ((...args: any[]) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
   | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>;
 
-export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
+export type TypeResolveFn<TTypes, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>> = (
   parent: TParent,
   context: TContext,
   info: GraphQLResolveInfo
 ) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
 
-export type IsTypeOfResolverFn<T = {}, TContext = {}> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
+export type IsTypeOfResolverFn<T = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
 
 export type NextResolverFn<T> = () => Promise<T>;
 
-export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs = {}> = (
+export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = (
   next: NextResolverFn<TResult>,
   parent: TParent,
   args: TArgs,
@@ -502,13 +504,25 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
 
+
+
+
+/** Mapping of interface types */
+export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
+  AddBooksSubscriptionResult:
+    | ( ExtractingAddBooksSubscriptionResult )
+    | ( MovingAddBooksSubscriptionResult )
+    | ( UploadingAddBooksSubscriptionResult )
+  ;
+};
+
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   AddBookInfoResult: ResolverTypeWrapper<Omit<AddBookInfoResult, 'bookInfo'> & { bookInfo?: Maybe<ResolversTypes['BookInfo']> }>;
-  AddBooksSubscriptionResult: ResolversTypes['ExtractingAddBooksSubscriptionResult'] | ResolversTypes['MovingAddBooksSubscriptionResult'] | ResolversTypes['UploadingAddBooksSubscriptionResult'];
+  AddBooksSubscriptionResult: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['AddBooksSubscriptionResult']>;
   AddBooksSubscriptionType: AddBooksSubscriptionType;
   Auth0: ResolverTypeWrapper<Auth0>;
-  BigInt: ResolverTypeWrapper<Scalars['BigInt']>;
+  BigInt: ResolverTypeWrapper<Scalars['BigInt']['output']>;
   Book: ResolverTypeWrapper<BookModel>;
   BookInfo: ResolverTypeWrapper<BookInfoModel>;
   BookInfoEdge: ResolverTypeWrapper<Omit<BookInfoEdge, 'node'> & { node: ResolversTypes['BookInfo'] }>;
@@ -518,7 +532,7 @@ export type ResolversTypes = {
   BookInfoThumbnail: ResolverTypeWrapper<BookInfoThumbnail>;
   BookInfosOption: BookInfosOption;
   BookOrder: BookOrder;
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CropEditAction: CropEditAction;
   Debug_BookCounts: ResolverTypeWrapper<Debug_BookCounts>;
   DeleteBookInfoResult: ResolverTypeWrapper<Omit<DeleteBookInfoResult, 'books'> & { books: Array<ResolversTypes['Book']> }>;
@@ -529,15 +543,15 @@ export type ResolversTypes = {
   ExtractingAddBooksSubscriptionResult: ResolverTypeWrapper<ExtractingAddBooksSubscriptionResult>;
   Genre: ResolverTypeWrapper<Genre>;
   HStackEditAction: HStackEditAction;
-  ID: ResolverTypeWrapper<Scalars['ID']>;
+  ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   InputBook: InputBook;
   InputRead: InputRead;
-  Int: ResolverTypeWrapper<Scalars['Int']>;
-  IntRange: ResolverTypeWrapper<Scalars['IntRange']>;
+  Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  IntRange: ResolverTypeWrapper<Scalars['IntRange']['output']>;
   MovingAddBooksSubscriptionResult: ResolverTypeWrapper<MovingAddBooksSubscriptionResult>;
-  Mutation: ResolverTypeWrapper<{}>;
+  Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
-  Query: ResolverTypeWrapper<{}>;
+  Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   Read: ResolverTypeWrapper<Read>;
   ReadList: ResolverTypeWrapper<ReadList>;
   Result: ResolverTypeWrapper<Result>;
@@ -546,9 +560,9 @@ export type ResolversTypes = {
   SearchMode: SearchMode;
   SplitEditAction: SplitEditAction;
   SplitType: SplitType;
-  String: ResolverTypeWrapper<Scalars['String']>;
-  Subscription: ResolverTypeWrapper<{}>;
-  Upload: ResolverTypeWrapper<Scalars['Upload']>;
+  String: ResolverTypeWrapper<Scalars['String']['output']>;
+  Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   UploadEditAction: UploadEditAction;
   UploadingAddBooksSubscriptionResult: ResolverTypeWrapper<UploadingAddBooksSubscriptionResult>;
 };
@@ -556,9 +570,9 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   AddBookInfoResult: Omit<AddBookInfoResult, 'bookInfo'> & { bookInfo?: Maybe<ResolversParentTypes['BookInfo']> };
-  AddBooksSubscriptionResult: ResolversParentTypes['ExtractingAddBooksSubscriptionResult'] | ResolversParentTypes['MovingAddBooksSubscriptionResult'] | ResolversParentTypes['UploadingAddBooksSubscriptionResult'];
+  AddBooksSubscriptionResult: ResolversInterfaceTypes<ResolversParentTypes>['AddBooksSubscriptionResult'];
   Auth0: Auth0;
-  BigInt: Scalars['BigInt'];
+  BigInt: Scalars['BigInt']['output'];
   Book: BookModel;
   BookInfo: BookInfoModel;
   BookInfoEdge: Omit<BookInfoEdge, 'node'> & { node: ResolversParentTypes['BookInfo'] };
@@ -566,7 +580,7 @@ export type ResolversParentTypes = {
   BookInfoPartialList: Omit<BookInfoPartialList, 'edges'> & { edges: Array<ResolversParentTypes['BookInfoEdge']> };
   BookInfoThumbnail: BookInfoThumbnail;
   BookInfosOption: BookInfosOption;
-  Boolean: Scalars['Boolean'];
+  Boolean: Scalars['Boolean']['output'];
   CropEditAction: CropEditAction;
   Debug_BookCounts: Debug_BookCounts;
   DeleteBookInfoResult: Omit<DeleteBookInfoResult, 'books'> & { books: Array<ResolversParentTypes['Book']> };
@@ -576,24 +590,24 @@ export type ResolversParentTypes = {
   ExtractingAddBooksSubscriptionResult: ExtractingAddBooksSubscriptionResult;
   Genre: Genre;
   HStackEditAction: HStackEditAction;
-  ID: Scalars['ID'];
+  ID: Scalars['ID']['output'];
   InputBook: InputBook;
   InputRead: InputRead;
-  Int: Scalars['Int'];
-  IntRange: Scalars['IntRange'];
+  Int: Scalars['Int']['output'];
+  IntRange: Scalars['IntRange']['output'];
   MovingAddBooksSubscriptionResult: MovingAddBooksSubscriptionResult;
-  Mutation: {};
+  Mutation: Record<PropertyKey, never>;
   PageInfo: PageInfo;
-  Query: {};
+  Query: Record<PropertyKey, never>;
   Read: Read;
   ReadList: ReadList;
   Result: Result;
   ResultWithBookResults: ResultWithBookResults;
   Revision: Revision;
   SplitEditAction: SplitEditAction;
-  String: Scalars['String'];
-  Subscription: {};
-  Upload: Scalars['Upload'];
+  String: Scalars['String']['output'];
+  Subscription: Record<PropertyKey, never>;
+  Upload: Scalars['Upload']['output'];
   UploadEditAction: UploadEditAction;
   UploadingAddBooksSubscriptionResult: UploadingAddBooksSubscriptionResult;
 };
@@ -603,19 +617,15 @@ export type AddBookInfoResultResolvers<ContextType = any, ParentType extends Res
   code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type AddBooksSubscriptionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['AddBooksSubscriptionResult'] = ResolversParentTypes['AddBooksSubscriptionResult']> = {
   __resolveType: TypeResolveFn<'ExtractingAddBooksSubscriptionResult' | 'MovingAddBooksSubscriptionResult' | 'UploadingAddBooksSubscriptionResult', ParentType, ContextType>;
-  bookNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['AddBooksSubscriptionType'], ParentType, ContextType>;
 };
 
 export type Auth0Resolvers<ContextType = any, ParentType extends ResolversParentTypes['Auth0'] = ResolversParentTypes['Auth0']> = {
   clientId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   domain?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export interface BigIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['BigInt'], any> {
@@ -629,7 +639,6 @@ export type BookResolvers<ContextType = any, ParentType extends ResolversParentT
   pages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   thumbnail?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type BookInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfo'] = ResolversParentTypes['BookInfo']> = {
@@ -640,38 +649,32 @@ export type BookInfoResolvers<ContextType = any, ParentType extends ResolversPar
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   thumbnail?: Resolver<Maybe<ResolversTypes['BookInfoThumbnail']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type BookInfoEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoEdge'] = ResolversParentTypes['BookInfoEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['BookInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type BookInfoListResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoList'] = ResolversParentTypes['BookInfoList']> = {
   hasNext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   infos?: Resolver<Array<ResolversTypes['BookInfo']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type BookInfoPartialListResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoPartialList'] = ResolversParentTypes['BookInfoPartialList']> = {
   edges?: Resolver<Array<ResolversTypes['BookInfoEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type BookInfoThumbnailResolvers<ContextType = any, ParentType extends ResolversParentTypes['BookInfoThumbnail'] = ResolversParentTypes['BookInfoThumbnail']> = {
   bookId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   bookPageCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   pageIndex?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Debug_BookCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Debug_BookCounts'] = ResolversParentTypes['Debug_BookCounts']> = {
   bookCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   bookInfoCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type DeleteBookInfoResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteBookInfoResult'] = ResolversParentTypes['DeleteBookInfoResult']> = {
@@ -679,7 +682,6 @@ export type DeleteBookInfoResultResolvers<ContextType = any, ParentType extends 
   code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type EditBookInfoResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['EditBookInfoResult'] = ResolversParentTypes['EditBookInfoResult']> = {
@@ -687,7 +689,6 @@ export type EditBookInfoResultResolvers<ContextType = any, ParentType extends Re
   code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ExtractingAddBooksSubscriptionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtractingAddBooksSubscriptionResult'] = ResolversParentTypes['ExtractingAddBooksSubscriptionResult']> = {
@@ -700,7 +701,6 @@ export type ExtractingAddBooksSubscriptionResultResolvers<ContextType = any, Par
 export type GenreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Genre'] = ResolversParentTypes['Genre']> = {
   invisible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export interface IntRangeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['IntRange'], any> {
@@ -736,7 +736,6 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -755,20 +754,17 @@ export type ReadResolvers<ContextType = any, ParentType extends ResolversParentT
   infoId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   page?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ReadListResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReadList'] = ResolversParentTypes['ReadList']> = {
   latestRevision?: Resolver<ResolversTypes['Revision'], ParentType, ContextType>;
   readList?: Resolver<Array<ResolversTypes['Read']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['Result'] = ResolversParentTypes['Result']> = {
   code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ResultWithBookResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResultWithBookResults'] = ResolversParentTypes['ResultWithBookResults']> = {
@@ -776,13 +772,11 @@ export type ResultWithBookResultsResolvers<ContextType = any, ParentType extends
   code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type RevisionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Revision'] = ResolversParentTypes['Revision']> = {
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   syncedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
