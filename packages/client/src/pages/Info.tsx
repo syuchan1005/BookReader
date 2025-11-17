@@ -10,8 +10,8 @@ import {
 import { common } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
+import { useAtom } from 'jotai';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { useRecoilState } from 'recoil';
 
 import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql';
 
@@ -127,7 +127,7 @@ const ScreenMode = {
 type ScreenModeType = (typeof ScreenMode)[keyof typeof ScreenMode];
 
 const Info = (props: InfoProps) => {
-  const [sortBookOrder, setSortBookOrder] = useRecoilState(sortBookOrderState);
+  const [sortBookOrder, setSortBookOrder] = useAtom(sortBookOrderState);
   const classes = useStyles(props);
   const theme = useTheme();
   const { id: infoId } = useParams();

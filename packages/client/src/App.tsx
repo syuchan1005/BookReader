@@ -29,7 +29,7 @@ import {
   primaryColorState,
   secondaryColorState,
 } from '@client/store/atoms';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useAtomValue, useSetAtom } from 'jotai';
 
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
@@ -101,8 +101,8 @@ export const commonTheme = {
 };
 
 const App = () => {
-  const primaryColor = useRecoilValue(primaryColorState);
-  const secondaryColor = useRecoilValue(secondaryColorState);
+  const primaryColor = useAtomValue(primaryColorState);
+  const secondaryColor = useAtomValue(secondaryColorState);
 
   const isSystemDarkTheme = useMediaQuery(
     '@media (prefers-color-scheme: dark)',
@@ -110,9 +110,9 @@ const App = () => {
 
   const apolloClient = useApolloClient();
 
-  const openAlert = useRecoilValue(alertOpenState);
-  const alertData = useRecoilValue(innerAlertDataState);
-  const setAlertData = useSetRecoilState(alertDataState);
+  const openAlert = useAtomValue(alertOpenState);
+  const alertData = useAtomValue(innerAlertDataState);
+  const setAlertData = useSetAtom(alertDataState);
   const closeAlert = useCallback(
     (event, reason?: string) => {
       if (reason === 'clickaway') {

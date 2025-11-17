@@ -1,12 +1,12 @@
+import { WritableAtom, useSetAtom } from 'jotai';
 import { ReactElement, useEffect } from 'react';
-import { RecoilState, useSetRecoilState } from 'recoil';
 
 export const RecoilValue = <T,>({
   atom,
   value,
   children,
-}: { atom: RecoilState<T>; value: T; children: ReactElement }) => {
-  const setter = useSetRecoilState(atom);
+}: { atom: WritableAtom<T, [T], void>; value: T; children: ReactElement }) => {
+  const setter = useSetAtom(atom);
   useEffect(() => {
     setter(value);
   }, [setter, value]);

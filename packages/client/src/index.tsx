@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { ApolloProvider } from '@apollo/client';
-import { RecoilRoot } from 'recoil';
 
 import apolloClient, { setUpApollo } from '@client/apollo/index';
 import App from './App';
@@ -31,11 +30,9 @@ if (process.env.NODE_ENV !== 'production' && false) {
   await setUpApollo();
 
   ReactDOM.render(
-    <RecoilRoot>
-      <ApolloProvider client={apolloClient}>
-        <App />
-      </ApolloProvider>
-    </RecoilRoot>,
+    <ApolloProvider client={apolloClient}>
+      <App />
+    </ApolloProvider>,
     document.getElementById('app'),
   );
 })();

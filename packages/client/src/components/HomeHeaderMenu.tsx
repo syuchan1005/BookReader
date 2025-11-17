@@ -11,8 +11,8 @@ import {
   useTheme,
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
+import { useAtom } from 'jotai';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useRecoilState } from 'recoil';
 
 import {
   BookInfoOrder,
@@ -43,11 +43,10 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const [primaryColor, setPrimaryColor] = useRecoilState(primaryColorState);
-  const [secondaryColor, setSecondaryColor] =
-    useRecoilState(secondaryColorState);
-  const [sortOrder, setSortOrder] = useRecoilState(sortOrderState);
-  const [showBookInfoName, setShowBookInfoName] = useRecoilState(
+  const [primaryColor, setPrimaryColor] = useAtom(primaryColorState);
+  const [secondaryColor, setSecondaryColor] = useAtom(secondaryColorState);
+  const [sortOrder, setSortOrder] = useAtom(sortOrderState);
+  const [showBookInfoName, setShowBookInfoName] = useAtom(
     showBookInfoNameState,
   );
   const theme = useTheme();

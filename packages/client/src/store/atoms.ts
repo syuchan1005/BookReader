@@ -1,52 +1,75 @@
-import { localStorageEffect, logEffect } from '@client/store/effects';
 import {
   BookInfoOrder,
   BookOrder,
   SearchMode,
 } from '@syuchan1005/book-reader-graphql';
-import { atom, selector } from 'recoil';
+import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
-export const genresState = atom<string[]>({
-  key: 'genresState',
-  default: [],
-  effects_UNSTABLE: [logEffect()],
-});
+// Helper to create localStorage atom with the same key structure as before
+const createLocalStorageAtom = <T>(key: string, initialValue: T) => {
+  return atomWithStorage<T>(`state-persist.${key}`, initialValue, {
+    getItem: (key) => {
+      const storageKey = 'state-persist';
+      const loadJsonString = localStorage.getItem(storageKey);
+      if (loadJsonString !== null) {
+        const savedValue =
+          JSON.parse(loadJsonString)[key.replace(`${storageKey}.`, '')];
+        if (savedValue != null) {
+          return savedValue;
+        }
+      }
+      return initialValue;
+    },
+    setItem: (key, newValue) => {
+      const storageKey = 'state-persist';
+      const stateKey = key.replace(`${storageKey}.`, '');
+      const jsonString = localStorage.getItem(storageKey);
+      const json = jsonString === null ? {} : JSON.parse(jsonString);
+      json[stateKey] = newValue;
+      localStorage.setItem(storageKey, JSON.stringify(json));
+    },
+    removeItem: (key) => {
+      const storageKey = 'state-persist';
+      const stateKey = key.replace(`${storageKey}.`, '');
+      const jsonString = localStorage.getItem(storageKey);
+      if (jsonString !== null) {
+        const json = JSON.parse(jsonString);
+        delete json[stateKey];
+        localStorage.setItem(storageKey, JSON.stringify(json));
+      }
+    },
+  });
+};
 
-export const searchModeState = atom<SearchMode>({
-  key: 'searchModeState',
-  default: SearchMode.Database,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('searchMode')],
-});
+export const genresState = atom<string[]>([]);
 
-export const themeState = atom<'light' | 'dark'>({
-  key: 'themeState',
-  default: 'light',
-  effects_UNSTABLE: [logEffect()],
-});
+export const searchModeState = createLocalStorageAtom<SearchMode>(
+  'searchMode',
+  SearchMode.Database,
+);
 
-export const primaryColorState = atom<string>({
-  key: 'primaryColorState',
-  default: 'green',
-  effects_UNSTABLE: [logEffect(), localStorageEffect('primary')],
-});
+export const themeState = atom<'light' | 'dark'>('light');
 
-export const secondaryColorState = atom<string>({
-  key: 'secondaryColorState',
-  default: 'blue',
-  effects_UNSTABLE: [logEffect(), localStorageEffect('secondary')],
-});
+export const primaryColorState = createLocalStorageAtom<string>(
+  'primary',
+  'green',
+);
 
-export const sortOrderState = atom<BookInfoOrder>({
-  key: 'sortOrderState',
-  default: BookInfoOrder.UpdateNewest,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('sortOrder')],
-});
+export const secondaryColorState = createLocalStorageAtom<string>(
+  'secondary',
+  'blue',
+);
 
-export const sortBookOrderState = atom<BookOrder>({
-  key: 'sortBookOrderState',
-  default: BookOrder.NumberAsc,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('sortBookOrder')],
-});
+export const sortOrderState = createLocalStorageAtom<BookInfoOrder>(
+  'sortOrder',
+  BookInfoOrder.UpdateNewest,
+);
+
+export const sortBookOrderState = createLocalStorageAtom<BookOrder>(
+  'sortBookOrder',
+  BookOrder.NumberAsc,
+);
 
 export const ReadOrder = {
   LTR: 'LTR',
@@ -54,23 +77,19 @@ export const ReadOrder = {
 } as const;
 export type ReadOrderType = (typeof ReadOrder)[keyof typeof ReadOrder];
 
-export const readOrderState = atom<ReadOrderType>({
-  key: 'readOrderState',
-  default: ReadOrder.RTL,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('readOrder')],
-});
+export const readOrderState = createLocalStorageAtom<ReadOrderType>(
+  'readOrder',
+  ReadOrder.RTL,
+);
 
-export const showOriginalImageState = atom<boolean>({
-  key: 'showOriginalImageState',
-  default: false,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('showOriginalImage')],
-});
+export const showOriginalImageState = createLocalStorageAtom<boolean>(
+  'showOriginalImage',
+  false,
+);
 
-export const pageImageEffectState = atom<PageImageEffect>({
-  key: 'pageImageEffectState',
-  default: undefined,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('pageImageEffectState')],
-});
+export const pageImageEffectState = createLocalStorageAtom<
+  PageImageEffect | undefined
+>('pageImageEffectState', undefined);
 
 export type PageImageEffectType = 'paper' | 'dark';
 export type PageImageEffect = {
@@ -78,49 +97,35 @@ export type PageImageEffect = {
   percent: number; // 0-100
 };
 
-export const showBookInfoNameState = atom<boolean>({
-  key: 'showBookInfoNameState',
-  default: false,
-  effects_UNSTABLE: [logEffect(), localStorageEffect('showBookInfoName')],
-});
+export const showBookInfoNameState = createLocalStorageAtom<boolean>(
+  'showBookInfoName',
+  false,
+);
 
-export const alertOpenState = atom<boolean>({
-  key: 'alertOpenState',
-  default: false,
-  effects_UNSTABLE: [logEffect()],
-});
+export const alertOpenState = atom<boolean>(false);
 
-type AlertData = {
+export type AlertData = {
   message: string;
   variant: 'warning' | 'error';
   persist?: boolean;
 };
 
-export const innerAlertDataState = atom<AlertData>({
-  key: 'innerAlertDataState',
-  default: undefined,
-  effects_UNSTABLE: [logEffect()],
-});
+export const innerAlertDataState = atom<AlertData | undefined>();
 
-export const alertDataState = selector<AlertData>({
-  key: 'alertDataState',
-  get: ({ get }) => {
+export const alertDataState = atom(
+  (get) => {
     if (get(alertOpenState)) {
       return get(innerAlertDataState);
     }
     return undefined;
   },
-  set: ({ set }, value) => {
+  (get, set, value: AlertData | undefined) => {
     if (value) {
       set(innerAlertDataState, value);
     }
     set(alertOpenState, !!value);
   },
-});
+);
 
 type Position = { index: number; block: 'start' | 'end' };
-export const homeLastSeenBookPosition = atom<Position | undefined>({
-  key: 'homeLastSeenBookPosition',
-  default: undefined,
-  effects_UNSTABLE: [logEffect()],
-});
+export const homeLastSeenBookPosition = atom<Position | undefined>();

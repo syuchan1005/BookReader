@@ -1,7 +1,7 @@
 import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 
 import {
   HomeBookInfoFragment,
@@ -113,13 +113,13 @@ const loadMoreThreshold = 15;
 
 const Home = (props: HomeProps) => {
   useTitle('');
-  const genres = useRecoilValue(genresState);
-  const sortOrder = useRecoilValue(sortOrderState);
-  const showBookInfoName = useRecoilValue(showBookInfoNameState);
+  const genres = useAtomValue(genresState);
+  const sortOrder = useAtomValue(sortOrderState);
+  const showBookInfoName = useAtomValue(showBookInfoNameState);
   const classes = useStyles(props);
   const theme = useTheme();
 
-  const [lastSeenPosition, setLastSeenPosition] = useRecoilState(
+  const [lastSeenPosition, setLastSeenPosition] = useAtom(
     homeLastSeenBookPosition,
   );
   const [isLastSeenPositionLoaded, setLastSeenPositionLoaded] = useState(false);
@@ -155,7 +155,7 @@ const Home = (props: HomeProps) => {
     [searchParams, setSearchParams, location],
   );
   const debounceSearch = useDebounceValue(searchText, 800);
-  const [searchMode, setSearchMode] = useRecoilState(searchModeState);
+  const [searchMode, setSearchMode] = useAtom(searchModeState);
   const handleSearchText = useCallback(
     (text: string, mode: SearchMode) => {
       if (!text) {

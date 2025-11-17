@@ -21,6 +21,7 @@ import 'swiper/css/keyboard';
 import 'swiper/css/virtual';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   useLocation,
   useNavigate,
@@ -28,7 +29,6 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { BookQuery, useBookQuery } from '@syuchan1005/book-reader-graphql';
 
@@ -228,14 +228,14 @@ const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
 };
 
 const Book = (props: BookProps) => {
-  const readOrder = useRecoilValue(readOrderState);
-  const showOriginalImage = useRecoilValue(showOriginalImageState);
-  const pageImageEffect = useRecoilValue(pageImageEffectState);
+  const readOrder = useAtomValue(readOrderState);
+  const showOriginalImage = useAtomValue(showOriginalImageState);
+  const pageImageEffect = useAtomValue(pageImageEffectState);
   const classes = useStyles(props);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const setAlertData = useSetRecoilState(alertDataState);
+  const setAlertData = useSetAtom(alertDataState);
   const { id: bookId } = useParams();
 
   const [page, updatePage] = useState(0);

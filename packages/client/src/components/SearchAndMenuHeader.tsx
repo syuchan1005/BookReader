@@ -28,7 +28,7 @@ import {
   useAvailableSearchModesQuery,
   useGenresQuery,
 } from '@syuchan1005/book-reader-graphql';
-import { useRecoilState } from 'recoil';
+import { useAtom } from 'jotai';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
@@ -142,7 +142,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
 
   const { data: genreData } = useGenresQuery();
   // TODO: Update genres state in caller side
-  const [genres, setGenres] = useRecoilState(genresState);
+  const [genres, setGenres] = useAtom(genresState);
   const handleGenresChange = useCallback(
     (event) => {
       setGenres(event.target.value);

@@ -12,8 +12,8 @@ import {
 import { orange } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
+import { useAtom } from 'jotai';
 import { MouseEventHandler, useCallback } from 'react';
-import { useRecoilState } from 'recoil';
 
 import { commonTheme } from '@client/App';
 import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
@@ -108,12 +108,11 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
     onPageSliderChanged,
   } = props;
 
-  const [readOrder, setReadOrder] = useRecoilState(readOrderState);
-  const [showOriginalImage, setShowOriginalImage] = useRecoilState(
+  const [readOrder, setReadOrder] = useAtom(readOrderState);
+  const [showOriginalImage, setShowOriginalImage] = useAtom(
     showOriginalImageState,
   );
-  const [pageImageEffect, setPageImageEffect] =
-    useRecoilState(pageImageEffectState);
+  const [pageImageEffect, setPageImageEffect] = useAtom(pageImageEffectState);
   const [settingsMenuAnchor, setSettingsMenuAnchor, resetSettingMenuAnchor] =
     useMenuAnchor();
   const [effectMenuAnchor, setEffectMenuAnchor, resetEffectMenuAnchor] =
