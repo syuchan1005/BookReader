@@ -1,7 +1,7 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
-import { ApolloProvider } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 
 import apolloClient, { setUpApollo } from '@client/apollo/index';
 import App from './App';
@@ -29,10 +29,10 @@ if (process.env.NODE_ENV !== 'production' && false) {
   await workbox?.register();
   await setUpApollo();
 
-  ReactDOM.render(
+  const root = createRoot(document.getElementById('app'));
+  root.render(
     <ApolloProvider client={apolloClient}>
       <App />
-    </ApolloProvider>,
-    document.getElementById('app'),
+    </ApolloProvider>
   );
 })();

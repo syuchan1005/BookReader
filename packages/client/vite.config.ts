@@ -71,7 +71,7 @@ const TimePlugin = (): Plugin => {
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
-    dedupe: ['@apollo/client'],
+    dedupe: ['@apollo/client', 'react', 'react-dom', 'jotai'],
     alias: {
       '@client': resolve(__dirname, 'src'),
       '@syuchan1005/book-reader-graphql': resolve(
