@@ -467,7 +467,7 @@ export const resolvers: Resolvers = {
     bulkEditPage: {
       // Ref: https://github.com/apollographql/graphql-subscriptions/pull/250#issuecomment-1351898681
       subscribe: withFilter(
-        () => pubsub.asyncIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
+        () => pubsub.asyncIterableIterator([SubscriptionKeys.BULK_EDIT_PAGE]),
         (payload, variables) => payload.id === variables.id,
         // biome-ignore lint/suspicious/noExplicitAny: any
       ) as any,

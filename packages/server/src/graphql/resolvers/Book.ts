@@ -300,7 +300,7 @@ export const resolvers: Resolvers & {
     addBooks: {
       // Ref: https://github.com/apollographql/graphql-subscriptions/pull/250#issuecomment-1351898681
       subscribe: withFilter(
-        () => pubsub.asyncIterator([SubscriptionKeys.ADD_BOOKS]),
+        () => pubsub.asyncIterableIterator([SubscriptionKeys.ADD_BOOKS]),
         (payload, variables) => payload.id === variables.id,
         // biome-ignore lint/suspicious/noExplicitAny: read above comment
       ) as any,

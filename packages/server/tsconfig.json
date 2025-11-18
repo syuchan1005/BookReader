@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "lib": ["es2020", "dom"],
-    "module": "commonjs",
-    "target": "es2020",
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
     "baseUrl": ".",
+    "lib": ["ES2024", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "es2024",
     "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+    "experimentalDecorators": true,
     "downlevelIteration": true,
     "skipLibCheck": true,
     "noImplicitAny": false,
@@ -17,5 +18,5 @@
     }
   },
   "include": ["src/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "generated/GQLResolvers.ts"]
 }

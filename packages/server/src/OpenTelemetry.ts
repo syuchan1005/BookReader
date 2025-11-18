@@ -8,14 +8,14 @@ import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { JaegerPropagator } from '@opentelemetry/propagator-jaeger';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
   SimpleSpanProcessor,
 } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
 
 const setup = (): Tracer => {
@@ -43,24 +43,26 @@ const setup = (): Tracer => {
 
   const serviceName =
     process.env.BOOKREADER_TRACE_SERVICE_NAME ?? 'book-reader';
-  const provider = new NodeTracerProvider({
-    resource: new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
-    }),
-  });
-
+  const spanProcessors = [];
   if (exportUrl) {
     const otlpTraceExporter = new OTLPTraceExporter({ url: exportUrl });
-    provider.addSpanProcessor(new BatchSpanProcessor(otlpTraceExporter));
+    spanProcessors.push(new BatchSpanProcessor(otlpTraceExporter));
   }
   if (
     process.env.NODE_ENV !== 'production' &&
     process.env.BOOKREADER_TRACE_CONSOLE === 'true'
   ) {
-    provider.addSpanProcessor(
+    spanProcessors.push(
       new SimpleSpanProcessor(new ConsoleSpanExporter()),
     );
   }
+
+  const provider = new NodeTracerProvider({
+    resource: resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: serviceName,
+    }),
+    spanProcessors,
+  });
 
   provider.register();
 
@@ -70,7 +72,7 @@ const setup = (): Tracer => {
       new HttpInstrumentation(),
       new ExpressInstrumentation(),
       new GraphQLInstrumentation(),
-      new PrismaInstrumentation({ middleware: true }),
+      new PrismaInstrumentation(),
     ],
   });
 

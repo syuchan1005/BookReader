@@ -58,9 +58,11 @@ WORKDIR /bookReader
 COPY packages/server/package.json packages/server/
 COPY packages/client/package.json packages/client/
 COPY packages/common/package.json packages/common/
-COPY package*.json ./
-RUN bun install --filter=./packages/server
-RUN rm package*.json && cp packages/server/package.json . && rm -rf packages
+COPY package.json ./
+RUN bun install --linker hoisted --frozen-lockfile
+RUN rm package*.json && cp packages/server/package.json . && \
+    cp -a packages/server/node_modules/* node_modules/ && \
+    rm -rf packages
 
 COPY --from=build-client /build/packages/client/dist public
 COPY --from=build-server /build/packages/server/dist/index.js ./

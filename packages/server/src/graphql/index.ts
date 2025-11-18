@@ -1,12 +1,12 @@
 import { ApolloServer } from '@apollo/server';
-import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { json } from 'body-parser';
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
+import { Disposable } from 'graphql-ws/lib/common';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { WebSocketServer } from 'ws';
 
@@ -25,6 +25,8 @@ export default class GraphQL {
 
   private readonly schema: GraphQLSchema;
 
+  private serverCleanup: Disposable | null = null;
+
   /**
    * @param httpServer
    * @param uploadResolver Its workaround that import the esm module from cjs.
@@ -41,11 +43,21 @@ export default class GraphQL {
         resolvers,
       ]),
     });
+    const self = this;
     this.apolloServer = new ApolloServer({
       schema: this.schema,
+      introspection: true,
       plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
-        ApolloServerPluginLandingPageGraphQLPlayground(),
+        {
+          async serverWillStart() {
+            return {
+              async drainServer() {
+                await self.serverCleanup?.dispose();
+              },
+            };
+          },
+        },
       ],
     });
   }
@@ -70,7 +82,7 @@ export default class GraphQL {
       server: httpServer,
       path: '/graphql',
     });
-    useServer({ schema: this.schema }, wsServer);
+    this.serverCleanup = useServer({ schema: this.schema }, wsServer);
 
     for (const signal of ['SIGINT', 'SIGTERM']) {
       process.on(signal, () => wsServer.close());
