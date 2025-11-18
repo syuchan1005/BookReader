@@ -33,6 +33,6 @@ if (process.env.NODE_ENV !== 'production' && false) {
   root.render(
     <ApolloProvider client={apolloClient}>
       <App />
-    </ApolloProvider>
+    </ApolloProvider>,
   );
 })();
