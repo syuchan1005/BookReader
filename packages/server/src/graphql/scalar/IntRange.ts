@@ -1,5 +1,5 @@
-import { IntRange } from '@syuchan1005/book-reader-graphql';
-import { GraphQLScalarType, IntValueNode } from 'graphql';
+import type { IntRange } from '@syuchan1005/book-reader-graphql';
+import { GraphQLScalarType, type IntValueNode } from 'graphql';
 import { Kind } from 'graphql/language/kinds';
 
 export const flatRange = (range: IntRange): number[] => {

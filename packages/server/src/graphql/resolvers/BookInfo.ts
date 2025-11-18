@@ -1,23 +1,21 @@
-import { orderBy as naturalOrderBy } from 'natural-orderby';
-
-import {
-  BookInfo as BookInfoGQLModel,
-  BookInfoResolvers,
-  BookOrder,
-  Resolvers,
-} from '@syuchan1005/book-reader-graphql';
-
-import Errors from '@server/Errors';
-import { purgeImageCache } from '@server/ImageUtil';
 import {
   BookDataManager,
   maybeRequireAtLeastOne,
 } from '@server/database/BookDataManager';
-import { BookInfo as BookInfoDBModel } from '@server/database/models/BookInfo';
+import type { BookInfo as BookInfoDBModel } from '@server/database/models/BookInfo';
 import { generateId } from '@server/database/models/Id';
-import { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
+import Errors from '@server/Errors';
+import type { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
+import { purgeImageCache } from '@server/ImageUtil';
 import { elasticSearchClient, meiliSearchClient } from '@server/search';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
+import {
+  type BookInfo as BookInfoGQLModel,
+  type BookInfoResolvers,
+  BookOrder,
+  type Resolvers,
+} from '@syuchan1005/book-reader-graphql';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
 
 export const resolvers: Resolvers & {
   BookInfo: StrictResolver<
@@ -27,13 +25,16 @@ export const resolvers: Resolvers & {
   >;
 } = {
   Query: {
-    bookInfo: (parent, { id: infoId }) => BookDataManager.getBookInfo(infoId),
-    bookInfos: async (parent, { ids: infoIds }) => {
+    bookInfo: (_parent, { id: infoId }) => BookDataManager.getBookInfo(infoId),
+    bookInfos: async (_parent, { ids: infoIds }) => {
       const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
-      const bookInfoMap = bookInfos.reduce((map, bookInfo) => {
-        map[bookInfo.id] = bookInfo;
-        return map;
-      }, {} as { [key: string]: BookInfoDBModel });
+      const bookInfoMap = bookInfos.reduce(
+        (map, bookInfo) => {
+          map[bookInfo.id] = bookInfo;
+          return map;
+        },
+        {} as { [key: string]: BookInfoDBModel },
+      );
       return infoIds.map((infoId) => {
         const bookInfo = bookInfoMap[infoId];
         if (!bookInfo) {
@@ -44,7 +45,7 @@ export const resolvers: Resolvers & {
     },
   },
   Mutation: {
-    addBookInfo: async (parent, { name, genres }) => {
+    addBookInfo: async (_parent, { name, genres }) => {
       const infoId = await BookDataManager.addBookInfo({
         id: generateId(),
         name,
@@ -65,7 +66,7 @@ export const resolvers: Resolvers & {
         bookInfo,
       };
     },
-    editBookInfo: async (parent, { id: infoId, ...value }) => {
+    editBookInfo: async (_parent, { id: infoId, ...value }) => {
       const editValue = maybeRequireAtLeastOne(value);
       if (!editValue) {
         return {
@@ -105,7 +106,7 @@ export const resolvers: Resolvers & {
         bookInfo: editedBookInfo,
       };
     },
-    deleteBookInfo: async (parent, { id: infoId }) => {
+    deleteBookInfo: async (_parent, { id: infoId }) => {
       const books = await BookDataManager.getBookInfoBooks(infoId, []);
       await BookDataManager.deleteBookInfo(infoId);
 

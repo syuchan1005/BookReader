@@ -5,7 +5,7 @@ const mkdirpIfNotExists = async (p) => {
   let stat;
   try {
     stat = await fs.stat(p);
-  } catch (e) {
+  } catch (_e) {
     await fs.mkdir(p, {
       recursive: true,
     });
@@ -24,7 +24,7 @@ const readdirRecursively = async (dir, files) => {
     if (dirent.isDirectory()) dirs.push(`${dir}/${dirent.name}`);
     if (dirent.isFile()) fileList.push(`${dir}/${dirent.name}`);
   }
-  for (const dir of dirs) {
+  for (const _dir of dirs) {
     fileList = await readdirRecursively(d, fileList);
   }
   return Promise.resolve(fileList);

@@ -1,4 +1,4 @@
-import { ReactNode, memo, useEffect, useState } from 'react';
+import { memo, type ReactNode, useEffect, useState } from 'react';
 
 type RemountProps = {
   remountKey: string;
@@ -18,5 +18,5 @@ const RemountInner = ({ remountKey, children }: RemountProps) => {
   return shouldUnmount ? null : children;
 };
 
-// @ts-ignore
+// @ts-expect-error
 export const Remount = memo(RemountInner);

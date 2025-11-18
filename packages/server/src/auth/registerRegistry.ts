@@ -14,7 +14,7 @@ export interface OIDCConfig {
 export const registerRegistry = (oidcConfig: OIDCConfig | undefined) => {
   if (oidcConfig) {
     passport.use(
-      new OIDCStrategy(oidcConfig, (issuer, profile, callback) =>
+      new OIDCStrategy(oidcConfig, (_issuer, profile, callback) =>
         callback(null, profile),
       ),
     );

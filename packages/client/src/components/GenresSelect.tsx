@@ -15,14 +15,12 @@ import {
   MenuItem,
   Select,
   TextField,
-  Theme,
+  type Theme,
 } from '@mui/material';
-import { useState } from 'react';
-
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
 import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql';
+import { useState } from 'react';
 
 interface GenresSelectProps {
   value: string[];

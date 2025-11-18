@@ -11,7 +11,7 @@ setCacheNameDetails({
 });
 skipWaiting();
 clientsClaim();
-// @ts-ignore
+// @ts-expect-error
 precacheAndRoute(self.__WB_MANIFEST);
 
 // https://developers.google.com/web/tools/workbox/guides/common-recipes
@@ -96,6 +96,6 @@ addEventListener('message', (event) => {
     postMessage();
   };
 
-  // @ts-ignore waitUntil is not resolved
+  // @ts-expect-error waitUntil is not resolved
   event.waitUntil(onMessage());
 });

@@ -1,3 +1,5 @@
+import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
+import { useTitle } from '@client/hooks/useTitle';
 import {
   Button,
   Dialog,
@@ -14,25 +16,20 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Theme,
+  type Theme,
   Toolbar,
   Typography,
   useTheme,
 } from '@mui/material';
-import { useState } from 'react';
-
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
+import { defaultGenres } from '@syuchan1005/book-reader-common';
 import {
   useDeleteGenreMutation,
   useEditGenreMutation,
   useGenresQuery,
 } from '@syuchan1005/book-reader-graphql';
-
-import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
-import { useTitle } from '@client/hooks/useTitle';
-import { defaultGenres } from '@syuchan1005/book-reader-common';
+import { useState } from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

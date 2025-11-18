@@ -1,9 +1,9 @@
 import { ListItem } from '@mui/material';
-import { ComponentMeta } from '@storybook/react';
+import type { ComponentMeta } from '@storybook/react';
 
 import FileField from '../FileField';
 
-export default ({
+export default {
   title: 'Components/FileField',
   argTypes: {
     file: {
@@ -13,7 +13,7 @@ export default ({
     onChange: { action: 'onChange' },
     style: {},
   },
-} as ComponentMeta<typeof FileField>);
+} as ComponentMeta<typeof FileField>;
 
 const Template = (args) => <FileField {...args} />;
 

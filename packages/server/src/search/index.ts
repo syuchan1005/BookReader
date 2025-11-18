@@ -1,2 +1,2 @@
-export * from './meilisearch';
 export * from './elasticsearch';
+export * from './meilisearch';

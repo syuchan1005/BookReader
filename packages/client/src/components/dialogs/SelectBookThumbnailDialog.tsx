@@ -1,3 +1,7 @@
+import BookPageImage, {
+  pageAspectRatio,
+} from '@client/components/BookPageImage';
+import { useVisible } from '@client/hooks/useVisible';
 import {
   Button,
   Card,
@@ -6,24 +10,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Theme,
+  type Theme,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useMemo, useRef } from 'react';
-
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
 import {
   useBookPagesQuery,
   useEditBookThumbnailMutation,
 } from '@syuchan1005/book-reader-graphql';
-
-import BookPageImage, {
-  pageAspectRatio,
-} from '@client/components/BookPageImage';
-import { useVisible } from '@client/hooks/useVisible';
+import { useMemo, useRef } from 'react';
 
 const pageStyle = { width: 125, height: pageAspectRatio(125) };
 const BookPageCard = ({
@@ -31,7 +28,12 @@ const BookPageCard = ({
   bookId,
   page,
   maxPage,
-}: { onClick: () => void; bookId: string; page: number; maxPage: number }) => {
+}: {
+  onClick: () => void;
+  bookId: string;
+  page: number;
+  maxPage: number;
+}) => {
   const theme = useTheme();
   const visibleMargin = useMemo(
     () => `0px 0px ${theme.spacing(3)} 0px`,

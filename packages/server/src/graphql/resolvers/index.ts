@@ -1,5 +1,5 @@
 import { mergeResolvers } from '@graphql-tools/merge';
-import { Resolvers } from '@syuchan1005/book-reader-graphql';
+import type { Resolvers } from '@syuchan1005/book-reader-graphql';
 
 import { resolvers as Book } from './Book';
 import { resolvers as BookInfo } from './BookInfo';

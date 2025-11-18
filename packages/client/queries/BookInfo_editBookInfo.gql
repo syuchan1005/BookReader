@@ -1,10 +1,10 @@
-mutation editBookInfo($id: ID! $name: String $genres: [String!]!) {
-    edit: editBookInfo(id: $id name: $name genres: $genres) {
-        success
-        code
+mutation editBookInfo($id: ID!, $name: String, $genres: [String!]!) {
+  edit: editBookInfo(id: $id, name: $name, genres: $genres) {
+    success
+    code
 
-        bookInfo {
-            ...HomeBookInfo
-        }
+    bookInfo {
+      ...HomeBookInfo
     }
+  }
 }

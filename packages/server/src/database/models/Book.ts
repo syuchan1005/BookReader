@@ -1,5 +1,5 @@
-import { InfoId } from './BookInfo';
-import { Id } from './Id';
+import type { InfoId } from './BookInfo';
+import type { Id } from './Id';
 
 export type BookId = Id;
 

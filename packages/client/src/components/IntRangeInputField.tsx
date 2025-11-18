@@ -1,5 +1,5 @@
 import { TextField } from '@mui/material';
-import { IntRange } from '@syuchan1005/book-reader-graphql';
+import type { IntRange } from '@syuchan1005/book-reader-graphql';
 import { useEffect, useMemo, useState } from 'react';
 
 interface IntRangeInputFieldProps {

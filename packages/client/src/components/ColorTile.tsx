@@ -20,6 +20,7 @@ const ColorTile = ({ color, num = 500, marginLeft }: ColorTileProps) => {
         style={{
           width: '1rem',
           height: '1rem',
+          // biome-ignore lint/performance/noDynamicNamespaceImportAccess: for theme
           background: colors[color][num],
           marginRight: theme.spacing(1),
           marginLeft: marginLeft ? theme.spacing(1) : undefined,

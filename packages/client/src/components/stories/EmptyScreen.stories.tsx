@@ -1,11 +1,11 @@
-import { ComponentMeta } from '@storybook/react';
+import type { ComponentMeta } from '@storybook/react';
 
 import { EmptyScreen } from '../EmptyScreen';
 
-export default ({
+export default {
   title: 'Components/EmptyScreen',
   argTypes: {},
-} as ComponentMeta<typeof EmptyScreen>);
+} as ComponentMeta<typeof EmptyScreen>;
 
 const Template = (args) => <EmptyScreen {...args} />;
 

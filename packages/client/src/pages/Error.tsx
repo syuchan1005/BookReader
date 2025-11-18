@@ -1,5 +1,5 @@
 import { useTitle } from '@client/hooks/useTitle';
-import { Fab, Icon, Theme, Typography } from '@mui/material';
+import { Fab, Icon, type Theme, Typography } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useLocation, useNavigate } from 'react-router-dom';

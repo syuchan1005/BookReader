@@ -22,7 +22,7 @@
     "start": "node dist/server",
     "script:prisma-migrate": "npm run prisma-migrate --workspace=\"packages/server\"",
     "gql-gen": "npm run gql-gen --workspace=\"packages/server\" && npm run gql-gen --workspace=\"packages/client\"",
-    "lint": "biome check --apply-unsafe .",
+    "lint": "biome check --write --unsafe .",
     "prepare": "husky"
   },
   "devDependencies": {

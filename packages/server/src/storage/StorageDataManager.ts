@@ -1,13 +1,10 @@
+import type { availableImageExtensionWithContentType } from '@syuchan1005/book-reader-common';
 import { Buffer } from 'buffer';
 import { promises as fs } from 'fs';
+import { move } from 'fs-extra';
 import os from 'os';
 import { join } from 'path';
-import { Stream } from 'stream';
-
-import { move } from 'fs-extra';
-
-import { availableImageExtensionWithContentType } from '@syuchan1005/book-reader-common';
-import { LocalStorageDataManager, bookFolderPath } from './local';
+import { bookFolderPath, LocalStorageDataManager } from './local';
 
 export interface IStorageDataManager {
   init(): Promise<void>;
@@ -84,8 +81,8 @@ export const withPageEditFolder = async <T>(
     await fs.rm(oldFolderPath, { recursive: true });
     await move(folderPath, oldFolderPath, { overwrite: true });
   };
-  let result;
-  let error;
+  let result: T;
+  let error: unknown;
   try {
     result = await block(folderPath, replaceNewFiles);
   } catch (e) {
@@ -101,7 +98,7 @@ export const withPageEditFolder = async <T>(
           force: true,
         });
         break;
-      } catch (ignored) {
+      } catch (_ignored) {
         /* ignored */
       }
     }

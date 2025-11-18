@@ -48,7 +48,7 @@ const Top = () => {
         <BottomNavigation
           showLabels
           value={tabIndex}
-          onChange={(a, b) => setTabIndex(b)}
+          onChange={(_a, b) => setTabIndex(b)}
         >
           {TabItems.map((tab, i) => (
             <BottomNavigationAction

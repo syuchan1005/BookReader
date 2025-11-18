@@ -15,7 +15,6 @@ export type ShouldResolveKeys<
   '__typename'
 >;
 
-// @ts-ignore
 export type StrictResolver<
   G,
   D,

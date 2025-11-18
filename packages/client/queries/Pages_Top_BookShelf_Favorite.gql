@@ -1,17 +1,17 @@
 query bookInfos($ids: [ID!]!) {
-    bookInfos(ids: $ids) {
-        id
-        name
-        count
-        thumbnail {
-            bookId
-            pageIndex
-            bookPageCount
-        }
-        genres {
-            name
-            invisible
-        }
-        updatedAt
+  bookInfos(ids: $ids) {
+    id
+    name
+    count
+    thumbnail {
+      bookId
+      pageIndex
+      bookPageCount
     }
+    genres {
+      name
+      invisible
+    }
+    updatedAt
+  }
 }

@@ -1,10 +1,5 @@
-import { PubSub, withFilter } from 'graphql-subscriptions';
-import lodashChunk from 'lodash.chunk';
-import throttle from 'lodash.throttle';
-import sharp from 'sharp';
-
-import Errors from '@server/Errors';
 import { BookDataManager } from '@server/database/BookDataManager';
+import Errors from '@server/Errors';
 import { SubscriptionKeys } from '@server/graphql';
 import {
   StorageDataManager,
@@ -13,14 +8,18 @@ import {
 } from '@server/storage/StorageDataManager';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import {
-  EditAction,
+  type EditAction,
   EditType,
-  Maybe,
-  Resolvers,
-  Result,
+  type Maybe,
+  type Resolvers,
+  type Result,
   SplitType,
-  Upload,
+  type Upload,
 } from '@syuchan1005/book-reader-graphql';
+import { PubSub, withFilter } from 'graphql-subscriptions';
+import lodashChunk from 'lodash.chunk';
+import throttle from 'lodash.throttle';
+import sharp from 'sharp';
 import {
   getImageSize,
   joinImagesAndSaveImage,
@@ -370,7 +369,7 @@ const executeEditActions = async (
           await sharp(srcFileData.data).toFile(distFilePath);
         }
         return { success: true };
-      } catch (e) {
+      } catch (_e) {
         return {
           success: false,
           code: 'QL0013',
@@ -448,7 +447,7 @@ export const resolvers: Resolvers = {
           });
           purgeImageCache();
           await replaceNewFiles();
-        } catch (e) {
+        } catch (_e) {
           return {
             success: false,
             code: 'QL0013',

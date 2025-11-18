@@ -1,12 +1,15 @@
-import { BookDataManager, SortKey } from '@server/database/BookDataManager';
+import {
+  BookDataManager,
+  type SortKey,
+} from '@server/database/BookDataManager';
 import { elasticSearchClient, meiliSearchClient } from '@server/search';
 import {
-  BookInfo as BookInfoGQLModel,
+  type BookInfo as BookInfoGQLModel,
   BookInfoOrder,
-  BookInfoPartialList,
-  BookInfosOption,
-  QueryRelayBookInfosArgs,
-  Resolvers,
+  type BookInfoPartialList,
+  type BookInfosOption,
+  type QueryRelayBookInfosArgs,
+  type Resolvers,
   SearchMode,
 } from '@syuchan1005/book-reader-graphql';
 
@@ -22,38 +25,19 @@ const getCursor = (
   before?: string,
   after?: string,
 ):
-  | [
-      cursorKey: 'name',
-      sqlOrder: SortKey,
-      beforeValue?: string,
-      afterValue?: string,
-    ]
-  | [
-      cursorKey: 'createdAt' | 'updatedAt',
-      sqlOrder: SortKey,
-      beforeValue?: number,
-      afterValue?: number,
-    ] => {
-  let cursor;
-  switch (order) {
-    case BookInfoOrder.UpdateNewest:
-    case BookInfoOrder.UpdateOldest:
-      cursor = 'updatedAt';
-      break;
-    case BookInfoOrder.AddNewest:
-    case BookInfoOrder.AddOldest:
-      cursor = 'createdAt';
-      break;
-    case BookInfoOrder.NameAsc:
-    case BookInfoOrder.NameDesc:
-      cursor = 'name';
-      break;
-    default: {
-      const _exhaustiveCheck: never = order;
-      return _exhaustiveCheck;
+  | {
+      cursorKey: 'name';
+      sqlOrder: SortKey;
+      before?: string;
+      after?: string;
     }
-  }
-  let sqlOrder;
+  | {
+      cursorKey: 'createdAt' | 'updatedAt';
+      sqlOrder: SortKey;
+      before?: number;
+      after?: number;
+    } => {
+  let sqlOrder: SortKey;
   switch (order) {
     case BookInfoOrder.UpdateOldest:
     case BookInfoOrder.AddOldest:
@@ -72,16 +56,31 @@ const getCursor = (
   }
   switch (order) {
     case BookInfoOrder.UpdateOldest:
-    case BookInfoOrder.UpdateNewest:
+    case BookInfoOrder.UpdateNewest: {
+      const convertedBefore = before ? parseInt(before, 10) : undefined;
+      const convertedAfter = after ? parseInt(after, 10) : undefined;
+      return {
+        cursorKey: 'updatedAt',
+        sqlOrder,
+        before: convertedBefore,
+        after: convertedAfter,
+      };
+    }
     case BookInfoOrder.AddNewest:
     case BookInfoOrder.AddOldest: {
       const convertedBefore = before ? parseInt(before, 10) : undefined;
       const convertedAfter = after ? parseInt(after, 10) : undefined;
-      return [cursor, sqlOrder, convertedBefore, convertedAfter];
+      return {
+        cursorKey: 'createdAt',
+        sqlOrder,
+        before: convertedBefore,
+        after: convertedAfter,
+      };
     }
     case BookInfoOrder.NameAsc:
-    case BookInfoOrder.NameDesc:
-      return [cursor, sqlOrder, before, after];
+    case BookInfoOrder.NameDesc: {
+      return { cursorKey: 'name', sqlOrder, before, after };
+    }
     default: {
       const _exhaustiveCheck: never = order;
       return _exhaustiveCheck;
@@ -98,20 +97,17 @@ const searchBookInfosByDB = async ({
 }: Partial<QueryRelayBookInfosArgs>) => {
   const { search, genres, order: bookInfoOrder } = option;
 
-  const [cursorKey, sqlOrder, before, after] = getCursor(
-    bookInfoOrder,
-    argBefore,
-    argAfter,
-  );
-  let paginationWhere;
-  if (after === undefined && before === undefined) {
+  const cursor = getCursor(bookInfoOrder, argBefore, argAfter);
+  let paginationWhere: [typeof cursor.before, typeof cursor.after] | undefined;
+  if (cursor.after === undefined && cursor.before === undefined) {
     paginationWhere = undefined;
-  } else if (after !== undefined && before !== undefined) {
-    paginationWhere = [after, before];
+  } else if (cursor.after !== undefined && cursor.before !== undefined) {
+    paginationWhere = [cursor.after, cursor.before];
   } else {
-    paginationWhere = [after, before];
-    if (sqlOrder === 'desc') {
-      paginationWhere = paginationWhere.reverse();
+    if (cursor.sqlOrder === 'asc') {
+      paginationWhere = [cursor.after, cursor.before];
+    } else {
+      paginationWhere = [cursor.before, cursor.after];
     }
   }
 
@@ -121,15 +117,16 @@ const searchBookInfosByDB = async ({
       genres,
       name: {
         include: search,
-        between: cursorKey === 'name' ? paginationWhere : undefined,
+        // @ts-expect-error-error
+        between: cursor.cursorKey === 'name' ? paginationWhere : undefined,
       },
-      ...(cursorKey !== 'name'
+      ...(cursor.cursorKey !== 'name'
         ? {
-            [cursorKey]: paginationWhere,
+            [cursor.cursorKey]: paginationWhere,
           }
         : undefined),
     },
-    sort: [[cursorKey, sqlOrder]],
+    sort: [[cursor.cursorKey, cursor.sqlOrder]],
   });
   let edges = bookInfos;
   if (first !== undefined) {
@@ -151,15 +148,15 @@ const searchBookInfosByDB = async ({
 
   return {
     edges: edges.map((bookInfo) => ({
-      cursor: bookInfo[cursorKey],
-      // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+      cursor: bookInfo[cursor.cursorKey],
+      // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
       node: bookInfo as BookInfoGQLModel,
     })),
     pageInfo: {
       hasNextPage: bookInfos.length > first,
       hasPreviousPage: false, // TODO: actual value
-      startCursor: edges[0]?.[cursorKey] ?? '',
-      endCursor: edges[edges.length - 1]?.[cursorKey] ?? '',
+      startCursor: edges[0]?.[cursor.cursorKey] ?? '',
+      endCursor: edges[edges.length - 1]?.[cursor.cursorKey] ?? '',
     },
   } as BookInfoPartialList;
 };
@@ -177,7 +174,7 @@ const searchBookInfosByMeiliSearch = async ({
   return {
     edges: bookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
-      // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+      // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
       node: bookInfo as BookInfoGQLModel,
     })),
     pageInfo: {
@@ -202,7 +199,7 @@ const searchBookInfosByElasticSearch = async ({
   return {
     edges: bookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
-      // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+      // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
       node: bookInfo as BookInfoGQLModel,
     })),
     pageInfo: {
@@ -216,7 +213,7 @@ const searchBookInfosByElasticSearch = async ({
 
 export const resolvers: Resolvers = {
   Query: {
-    // @ts-ignore https://github.com/dotansimha/graphql-code-generator/issues/3131
+    // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
     relayBookInfos: (_parent, args) => {
       const searchMode = (args.option || DefaultOptions).searchMode;
       switch (searchMode) {

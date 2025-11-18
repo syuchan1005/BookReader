@@ -1,3 +1,6 @@
+import DropZone from '@client/components/DropZone';
+import FileField from '@client/components/FileField';
+import { useTitle } from '@client/hooks/useTitle';
 import {
   Button,
   ButtonGroup,
@@ -12,34 +15,29 @@ import {
   Radio,
   RadioGroup,
   TextField,
-  Theme,
+  type Theme,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useBeforeUnload } from 'react-use';
-
 import {
-  AddBooksProgressSubscription,
-  AddBooksSubscriptionType,
-  InputBook,
+  type AddBooksProgressSubscription,
+  type AddBooksSubscriptionType,
+  type InputBook,
   useAddBooksMutation,
   useAddBooksProgressSubscription,
   useAddCompressBookMutation,
 } from '@syuchan1005/book-reader-graphql';
-
-import DropZone from '@client/components/DropZone';
-import FileField from '@client/components/FileField';
-import { useTitle } from '@client/hooks/useTitle';
 import {
   Children,
-  ReactElement,
-  ReactNode,
   cloneElement,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
+import { useBeforeUnload } from 'react-use';
 
 type StrictAddBooksSubscriptionResult<
   EnumType = typeof AddBooksSubscriptionType,
@@ -385,7 +383,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                       color="secondary"
                       label="Number"
                       value={number}
-                      // @ts-ignore
+                      // @ts-expect-error
                       onChange={(event) =>
                         changeAddBook(i, { number: event.target.value })
                       }
@@ -395,7 +393,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                   )}
                   <IconButton
                     onClick={() =>
-                      setAddBooks(addBooks.filter((f, k) => k !== i))
+                      setAddBooks(addBooks.filter((_f, k) => k !== i))
                     }
                     size="large"
                   >
@@ -451,7 +449,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       <DialogActions>
         {children &&
           Children.map<{ loading: boolean }, ReactElement>(
-            // @ts-ignore
+            // @ts-expect-error
             children,
             (child) => cloneElement(child, { loading }),
           )}

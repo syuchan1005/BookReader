@@ -1,16 +1,16 @@
 import { goToAuthPage } from '@client/auth';
 import { Remount } from '@client/components/Remount';
 import { useDebounceValue } from '@client/hooks/useDebounceValue';
-import { Theme } from '@mui/material';
+import type { Theme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  availableImageExtensionWithContentType,
   availableImageExtensions,
+  availableImageExtensionWithContentType,
   defaultStoredImageExtension,
 } from '@syuchan1005/book-reader-common';
 import {
-  CSSProperties,
+  type CSSProperties,
   useCallback,
   useEffect,
   useMemo,

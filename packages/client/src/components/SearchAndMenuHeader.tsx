@@ -1,3 +1,6 @@
+import { commonTheme } from '@client/App';
+import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
+import { genresState } from '@client/store/atoms';
 import {
   AppBar,
   Chip,
@@ -10,7 +13,7 @@ import {
   MenuItem,
   Popover,
   Select,
-  Theme,
+  type Theme,
   Toolbar,
   useTheme,
 } from '@mui/material';
@@ -18,17 +21,19 @@ import { red } from '@mui/material/colors';
 import { alpha } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
-
-import { commonTheme } from '@client/App';
-import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
-import { genresState } from '@client/store/atoms';
 import {
   SearchMode,
   useAvailableSearchModesQuery,
   useGenresQuery,
 } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
+import {
+  type ChangeEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;

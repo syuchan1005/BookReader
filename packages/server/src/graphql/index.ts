@@ -1,17 +1,16 @@
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@as-integrations/express5';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { expressMiddleware } from '@as-integrations/express5';
 import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { json } from 'body-parser';
-import { GraphQLSchema } from 'graphql';
-import gql from 'graphql-tag';
-import { Disposable } from 'graphql-ws/lib/common';
-import { useServer } from 'graphql-ws/lib/use/ws';
-import { WebSocketServer } from 'ws';
-
 import { resolvers } from '@server/graphql/resolvers';
 import { schemaString } from '@syuchan1005/book-reader-graphql';
+import { json } from 'body-parser';
+import type { GraphQLSchema } from 'graphql';
+import gql from 'graphql-tag';
+import type { Disposable } from 'graphql-ws/lib/common';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { WebSocketServer } from 'ws';
 import BigIntScalar from './scalar/BigIntScalar';
 import IntRangeScalar from './scalar/IntRange';
 

@@ -1,3 +1,10 @@
+import DeleteDialog from '@client/components/dialogs/DeleteDialog';
+import EditDialog from '@client/components/dialogs/EditDialog';
+import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useLazyDialog } from '@client/hooks/useLazyDialog';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
+import { useVisible } from '@client/hooks/useVisible';
+import db from '@client/indexedDb/Database';
 import {
   Card,
   CardActionArea,
@@ -7,13 +14,19 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Theme,
+  type Theme,
 } from '@mui/material';
 import { yellow } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  CSSProperties,
+  type HomeBookInfoFragment,
+  type BookInfo as QLBookInfo,
+  useDeleteBookInfoMutation,
+  useEditBookInfoMutation,
+} from '@syuchan1005/book-reader-graphql';
+import {
+  type CSSProperties,
   lazy,
   useCallback,
   useEffect,
@@ -22,24 +35,6 @@ import {
   useState,
 } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-
-import {
-  BookInfo as QLBookInfo,
-  HomeBookInfoFragment,
-} from '@syuchan1005/book-reader-graphql';
-import {
-  useDeleteBookInfoMutation,
-  useEditBookInfoMutation,
-} from '@syuchan1005/book-reader-graphql';
-
-import db from '@client/indexedDb/Database';
-
-import DeleteDialog from '@client/components/dialogs/DeleteDialog';
-import EditDialog from '@client/components/dialogs/EditDialog';
-import { useBooleanState } from '@client/hooks/useBooleanState';
-import { useLazyDialog } from '@client/hooks/useLazyDialog';
-import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
-import { useVisible } from '@client/hooks/useVisible';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';

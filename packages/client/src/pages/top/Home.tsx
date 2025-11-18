@@ -1,24 +1,12 @@
-import { CircularProgress, Fab, Icon, Theme, useTheme } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-import { useAtom, useAtomValue } from 'jotai';
-
-import {
-  HomeBookInfoFragment,
-  SearchMode,
-  useRelayBookInfosQuery,
-} from '@syuchan1005/book-reader-graphql';
-
 import { commonTheme } from '@client/App';
-import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
-import { useDebounceValue } from '@client/hooks/useDebounceValue';
-
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
+import AddBookInfoDialog from '@client/components/dialogs/AddBookInfoDialog';
 import { EmptyScreen } from '@client/components/EmptyScreen';
 import HomeHeaderMenu from '@client/components/HomeHeaderMenu';
 import SearchAndMenuHeader from '@client/components/SearchAndMenuHeader';
 import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useDebounceValue } from '@client/hooks/useDebounceValue';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useStateWithReset } from '@client/hooks/useStateWithReset';
 import { useTitle } from '@client/hooks/useTitle';
@@ -32,7 +20,22 @@ import {
   sortOrderState,
 } from '@client/store/atoms';
 import {
-  ReactElement,
+  CircularProgress,
+  Fab,
+  Icon,
+  type Theme,
+  useTheme,
+} from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import {
+  type HomeBookInfoFragment,
+  type SearchMode,
+  useRelayBookInfosQuery,
+} from '@syuchan1005/book-reader-graphql';
+import { useAtom, useAtomValue } from 'jotai';
+import {
+  type ReactElement,
   useCallback,
   useEffect,
   useMemo,
@@ -207,7 +210,7 @@ const Home = (props: HomeProps) => {
     const gridElement = gridRef.current;
     if (gridElement.children.length > lastSeenPosition.index) {
       const elem = gridElement.children[lastSeenPosition.index];
-      // @ts-ignore
+      // @ts-expect-error
       elem.scrollIntoView({ block: lastSeenPosition.block });
       setLastSeenPositionLoaded(true);
     } else {

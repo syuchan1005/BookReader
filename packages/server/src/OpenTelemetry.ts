@@ -1,4 +1,4 @@
-import api, { Tracer } from '@opentelemetry/api';
+import api, { type Tracer } from '@opentelemetry/api';
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
 import { CompositePropagator } from '@opentelemetry/core';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -52,9 +52,7 @@ const setup = (): Tracer => {
     process.env.NODE_ENV !== 'production' &&
     process.env.BOOKREADER_TRACE_CONSOLE === 'true'
   ) {
-    spanProcessors.push(
-      new SimpleSpanProcessor(new ConsoleSpanExporter()),
-    );
+    spanProcessors.push(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   }
 
   const provider = new NodeTracerProvider({

@@ -1,3 +1,7 @@
+import { createBookPageUrl } from '@client/components/BookPageImage';
+import CropImageDialog from '@client/components/dialogs/EditPagesDialog/CropImageDialog';
+import FileField from '@client/components/FileField';
+import IntRangeInputField from '@client/components/IntRangeInputField';
 import {
   Box,
   Button,
@@ -23,16 +27,11 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-
-import { createBookPageUrl } from '@client/components/BookPageImage';
-import FileField from '@client/components/FileField';
-import IntRangeInputField from '@client/components/IntRangeInputField';
-import CropImageDialog from '@client/components/dialogs/EditPagesDialog/CropImageDialog';
 import { EditType, SplitType } from '@syuchan1005/book-reader-graphql';
 import {
-  ForwardedRef,
-  ReactNode,
+  type ForwardedRef,
   forwardRef,
+  type ReactNode,
   useCallback,
   useState,
 } from 'react';
@@ -101,12 +100,12 @@ const ListItemCard = forwardRef((props: ListItemCardProps, ref) => {
   const theme = useTheme();
   return (
     <ListItem
-      // @ts-ignore
+      // @ts-expect-error
       ref={ref}
       {...draggableProps}
       style={{
         zIndex: theme.zIndex.modal + 1,
-        // @ts-ignore
+        // @ts-expect-error
         ...draggableProps.style,
         flexWrap: 'wrap',
       }}

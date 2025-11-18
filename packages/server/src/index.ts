@@ -1,28 +1,27 @@
 import './OpenTelemetry';
 
-import http from 'http';
+import { BookDataManager } from '@server/database/BookDataManager';
+import { elasticSearchClient, meiliSearchClient } from '@server/search';
+import { StorageDataManager } from '@server/storage/StorageDataManager';
+import {
+  availableImageExtensions,
+  type availableImageExtensionWithContentType,
+} from '@syuchan1005/book-reader-common';
 import history from 'connect-history-api-fallback';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
+import http from 'http';
 import Redis from 'ioredis';
 import morgan from 'morgan';
-
-import { BookDataManager } from '@server/database/BookDataManager';
-import { elasticSearchClient, meiliSearchClient } from '@server/search';
-import { StorageDataManager } from '@server/storage/StorageDataManager';
-import {
-  availableImageExtensionWithContentType,
-  availableImageExtensions,
-} from '@syuchan1005/book-reader-common';
-import { getOrConvertImage } from './ImageUtil';
 import {
   init as initAuth,
   initRoutes as initAuthRoutes,
   isAuthenticatedMiddleware,
 } from './auth';
 import GraphQL from './graphql/index';
+import { getOrConvertImage } from './ImageUtil';
 
 (async () => {
   const { default: GraphQLUpload } = await import(
@@ -73,13 +72,13 @@ import GraphQL from './graphql/index';
 
   app.use(cors());
 
-  let sessionStoreOption;
+  let sessionStoreOption: Record<string, unknown> | undefined;
   try {
     sessionStoreOption = JSON.parse(process.env.BOOKREADER_SESSION_STORE);
-  } catch (e) {
+  } catch (_e) {
     sessionStoreOption = undefined;
   }
-  let sessionStore;
+  let sessionStore: session.Store | undefined;
   if (sessionStoreOption && sessionStoreOption.type === 'redis') {
     const RedisStore = connectRedis(session);
     const redisClient = new Redis({
@@ -137,7 +136,6 @@ import GraphQL from './graphql/index';
         pageNum,
         {
           ext: extension,
-          // @ts-ignore
           size: sizeExists
             ? {
                 width: Number(width),

@@ -1,6 +1,6 @@
 mutation addCompressBook($id: ID!, $file: Upload, $path: String) {
-    add: addCompressBook(id: $id file: $file path: $path) {
-        success
-        code
-    }
+  add: addCompressBook(id: $id, file: $file, path: $path) {
+    success
+    code
+  }
 }

@@ -1,11 +1,11 @@
-import express, { Express } from 'express';
+import express, { type Express } from 'express';
 import passport from 'passport';
-import { OIDCConfig, registerRegistry } from './registerRegistry';
+import { type OIDCConfig, registerRegistry } from './registerRegistry';
 
 const getOIDCConfig = (): OIDCConfig | undefined => {
   try {
     return JSON.parse(process.env.BOOKREADER_OIDC);
-  } catch (e) {
+  } catch (_e) {
     return undefined;
   }
 };
@@ -32,7 +32,7 @@ export const initRoutes = (app: Express) => {
 const createAuthRouter = (path: string) => {
   const router = express.Router();
   router.get('/', (req, res) => {
-    // @ts-ignore
+    // @ts-expect-error
     const isAuthenticated = req.session.passport !== undefined;
     if (!oidcConfig || isAuthenticated) {
       res.redirect(200, '/');
@@ -49,8 +49,8 @@ const createAuthRouter = (path: string) => {
   if (oidcConfig) {
     router.get(
       '/oidc',
-      (req, res, next) => {
-        // @ts-ignore
+      (req, _res, next) => {
+        // @ts-expect-error
         req.session.redirectTo = req.query.r;
         return next();
       },
@@ -63,7 +63,7 @@ const createAuthRouter = (path: string) => {
         keepSessionInfo: true,
       }),
       (req, res) => {
-        // @ts-ignore
+        // @ts-expect-error
         res.redirect(req.session.redirectTo || '/');
       },
     );

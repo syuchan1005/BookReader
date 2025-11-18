@@ -1,3 +1,4 @@
+import { createBookPageUrl } from '@client/components/BookPageImage';
 import {
   Button,
   CircularProgress,
@@ -7,13 +8,13 @@ import {
   DialogTitle,
   LinearProgress,
 } from '@mui/material';
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
+import {
+  type BookInfo,
+  useDownloadBookInfosQuery,
+} from '@syuchan1005/book-reader-graphql';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
-
-import { createBookPageUrl } from '@client/components/BookPageImage';
-import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
-import { BookInfo } from '@syuchan1005/book-reader-graphql';
-import { useDownloadBookInfosQuery } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useMemo, useState } from 'react';
 
 interface DownloadZipBookInfoDialogProps extends Pick<BookInfo, 'id'> {

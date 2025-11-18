@@ -1,18 +1,18 @@
 {
-    "compilerOptions": {
-        "baseUrl": ".",
-        "jsx": "react-jsx",
-        "target": "es2024",
-        "module": "esnext",
-        "lib": ["es2020", "webworker", "dom"],
-        "moduleResolution": "bundler",
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "downlevelIteration": true,
-        "outDir": "./dist",
-        "paths": {
-            "@client/*" :["src/*"],
-            "@syuchan1005/book-reader-graphql": ["generated/GQLQueries.ts"]
-        }
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "target": "es2024",
+    "module": "esnext",
+    "lib": ["es2020", "webworker", "dom"],
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "downlevelIteration": true,
+    "outDir": "./dist",
+    "paths": {
+      "@client/*": ["src/*"],
+      "@syuchan1005/book-reader-graphql": ["generated/GQLQueries.ts"]
     }
+  }
 }

@@ -6,14 +6,14 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Theme,
+  type Theme,
 } from '@mui/material';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
 import {
-  HomeBookInfoFragment,
+  type HomeBookInfoFragment,
   useAddBookInfoMutation,
 } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useState } from 'react';
@@ -115,7 +115,7 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
             autoFocus
             label="Book info name"
             value={name}
-            // @ts-ignore
+            // @ts-expect-error
             onChange={(event) => setName(event.target.value)}
           />
         </DialogContent>

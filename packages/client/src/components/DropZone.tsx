@@ -1,12 +1,15 @@
-import { Theme } from '@mui/material';
+import { useOS } from '@client/hooks/useOS';
+import type { Theme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
-
-import { useOS } from '@client/hooks/useOS';
 import { archiveTypes } from '@syuchan1005/book-reader-common';
 import { useEffect, useRef, useState } from 'react';
+import {
+  type DropEvent,
+  type FileRejection,
+  useDropzone,
+} from 'react-dropzone';
 
 interface FileFieldProps {
   onChange?: <T extends File>(

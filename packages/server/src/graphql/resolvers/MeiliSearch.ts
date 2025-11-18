@@ -1,5 +1,5 @@
 import { elasticSearchClient, meiliSearchClient } from '@server/search';
-import { Resolvers, SearchMode } from '@syuchan1005/book-reader-graphql';
+import { type Resolvers, SearchMode } from '@syuchan1005/book-reader-graphql';
 
 export const resolvers: Resolvers = {
   Query: {

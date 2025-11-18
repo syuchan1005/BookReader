@@ -1,6 +1,6 @@
 mutation deleteUnusedFolders {
-    debug_deleteUnusedFolders {
-        success
-        code
-    }
+  debug_deleteUnusedFolders {
+    success
+    code
+  }
 }

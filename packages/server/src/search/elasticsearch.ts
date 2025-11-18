@@ -30,7 +30,7 @@ export class ElasticSearchClient {
       if (isHealthy) {
         this.client = client;
       }
-    } catch (ignored) {}
+    } catch (_ignored) {}
   }
 
   isAvailable(): boolean {

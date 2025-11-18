@@ -1,5 +1,5 @@
 mutation rebuildMeiliSearch {
-    debug_rebuildMeiliSearch {
-        success
-    }
+  debug_rebuildMeiliSearch {
+    success
+  }
 }

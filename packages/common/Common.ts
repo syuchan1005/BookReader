@@ -18,11 +18,11 @@ type AvailableImageExtensionType =
 
 export const defaultStoredImageExtension: AvailableImageExtensionType = 'webp';
 
-// @ts-ignore
+// @ts-expect-error
 export const availableImageExtensions: AvailableImageExtensionType[] =
   Object.keys(availableImageExtensionWithContentType);
 
-// @ts-ignore
+// @ts-expect-error
 export const optionalImageExtensions: AvailableImageExtensionType[] =
   Object.keys(availableImageExtensionWithContentType).filter(
     (imageType) => imageType !== defaultStoredImageExtension,

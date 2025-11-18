@@ -1,10 +1,12 @@
-import { Theme } from '@mui/material';
+import type { Theme } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import JSZip from 'jszip';
 import {
-  CSSProperties,
+  type CSSProperties,
   Fragment,
-  ReactElement,
   lazy,
+  type ReactElement,
   useCallback,
   useEffect,
   useMemo,
@@ -12,25 +14,10 @@ import {
   useState,
 } from 'react';
 
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-
 import { Keyboard, Virtual } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/keyboard';
 import 'swiper/css/virtual';
-import { Swiper, SwiperSlide } from 'swiper/react';
-
-import { useAtomValue, useSetAtom } from 'jotai';
-import {
-  useLocation,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
-import { useWindowSize } from 'react-use';
-
-import { BookQuery, useBookQuery } from '@syuchan1005/book-reader-graphql';
 
 import BookPageImage from '@client/components/BookPageImage';
 import BookPageOverlay from '@client/components/BookPageOverlay';
@@ -41,15 +28,25 @@ import { useDebounceValue } from '@client/hooks/useDebounceValue';
 import { useLazyDialog } from '@client/hooks/useLazyDialog';
 import { usePrevNextBook } from '@client/hooks/usePrevNextBook';
 import { useTitle } from '@client/hooks/useTitle';
-import db, { DownloadedBook } from '@client/indexedDb/Database';
+import db, { type DownloadedBook } from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
 import {
-  ReadOrder,
   alertDataState,
   pageImageEffectState,
+  ReadOrder,
   readOrderState,
   showOriginalImageState,
 } from '@client/store/atoms';
+import { type BookQuery, useBookQuery } from '@syuchan1005/book-reader-graphql';
+import { useAtomValue, useSetAtom } from 'jotai';
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
+import { useWindowSize } from 'react-use';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 const EditPagesDialog = lazy(
   () => import('@client/components/dialogs/EditPagesDialog'),
@@ -220,7 +217,7 @@ const PageStyle: { [key: string]: PageStyleType } = {
   },
 };
 
-// @ts-ignore
+// @ts-expect-error
 const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
   SinglePage: 'FullSpread',
   FullSpread: 'FullSpreadPlusOne',
@@ -401,10 +398,10 @@ const Book = (props: BookProps) => {
   );
 
   const openBook = useCallback(
-    (infoId: string, targetBookId: string) => {
+    (_infoId: string, targetBookId: string) => {
       navigate(`/book/${targetBookId}`, {
         state: {
-          // @ts-ignore
+          // @ts-expect-error
           referrer: location.state?.referrer || location.pathname,
         },
         replace: true,
@@ -647,6 +644,7 @@ const useBookData = (props: {
       const pageFileName = props.pageIndex
         .toString(10)
         .padStart(downloadedBook.totalPageCount.toString(10).length, '0');
+      // biome-ignore lint/correctness/useHookAtTopLevel: top level
       const src: string | undefined = usePromise(
         props.skip
           ? Promise.resolve(undefined)
@@ -729,7 +727,9 @@ const useBookData = (props: {
 };
 
 const usePromise = <T,>(promise: Promise<T>): T | undefined => {
+  // biome-ignore lint/correctness/useHookAtTopLevel: top level
   const [result, setResult] = useState<T | undefined>(undefined);
+  // biome-ignore lint/correctness/useHookAtTopLevel: top level
   useEffect(() => {
     let isMounted = true;
     promise

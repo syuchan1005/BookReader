@@ -1,13 +1,12 @@
-import { useBooksLazyQuery } from '@syuchan1005/book-reader-graphql';
-
 import Book from '@client/components/Book';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
-import db, { BookRead } from '@client/indexedDb/Database';
-import { Theme, useTheme } from '@mui/material';
+import db, { type BookRead } from '@client/indexedDb/Database';
+import { type Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
+import { useBooksLazyQuery } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -53,7 +52,7 @@ const History = () => {
     );
 
   const getHistoryBooks = useCallback(() => {
-    let after;
+    let after: Date | undefined;
     if (historyBooks.length !== 0) {
       after = historyBooks[historyBooks.length - 1].updatedAt;
     }

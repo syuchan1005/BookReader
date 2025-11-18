@@ -1,9 +1,7 @@
+import { ApolloProvider } from '@apollo/client/react';
+import apolloClient, { setUpApollo } from '@client/apollo/index';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-
-import { ApolloProvider } from '@apollo/client/react';
-
-import apolloClient, { setUpApollo } from '@client/apollo/index';
 import App from './App';
 
 import db from './indexedDb/Database';

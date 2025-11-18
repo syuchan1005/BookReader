@@ -1,6 +1,6 @@
-mutation editBook($id: ID! $number: String) {
-    edit: editBook(id: $id number: $number) {
-        success
-        code
-    }
+mutation editBook($id: ID!, $number: String) {
+  edit: editBook(id: $id, number: $number) {
+    success
+    code
+  }
 }

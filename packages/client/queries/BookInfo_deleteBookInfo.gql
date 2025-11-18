@@ -1,10 +1,10 @@
 mutation deleteBookInfo($id: ID!) {
-    del: deleteBookInfo(id: $id) {
-        success
-        code
-        books {
-            id
-            pages
-        }
+  del: deleteBookInfo(id: $id) {
+    success
+    code
+    books {
+      id
+      pages
     }
+  }
 }

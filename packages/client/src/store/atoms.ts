@@ -119,7 +119,7 @@ export const alertDataState = atom(
     }
     return undefined;
   },
-  (get, set, value: AlertData | undefined) => {
+  (_get, set, value: AlertData | undefined) => {
     if (value) {
       set(innerAlertDataState, value);
     }

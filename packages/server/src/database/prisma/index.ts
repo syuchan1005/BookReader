@@ -1,6 +1,6 @@
 import {
-  Book as PBook,
-  BookInfo as PBookInfo,
+  type Book as PBook,
+  type BookInfo as PBookInfo,
   PrismaClient,
 } from '@prisma/client';
 
@@ -9,19 +9,19 @@ import {
   BatchLoadingClear,
   BatchLoadingClearAll,
 } from '@server/database/BatchLoading';
-import {
+import type {
   IBookDataManager,
   RequireAtLeastOne,
   SortKey,
 } from '@server/database/BookDataManager';
-import {
+import type {
   Book,
   BookEditableValue,
   BookId,
   InputBook,
   SortableBookProperties,
 } from '@server/database/models/Book';
-import {
+import type {
   BookInfo,
   BookInfoEditableValue,
   BookInfoThumbnail,
@@ -29,7 +29,7 @@ import {
   InputBookInfo,
   SortableBookInfoProperties,
 } from '@server/database/models/BookInfo';
-import {
+import type {
   DeleteGenreError,
   Genre,
   GenreEditableValue,
@@ -236,6 +236,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     return PrismaBookDataManager.convertBookInfo(book?.bookInfo);
   }
 
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: not unused
   private static convertBookInfo(
     bookInfo: PBookInfo & { _count: { books: number } },
   ): BookInfo | undefined {
@@ -283,6 +284,7 @@ export class PrismaBookDataManager implements IBookDataManager {
     return PrismaBookDataManager.convertBookInfoThumbnail(thumbnailBook);
   }
 
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: not unused
   private static convertBookInfoThumbnail(
     thumbnailBook?: PBook,
   ): BookInfoThumbnail | undefined {
@@ -371,7 +373,12 @@ export class PrismaBookDataManager implements IBookDataManager {
   }): Promise<Array<BookInfo>> {
     const {
       limit,
-      filter: { genres, name: { include, between }, createdAt, updatedAt },
+      filter: {
+        genres,
+        name: { include, between },
+        createdAt,
+        updatedAt,
+      },
       sort,
     } = option;
 

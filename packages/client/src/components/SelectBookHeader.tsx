@@ -1,3 +1,4 @@
+import { commonTheme } from '@client/App';
 import {
   AppBar,
   Button,
@@ -10,7 +11,7 @@ import {
   IconButton,
   StyledEngineProvider,
   TextField,
-  Theme,
+  type Theme,
   ThemeProvider,
   Toolbar,
   Typography,
@@ -19,8 +20,6 @@ import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
-import { commonTheme } from '@client/App';
 
 import {
   useDeleteBooksMutation,

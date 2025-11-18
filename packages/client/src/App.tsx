@@ -1,24 +1,4 @@
 import { useApolloClient } from '@apollo/client';
-import {
-  Alert,
-  CssBaseline,
-  Snackbar,
-  StyledEngineProvider,
-  Theme,
-  ThemeProvider,
-} from '@mui/material';
-import * as colors from '@mui/material/colors';
-import { createTheme } from '@mui/material/styles';
-import {
-  Fragment,
-  Suspense,
-  lazy,
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react';
-import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
-
 import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
@@ -29,7 +9,26 @@ import {
   primaryColorState,
   secondaryColorState,
 } from '@client/store/atoms';
+import {
+  Alert,
+  CssBaseline,
+  Snackbar,
+  StyledEngineProvider,
+  type Theme,
+  ThemeProvider,
+} from '@mui/material';
+import * as colors from '@mui/material/colors';
+import { createTheme } from '@mui/material/styles';
 import { useAtomValue, useSetAtom } from 'jotai';
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
+import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
 
 const Top = lazy(() => import('@client/pages/Top'));
 const Home = lazy(() => import('@client/pages/top/Home'));
@@ -69,18 +68,18 @@ export const commonTheme = {
             ],
           ];
         }
-        // @ts-ignore
+        // @ts-expect-error
         if (val.minHeight !== undefined) {
           return [
             [
               key,
               {
-                // @ts-ignore
+                // @ts-expect-error
                 [styleName]: `calc(${commonTheme.safeArea.top} + ${
                   val.minHeight
                 }px${calcOption || ''})`,
                 fallbacks: {
-                  // @ts-ignore
+                  // @ts-expect-error
                   [styleName]: calcOption
                     ? `calc(${val.minHeight}px${calcOption})`
                     : val.minHeight,
@@ -93,7 +92,7 @@ export const commonTheme = {
       })
       .reduce((o, props) => {
         for (const [k, v] of props) {
-          // @ts-ignore
+          // @ts-expect-error
           o[k] = v;
         }
         return o;
@@ -114,7 +113,7 @@ const App = () => {
   const alertData = useAtomValue(innerAlertDataState);
   const setAlertData = useSetAtom(alertDataState);
   const closeAlert = useCallback(
-    (event, reason?: string) => {
+    (_event, reason?: string) => {
       if (reason === 'clickaway') {
         return;
       }
@@ -124,7 +123,7 @@ const App = () => {
   );
 
   useEffect(() => {
-    // @ts-ignore
+    // @ts-expect-error
     apolloClient.snackbar = (message: string, opt: { variant: 'error' }) => {
       setAlertData({
         message,
@@ -153,7 +152,9 @@ const App = () => {
       createTheme({
         palette: {
           mode: isSystemDarkTheme ? 'dark' : 'light',
+          // biome-ignore lint/performance/noDynamicNamespaceImportAccess: for theme
           primary: colors[primaryColor],
+          // biome-ignore lint/performance/noDynamicNamespaceImportAccess: for theme
           secondary: colors[secondaryColor],
         },
       }),

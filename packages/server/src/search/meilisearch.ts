@@ -31,7 +31,7 @@ export class MeiliSearchClient {
       if (isHealthy) {
         this.client = client;
       }
-    } catch (ignored) {}
+    } catch (_ignored) {}
   }
 
   isAvailable(): boolean {

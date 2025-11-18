@@ -5,8 +5,8 @@ import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useTitle } from '@client/hooks/useTitle';
 import db, {
-  BookInfoFavorite,
-  DownloadedBook,
+  type BookInfoFavorite,
+  type DownloadedBook,
 } from '@client/indexedDb/Database';
 import {
   Card,
@@ -15,16 +15,14 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Theme,
+  type Theme,
   Typography,
   useTheme,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
-
-import zIndex from '@mui/material/styles/zIndex';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -194,7 +192,7 @@ const Favorite = () => {
   >([]);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const getFavoriteBookInfos = useCallback(() => {
-    let after;
+    let after: Date | undefined;
     if (favoriteBookInfos.length > 0) {
       after = favoriteBookInfos[favoriteBookInfos.length - 1].createdAt;
     }
@@ -245,7 +243,7 @@ const Favorite = () => {
             thumbnailSize={downSm ? 150 : 200}
             showName
             index={i}
-            onVisible={(index, isVisible, isFirstVisible) => {
+            onVisible={(index, _isVisible, isFirstVisible) => {
               if (!isFirstVisible) {
                 return;
               }

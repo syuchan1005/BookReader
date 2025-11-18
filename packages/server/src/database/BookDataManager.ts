@@ -1,11 +1,11 @@
-import {
+import type {
   Book,
   BookEditableValue,
   BookId,
   InputBook,
   SortableBookProperties,
 } from './models/Book';
-import {
+import type {
   BookInfo,
   BookInfoEditableValue,
   BookInfoThumbnail,
@@ -13,7 +13,7 @@ import {
   InputBookInfo,
   SortableBookInfoProperties,
 } from './models/BookInfo';
-import {
+import type {
   DeleteGenreError,
   Genre,
   GenreEditableValue,

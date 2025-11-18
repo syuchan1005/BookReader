@@ -1,13 +1,13 @@
-import { ComponentMeta } from '@storybook/react';
+import type { ComponentMeta } from '@storybook/react';
 
 import DropZone from '../DropZone';
 
-export default ({
+export default {
   title: 'Components/DropZone',
   argTypes: {
     onChange: { action: 'onChange' },
   },
-} as ComponentMeta<typeof DropZone>);
+} as ComponentMeta<typeof DropZone>;
 
 const Template = (args) => <DropZone {...args} />;
 

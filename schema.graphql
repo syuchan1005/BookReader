@@ -3,308 +3,313 @@ scalar BigInt
 scalar IntRange
 
 type Query {
-    ## BookInfo
-    relayBookInfos(
-        first: Int
-        after: String
-        last: Int
-        before: String
-        option: BookInfosOption # If it's null, process with default values.
-    ): BookInfoPartialList!
-    bookInfo(id: ID!): BookInfo
-    bookInfos(ids: [ID!]!): [BookInfo]!
+  ## BookInfo
+  relayBookInfos(
+    first: Int
+    after: String
+    last: Int
+    before: String
+    option: BookInfosOption # If it's null, process with default values.
+  ): BookInfoPartialList!
+  bookInfo(id: ID!): BookInfo
+  bookInfos(ids: [ID!]!): [BookInfo]!
 
-    ## Book
-    book(id: ID!): Book
-    books(ids: [ID!]!): [Book]!
+  ## Book
+  book(id: ID!): Book
+  books(ids: [ID!]!): [Book]!
 
-    ## Debug
-    debug_bookCounts: Debug_BookCounts!
+  ## Debug
+  debug_bookCounts: Debug_BookCounts!
 
-    ## Genre
-    genres: [Genre!]!
+  ## Genre
+  genres: [Genre!]!
 
-    availableSearchModes: [SearchMode!]!
+  availableSearchModes: [SearchMode!]!
 }
 
 type Mutation {
-    ## BookInfo
-    addBookInfo(name: String!, genres: [String!]): AddBookInfoResult!
-    editBookInfo(id: ID!, name: String, thumbnail: ID, genres: [String!]): EditBookInfoResult!
-    deleteBookInfo(id: ID!): DeleteBookInfoResult!
+  ## BookInfo
+  addBookInfo(name: String!, genres: [String!]): AddBookInfoResult!
+  editBookInfo(
+    id: ID!
+    name: String
+    thumbnail: ID
+    genres: [String!]
+  ): EditBookInfoResult!
+  deleteBookInfo(id: ID!): DeleteBookInfoResult!
 
-    ## Book
-    addBooks(id: ID!, books: [InputBook!]!): [Result!]!
-    addCompressBook(id: ID!, file: Upload, path: String): ResultWithBookResults!
-    editBook(id: ID!, number: String, thumbnail: Int): Result!
-    deleteBooks(infoId: ID!, ids: [ID!]!): Result!
-    moveBooks(infoId: ID!, ids: [ID!]!): Result!
+  ## Book
+  addBooks(id: ID!, books: [InputBook!]!): [Result!]!
+  addCompressBook(id: ID!, file: Upload, path: String): ResultWithBookResults!
+  editBook(id: ID!, number: String, thumbnail: Int): Result!
+  deleteBooks(infoId: ID!, ids: [ID!]!): Result!
+  moveBooks(infoId: ID!, ids: [ID!]!): Result!
 
-    ## Page
-    bulkEditPage(id: ID!, actions: [EditAction!]!): Result!
+  ## Page
+  bulkEditPage(id: ID!, actions: [EditAction!]!): Result!
 
-    ## Genre
-    deleteGenre(genre: String!): Result!
-    editGenre(oldName: String! newName: String invisible: Boolean): Result!
+  ## Genre
+  deleteGenre(genre: String!): Result!
+  editGenre(oldName: String!, newName: String, invisible: Boolean): Result!
 
-    ## Debug
-    debug_deleteUnusedFolders: Result!
-    debug_rebuildMeiliSearch: Result!
+  ## Debug
+  debug_deleteUnusedFolders: Result!
+  debug_rebuildMeiliSearch: Result!
 }
 
 type Subscription {
-    addBooks(id: ID!): AddBooksSubscriptionResult!
+  addBooks(id: ID!): AddBooksSubscriptionResult!
 
-    bulkEditPage(id: ID!): String!
+  bulkEditPage(id: ID!): String!
 }
 
 enum BookInfoOrder {
-    Update_Newest
-    Update_Oldest
-    Add_Newest
-    Add_Oldest
-    Name_Asc
-    Name_Desc
+  Update_Newest
+  Update_Oldest
+  Add_Newest
+  Add_Oldest
+  Name_Asc
+  Name_Desc
 }
 
 enum BookOrder {
-    Update_Newest
-    Update_Oldest
-    Number_Asc
-    Number_Desc
+  Update_Newest
+  Update_Oldest
+  Number_Asc
+  Number_Desc
 }
 
 enum SplitType {
-    VERTICAL
-    HORIZONTAL
+  VERTICAL
+  HORIZONTAL
 }
 
 enum SearchMode {
-    DATABASE,
-    MEILISEARCH,
-    ELASTICSEARCH
+  DATABASE
+  MEILISEARCH
+  ELASTICSEARCH
 }
 
 input BookInfosOption {
-    search: String
-    searchMode: SearchMode = DATABASE
-    genres: [String!] = []
-    order: BookInfoOrder = Update_Newest
+  search: String
+  searchMode: SearchMode = DATABASE
+  genres: [String!] = []
+  order: BookInfoOrder = Update_Newest
 }
 
 type BookInfoPartialList {
-    pageInfo: PageInfo!
-    edges: [BookInfoEdge!]!
+  pageInfo: PageInfo!
+  edges: [BookInfoEdge!]!
 }
 
 type PageInfo {
-    hasNextPage: Boolean!
-    hasPreviousPage: Boolean!
-    startCursor: String!
-    endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  endCursor: String!
 }
 
 type BookInfoEdge {
-    cursor: String!
-    node: BookInfo!
+  cursor: String!
+  node: BookInfo!
 }
 
 type BookInfo {
-    id: ID!
-    name: String!
-    thumbnail: BookInfoThumbnail
-    count: Int!
-    genres: [Genre!]!
-    updatedAt: String! # milliseconds unix time string
+  id: ID!
+  name: String!
+  thumbnail: BookInfoThumbnail
+  count: Int!
+  genres: [Genre!]!
+  updatedAt: String! # milliseconds unix time string
 
-    books(order: BookOrder = Number_Asc): [Book!]!
+  books(order: BookOrder = Number_Asc): [Book!]!
 }
 
 type BookInfoThumbnail {
-    bookId: ID!
-    pageIndex: Int!
-    bookPageCount: Int!
+  bookId: ID!
+  pageIndex: Int!
+  bookPageCount: Int!
 }
 
 type Book {
-    id: ID!
-    thumbnail: Int
-    number: String!
-    pages: Int!
-    updatedAt: String! # milliseconds unix time string
+  id: ID!
+  thumbnail: Int
+  number: String!
+  pages: Int!
+  updatedAt: String! # milliseconds unix time string
 
-    # infoId: ID!
-    info: BookInfo
+  # infoId: ID!
+  info: BookInfo
 }
 
 type BookInfoList {
-    hasNext: Boolean!
-    infos: [BookInfo!]!
+  hasNext: Boolean!
+  infos: [BookInfo!]!
 }
 
 type Result {
-    success: Boolean!
-    code: String
-    message: String
+  success: Boolean!
+  code: String
+  message: String
 }
 
 type AddBookInfoResult {
-    success: Boolean!
-    code: String
-    message: String
+  success: Boolean!
+  code: String
+  message: String
 
-    bookInfo: BookInfo
+  bookInfo: BookInfo
 }
 
 type EditBookInfoResult {
-    success: Boolean!
-    code: String
-    message: String
+  success: Boolean!
+  code: String
+  message: String
 
-    bookInfo: BookInfo
+  bookInfo: BookInfo
 }
 
 type DeleteBookInfoResult {
-    success: Boolean!
-    code: String
-    message: String
+  success: Boolean!
+  code: String
+  message: String
 
-    books: [Book!]!
+  books: [Book!]!
 }
 
 type ResultWithBookResults {
-    success: Boolean!
-    code: String
-    message: String
+  success: Boolean!
+  code: String
+  message: String
 
-    bookResults: [Result!]
+  bookResults: [Result!]
 }
 
 type Genre {
-    name: ID!
-    invisible: Boolean!
+  name: ID!
+  invisible: Boolean!
 }
 
 type Auth0 {
-    domain: String!
-    clientId: String!
+  domain: String!
+  clientId: String!
 }
 
 type ReadList {
-    latestRevision: Revision!
-    readList: [Read!]!
+  latestRevision: Revision!
+  readList: [Read!]!
 }
 
 type Revision {
-    count: Int!
-    syncedAt: String! # milliseconds unix time string
+  count: Int!
+  syncedAt: String! # milliseconds unix time string
 }
 
 type Read {
-    infoId: ID!
-    bookId: ID!
-    page: Int!
-    updatedAt: String! # milliseconds unix time string
+  infoId: ID!
+  bookId: ID!
+  page: Int!
+  updatedAt: String! # milliseconds unix time string
 }
 
 enum EditType {
-    # intermediate operations
-    Crop
-    Replace
+  # intermediate operations
+  Crop
+  Replace
 
-    # terminal operations
-    Delete
-    Put
-    Split
+  # terminal operations
+  Delete
+  Put
+  Split
 
-    # single operations
-    HStack
+  # single operations
+  HStack
 }
 
 interface AddBooksSubscriptionResult {
-    type: AddBooksSubscriptionType!
-    bookNumber: String
+  type: AddBooksSubscriptionType!
+  bookNumber: String
 }
 
 enum AddBooksSubscriptionType {
-    Uploading,
-    Extracting,
-    Moving
+  Uploading
+  Extracting
+  Moving
 }
 
 type UploadingAddBooksSubscriptionResult implements AddBooksSubscriptionResult {
-    type: AddBooksSubscriptionType!
-    bookNumber: String
-    downloadedBytes: Int!
+  type: AddBooksSubscriptionType!
+  bookNumber: String
+  downloadedBytes: Int!
 }
 
 type ExtractingAddBooksSubscriptionResult implements AddBooksSubscriptionResult {
-    type: AddBooksSubscriptionType!
-    bookNumber: String
-    progressPercent: Int!
+  type: AddBooksSubscriptionType!
+  bookNumber: String
+  progressPercent: Int!
 }
 
 type MovingAddBooksSubscriptionResult implements AddBooksSubscriptionResult {
-    type: AddBooksSubscriptionType!
-    bookNumber: String
-    movedPageCount: Int!
-    totalPageCount: Int!
+  type: AddBooksSubscriptionType!
+  bookNumber: String
+  movedPageCount: Int!
+  totalPageCount: Int!
 }
 
 input EditAction {
-    editType: EditType!
+  editType: EditType!
 
-    crop: CropEditAction
-    replace: UploadEditAction
-    delete: DeleteEditAction
-    put: UploadEditAction
-    split: SplitEditAction
-    hstack: HStackEditAction
+  crop: CropEditAction
+  replace: UploadEditAction
+  delete: DeleteEditAction
+  put: UploadEditAction
+  split: SplitEditAction
+  hstack: HStackEditAction
 }
 
 input CropEditAction {
-    pageRange: IntRange!
-    left: Int
-    right: Int
-    top: Int
-    bottom: Int
+  pageRange: IntRange!
+  left: Int
+  right: Int
+  top: Int
+  bottom: Int
 }
 
 input UploadEditAction {
-    pageIndex: Int!
-    image: Upload!
+  pageIndex: Int!
+  image: Upload!
 }
 
 input DeleteEditAction {
-    pageRange: IntRange!
+  pageRange: IntRange!
 }
 
 input SplitEditAction {
-    pageRange: IntRange!
-    splitType: SplitType!
-    splitCount: Int = 2
+  pageRange: IntRange!
+  splitType: SplitType!
+  splitCount: Int = 2
 }
 
 input HStackEditAction {
-    pageRange: IntRange!
+  pageRange: IntRange!
 }
 
 input InputBook {
-    number: String!
-    file: Upload
-    path: String
+  number: String!
+  file: Upload
+  path: String
 }
 
 input InputRead {
-    infoId: ID!
-    bookId: ID!
-    page: Int!
-    updatedAt: String! # milliseconds unix time string
+  infoId: ID!
+  bookId: ID!
+  page: Int!
+  updatedAt: String! # milliseconds unix time string
 }
 
 ## DEBUG
 
 type Debug_BookCounts {
-    bookInfoCount: Int!
-    bookCount: Int!
+  bookInfoCount: Int!
+  bookCount: Int!
 }

@@ -1,11 +1,11 @@
 query book($id: ID!) {
-    book(id: $id) {
-        id
-        number
-        pages
-        info {
-            id
-            name
-        }
+  book(id: $id) {
+    id
+    number
+    pages
+    info {
+      id
+      name
     }
+  }
 }

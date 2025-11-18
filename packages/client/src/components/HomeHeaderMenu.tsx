@@ -1,3 +1,13 @@
+import { resetStore } from '@client/apollo';
+import ColorTile from '@client/components/ColorTile';
+import { exportDbJson, importDbJson } from '@client/indexedDb/DBFileController';
+import { workbox } from '@client/registerServiceWorker';
+import {
+  primaryColorState,
+  secondaryColorState,
+  showBookInfoNameState,
+  sortOrderState,
+} from '@client/store/atoms';
 import {
   Button,
   CircularProgress,
@@ -11,27 +21,15 @@ import {
   useTheme,
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
-import { useAtom } from 'jotai';
-import { useLocation, useNavigate } from 'react-router-dom';
-
 import {
   BookInfoOrder,
   useDebugBookCountsLazyQuery,
   useDeleteUnusedFoldersMutation,
   useRebuildMeiliSearchMutation,
 } from '@syuchan1005/book-reader-graphql';
-
-import { resetStore } from '@client/apollo';
-import ColorTile from '@client/components/ColorTile';
-import { exportDbJson, importDbJson } from '@client/indexedDb/DBFileController';
-import { workbox } from '@client/registerServiceWorker';
-import {
-  primaryColorState,
-  secondaryColorState,
-  showBookInfoNameState,
-  sortOrderState,
-} from '@client/store/atoms';
+import { useAtom } from 'jotai';
 import { useCallback, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface HeaderMenuProps {
   anchorEl: Element;
@@ -94,7 +92,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     if (vConsole === undefined) {
       import('vconsole').then(({ default: VConsole }) => {
         const console = new VConsole();
-        // @ts-ignore
+        // @ts-expect-error
         console.setSwitchPosition(80, 20);
         setVConsole(console);
       });

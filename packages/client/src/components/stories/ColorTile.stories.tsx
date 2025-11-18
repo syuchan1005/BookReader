@@ -1,10 +1,10 @@
 import { ListItem } from '@mui/material';
 import * as colors from '@mui/material/colors';
-import { ComponentMeta } from '@storybook/react';
+import type { ComponentMeta } from '@storybook/react';
 
 import ColorTile from '../ColorTile';
 
-export default ({
+export default {
   title: 'Components/ColorTile',
   decorators: [
     (Story) => (
@@ -28,7 +28,7 @@ export default ({
       type: { name: 'boolean', required: false },
     },
   },
-} as ComponentMeta<typeof ColorTile>);
+} as ComponentMeta<typeof ColorTile>;
 
 const Template = (args) => <ColorTile {...args} />;
 

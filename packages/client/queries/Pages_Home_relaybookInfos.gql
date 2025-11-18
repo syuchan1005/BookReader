@@ -1,32 +1,34 @@
 fragment HomeBookInfo on BookInfo {
-    id
+  id
+  name
+  count
+  thumbnail {
+    bookId
+    pageIndex
+    bookPageCount
+  }
+  genres {
     name
-    count
-    thumbnail {
-        bookId
-        pageIndex
-        bookPageCount
-    }
-    genres {
-        name
-        invisible
-    }
-    updatedAt
+    invisible
+  }
+  updatedAt
 }
 
 query relayBookInfos($first: Int, $after: String, $option: BookInfosOption!) {
-    bookInfos: relayBookInfos(first: $first, after: $after, option: $option) @connection(key: "relayBookInfos", filter: ["option"]) {
-        edges {
-            cursor
-            node {
-                ...HomeBookInfo
-            }
-        }
-        pageInfo {
-            hasNextPage
-            hasPreviousPage
-            startCursor
-            endCursor
-        }
+  bookInfos: relayBookInfos(first: $first, after: $after, option: $option)
+    @connection(key: "relayBookInfos", filter: ["option"])
+  {
+    edges {
+      cursor
+      node {
+        ...HomeBookInfo
+      }
     }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
 }

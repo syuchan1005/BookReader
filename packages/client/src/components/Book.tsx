@@ -1,14 +1,11 @@
-import {
-  MouseEvent,
-  ReactNode,
-  TouchEvent as ReactTouchEvent,
-  lazy,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-
+import DeleteDialog from '@client/components/dialogs/DeleteDialog';
+import EditDialog from '@client/components/dialogs/EditDialog';
+import { useBooleanState } from '@client/hooks/useBooleanState';
+import { useLazyDialog } from '@client/hooks/useLazyDialog';
+import { useLongTap } from '@client/hooks/useLongTap';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
+import { useVisible } from '@client/hooks/useVisible';
+import db from '@client/indexedDb/Database';
 import {
   Card,
   CardActionArea,
@@ -18,32 +15,30 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Theme,
+  type Theme,
 } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
-
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
-import { Book as BookType } from '@syuchan1005/book-reader-graphql';
 import {
+  type Book as BookType,
   useDeleteBooksMutation,
   useEditBookMutation,
 } from '@syuchan1005/book-reader-graphql';
-
-import DeleteDialog from '@client/components/dialogs/DeleteDialog';
-import EditDialog from '@client/components/dialogs/EditDialog';
-import { useBooleanState } from '@client/hooks/useBooleanState';
-import { useLazyDialog } from '@client/hooks/useLazyDialog';
-import { useLongTap } from '@client/hooks/useLongTap';
-import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
-import { useVisible } from '@client/hooks/useVisible';
+import {
+  lazy,
+  type MouseEvent,
+  type ReactNode,
+  type TouchEvent as ReactTouchEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
-import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
-
-import db from '@client/indexedDb/Database';
 import { useDownloadBookDialog } from './dialogs/DownloadBookDialog';
+import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
 
 const DownloadZipDialog = lazy(
   () => import('@client/components/dialogs/DownloadZipBookDialog'),

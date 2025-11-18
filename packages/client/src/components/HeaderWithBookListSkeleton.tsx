@@ -1,4 +1,4 @@
-import { Skeleton, Theme } from '@mui/material';
+import { Skeleton, type Theme } from '@mui/material';
 import { createStyles, makeStyles } from '@mui/styles';
 import { pageAspectRatio } from './BookPageImage';
 

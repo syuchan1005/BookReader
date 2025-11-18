@@ -1,17 +1,16 @@
 import { ApolloClient, from, split } from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
+import { onError } from '@apollo/client/link/error';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import {
   concatPagination,
   getMainDefinition,
   relayStylePagination,
 } from '@apollo/client/utilities';
+import { goToAuthPage } from '@client/auth';
+import type { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { createUploadLink } from 'apollo-upload-client';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
-
-import { onError } from '@apollo/client/link/error';
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { goToAuthPage } from '@client/auth';
-import { BookInfo } from '@syuchan1005/book-reader-graphql';
 import { createClient } from 'graphql-ws';
 
 const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
@@ -38,7 +37,7 @@ const uniqueRelayStylePagination = <T = Target>(
         }
         return t[k];
       };
-      // @ts-ignore
+      // @ts-expect-error
       const mergeResult = pagination.merge(existing, incoming, _a);
       const edges: { cursor: string; node: T }[] = mergeResult.edges.map(
         (edge) => ({
@@ -95,7 +94,7 @@ const cache = new InMemoryCache({
 });
 
 const cachePersistor = new CachePersistor({
-  // @ts-ignore
+  // @ts-expect-error
   cache,
   storage: new LocalStorageWrapper(window.localStorage),
 });
@@ -103,14 +102,14 @@ const cachePersistor = new CachePersistor({
 export const apolloClient = new ApolloClient({
   link: from([
     onError(({ graphQLErrors, networkError }) => {
-      // @ts-ignore
+      // @ts-expect-error
       if (networkError?.statusCode === 401) {
         goToAuthPage();
         return;
       }
 
       const log = (message) => {
-        // @ts-ignore
+        // @ts-expect-error
         apolloClient.snackbar?.(message, { variant: 'error' });
         console.log(message);
       };

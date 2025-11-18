@@ -1,11 +1,11 @@
 import { MockedProvider } from '@apollo/client/testing';
 import { ListItem } from '@mui/material';
-import { ComponentMeta } from '@storybook/react';
+import type { ComponentMeta } from '@storybook/react';
 
 import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import GenresSelect from '../GenresSelect';
 
-export default ({
+export default {
   title: 'Components/GenresSelect',
   argTypes: {
     value: {
@@ -38,7 +38,7 @@ export default ({
       </ListItem>
     ),
   ],
-} as ComponentMeta<typeof GenresSelect>);
+} as ComponentMeta<typeof GenresSelect>;
 
 const Template = (args) => (
   <MockedProvider

@@ -1,10 +1,5 @@
 const VERSION = 8;
 
-interface InfoRead {
-  infoId: string;
-  bookId: string;
-}
-
 export interface BookRead {
   bookId: string;
   page: number;
@@ -84,7 +79,7 @@ export class StoreWrapper<T> {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
       if (sort) {
-        let q;
+        let q: IDBKeyRange | null = null;
         if (sort.after) {
           if (sort.direction === 'next') {
             q = IDBKeyRange.lowerBound(sort.after, true);
@@ -101,7 +96,7 @@ export class StoreWrapper<T> {
         }
         const results: R[] = [];
         request.onsuccess = (event) => {
-          // @ts-ignore
+          // @ts-expect-error
           const cursor: IDBCursorWithValue = event.target.result;
           if (!cursor || results.length >= limit) {
             resolve(results);
@@ -121,13 +116,13 @@ export class StoreWrapper<T> {
   }
 
   getAllWithFilter(predicate: (t: T) => boolean): Promise<T[]> {
-    return new Promise<T[]>((resolve, reject) => {
+    return new Promise<T[]>((resolve, _reject) => {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
       const request = store.openCursor();
       const results: T[] = [];
       request.onsuccess = (event) => {
-        // @ts-ignore
+        // @ts-expect-error
         const cursor: IDBCursorWithValue = event.target.result;
         if (!cursor) {
           resolve(results);
@@ -162,7 +157,7 @@ export class StoreWrapper<T> {
       const store = tx.objectStore(this.storeName);
       const request = store.openCursor();
       request.onsuccess = (event) => {
-        // @ts-ignore
+        // @ts-expect-error
         const cursor: IDBCursorWithValue = event.target.result;
         if (!cursor) {
           resolve();
@@ -196,7 +191,7 @@ export class StoreWrapper<T> {
       const storeIndex = store.index(index);
       const request = storeIndex.openCursor(IDBKeyRange.only(value));
       request.onsuccess = (event) => {
-        // @ts-ignore
+        // @ts-expect-error
         const cursor: IDBCursorWithValue = event.target.result;
         if (!cursor) {
           resolve(undefined);
@@ -239,7 +234,7 @@ const UpgradeTask = [
     db.createObjectStore('infoReads', { keyPath: 'infoId' });
     db.createObjectStore('bookReads', { keyPath: 'bookId' });
   },
-  (db: IDBDatabase, request: IDBOpenDBRequest) => {
+  (_db: IDBDatabase, request: IDBOpenDBRequest) => {
     request.transaction
       .objectStore('bookReads')
       .createIndex('updatedAt', 'updatedAt');
@@ -261,7 +256,7 @@ const UpgradeTask = [
     const readStore = request.transaction.objectStore('read');
     const cursorRequest = readStore.openCursor();
     cursorRequest.onsuccess = (event) => {
-      // @ts-ignore
+      // @ts-expect-error
       const cursor: IDBCursorWithValue = event.target.result;
       if (!cursor) {
         return;
@@ -282,7 +277,7 @@ const UpgradeTask = [
     const readStore = request.transaction.objectStore('read');
     const cursorRequest = readStore.openCursor();
     cursorRequest.onsuccess = (event) => {
-      // @ts-ignore
+      // @ts-expect-error
       const cursor: IDBCursorWithValue = event.target.result;
       if (!cursor) {
         return;
@@ -336,7 +331,7 @@ export class Database {
     return new Promise((resolve, reject) => {
       const request = window.indexedDB.open(this.dbName, VERSION);
       request.onupgradeneeded = (event) => {
-        // @ts-ignore
+        // @ts-expect-error
         this._db = event.target.result;
         for (const task of UpgradeTask.slice(
           event.oldVersion + 1,
@@ -349,7 +344,7 @@ export class Database {
         reject(event);
       };
       request.onsuccess = () => {
-        // @ts-ignore
+        // @ts-expect-error
         this._db = request.result;
         this._bookInfoFavorite = new StoreWrapper<BookInfoFavorite>(
           'bookInfoFavorite',

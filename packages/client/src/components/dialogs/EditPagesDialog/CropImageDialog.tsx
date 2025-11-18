@@ -28,7 +28,7 @@ const CropImageDialog = (props: CropImageDialogProps) => {
   const cropperRef = useRef<HTMLImageElement>(null);
 
   const onFinishClicked = useCallback(() => {
-    // @ts-ignore
+    // @ts-expect-error
     const cropper = cropperRef?.current?.cropper;
     if (!cropper) return;
     const canvasElem: HTMLCanvasElement = cropper.getCroppedCanvas();

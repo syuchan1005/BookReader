@@ -1,9 +1,9 @@
-import { createError } from '@server/Errors';
 import {
   BookDataManager,
   maybeRequireAtLeastOne,
 } from '@server/database/BookDataManager';
-import { Resolvers } from '@syuchan1005/book-reader-graphql';
+import { createError } from '@server/Errors';
+import type { Resolvers } from '@syuchan1005/book-reader-graphql';
 
 export const resolvers: Resolvers = {
   Query: {
@@ -37,7 +37,7 @@ export const resolvers: Resolvers = {
         success: true,
       };
     },
-    deleteGenre: async (parent, { genre }) => {
+    deleteGenre: async (_parent, { genre }) => {
       const error = await BookDataManager.deleteGenre(genre);
       if (error === 'DELETE_DEFAULT') {
         return createError('QL0009');

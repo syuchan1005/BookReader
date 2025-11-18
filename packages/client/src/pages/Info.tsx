@@ -1,24 +1,4 @@
-import {
-  Fab,
-  Icon,
-  IconButton,
-  Menu,
-  MenuItem,
-  Theme,
-  useTheme,
-} from '@mui/material';
-import { common } from '@mui/material/colors';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-import { useAtom } from 'jotai';
-import { useLocation, useParams, useSearchParams } from 'react-router-dom';
-
-import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql';
-
 import { commonTheme } from '@client/App';
-
-import db, { Read } from '@client/indexedDb/Database';
-
 import Book from '@client/components/Book';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { EmptyScreen } from '@client/components/EmptyScreen';
@@ -28,17 +8,33 @@ import { useLazyDialog } from '@client/hooks/useLazyDialog';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
 import { useTitle } from '@client/hooks/useTitle';
+import db, { type Read } from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
 import { sortBookOrderState } from '@client/store/atoms';
 import {
-  MouseEvent,
-  ReactElement,
+  Fab,
+  Icon,
+  IconButton,
+  Menu,
+  MenuItem,
+  type Theme,
+  useTheme,
+} from '@mui/material';
+import { common } from '@mui/material/colors';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql';
+import { useAtom } from 'jotai';
+import {
   lazy,
+  type MouseEvent,
+  type ReactElement,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 
 const AddBookDialog = lazy(
   () => import('@client/components/dialogs/AddBookDialog'),
@@ -321,7 +317,7 @@ const Info = (props: InfoProps) => {
             {(loading || bookList?.length > 0) && (
               <div className={classes.infoGrid}>
                 {
-                  // @ts-ignore
+                  // @ts-expect-error
                   bookList &&
                     bookList.length > 0 &&
                     bookList.map((book) => (

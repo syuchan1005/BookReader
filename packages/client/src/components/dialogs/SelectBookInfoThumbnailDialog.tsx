@@ -1,20 +1,18 @@
+import Book from '@client/components/Book';
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Theme,
+  type Theme,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
-import Book from '@client/components/Book';
 import {
-  HomeBookInfoFragment,
+  type HomeBookInfoFragment,
   useBookInfoQuery,
   useEditBookInfoThumbnailMutation,
 } from '@syuchan1005/book-reader-graphql';
@@ -93,7 +91,7 @@ const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
         {!loading && data ? (
           <div className={classes.selectGrid}>
             {data.bookInfo.books.map((book) => (
-              // @ts-ignore
+              // @ts-expect-error
               <Book
                 key={book.id}
                 simple

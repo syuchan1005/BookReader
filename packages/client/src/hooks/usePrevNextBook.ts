@@ -1,12 +1,11 @@
 import { useApolloClient } from '@apollo/client';
-import { useEffect, useState } from 'react';
-
 import {
   BookInfoDocument,
-  BookInfoQuery,
-  BookInfoQueryVariables,
+  type BookInfoQuery,
+  type BookInfoQueryVariables,
   BookOrder,
 } from '@syuchan1005/book-reader-graphql';
+import { useEffect, useState } from 'react';
 
 export const usePrevNextBook = (
   infoId,
@@ -32,7 +31,7 @@ export const usePrevNextBook = (
           },
         });
         setBookInfo(readQuery.bookInfo);
-      } catch (e) {
+      } catch (_e) {
         setBookInfo(undefined);
       }
     }

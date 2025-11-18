@@ -9,8 +9,8 @@ export function BatchLoading<I, R>(
   loaders[batchId] = new DataLoader(batchFn.bind(this));
 
   return (
-    target: unknown,
-    propertyKey: string,
+    _target: unknown,
+    _propertyKey: string,
     descriptor: PropertyDescriptor,
   ) => {
     const originFn = descriptor.value;
@@ -28,8 +28,8 @@ export function BatchLoadingClear<T>(
   selector: (args: T) => unknown = (a) => a[0],
 ) {
   return (
-    target: unknown,
-    propertyKey: string,
+    _target: unknown,
+    _propertyKey: string,
     descriptor: PropertyDescriptor,
   ) => {
     const originFn = descriptor.value;
@@ -45,8 +45,8 @@ export function BatchLoadingClear<T>(
  */
 export function BatchLoadingClearAll(batchId: string) {
   return (
-    target: unknown,
-    propertyKey: string,
+    _target: unknown,
+    _propertyKey: string,
     descriptor: PropertyDescriptor,
   ) => {
     const originFn = descriptor.value;

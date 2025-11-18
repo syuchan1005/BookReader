@@ -1,3 +1,13 @@
+import { commonTheme } from '@client/App';
+import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
+import type { PageStyleType } from '@client/pages/Book';
+import {
+  type PageImageEffectType,
+  pageImageEffectState,
+  ReadOrder,
+  readOrderState,
+  showOriginalImageState,
+} from '@client/store/atoms';
 import {
   Button,
   Icon,
@@ -6,25 +16,14 @@ import {
   MenuItem,
   Slider,
   StyledEngineProvider,
-  Theme,
+  type Theme,
   ThemeProvider,
 } from '@mui/material';
 import { orange } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useAtom } from 'jotai';
-import { MouseEventHandler, useCallback } from 'react';
-
-import { commonTheme } from '@client/App';
-import { useMenuAnchor } from '@client/hooks/useMenuAnchor';
-import { PageStyleType } from '@client/pages/Book';
-import {
-  PageImageEffectType,
-  ReadOrder,
-  pageImageEffectState,
-  readOrderState,
-  showOriginalImageState,
-} from '@client/store/atoms';
+import { type MouseEventHandler, useCallback } from 'react';
 
 interface BookPageOverlayProps {
   currentPage: number;
@@ -181,7 +180,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
             </Button>
           )}
       </div>
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
+      {/* biome-ignore lint/a11y: TODO */}
       <div
         className={`${classes.overlayContent} top`}
         onClick={stopPropagationListener}
@@ -190,7 +189,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           currentPage + 1
         } / ${maxPages}`}</div>
       </div>
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
+      {/* biome-ignore lint/a11y: TODO */}
       <div
         className={`${classes.overlayContent} bottom`}
         onClick={stopPropagationListener}
@@ -302,7 +301,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                 min={1}
                 step={pageStyle.slidesPerView}
                 value={currentPage + 1}
-                onChange={(e, v: number) => onPageSliderChanged(v - 1)}
+                onChange={(_e, v: number) => onPageSliderChanged(v - 1)}
               />
             </ThemeProvider>
           </StyledEngineProvider>
@@ -314,7 +313,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                 theme={(outerTheme) => ({
                   ...outerTheme,
                   palette: {
-                    // @ts-ignore
+                    // @ts-expect-error
                     ...outerTheme.palette,
                     primary: {
                       main: orange['700'],
@@ -327,7 +326,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                   max={100}
                   min={0}
                   value={pageImageEffect.percent}
-                  onChange={(e, percent: number) =>
+                  onChange={(_e, percent: number) =>
                     setPageImageEffect({ ...pageImageEffect, percent })
                   }
                 />

@@ -1,16 +1,16 @@
-subscription addBooksProgress($id: ID!){
-    addBooks(id: $id) {
-        type
-        bookNumber
-        ... on UploadingAddBooksSubscriptionResult {
-            downloadedBytes
-        }
-        ... on ExtractingAddBooksSubscriptionResult {
-            progressPercent
-        }
-        ... on MovingAddBooksSubscriptionResult {
-            movedPageCount
-            totalPageCount
-        }
+subscription addBooksProgress($id: ID!) {
+  addBooks(id: $id) {
+    type
+    bookNumber
+    ... on UploadingAddBooksSubscriptionResult {
+      downloadedBytes
     }
+    ... on ExtractingAddBooksSubscriptionResult {
+      progressPercent
+    }
+    ... on MovingAddBooksSubscriptionResult {
+      movedPageCount
+      totalPageCount
+    }
+  }
 }

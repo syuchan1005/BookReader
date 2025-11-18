@@ -1,32 +1,30 @@
-import path from 'path';
-import { Book as BookDBModel } from '@server/database/models/Book';
-import { generateId } from '@server/database/models/Id';
-import { PubSub, withFilter } from 'graphql-subscriptions';
-import throttle from 'lodash.throttle';
-
-import {
-  AddBooksSubscriptionType,
-  Book as BookGQLModel,
-  BookResolvers,
-  Resolvers,
-  ResolversParentTypes,
-  ResultWithBookResults,
-} from '@syuchan1005/book-reader-graphql';
-
-import Errors from '@server/Errors';
-import { purgeImageCache } from '@server/ImageUtil';
-import { asyncMap } from '@server/Util';
 import {
   BookDataManager,
   maybeRequireAtLeastOne,
 } from '@server/database/BookDataManager';
+import type { Book as BookDBModel } from '@server/database/models/Book';
+import { generateId } from '@server/database/models/Id';
+import Errors from '@server/Errors';
 import { SubscriptionKeys } from '@server/graphql';
 import GQLUtil from '@server/graphql/GQLUtil';
-import { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
+import type { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
+import { purgeImageCache } from '@server/ImageUtil';
 import {
   StorageDataManager,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
+import { asyncMap } from '@server/Util';
+import {
+  AddBooksSubscriptionType,
+  type Book as BookGQLModel,
+  type BookResolvers,
+  type Resolvers,
+  type ResolversParentTypes,
+  type ResultWithBookResults,
+} from '@syuchan1005/book-reader-graphql';
+import { PubSub, withFilter } from 'graphql-subscriptions';
+import throttle from 'lodash.throttle';
+import path from 'path';
 
 type StrictAddBooksSubscriptionResult<
   EnumType = typeof AddBooksSubscriptionType,
@@ -59,14 +57,14 @@ export const resolvers: Resolvers & {
   Book: StrictResolver<BookGQLModel, BookDBModel, BookResolvers>;
 } = {
   Query: {
-    book: async (parent, { id: bookId }) => {
+    book: async (_parent, { id: bookId }) => {
       const book = await BookDataManager.getBook(bookId);
       if (!book) {
         return undefined;
       }
       return book;
     },
-    books: async (parent, { ids }) => {
+    books: async (_parent, { ids }) => {
       const bookMap = (await BookDataManager.getBooks(ids)).reduce(
         (acc, book) => {
           acc[book.id] = book;
@@ -84,7 +82,7 @@ export const resolvers: Resolvers & {
     },
   },
   Mutation: {
-    addBooks: async (parent, { id: infoId, books }) =>
+    addBooks: async (_parent, { id: infoId, books }) =>
       asyncMap(books, async (book) => {
         const publishAddBooksSubscriptionThrottle = throttle(
           publishAddBooksSubscription,
@@ -129,7 +127,8 @@ export const resolvers: Resolvers & {
           await GQLUtil.extractCompressFile(
             tempPath,
             archiveFile.data,
-            (percent: number) => publishAddBooksSubscriptionThrottle(infoId, {
+            (percent: number) =>
+              publishAddBooksSubscriptionThrottle(infoId, {
                 type: AddBooksSubscriptionType.Extracting,
                 bookNumber: book.number,
                 progressPercent: percent,
@@ -147,7 +146,8 @@ export const resolvers: Resolvers & {
             infoId,
             bookId,
             book.number,
-            (current, total) => publishAddBooksSubscriptionThrottle(infoId, {
+            (current, total) =>
+              publishAddBooksSubscriptionThrottle(infoId, {
                 type: AddBooksSubscriptionType.Moving,
                 bookNumber: book.number,
                 movedPageCount: current,
@@ -157,7 +157,7 @@ export const resolvers: Resolvers & {
         });
       }),
     addCompressBook: async (
-      parent,
+      _parent,
       { id: infoId, file: compressBooks, path: localPath },
     ) => {
       const publishAddBooksSubscriptionThrottle = throttle(
@@ -190,7 +190,8 @@ export const resolvers: Resolvers & {
         await GQLUtil.extractCompressFile(
           tempPath,
           archiveFile.data,
-          (percent) => publishAddBooksSubscriptionThrottle(infoId, {
+          (percent) =>
+            publishAddBooksSubscriptionThrottle(infoId, {
               type: AddBooksSubscriptionType.Extracting,
               progressPercent: percent,
             }),
@@ -256,7 +257,7 @@ export const resolvers: Resolvers & {
         };
       });
     },
-    editBook: async (parent, { id: bookId, number, thumbnail }) => {
+    editBook: async (_parent, { id: bookId, number, thumbnail }) => {
       const editValue = maybeRequireAtLeastOne({
         number,
         thumbnailPage: thumbnail,
@@ -279,7 +280,7 @@ export const resolvers: Resolvers & {
       await BookDataManager.editBook(bookId, editValue);
       return { success: true };
     },
-    deleteBooks: async (parent, { infoId, ids: bookIds }) => {
+    deleteBooks: async (_parent, { infoId, ids: bookIds }) => {
       await BookDataManager.deleteBooks(infoId, bookIds);
       await Promise.all(
         bookIds.map((bookId) => StorageDataManager.removeBook(bookId, false)),
@@ -289,7 +290,7 @@ export const resolvers: Resolvers & {
         success: true,
       };
     },
-    moveBooks: async (parent, { infoId, ids: bookIds }) => {
+    moveBooks: async (_parent, { infoId, ids: bookIds }) => {
       await BookDataManager.moveBooks(bookIds, infoId);
       return {
         success: true,

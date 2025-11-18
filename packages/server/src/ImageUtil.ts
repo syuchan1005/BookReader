@@ -1,9 +1,9 @@
-import { Buffer } from 'buffer';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import {
   availableImageExtensionWithContentType,
   defaultStoredImageExtension,
 } from '@syuchan1005/book-reader-common';
+import type { Buffer } from 'buffer';
 import sharp from 'sharp';
 
 export const getOrConvertImage = async (

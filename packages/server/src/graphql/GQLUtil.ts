@@ -1,25 +1,22 @@
-import { Buffer } from 'buffer';
-import { promises as fs } from 'fs';
-import path from 'path';
-
 import { SpanStatusCode } from '@opentelemetry/api';
-import { PromisePool } from '@supercharge/promise-pool';
-import { orderBy as naturalOrderBy } from 'natural-orderby';
-import { extractFull } from 'node-7z';
-
-import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
-import { Result, Scalars, Upload } from '@syuchan1005/book-reader-graphql';
-
+import { BookDataManager } from '@server/database/BookDataManager';
 import Errors from '@server/Errors';
 import { convertToDefaultImageType } from '@server/ImageUtil';
 import { tracer } from '@server/OpenTelemetry';
-import { BookDataManager } from '@server/database/BookDataManager';
 import {
-  StorageDataManager,
   readFile,
+  StorageDataManager,
   streamToBuffer,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
+import { PromisePool } from '@supercharge/promise-pool';
+import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
+import type { Result, Upload } from '@syuchan1005/book-reader-graphql';
+import type { Buffer } from 'buffer';
+import { promises as fs } from 'fs';
+import { orderBy as naturalOrderBy } from 'natural-orderby';
+import { extractFull } from 'node-7z';
+import path from 'path';
 
 const readImageFilePathsRecursively = async (
   dir,

@@ -7,7 +7,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  LinearProgress,
 } from '@mui/material';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import { useState } from 'react';
@@ -134,7 +133,7 @@ const downloadBook = async (
 ) => {
   const JsZip = (await import('jszip')).default;
 
-  let thumbnailBlob = undefined;
+  let thumbnailBlob: Blob | null = null;
   const zip = new JsZip();
   let downloadedImageCount = 0;
   await Promise.all(

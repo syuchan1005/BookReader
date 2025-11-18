@@ -1,6 +1,6 @@
-import { BookId } from './Book';
-import { InputGenre } from './Genre';
-import { Id } from './Id';
+import type { BookId } from './Book';
+import type { InputGenre } from './Genre';
+import type { Id } from './Id';
 
 export type InfoId = Id;
 

@@ -1,14 +1,13 @@
+import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import { resolve } from 'path';
-
-import react from '@vitejs/plugin-react';
 import bundleVisualizer from 'rollup-plugin-visualizer';
-import { Plugin, defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const serviceWorkerFileName = 'service-worker.ts';
 const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
-  let outDir;
+  let outDir = 'dist';
   return {
     name: 'remove service-worker.ts',
     apply: 'build',
@@ -20,7 +19,7 @@ const RemoveServiceWorkerTsFilePlugin = (): Plugin => {
         try {
           fs.unlinkSync(`${outDir}/${serviceWorkerFileName}`);
           console.log(`Remove: ${outDir}/${serviceWorkerFileName}`);
-        } catch (ignored) {
+        } catch (_ignored) {
           /* ignored */
         }
       }
@@ -93,10 +92,10 @@ export default defineConfig({
       manifest: false,
       injectManifest: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
-      }
+      },
     }),
     RemoveServiceWorkerTsFilePlugin(),
-    // @ts-ignore
+    // @ts-expect-error
     bundleVisualizer({
       template: 'treemap',
       gzipSize: true,

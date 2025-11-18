@@ -2,8 +2,8 @@
 # HomeHeaderMenu.tsx
 # Setting.tsx
 query genres {
-    genres {
-        name
-        invisible
-    }
+  genres {
+    name
+    invisible
+  }
 }

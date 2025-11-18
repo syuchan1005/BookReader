@@ -1,6 +1,6 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
-import { StyledEngineProvider, createTheme } from '@mui/material/styles';
-import { Decorator } from '@storybook/react';
+import { createTheme, StyledEngineProvider } from '@mui/material/styles';
+import type { Decorator } from '@storybook/react';
 
 export const parameters = {
   actions: { argTypesRegex: '^on[A-Z].*' },

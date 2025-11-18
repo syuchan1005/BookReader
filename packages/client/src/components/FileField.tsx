@@ -1,10 +1,10 @@
-import { Button, Theme } from '@mui/material';
+import { Button, type Theme } from '@mui/material';
 
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 
 import { archiveTypes } from '@syuchan1005/book-reader-common';
-import { CSSProperties, useRef } from 'react';
+import { type CSSProperties, useRef } from 'react';
 
 export type AcceptType = 'archive' | 'image';
 
@@ -43,7 +43,7 @@ const FileField = (props: FileFieldProps) => {
     }
   };
 
-  let acceptTypeText;
+  let acceptTypeText: string;
   switch (acceptType) {
     case 'image':
       acceptTypeText = 'image/jpeg,image/png,image/webp';

@@ -10,19 +10,18 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { List as MovableList, arrayMove } from 'react-movable';
-
 import {
   useBulkEditPageProgressSubscription,
   useBulkEditPagesMutation,
 } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useState } from 'react';
+import { arrayMove, List as MovableList } from 'react-movable';
 import {
   ActionListItem,
   AddItemListItem,
   AddTemplateListItem,
-  EditTypeContent,
   createInitValue,
+  type EditTypeContent,
 } from './ActionListItem';
 
 interface EditPagesDialogProps {

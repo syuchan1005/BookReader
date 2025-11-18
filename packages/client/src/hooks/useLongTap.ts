@@ -1,6 +1,6 @@
 import {
-  TouchEvent as ReactTouchEvent,
-  TouchEventHandler,
+  type TouchEvent as ReactTouchEvent,
+  type TouchEventHandler,
   useCallback,
   useEffect,
   useRef,

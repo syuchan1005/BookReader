@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 export const renderWithRouter = (ui: ReactElement) => {

@@ -1,7 +1,7 @@
 mutation EditGenre($oldName: String!, $newName: String, $invisible: Boolean) {
-    editGenre(oldName: $oldName, newName: $newName, invisible: $invisible) {
-        code
-        success
-        message
-    }
+  editGenre(oldName: $oldName, newName: $newName, invisible: $invisible) {
+    code
+    success
+    message
+  }
 }

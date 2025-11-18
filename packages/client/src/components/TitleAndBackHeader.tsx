@@ -3,13 +3,13 @@ import {
   AppBar,
   Icon,
   IconButton,
-  Theme,
+  type Theme,
   Toolbar,
   Typography,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { ReactNode, useCallback } from 'react';
+import { type ReactNode, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { commonTheme } from '../App';
 
@@ -52,7 +52,7 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const { backRoute, title, subTitle, children } = props;
 
   const clickBack = useCallback(() => {
-    // @ts-ignore
+    // @ts-expect-error
     if (!location.state?.referrer && backRoute) {
       navigate(backRoute, {
         state: { referrer: location.pathname },

@@ -1,13 +1,12 @@
-import { Buffer } from 'buffer';
-import { promises as fs } from 'fs';
-import { dirname, join } from 'path';
-
 import {
   availableImageExtensions,
   defaultStoredImageExtension,
   optionalImageExtensions,
 } from '@syuchan1005/book-reader-common';
-import {
+import type { Buffer } from 'buffer';
+import { promises as fs } from 'fs';
+import { dirname, join } from 'path';
+import type {
   CacheablePageMetadata,
   IStorageDataManager,
   PageData,
@@ -123,6 +122,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
     return undefined;
   }
 
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: not unused
   private static existFile(filePath: string): Promise<boolean> {
     return fs
       .stat(filePath)
@@ -156,6 +156,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
     return fs.readdir(bookFolderPath);
   }
 
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: not unused
   private static getMayExistFilePaths(
     metadata: CacheablePageMetadata,
   ): FilePath[] {
