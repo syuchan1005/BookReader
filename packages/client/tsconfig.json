@@ -2,10 +2,10 @@
     "compilerOptions": {
         "baseUrl": ".",
         "jsx": "react-jsx",
-        "target": "es6",
-        "module": "commonjs",
+        "target": "es2024",
+        "module": "esnext",
         "lib": ["es2020", "webworker", "dom"],
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "esModuleInterop": true,
         "skipLibCheck": true,
         "downlevelIteration": true,

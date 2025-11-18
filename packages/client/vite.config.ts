@@ -91,6 +91,9 @@ export default defineConfig({
       filename: serviceWorkerFileName,
       injectRegister: false,
       manifest: false,
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+      }
     }),
     RemoveServiceWorkerTsFilePlugin(),
     // @ts-ignore
