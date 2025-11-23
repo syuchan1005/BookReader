@@ -1,8 +1,8 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { clientsClaim, setCacheNameDetails, skipWaiting } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
+import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 setCacheNameDetails({
@@ -57,6 +57,16 @@ registerRoute(
       new ExpirationPlugin({
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
       }),
+    ],
+  }),
+);
+
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('/index.html'), {
+    denylist: [
+      /^\/graphql/,
+      /^\/auth\//,
+      /^\/book\/[^/]+\/[^/]+/, // book image paths
     ],
   }),
 );
