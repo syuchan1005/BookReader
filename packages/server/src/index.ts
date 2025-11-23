@@ -8,7 +8,7 @@ import {
   type availableImageExtensionWithContentType,
 } from '@syuchan1005/book-reader-common';
 import history from 'connect-history-api-fallback';
-import connectRedis from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
@@ -80,7 +80,6 @@ import { getOrConvertImage } from './ImageUtil';
   }
   let sessionStore: session.Store | undefined;
   if (sessionStoreOption && sessionStoreOption.type === 'redis') {
-    const RedisStore = connectRedis(session);
     const redisClient = new Redis({
       port: 6379,
       ...sessionStoreOption,

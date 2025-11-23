@@ -11,7 +11,6 @@
   "devDependencies": {
     "@esbuild-plugins/node-resolve": "^0.2.2",
     "@types/fs-extra": "^11.0.4",
-    "@types/koa": "^3.0.1",
     "@types/node": "^24.10.1",
     "@types/node-7z": "^2.1.11",
     "@types/sharp": "^0.32.0",
@@ -41,7 +40,6 @@
     "@prisma/client": "^6.19.0",
     "@prisma/instrumentation": "^6.19.0",
     "@supercharge/promise-pool": "^3.2.0",
-    "@types/connect-redis": "^0.0.23",
     "@types/express-session": "^1.18.2",
     "@types/ioredis": "^5.0.0",
     "@types/passport": "^1.0.17",
