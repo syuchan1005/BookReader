@@ -1,5 +1,4 @@
 import { goToAuthPage } from '@client/auth';
-import { Remount } from '@client/components/Remount';
 import { useDebounceValue } from '@client/hooks/useDebounceValue';
 import type { Theme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
@@ -220,34 +219,32 @@ const BookPageImage = (props: BookPageImageProps) => {
   }, []);
 
   return (
-    <Remount remountKey={`${isRetried}`}>
-      <picture className={classes.pictureFull}>
-        {!skip &&
-          imageSourceSet.sources.map(({ type, srcSet }) => (
-            <source key={type} type={type} srcSet={srcSet} />
-          ))}
-        {!skip && (
-          <img
-            ref={imageRef}
-            loading={loading}
-            style={style}
-            className={classes.imageFull}
-            src={imageSourceSet.imgSrc}
-            alt={alt}
-            width={argWidth}
-            height={argHeight}
-            onLoad={() => setImageState(ImageState.LOADED)}
-            onError={() => {
-              setImageState(ImageState.ERROR);
-              if (isRetried) {
-                checkAuthenticate();
-              }
-              setRetried(true);
-            }}
-          />
-        )}
-      </picture>
-    </Remount>
+    <picture className={classes.pictureFull} key={`${isRetried}`}>
+      {!skip &&
+        imageSourceSet.sources.map(({ type, srcSet }) => (
+          <source key={type} type={type} srcSet={srcSet} />
+        ))}
+      {!skip && (
+        <img
+          ref={imageRef}
+          loading={loading}
+          style={style}
+          className={classes.imageFull}
+          src={imageSourceSet.imgSrc}
+          alt={alt}
+          width={argWidth}
+          height={argHeight}
+          onLoad={() => setImageState(ImageState.LOADED)}
+          onError={() => {
+            setImageState(ImageState.ERROR);
+            if (isRetried) {
+              checkAuthenticate();
+            }
+            setRetried(true);
+          }}
+        />
+      )}
+    </picture>
   );
 };
 

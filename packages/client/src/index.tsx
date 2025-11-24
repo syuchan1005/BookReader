@@ -14,11 +14,7 @@ if (process.env.NODE_ENV !== 'production' && false) {
   import('@welldone-software/why-did-you-render').then(
     (
       { default: whyDidYouRender }, // @ts-ignore
-    ) =>
-      whyDidYouRender(React, {
-        trackAllPureComponents: true,
-        exclude: [/Remount/],
-      }),
+    ) => whyDidYouRender(React, { trackAllPureComponents: true }),
   );
 }
 
