@@ -94,10 +94,14 @@ const cache = new InMemoryCache({
 });
 
 const cachePersistor = new CachePersistor({
-  // @ts-expect-error
   cache,
   storage: new LocalStorageWrapper(window.localStorage),
 });
+
+let onErrorHandler: (message: string) => void = () => {};
+export const setOnErrorHandler = (handler: (message: string) => void) => {
+  onErrorHandler = handler;
+};
 
 export const apolloClient = new ApolloClient({
   link: from([
@@ -109,8 +113,7 @@ export const apolloClient = new ApolloClient({
       }
 
       const log = (message) => {
-        // @ts-expect-error
-        apolloClient.snackbar?.(message, { variant: 'error' });
+        onErrorHandler(message);
         console.log(message);
       };
       if (graphQLErrors) {

@@ -1,11 +1,10 @@
-import { useApolloClient } from '@apollo/client';
+import { setOnErrorHandler } from '@client/apollo/index';
 import { HeaderWithBookListSkeleton } from '@client/components/HeaderWithBookListSkeleton';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { workbox } from '@client/registerServiceWorker';
 import {
   alertDataState,
   alertOpenState,
-  innerAlertDataState,
   primaryColorState,
   secondaryColorState,
 } from '@client/store/atoms';
@@ -19,7 +18,7 @@ import {
 } from '@mui/material';
 import * as colors from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import {
   Fragment,
   lazy,
@@ -106,12 +105,8 @@ const App = () => {
   const isSystemDarkTheme = useMediaQuery(
     '@media (prefers-color-scheme: dark)',
   );
-
-  const apolloClient = useApolloClient();
-
   const openAlert = useAtomValue(alertOpenState);
-  const alertData = useAtomValue(innerAlertDataState);
-  const setAlertData = useSetAtom(alertDataState);
+  const [alertData, setAlertData] = useAtom(alertDataState);
   const closeAlert = useCallback(
     (_event, reason?: string) => {
       if (reason === 'clickaway') {
@@ -123,13 +118,9 @@ const App = () => {
   );
 
   useEffect(() => {
-    // @ts-expect-error
-    apolloClient.snackbar = (message: string, opt: { variant: 'error' }) => {
-      setAlertData({
-        message,
-        variant: opt.variant,
-      });
-    };
+    setOnErrorHandler((message: string) => {
+      setAlertData({ message, variant: 'error' });
+    });
 
     const handleUpdate = (event) => {
       if (event.isUpdate) {
@@ -145,7 +136,7 @@ const App = () => {
     return () => {
       workbox?.removeEventListener('installed', handleUpdate);
     };
-  }, [apolloClient, setAlertData]);
+  }, [setAlertData]);
 
   const provideTheme = useMemo(
     () =>
@@ -263,6 +254,7 @@ const App = () => {
           open={openAlert}
           autoHideDuration={alertData?.persist ? undefined : 6000}
           onClose={alertData?.persist ? undefined : closeAlert}
+          sx={{ marginBottom: 5 }}
         >
           <Alert
             severity={alertData?.variant}
