@@ -218,7 +218,6 @@ const PageStyle: { [key: string]: PageStyleType } = {
   },
 };
 
-// @ts-expect-error
 const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
   SinglePage: 'FullSpread',
   FullSpread: 'FullSpreadPlusOne',
@@ -402,7 +401,6 @@ const Book = (props: BookProps) => {
     (_infoId: string, targetBookId: string) => {
       navigate(`/book/${targetBookId}`, {
         state: {
-          // @ts-expect-error
           referrer: location.state?.referrer || location.pathname,
         },
         replace: true,
@@ -803,7 +801,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   const [swiper, setSwiper] = useState(null);
   const debouncePage = useDebounceValue(page, 300);
 
-  const requestRef = useRef<typeof pageUpdateRequest>();
+  const requestRef = useRef<typeof pageUpdateRequest>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: swiper
   useEffect(() => {
     if (pageUpdateRequest && swiper) {

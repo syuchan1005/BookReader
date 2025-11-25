@@ -40,7 +40,7 @@ const BookPageCard = ({
     () => `0px 0px ${theme.spacing(3)} 0px`,
     [theme],
   );
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement>(null);
   const isVisible = useVisible(ref, true, visibleMargin);
   return (
     <div style={pageStyle} ref={ref}>
@@ -128,7 +128,7 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
 
       <DialogContent>
         {loading ? <div>Loading</div> : null}
-        {error && !data ? <div>{error}</div> : null}
+        {error && !data ? <div>{error.message}</div> : null}
         {!loading && data ? (
           <div className={classes.selectGrid}>
             {[...Array(data.book.pages).keys()].map((i) => (

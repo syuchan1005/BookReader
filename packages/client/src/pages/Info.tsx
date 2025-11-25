@@ -317,47 +317,42 @@ const Info = (props: InfoProps) => {
           <>
             {(loading || bookList?.length > 0) && (
               <div className={classes.infoGrid}>
-                {
-                  // @ts-expect-error
-                  bookList &&
-                    bookList.length > 0 &&
-                    bookList.map((book) => (
-                      <Book
-                        key={book.id}
-                        infoId={infoId}
-                        simple={mode === ScreenMode.SELECT}
-                        {...book}
-                        name={bookInfoName}
-                        reading={readId === book.id}
-                        onClick={handleBookClick}
-                        onDeleted={onDeletedBook}
-                        onEdit={refetch}
-                        onHistoryDeleted={() =>
-                          setUpdateReadBooks((i) => i + 1)
-                        }
-                        thumbnailSize={downXs ? 150 : 200}
-                        thumbnailNoSave={false}
-                        visibleMargin={visibleMargin}
-                        overlayClassName={
-                          selectIds.includes(book.id)
-                            ? classes.selectedBookOverlay
-                            : undefined
-                        }
-                        disableRipple={mode === ScreenMode.SELECT}
-                        onLongPress={
-                          mode === ScreenMode.NORMAL
-                            ? handleBookLongClick
-                            : undefined
-                        }
-                      >
-                        {selectIds.includes(book.id) && (
-                          <Icon className={classes.selectedBookCheckIcon}>
-                            check_circle
-                          </Icon>
-                        )}
-                      </Book>
-                    ))
-                }
+                {bookList &&
+                  bookList.length > 0 &&
+                  bookList.map((book) => (
+                    <Book
+                      key={book.id}
+                      infoId={infoId}
+                      simple={mode === ScreenMode.SELECT}
+                      {...book}
+                      name={bookInfoName}
+                      reading={readId === book.id}
+                      onClick={handleBookClick}
+                      onDeleted={onDeletedBook}
+                      onEdit={refetch}
+                      onHistoryDeleted={() => setUpdateReadBooks((i) => i + 1)}
+                      thumbnailSize={downXs ? 150 : 200}
+                      thumbnailNoSave={false}
+                      visibleMargin={visibleMargin}
+                      overlayClassName={
+                        selectIds.includes(book.id)
+                          ? classes.selectedBookOverlay
+                          : undefined
+                      }
+                      disableRipple={mode === ScreenMode.SELECT}
+                      onLongPress={
+                        mode === ScreenMode.NORMAL
+                          ? handleBookLongClick
+                          : undefined
+                      }
+                    >
+                      {selectIds.includes(book.id) && (
+                        <Icon className={classes.selectedBookCheckIcon}>
+                          check_circle
+                        </Icon>
+                      )}
+                    </Book>
+                  ))}
               </div>
             )}
             {!loading && bookList.length === 0 && <EmptyScreen />}

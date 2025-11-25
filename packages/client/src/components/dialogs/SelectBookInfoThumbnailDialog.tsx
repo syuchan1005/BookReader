@@ -94,7 +94,6 @@ const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
         {!loading && data ? (
           <div className={classes.selectGrid}>
             {data.bookInfo.books.map((book) => (
-              // @ts-expect-error
               <Book
                 key={book.id}
                 simple

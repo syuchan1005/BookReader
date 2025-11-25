@@ -131,7 +131,7 @@ const Home = (props: HomeProps) => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: lastSeenPosition
   const lastSeenPositionIndex = useMemo(() => lastSeenPosition?.index ?? 0, []);
 
-  const gridRef = useRef<HTMLDivElement>();
+  const gridRef = useRef<HTMLDivElement>(null);
   const visibleMargin = useMemo(
     () => `0px 0px ${theme.spacing(3)} 0px`,
     [theme],
@@ -213,7 +213,6 @@ const Home = (props: HomeProps) => {
     const gridElement = gridRef.current;
     if (gridElement.children.length > lastSeenPosition.index) {
       const elem = gridElement.children[lastSeenPosition.index];
-      // @ts-expect-error
       elem.scrollIntoView({ block: lastSeenPosition.block });
       setLastSeenPositionLoaded(true);
     } else {

@@ -114,7 +114,6 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
             autoFocus
             label="Book info name"
             value={name}
-            // @ts-expect-error
             onChange={(event) => setName(event.target.value)}
           />
         </DialogContent>

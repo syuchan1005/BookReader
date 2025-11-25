@@ -192,7 +192,7 @@ const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 const BookInfo = (props: BookInfoProps) => {
   const classes = useStyles(props);
   const location = useLocation();
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement>(null);
   const {
     style,
     thumbnailSize,

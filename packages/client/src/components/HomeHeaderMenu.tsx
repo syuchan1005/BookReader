@@ -96,7 +96,6 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     if (vConsole === undefined) {
       import('vconsole').then(({ default: VConsole }) => {
         const console = new VConsole();
-        // @ts-expect-error
         console.setSwitchPosition(80, 20);
         setVConsole(console);
       });

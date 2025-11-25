@@ -28,16 +28,7 @@ import {
   AddCompressBookDocument,
   type InputBook,
 } from '@syuchan1005/book-reader-graphql';
-import {
-  Children,
-  cloneElement,
-  type ReactElement,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useBeforeUnload } from 'react-use';
 
 type StrictAddBooksSubscriptionResult<
@@ -66,8 +57,6 @@ interface AddBookDialogProps {
   infoId: string;
   onAdded?: () => void;
   onClose?: () => void;
-
-  children?: ReactNode;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -118,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const AddBookDialog = (props: AddBookDialogProps) => {
   const classes = useStyles(props);
-  const { open, infoId, onAdded, onClose, children } = props;
+  const { open, infoId, onAdded, onClose } = props;
 
   const [addBooks, setAddBooks] = useState<InputBook[]>([]);
   const [subscriptionId, setSubscriptionId] = useState<string | undefined>(
@@ -386,7 +375,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
                       color="secondary"
                       label="Number"
                       value={number}
-                      // @ts-expect-error
                       onChange={(event) =>
                         changeAddBook(i, { number: event.target.value })
                       }
@@ -450,12 +438,6 @@ const AddBookDialog = (props: AddBookDialogProps) => {
         );
       })()}
       <DialogActions>
-        {children &&
-          Children.map<{ loading: boolean }, ReactElement>(
-            // @ts-expect-error
-            children,
-            (child) => cloneElement(child, { loading }),
-          )}
         <Button onClick={closeDialog} disabled={loading}>
           close
         </Button>
