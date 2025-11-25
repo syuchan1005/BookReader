@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client/react';
 import { commonTheme } from '@client/App';
 import Book from '@client/components/Book';
 import { pageAspectRatio } from '@client/components/BookPageImage';
@@ -23,7 +24,7 @@ import {
 import { common } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { BookOrder, useBookInfoQuery } from '@syuchan1005/book-reader-graphql';
+import { BookInfoDocument, BookOrder } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
 import {
   lazy,
@@ -156,7 +157,7 @@ const Info = (props: InfoProps) => {
     }
   }, []);
 
-  const { refetch, loading, error, data } = useBookInfoQuery({
+  const { refetch, loading, error, data } = useQuery(BookInfoDocument, {
     skip: isSkipQuery,
     variables: {
       id: infoId,

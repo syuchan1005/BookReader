@@ -1,3 +1,4 @@
+import { useMutation } from '@apollo/client/react';
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
 import { useBooleanState } from '@client/hooks/useBooleanState';
@@ -20,10 +21,10 @@ import { yellow } from '@mui/material/colors';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
+  DeleteBookInfoDocument,
+  EditBookInfoDocument,
   type HomeBookInfoFragment,
   type BookInfo as QLBookInfo,
-  useDeleteBookInfoMutation,
-  useEditBookInfoMutation,
 } from '@syuchan1005/book-reader-graphql';
 import {
   type CSSProperties,
@@ -253,31 +254,37 @@ const BookInfo = (props: BookInfoProps) => {
     }
   }, [isVisible]);
 
-  const [deleteBookInfo, { loading: delLoading }] = useDeleteBookInfoMutation({
-    variables: {
-      id: infoId,
+  const [deleteBookInfo, { loading: delLoading }] = useMutation(
+    DeleteBookInfoDocument,
+    {
+      variables: {
+        id: infoId,
+      },
+      onCompleted(d) {
+        if (!d) return;
+        setShowDeleteDialog(!d.del.success);
+        if (d.del.success && onDeleted) {
+          onDeleted(infoId, d.del.books);
+        }
+      },
     },
-    onCompleted(d) {
-      if (!d) return;
-      setShowDeleteDialog(!d.del.success);
-      if (d.del.success && onDeleted) {
-        onDeleted(infoId, d.del.books);
-      }
-    },
-  });
+  );
 
-  const [editBookInfo, { loading: editLoading }] = useEditBookInfoMutation({
-    variables: {
-      id: infoId,
-      name: editContent.name,
-      genres: editContent.genres,
+  const [editBookInfo, { loading: editLoading }] = useMutation(
+    EditBookInfoDocument,
+    {
+      variables: {
+        id: infoId,
+        name: editContent.name,
+        genres: editContent.genres,
+      },
+      onCompleted(d) {
+        if (!d) return;
+        setShowEditDialog(!d.edit.success);
+        if (d.edit.success && onEdit) onEdit(d.edit.bookInfo);
+      },
     },
-    onCompleted(d) {
-      if (!d) return;
-      setShowEditDialog(!d.edit.success);
-      if (d.edit.success && onEdit) onEdit(d.edit.bookInfo);
-    },
-  });
+  );
 
   const clickEditBookInfo = useCallback(() => {
     resetMenuAnchor();

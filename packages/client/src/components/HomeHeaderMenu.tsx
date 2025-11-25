@@ -1,3 +1,4 @@
+import { useLazyQuery, useMutation } from '@apollo/client/react';
 import { resetStore } from '@client/apollo';
 import ColorTile from '@client/components/ColorTile';
 import { exportDbJson, importDbJson } from '@client/indexedDb/DBFileController';
@@ -23,9 +24,9 @@ import {
 import * as colors from '@mui/material/colors';
 import {
   BookInfoOrder,
-  useDebugBookCountsLazyQuery,
-  useDeleteUnusedFoldersMutation,
-  useRebuildMeiliSearchMutation,
+  DebugBookCountsDocument,
+  DeleteUnusedFoldersDocument,
+  RebuildMeiliSearchDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
 import { useCallback, useState } from 'react';
@@ -60,16 +61,19 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     undefined,
   );
 
-  const [getBookCounts, { refetch, loading, data }] =
-    useDebugBookCountsLazyQuery();
+  const [getBookCounts, { refetch, loading, data }] = useLazyQuery(
+    DebugBookCountsDocument,
+  );
 
-  const [deleteUnusedFolder, { loading: deleteLoading }] =
-    useDeleteUnusedFoldersMutation({
+  const [deleteUnusedFolder, { loading: deleteLoading }] = useMutation(
+    DeleteUnusedFoldersDocument,
+    {
       onCompleted() {
         // noinspection JSIgnoredPromiseFromCall
         refetch();
       },
-    });
+    },
+  );
 
   /* i => [apollo, storage, all] */
   const purgeCache = useCallback((i) => {
@@ -102,8 +106,9 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     }
   }, [vConsole]);
 
-  const [rebuildMeiliSearchMutation, { loading: rebuilding }] =
-    useRebuildMeiliSearchMutation();
+  const [rebuildMeiliSearchMutation, { loading: rebuilding }] = useMutation(
+    RebuildMeiliSearchDocument,
+  );
 
   return (
     <>

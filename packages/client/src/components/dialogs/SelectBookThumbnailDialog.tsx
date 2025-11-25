@@ -1,3 +1,4 @@
+import { useMutation, useQuery } from '@apollo/client/react';
 import BookPageImage, {
   pageAspectRatio,
 } from '@client/components/BookPageImage';
@@ -17,8 +18,8 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  useBookPagesQuery,
-  useEditBookThumbnailMutation,
+  BookPagesDocument,
+  EditBookThumbnailDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useMemo, useRef } from 'react';
 
@@ -90,21 +91,23 @@ const SelectBookThumbnailDialog = (props: SelectThumbnailDialogProps) => {
     loading: infoLoading,
     error,
     data,
-  } = useBookPagesQuery({
+  } = useQuery(BookPagesDocument, {
     skip: !open,
     variables: {
       id: bookId,
     },
   });
 
-  const [changeThumbnail, { loading: changeLoading }] =
-    useEditBookThumbnailMutation({
+  const [changeThumbnail, { loading: changeLoading }] = useMutation(
+    EditBookThumbnailDocument,
+    {
       onCompleted(d) {
         if (!d) return;
         if (d.edit.success && onClose) onClose();
         if (d.edit.success && onEdit) onEdit();
       },
-    });
+    },
+  );
 
   const loading = useMemo(
     () => infoLoading || changeLoading,

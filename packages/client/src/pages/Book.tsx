@@ -20,6 +20,7 @@ import 'swiper/css';
 import 'swiper/css/keyboard';
 import 'swiper/css/virtual';
 
+import { useQuery } from '@apollo/client/react';
 import BookPageImage from '@client/components/BookPageImage';
 import BookPageOverlay from '@client/components/BookPageOverlay';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
@@ -37,7 +38,7 @@ import {
   readOrderState,
   showOriginalImageState,
 } from '@client/store/atoms';
-import { type BookQuery, useBookQuery } from '@syuchan1005/book-reader-graphql';
+import { BookDocument, type BookQuery } from '@syuchan1005/book-reader-graphql';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
   useLocation,
@@ -669,20 +670,26 @@ const useBookData = (props: {
     };
   }, [downloadedBook, bookImageProvider]);
 
-  const { loading, error, data, refetch } = useBookQuery({
+  const { loading, error, data, refetch } = useQuery(BookDocument, {
     variables: {
       id: bookId,
     },
-    onCompleted(d) {
-      onCompleted(convertToBookData(d));
-    },
-    onError: onError,
     skip: downloadedBook !== null,
   });
   const convertedData = useMemo(() => {
     if (!data) return null;
     return convertToBookData(data);
   }, [data]);
+  useEffect(() => {
+    if (convertedData) {
+      onCompleted(convertedData);
+    }
+  }, [onCompleted, convertedData]);
+  useEffect(() => {
+    if (error) {
+      onError();
+    }
+  }, [onError, error]);
 
   if (downloadedBook === undefined) {
     return {

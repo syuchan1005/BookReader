@@ -1,3 +1,4 @@
+import { useMutation, useQuery } from '@apollo/client/react';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { useTitle } from '@client/hooks/useTitle';
 import {
@@ -25,9 +26,9 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import {
-  useDeleteGenreMutation,
-  useEditGenreMutation,
-  useGenresQuery,
+  DeleteGenreDocument,
+  EditGenreDocument,
+  GenresDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
 
@@ -49,14 +50,15 @@ const Setting = (props) => {
     data: genreData,
     loading: genreLoading,
     refetch: genreRefetch,
-  } = useGenresQuery();
+  } = useQuery(GenresDocument);
 
   const [editGenre, setEditGenre] = useState<string>(undefined);
   const [editGenreContent, setEditGenreContent] = useState('');
   const [deleteGenre, setDeleteGenre] = useState<string>(undefined);
 
-  const [doDeleteGenre, { loading: deleteGenreLoading }] =
-    useDeleteGenreMutation({
+  const [doDeleteGenre, { loading: deleteGenreLoading }] = useMutation(
+    DeleteGenreDocument,
+    {
       variables: {
         name: deleteGenre,
       },
@@ -66,16 +68,20 @@ const Setting = (props) => {
           genreRefetch();
         }
       },
-    });
-  const [doEditGenre, { loading: editGenreLoading }] = useEditGenreMutation({
-    onCompleted({ editGenre: genreResult }) {
-      if (genreResult.success) {
-        setEditGenreContent(undefined);
-        setEditGenre(undefined);
-        genreRefetch();
-      }
     },
-  });
+  );
+  const [doEditGenre, { loading: editGenreLoading }] = useMutation(
+    EditGenreDocument,
+    {
+      onCompleted({ editGenre: genreResult }) {
+        if (genreResult.success) {
+          setEditGenreContent(undefined);
+          setEditGenre(undefined);
+          genreRefetch();
+        }
+      },
+    },
+  );
 
   return (
     <>

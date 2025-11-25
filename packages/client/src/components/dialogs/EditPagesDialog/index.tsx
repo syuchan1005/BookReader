@@ -1,3 +1,4 @@
+import { useMutation, useSubscription } from '@apollo/client/react';
 import {
   Box,
   Button,
@@ -11,8 +12,8 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  useBulkEditPageProgressSubscription,
-  useBulkEditPagesMutation,
+  BulkEditPageProgressDocument,
+  BulkEditPagesDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useState } from 'react';
 import { arrayMove, List as MovableList } from 'react-movable';
@@ -53,7 +54,7 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     });
   }, []);
 
-  const [doBulkEditPages, { loading }] = useBulkEditPagesMutation({
+  const [doBulkEditPages, { loading }] = useMutation(BulkEditPagesDocument, {
     onCompleted(data) {
       setSubscriptionId(undefined);
       if (data.bulkEditPage.success) {
@@ -75,12 +76,15 @@ const EditPagesDialog = (props: EditPagesDialogProps) => {
     });
   }, [actions, bookId, doBulkEditPages]);
 
-  const { data: subscriptionData } = useBulkEditPageProgressSubscription({
-    skip: !subscriptionId,
-    variables: {
-      bookId: subscriptionId,
+  const { data: subscriptionData } = useSubscription(
+    BulkEditPageProgressDocument,
+    {
+      skip: !subscriptionId,
+      variables: {
+        bookId: subscriptionId,
+      },
     },
-  });
+  );
 
   return (
     <Dialog open={open} fullWidth>

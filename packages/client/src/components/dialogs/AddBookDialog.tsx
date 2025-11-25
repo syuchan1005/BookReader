@@ -1,3 +1,4 @@
+import { useMutation, useSubscription } from '@apollo/client/react';
 import DropZone from '@client/components/DropZone';
 import FileField from '@client/components/FileField';
 import { useTitle } from '@client/hooks/useTitle';
@@ -20,12 +21,12 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
+  AddBooksDocument,
+  AddBooksProgressDocument,
   type AddBooksProgressSubscription,
   type AddBooksSubscriptionType,
+  AddCompressBookDocument,
   type InputBook,
-  useAddBooksMutation,
-  useAddBooksProgressSubscription,
-  useAddCompressBookMutation,
 } from '@syuchan1005/book-reader-graphql';
 import {
   Children,
@@ -152,7 +153,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     [onClose, onAdded],
   );
 
-  const [addBook, { loading: addBookLoading }] = useAddBooksMutation({
+  const [addBook, { loading: addBookLoading }] = useMutation(AddBooksDocument, {
     variables: {
       id: infoId,
       books: addBooks,
@@ -166,8 +167,9 @@ const AddBookDialog = (props: AddBookDialogProps) => {
     },
   });
 
-  const [addCompressBook, { loading: addCompressBookLoading }] =
-    useAddCompressBookMutation({
+  const [addCompressBook, { loading: addCompressBookLoading }] = useMutation(
+    AddCompressBookDocument,
+    {
       variables: {
         id: infoId,
         file: addBooks[0]?.file,
@@ -180,7 +182,8 @@ const AddBookDialog = (props: AddBookDialogProps) => {
       onError() {
         setSubscriptionId(undefined);
       },
-    });
+    },
+  );
 
   const loading = useMemo(
     () => addBookLoading || addCompressBookLoading,
@@ -188,7 +191,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   );
 
   const { data: subscriptionData, loading: subscriptionLoading } =
-    useAddBooksProgressSubscription({
+    useSubscription(AddBooksProgressDocument, {
       skip: !subscriptionId,
       variables: {
         id: subscriptionId,

@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client/react';
 import { commonTheme } from '@client/App';
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
@@ -30,8 +31,8 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   type HomeBookInfoFragment,
+  RelayBookInfosDocument,
   type SearchMode,
-  useRelayBookInfosQuery,
 } from '@syuchan1005/book-reader-graphql';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -179,24 +180,26 @@ const Home = (props: HomeProps) => {
   }, []);
 
   const [infos, setInfos] = useState<HomeBookInfoFragment[]>([]);
-  const { refetch, loading, error, data, fetchMore } = useRelayBookInfosQuery({
-    skip: isSkipQuery,
-    variables: {
-      first: lastSeenPositionIndex + defaultLoadBookInfoCount,
-      option: {
-        search: debounceSearch || undefined,
-        searchMode,
-        genres,
-        order: sortOrder,
+  const { refetch, loading, error, data, fetchMore } = useQuery(
+    RelayBookInfosDocument,
+    {
+      skip: isSkipQuery,
+      variables: {
+        first: lastSeenPositionIndex + defaultLoadBookInfoCount,
+        option: {
+          search: debounceSearch || undefined,
+          searchMode,
+          genres,
+          order: sortOrder,
+        },
       },
     },
-    onCompleted(d) {
-      setInfos(d.bookInfos.edges.map((e) => e.node));
-    },
-    onError() {
+  );
+  useEffect(() => {
+    if (data) {
       setInfos(data.bookInfos.edges.map((e) => e.node));
-    },
-  });
+    }
+  }, [data]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: infos
   useEffect(() => {

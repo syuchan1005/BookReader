@@ -1,3 +1,4 @@
+import { useMutation } from '@apollo/client/react';
 import DeleteDialog from '@client/components/dialogs/DeleteDialog';
 import EditDialog from '@client/components/dialogs/EditDialog';
 import { useBooleanState } from '@client/hooks/useBooleanState';
@@ -21,8 +22,8 @@ import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   type Book as BookType,
-  useDeleteBooksMutation,
-  useEditBookMutation,
+  DeleteBooksDocument,
+  EditBookDocument,
 } from '@syuchan1005/book-reader-graphql';
 import {
   lazy,
@@ -194,19 +195,22 @@ const Book = (props: BookProps) => {
     hideDownloadDialog,
   ] = useLazyDialog(false);
 
-  const [deleteBook, { loading: delLoading }] = useDeleteBooksMutation({
-    variables: {
-      infoId,
-      ids: [bookId],
+  const [deleteBook, { loading: delLoading }] = useMutation(
+    DeleteBooksDocument,
+    {
+      variables: {
+        infoId,
+        ids: [bookId],
+      },
+      onCompleted(d) {
+        if (!d) return;
+        setShowDeleteDialog(!d.deleteBooks.success);
+        if (d.deleteBooks.success && onDeleted) onDeleted(bookId, pages);
+      },
     },
-    onCompleted(d) {
-      if (!d) return;
-      setShowDeleteDialog(!d.deleteBooks.success);
-      if (d.deleteBooks.success && onDeleted) onDeleted(bookId, pages);
-    },
-  });
+  );
 
-  const [editBook, { loading: editLoading }] = useEditBookMutation({
+  const [editBook, { loading: editLoading }] = useMutation(EditBookDocument, {
     variables: {
       id: bookId,
       ...editContent,

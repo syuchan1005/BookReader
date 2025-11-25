@@ -1,3 +1,4 @@
+import { useMutation } from '@apollo/client/react';
 import { commonTheme } from '@client/App';
 import {
   AppBar,
@@ -20,10 +21,9 @@ import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
 import {
-  useDeleteBooksMutation,
-  useMoveBooksMutation,
+  DeleteBooksDocument,
+  MoveBooksDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
 
@@ -69,21 +69,25 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
   const [openMoveDialog, setOpenMoveDialog] = useState(false);
   const [moveInfoId, setMoveInfoId] = useState(infoId);
 
-  const [doMoveBooks, { loading: moveBooksLoading }] = useMoveBooksMutation({
-    variables: {
-      infoId: moveInfoId,
-      ids: selectIds,
+  const [doMoveBooks, { loading: moveBooksLoading }] = useMutation(
+    MoveBooksDocument,
+    {
+      variables: {
+        infoId: moveInfoId,
+        ids: selectIds,
+      },
+      onCompleted() {
+        setOpenMoveDialog(false);
+        if (onMoveBooks) onMoveBooks();
+      },
     },
-    onCompleted() {
-      setOpenMoveDialog(false);
-      if (onMoveBooks) onMoveBooks();
-    },
-  });
+  );
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const [doDeleteBooks, { loading: deleteBooksLoading }] =
-    useDeleteBooksMutation({
+  const [doDeleteBooks, { loading: deleteBooksLoading }] = useMutation(
+    DeleteBooksDocument,
+    {
       variables: {
         infoId,
         ids: selectIds,
@@ -92,7 +96,8 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
         setOpenDeleteDialog(false);
         if (onDeleteBooks) onDeleteBooks();
       },
-    });
+    },
+  );
 
   return (
     <>

@@ -1,3 +1,4 @@
+import { useLazyQuery } from '@apollo/client/react';
 import {
   Button,
   Checkbox,
@@ -19,7 +20,7 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useGenresLazyQuery } from '@syuchan1005/book-reader-graphql';
+import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
 
 interface GenresSelectProps {
@@ -59,7 +60,8 @@ const GenresSelect = (props: GenresSelectProps) => {
   const [openAdd, setOpenAdd] = useState(false);
   const [addContent, setAddContent] = useState('');
 
-  const [loadGenres, { called, data: genreData }] = useGenresLazyQuery();
+  const [loadGenres, { called, data: genreData }] =
+    useLazyQuery(GenresDocument);
 
   return (
     <div className={classes.genreSelect}>

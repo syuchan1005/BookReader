@@ -1,3 +1,4 @@
+import { useLazyQuery } from '@apollo/client/react';
 import Book from '@client/components/Book';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
@@ -6,7 +7,7 @@ import db, { type BookRead } from '@client/indexedDb/Database';
 import { type Theme, useTheme } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useBooksLazyQuery } from '@syuchan1005/book-reader-graphql';
+import { BooksDocument } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,7 +39,7 @@ const History = () => {
   const [historyBooks, setHistoryBooks] = useState<BookRead[]>([]);
   const [historyBookLoading, setHistoryBookLoading] = useState(false);
 
-  const [getBooks, { loading, data, fetchMore }] = useBooksLazyQuery({
+  const [getBooks, { loading, data, fetchMore }] = useLazyQuery(BooksDocument, {
     fetchPolicy: 'network-only',
   });
   const mappedBooks: { [bookId: string]: (typeof data.books)[number] } =

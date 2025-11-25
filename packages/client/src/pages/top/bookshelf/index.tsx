@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client/react';
 import BookInfo from '@client/components/BookInfo';
 import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useConfirmDialog } from '@client/components/dialogs/ConfirmDialog';
@@ -21,7 +22,7 @@ import {
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { useBookInfosQuery } from '@syuchan1005/book-reader-graphql';
+import { BookInfosDocument } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -215,18 +216,17 @@ const Favorite = () => {
   useEffect(() => {
     getFavoriteBookInfos();
   }, []);
-  const { loading, data } = useBookInfosQuery({
+  const { loading, data } = useQuery(BookInfosDocument, {
     skip: favoriteBookInfos.length === 0,
     variables: {
       ids: favoriteBookInfos.map((bookInfo) => bookInfo.infoId),
     },
-    onCompleted() {
-      setFavoriteLoading(false);
-    },
-    onError() {
-      setFavoriteLoading(false);
-    },
   });
+  useEffect(() => {
+    if (!loading) {
+      setFavoriteLoading(false);
+    }
+  }, [loading]);
 
   return (
     <>

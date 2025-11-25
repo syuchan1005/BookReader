@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client/react';
 import { createBookPageUrl } from '@client/components/BookPageImage';
 import {
   Button,
@@ -11,7 +12,7 @@ import {
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import {
   type BookInfo,
-  useDownloadBookInfosQuery,
+  DownloadBookInfosDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
@@ -31,7 +32,7 @@ const DownloadZipBookInfoDialog = (props: DownloadZipBookInfoDialogProps) => {
     undefined,
   );
 
-  const { data, loading: booksLoading } = useDownloadBookInfosQuery({
+  const { data, loading: booksLoading } = useQuery(DownloadBookInfosDocument, {
     variables: {
       id,
     },

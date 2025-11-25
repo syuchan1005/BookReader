@@ -1,6 +1,11 @@
-import { ApolloClient, from, split } from '@apollo/client';
+import {
+  ApolloClient,
+  ApolloLink,
+  CombinedGraphQLErrors,
+  ServerError,
+} from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
-import { onError } from '@apollo/client/link/error';
+import { ErrorLink } from '@apollo/client/link/error';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import {
   concatPagination,
@@ -9,7 +14,7 @@ import {
 } from '@apollo/client/utilities';
 import { goToAuthPage } from '@client/auth';
 import type { BookInfo } from '@syuchan1005/book-reader-graphql';
-import { createUploadLink } from 'apollo-upload-client';
+import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
 import { createClient } from 'graphql-ws';
 
@@ -94,6 +99,7 @@ const cache = new InMemoryCache({
 });
 
 const cachePersistor = new CachePersistor({
+  // @ts-expect-error
   cache,
   storage: new LocalStorageWrapper(window.localStorage),
 });
@@ -104,30 +110,33 @@ export const setOnErrorHandler = (handler: (message: string) => void) => {
 };
 
 export const apolloClient = new ApolloClient({
-  link: from([
-    onError(({ graphQLErrors, networkError }) => {
-      // @ts-expect-error
-      if (networkError?.statusCode === 401) {
-        goToAuthPage();
-        return;
-      }
-
+  link: ApolloLink.from([
+    new ErrorLink(({ error }) => {
       const log = (message) => {
         onErrorHandler(message);
         console.log(message);
       };
-      if (graphQLErrors) {
-        for (const { message, locations, path } of graphQLErrors) {
+
+      if (ServerError.is(error)) {
+        if (error.statusCode === 401) {
+          goToAuthPage();
+          return;
+        }
+
+        log(
+          `[Network error]: ${error.message}, Status Code: ${error.statusCode}`,
+        );
+      } else if (CombinedGraphQLErrors.is(error)) {
+        for (const { message, locations, path } of error.errors) {
           log(
             `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
           );
         }
-      }
-      if (networkError) {
-        log(`[Network error]: ${networkError}`);
+      } else {
+        log(`[GraphQL error]: (other) ${error.message}`);
       }
     }),
-    split(
+    ApolloLink.split(
       ({ query }) => {
         const definition = getMainDefinition(query);
         return (
@@ -142,7 +151,7 @@ export const apolloClient = new ApolloClient({
           }${uri}`,
         }),
       ),
-      createUploadLink({
+      new UploadHttpLink({
         uri: `${window.location.protocol}${uri}`,
         headers: { 'Apollo-Require-Preflight': 'true' },
       }),
@@ -154,7 +163,9 @@ export const apolloClient = new ApolloClient({
     },
   },
   cache,
-  connectToDevTools: process.env.NODE_ENV !== 'production',
+  devtools: {
+    enabled: process.env.NODE_ENV !== 'production',
+  },
 });
 
 export const resetStore: () => Promise<void> = () => cachePersistor.purge();

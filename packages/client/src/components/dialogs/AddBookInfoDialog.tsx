@@ -1,3 +1,4 @@
+import { useMutation } from '@apollo/client/react';
 import {
   Button,
   CircularProgress,
@@ -8,13 +9,11 @@ import {
   TextField,
   type Theme,
 } from '@mui/material';
-
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-
 import {
+  AddBookInfoDocument,
   type HomeBookInfoFragment,
-  useAddBookInfoMutation,
 } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useState } from 'react';
 import GenresSelect from '../GenresSelect';
@@ -83,7 +82,7 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
     }
   }, [name, onClose, selectGenres]);
 
-  const [addBookInfo, { loading }] = useAddBookInfoMutation({
+  const [addBookInfo, { loading }] = useMutation(AddBookInfoDocument, {
     variables: {
       name,
       genres: selectGenres,

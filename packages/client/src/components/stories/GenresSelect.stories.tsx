@@ -1,4 +1,4 @@
-import { MockedProvider } from '@apollo/client/testing';
+import { MockedProvider } from '@apollo/client/testing/react';
 import { ListItem } from '@mui/material';
 import type { ComponentMeta } from '@storybook/react';
 

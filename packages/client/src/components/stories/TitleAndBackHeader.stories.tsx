@@ -1,4 +1,4 @@
-import { MockedProvider } from '@apollo/client/testing';
+import { MockedProvider } from '@apollo/client/testing/react';
 import { Icon, IconButton } from '@mui/material';
 import type { ComponentMeta } from '@storybook/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';

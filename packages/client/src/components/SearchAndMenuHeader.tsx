@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client/react';
 import { commonTheme } from '@client/App';
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 import { genresState } from '@client/store/atoms';
@@ -22,9 +23,9 @@ import { alpha } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import {
+  AvailableSearchModesDocument,
+  GenresDocument,
   SearchMode,
-  useAvailableSearchModesQuery,
-  useGenresQuery,
 } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
 import {
@@ -109,7 +110,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const theme = useTheme();
   const { onClickMenuIcon, searchText, searchMode, onChangeSearchText } = props;
 
-  const { data } = useAvailableSearchModesQuery();
+  const { data } = useQuery(AvailableSearchModesDocument);
   // biome-ignore lint/correctness/useExhaustiveDependencies: onChangeSearchText
   const handleSearchModeChange = useCallback(
     (e) => {
@@ -145,7 +146,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     setSearchFilterPopoverAnchorEl(searchInputRef.current);
   }, []);
 
-  const { data: genreData } = useGenresQuery();
+  const { data: genreData } = useQuery(GenresDocument);
   // TODO: Update genres state in caller side
   const [genres, setGenres] = useAtom(genresState);
   const handleGenresChange = useCallback(
