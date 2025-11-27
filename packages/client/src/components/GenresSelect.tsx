@@ -16,12 +16,46 @@ import {
   MenuItem,
   Select,
   TextField,
-  type Theme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
+
+const PREFIX = 'GenresSelect';
+
+const classes = {
+  genreCheckBox: `${PREFIX}-genreCheckBox`,
+  chips: `${PREFIX}-chips`,
+  chip: `${PREFIX}-chip`,
+  genreField: `${PREFIX}-genreField`,
+  genreSelect: `${PREFIX}-genreSelect`,
+};
+
+const Root = styled('div')(({ theme }) => ({
+  [`& .${classes.genreCheckBox}`]: {
+    padding: theme.spacing(0),
+    margin: theme.spacing(0, 1),
+  },
+
+  [`& .${classes.chips}`]: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+
+  [`& .${classes.chip}`]: {
+    margin: 2,
+  },
+
+  [`& .${classes.genreField}`]: {
+    marginBottom: theme.spacing(1),
+  },
+
+  [`&.${classes.genreSelect}`]: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+  },
+}));
 
 interface GenresSelectProps {
   value: string[];
@@ -29,32 +63,7 @@ interface GenresSelectProps {
   showAdd?: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    genreCheckBox: {
-      padding: theme.spacing(0),
-      margin: theme.spacing(0, 1),
-    },
-    chips: {
-      display: 'flex',
-      flexWrap: 'wrap',
-    },
-    chip: {
-      margin: 2,
-    },
-    genreField: {
-      marginBottom: theme.spacing(1),
-    },
-    genreSelect: {
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center',
-    },
-  }),
-);
-
 const GenresSelect = (props: GenresSelectProps) => {
-  const classes = useStyles(props);
   const { value, onChange, showAdd } = props;
 
   const [openAdd, setOpenAdd] = useState(false);
@@ -64,7 +73,7 @@ const GenresSelect = (props: GenresSelectProps) => {
     useLazyQuery(GenresDocument);
 
   return (
-    <div className={classes.genreSelect}>
+    <Root className={classes.genreSelect}>
       <FormControl className={classes.genreField} fullWidth>
         <InputLabel id="genre-label">Genres</InputLabel>
         <Select
@@ -141,7 +150,7 @@ const GenresSelect = (props: GenresSelectProps) => {
           </Dialog>
         </>
       )}
-    </div>
+    </Root>
   );
 };
 

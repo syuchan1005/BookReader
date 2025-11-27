@@ -17,13 +17,10 @@ import {
   TableHead,
   TableRow,
   TextField,
-  type Theme,
   Toolbar,
   Typography,
   useTheme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
 import {
   DeleteGenreDocument,
@@ -32,18 +29,9 @@ import {
 } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    setting: {
-      margin: theme.spacing(1, 2, 0, 2),
-      height: 'fit-content',
-    },
-  }),
-);
-
-const Setting = (props) => {
+const Setting = (_props) => {
   useTitle('Setting');
-  const classes = useStyles(props);
+
   const theme = useTheme();
 
   const {
@@ -87,8 +75,12 @@ const Setting = (props) => {
     <>
       <TitleAndBackHeader title="Setting" />
       <Toolbar />
-
-      <main className={classes.setting}>
+      <main
+        style={{
+          margin: theme.spacing(1, 2, 0, 2),
+          height: 'fit-content',
+        }}
+      >
         {!genreLoading && genreData && (
           <>
             <Typography variant="h6">

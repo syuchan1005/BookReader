@@ -1,17 +1,44 @@
 import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
-import {
-  AppBar,
-  Icon,
-  IconButton,
-  type Theme,
-  Toolbar,
-  Typography,
-} from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { AppBar, Icon, IconButton, Toolbar, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { type ReactNode, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { commonTheme } from '../App';
+
+const PREFIX = 'TitleAndBackHeader';
+
+const classes = {
+  backIcon: `${PREFIX}-backIcon`,
+  title: `${PREFIX}-title`,
+  subTitle: `${PREFIX}-subTitle`,
+  appBar: `${PREFIX}-appBar`,
+};
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  [`& .${classes.backIcon}`]: {
+    color: theme.palette.common.white,
+    marginRight: theme.spacing(1),
+  },
+
+  [`& .${classes.title}`]: {
+    color: theme.palette.common.white,
+    marginRight: theme.spacing(1),
+  },
+
+  [`& .${classes.subTitle}`]: {
+    flexGrow: 1,
+    color: theme.palette.common.white,
+    fontSize: '1.25rem',
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontWeight: 500,
+    lineHeight: 1.6,
+    letterSpacing: '0.0075em',
+  },
+
+  [`&.${classes.appBar}`]: {
+    paddingTop: commonTheme.safeArea.top,
+  },
+}));
 
 interface TitleAndBackHeaderProps {
   backRoute?: string;
@@ -20,33 +47,7 @@ interface TitleAndBackHeaderProps {
   children?: ReactNode;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    backIcon: {
-      color: theme.palette.common.white,
-      marginRight: theme.spacing(1),
-    },
-    title: {
-      color: theme.palette.common.white,
-      marginRight: theme.spacing(1),
-    },
-    subTitle: {
-      flexGrow: 1,
-      color: theme.palette.common.white,
-      fontSize: '1.25rem',
-      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-      fontWeight: 500,
-      lineHeight: 1.6,
-      letterSpacing: '0.0075em',
-    },
-    appBar: {
-      paddingTop: commonTheme.safeArea.top,
-    },
-  }),
-);
-
 const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
-  const classes = useStyles(props);
   const navigate = useNavigate();
   const location = useLocation();
   const { backRoute, title, subTitle, children } = props;
@@ -65,7 +66,7 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const elevation = useAppBarScrollElevation();
 
   return (
-    <AppBar className={classes.appBar} elevation={elevation}>
+    <StyledAppBar className={classes.appBar} elevation={elevation}>
       <Toolbar>
         <IconButton
           className={classes.backIcon}
@@ -80,7 +81,7 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
         <div className={classes.subTitle}>{subTitle}</div>
         {children}
       </Toolbar>
-    </AppBar>
+    </StyledAppBar>
   );
 };
 

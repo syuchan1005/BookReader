@@ -20,15 +20,8 @@ import {
   showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
-import {
-  CircularProgress,
-  Fab,
-  Icon,
-  type Theme,
-  useTheme,
-} from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { CircularProgress, Fab, Icon, useTheme } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import {
   type HomeBookInfoFragment,
   RelayBookInfosDocument,
@@ -45,82 +38,96 @@ import {
 } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+const PREFIX = 'Home';
+
+const classes = {
+  home: `${PREFIX}-home`,
+  homeGrid: `${PREFIX}-homeGrid`,
+  loading: `${PREFIX}-loading`,
+  fab: `${PREFIX}-fab`,
+  addButton: `${PREFIX}-addButton`,
+  loadMoreProgress: `${PREFIX}-loadMoreProgress`,
+};
+
+const Main = styled('main')(({ theme }) => ({
+  '&': {
+    height: '100%',
+    ...commonTheme.appbar(theme, 'paddingTop'),
+  },
+
+  [`& .${classes.homeGrid}`]: {
+    padding: theme.spacing(1),
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+    justifyContent: 'center',
+    columnGap: theme.spacing(2),
+    rowGap: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+    },
+  },
+
+  [`& .${classes.loading}`]: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    whiteSpace: 'pre-line',
+    textAlign: 'center',
+  },
+
+  [`& .${classes.fab}`]: {
+    position: 'fixed',
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(
+      2 + bottomNavigationHeight,
+    )})`,
+    right: theme.spacing(2),
+    zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(2 + bottomNavigationHeight),
+    },
+  },
+
+  [`& .${classes.addButton}`]: {
+    position: 'fixed',
+    right: theme.spacing(2),
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(
+      11 + bottomNavigationHeight,
+    )})`,
+    background: theme.palette.background.paper,
+    color: theme.palette.secondary.main,
+    zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(11 + bottomNavigationHeight),
+    },
+  },
+
+  [`& .${classes.loadMoreProgress}`]: {
+    gridColumn: '1 / end',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+}));
+
 interface HomeProps {
   children?: ReactElement;
 }
 
 const bottomNavigationHeight = 7;
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    home: {
-      height: '100%',
-      ...commonTheme.appbar(theme, 'paddingTop'),
-    },
-    homeGrid: {
-      padding: theme.spacing(1),
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-      justifyContent: 'center',
-      columnGap: theme.spacing(2),
-      rowGap: theme.spacing(2),
-      [theme.breakpoints.down('sm')]: {
-        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
-      },
-    },
-    loading: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      fontSize: '2rem',
-      whiteSpace: 'pre-line',
-      textAlign: 'center',
-    },
-    fab: {
-      position: 'fixed',
-      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(
-        2 + bottomNavigationHeight,
-      )})`,
-      right: theme.spacing(2),
-      zIndex: 2,
-      fallbacks: {
-        bottom: theme.spacing(2 + bottomNavigationHeight),
-      },
-    },
-    addButton: {
-      position: 'fixed',
-      right: theme.spacing(2),
-      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(
-        11 + bottomNavigationHeight,
-      )})`,
-      background: theme.palette.background.paper,
-      color: theme.palette.secondary.main,
-      zIndex: 2,
-      fallbacks: {
-        bottom: theme.spacing(11 + bottomNavigationHeight),
-      },
-    },
-    loadMoreProgress: {
-      gridColumn: '1 / end',
-      display: 'flex',
-      justifyContent: 'center',
-    },
-  }),
-);
-
 const defaultLoadBookInfoCount = 60;
 const loadMoreThreshold = 15;
 
-const Home = (props: HomeProps) => {
+const Home = (_props: HomeProps) => {
   useTitle('');
   const genres = useAtomValue(genresState);
   const sortOrder = useAtomValue(sortOrderState);
   const showBookInfoName = useAtomValue(showBookInfoNameState);
-  const classes = useStyles(props);
+
   const theme = useTheme();
 
   const [lastSeenPosition, setLastSeenPosition] = useAtom(
@@ -349,7 +356,7 @@ const Home = (props: HomeProps) => {
         onClickMenuIcon={setMenuAnchor}
       />
       <HomeHeaderMenu anchorEl={menuAnchorEl} onClose={closeMenuAnchor} />
-      <main className={classes.home}>
+      <Main className={classes.home}>
         {error && !data ? (
           <div className={classes.loading}>
             {`${error.toString().replace(/:\s*/g, '\n')}`}
@@ -408,7 +415,7 @@ const Home = (props: HomeProps) => {
           onAdded={openInfoPage}
           onClose={setClose}
         />
-      </main>
+      </Main>
     </>
   );
 };

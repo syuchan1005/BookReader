@@ -16,33 +16,27 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  type Theme,
   Typography,
   useTheme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { BookInfosDocument } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    grid: {
-      padding: theme.spacing(1),
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-      justifyContent: 'center',
-      columnGap: theme.spacing(2),
-      rowGap: theme.spacing(2),
-      [theme.breakpoints.down('sm')]: {
-        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
-      },
-    },
-  }),
-);
+const Grid = styled('div')(({ theme }) => ({
+  padding: theme.spacing(1),
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+  gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+  justifyContent: 'center',
+  columnGap: theme.spacing(2),
+  rowGap: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+  },
+}));
 
 const defaultLoadBookInfosCount = 20;
 
@@ -58,7 +52,6 @@ const BookShelfContent = () => {
 };
 
 const DownloadedBooks = () => {
-  const classes = useStyles();
   const theme = useTheme();
 
   const [downloadedBooks, setDownloadedBooks] = useState<
@@ -113,7 +106,7 @@ const DownloadedBooks = () => {
           </IconButton>
         </div>
       )}
-      <div className={classes.grid}>
+      <Grid>
         {downloadedBooks.map((book) => (
           <Book
             key={book.bookId}
@@ -121,7 +114,7 @@ const DownloadedBooks = () => {
             onDelete={() => handleDelete(book.bookId)}
           />
         ))}
-      </div>
+      </Grid>
     </>
   );
 };
@@ -183,7 +176,6 @@ const Book = (props: {
 };
 
 const Favorite = () => {
-  const classes = useStyles();
   const theme = useTheme();
 
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
@@ -235,7 +227,7 @@ const Favorite = () => {
           Favorites
         </Typography>
       )}
-      <div className={classes.grid}>
+      <Grid>
         {(data?.bookInfos ?? []).map((info, i, arr) => (
           <BookInfo
             key={info.id}
@@ -253,7 +245,7 @@ const Favorite = () => {
             }}
           />
         ))}
-      </div>
+      </Grid>
     </>
   );
 };

@@ -16,10 +16,8 @@ import {
   Radio,
   RadioGroup,
   TextField,
-  type Theme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import {
   AddBooksDocument,
   AddBooksProgressDocument,
@@ -30,6 +28,51 @@ import {
 } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useBeforeUnload } from 'react-use';
+
+const PREFIX = 'AddBookDialog';
+
+const classes = {
+  dialog: `${PREFIX}-dialog`,
+  dialogContent: `${PREFIX}-dialogContent`,
+  listItem: `${PREFIX}-listItem`,
+  addBookSubscription: `${PREFIX}-addBookSubscription`,
+  progressMessage: `${PREFIX}-progressMessage`,
+  addTypeRadioRoot: `${PREFIX}-addTypeRadioRoot`,
+};
+
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+  [`& .${classes.dialog}`]: {
+    width: '100%',
+    height: '100%',
+  },
+
+  [`& .${classes.dialogContent}`]: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+
+  [`& .${classes.listItem}`]: {
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: '1fr 50px 48px',
+    marginBottom: theme.spacing(0.5),
+  },
+
+  [`& .${classes.addBookSubscription}`]: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+
+  [`& .${classes.progressMessage}`]: {
+    marginTop: theme.spacing(2),
+  },
+
+  [`& .${classes.addTypeRadioRoot}`]: {
+    padding: 0,
+    margin: theme.spacing(0, 1),
+  },
+}));
 
 type StrictAddBooksSubscriptionResult<
   EnumType = typeof AddBooksSubscriptionType,
@@ -59,54 +102,7 @@ interface AddBookDialogProps {
   onClose?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    dialog: {
-      width: '100%',
-      height: '100%',
-    },
-    dialogContent: {
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    listItem: {
-      width: '100%',
-      display: 'grid',
-      gridTemplateColumns: '1fr 50px 48px',
-      marginBottom: theme.spacing(0.5),
-    },
-    addBookSubscription: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    },
-    progressMessage: {
-      marginTop: theme.spacing(2),
-    },
-    addBookProgress: {
-      display: 'grid',
-      alignItems: 'center',
-      gridTemplateColumns: '1fr 64px',
-      columnGap: theme.spacing(1),
-      width: 300,
-    },
-    addTypeRadioRoot: {
-      padding: 0,
-      margin: theme.spacing(0, 1),
-    },
-    pluginFields: {
-      display: 'flex',
-      flexDirection: 'column',
-      padding: theme.spacing(1, 0),
-      '& > * + *': {
-        marginTop: theme.spacing(1),
-      },
-    },
-  }),
-);
-
 const AddBookDialog = (props: AddBookDialogProps) => {
-  const classes = useStyles(props);
   const { open, infoId, onAdded, onClose } = props;
 
   const [addBooks, setAddBooks] = useState<InputBook[]>([]);
@@ -307,7 +303,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
   ]);
 
   return (
-    <Dialog open={open} onClose={closeDialog}>
+    <StyledDialog open={open} onClose={closeDialog}>
       <DialogTitle style={{ paddingBottom: 0 }}>Add book</DialogTitle>
       {(() => {
         if (loading) {
@@ -450,7 +446,7 @@ const AddBookDialog = (props: AddBookDialogProps) => {
           add
         </Button>
       </DialogActions>
-    </Dialog>
+    </StyledDialog>
   );
 };
 

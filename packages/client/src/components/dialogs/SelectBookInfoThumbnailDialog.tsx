@@ -6,12 +6,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  type Theme,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import {
   BookInfoDocument,
   EditBookInfoThumbnailDocument,
@@ -26,23 +23,7 @@ interface SelectThumbnailDialogProps {
   onEdit?: (homeBookInfo: HomeBookInfoFragment) => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    selectGrid: {
-      minWidth: '250px',
-      width: '100%',
-      padding: theme.spacing(1),
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
-      justifyContent: 'center',
-      columnGap: theme.spacing(2),
-      rowGap: theme.spacing(2),
-    },
-  }),
-);
-
 const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
-  const classes = useStyles(props);
   const { open, infoId, onEdit, onClose } = props;
 
   const {
@@ -87,12 +68,22 @@ const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
   return (
     <Dialog open={open} onClose={closeDialog} fullScreen={fullscreen}>
       <DialogTitle>Select BookInfo Thumbnail</DialogTitle>
-
       <DialogContent>
         {loading ? <div>Loading</div> : null}
         {error && !data ? <div>{error.message}</div> : null}
         {!loading && data ? (
-          <div className={classes.selectGrid}>
+          <div
+            style={{
+              minWidth: '250px',
+              width: '100%',
+              padding: theme.spacing(1),
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, 125px) [end]',
+              justifyContent: 'center',
+              columnGap: theme.spacing(2),
+              rowGap: theme.spacing(2),
+            }}
+          >
             {data.bookInfo.books.map((book) => (
               <Book
                 key={book.id}
@@ -117,7 +108,6 @@ const SelectBookInfoThumbnailDialog = (props: SelectThumbnailDialogProps) => {
           </div>
         ) : null}
       </DialogContent>
-
       <DialogActions>
         <Button onClick={closeDialog} disabled={loading}>
           close

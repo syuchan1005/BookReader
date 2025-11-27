@@ -1,33 +1,27 @@
-import { Skeleton, type Theme } from '@mui/material';
-import { createStyles, makeStyles } from '@mui/styles';
+import { Box, Skeleton } from '@mui/material';
 import { pageAspectRatio } from './BookPageImage';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    homeGrid: {
-      padding: theme.spacing(1),
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-      justifyContent: 'center',
-      columnGap: theme.spacing(2),
-      rowGap: theme.spacing(2),
-      [theme.breakpoints.down('sm')]: {
-        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
-      },
-    },
-  }),
-);
-
-export const HeaderWithBookListSkeleton = (props) => {
-  const classes = useStyles(props);
+export const HeaderWithBookListSkeleton = (_props) => {
   return (
-    <div>
+    <>
       <Skeleton variant="rectangular" width="100%" height={72} />
-      <div className={classes.homeGrid}>
+      <Box
+        sx={(theme) => ({
+          padding: theme.spacing(1),
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+          gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+          justifyContent: 'center',
+          columnGap: theme.spacing(2),
+          rowGap: theme.spacing(2),
+          [theme.breakpoints.down('sm')]: {
+            gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+            gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+          },
+        })}
+      >
         <Skeleton variant="rectangular" height="100%" />
-      </div>
+      </Box>
       <div style={{ position: 'absolute', right: 16, bottom: 80 }}>
         <Skeleton variant="circular" width={64} height={64} />
         <Skeleton
@@ -43,6 +37,6 @@ export const HeaderWithBookListSkeleton = (props) => {
         height={64}
         style={{ position: 'absolute', bottom: 0 }}
       />
-    </div>
+    </>
   );
 };

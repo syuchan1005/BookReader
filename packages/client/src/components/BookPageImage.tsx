@@ -1,8 +1,6 @@
 import { goToAuthPage } from '@client/auth';
 import { useDebounceValue } from '@client/hooks/useDebounceValue';
-import type { Theme } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import {
   availableImageExtensions,
   availableImageExtensionWithContentType,
@@ -16,6 +14,28 @@ import {
   useRef,
   useState,
 } from 'react';
+
+const PREFIX = 'BookPageImage';
+
+const classes = {
+  pictureFull: `${PREFIX}-pictureFull`,
+  imageFull: `${PREFIX}-imageFull`,
+};
+
+const Root = styled('picture')(({ theme }) => ({
+  [`&.${classes.pictureFull}`]: {
+    width: '100%',
+    height: '100%',
+  },
+
+  [`& .${classes.imageFull}`]: {
+    ...theme.typography.h5,
+    width: '100%',
+    height: '100%',
+    display: 'block',
+    objectFit: 'contain',
+  },
+}));
 
 interface BookPageImageProps {
   bookId?: string;
@@ -32,22 +52,6 @@ interface BookPageImageProps {
 
   skip?: boolean;
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    pictureFull: {
-      width: '100%',
-      height: '100%',
-    },
-    imageFull: {
-      ...theme.typography.h5,
-      width: '100%',
-      height: '100%',
-      display: 'block',
-      objectFit: 'contain',
-    },
-  }),
-);
 
 const createSizeUrlSuffix = (width?: number, height?: number) =>
   !width && !height
@@ -91,7 +95,6 @@ const ImageState = {
 type ImageStateType = (typeof ImageState)[keyof typeof ImageState];
 
 const BookPageImage = (props: BookPageImageProps) => {
-  const classes = useStyles(props);
   const {
     bookId,
     pageIndex,
@@ -219,7 +222,7 @@ const BookPageImage = (props: BookPageImageProps) => {
   }, []);
 
   return (
-    <picture className={classes.pictureFull} key={`${isRetried}`}>
+    <Root className={classes.pictureFull} key={`${isRetried}`}>
       {!skip &&
         imageSourceSet.sources.map(({ type, srcSet }) => (
           <source key={type} type={type} srcSet={srcSet} />
@@ -244,7 +247,7 @@ const BookPageImage = (props: BookPageImageProps) => {
           }}
         />
       )}
-    </picture>
+    </Root>
   );
 };
 

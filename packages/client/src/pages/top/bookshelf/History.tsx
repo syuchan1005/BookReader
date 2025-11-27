@@ -4,35 +4,38 @@ import { pageAspectRatio } from '@client/components/BookPageImage';
 import { useMediaQuery } from '@client/hooks/useMediaQuery';
 import { useTitle } from '@client/hooks/useTitle';
 import db, { type BookRead } from '@client/indexedDb/Database';
-import { type Theme, useTheme } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { BooksDocument } from '@syuchan1005/book-reader-graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    grid: {
-      padding: theme.spacing(1),
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-      justifyContent: 'center',
-      columnGap: theme.spacing(2),
-      rowGap: theme.spacing(2),
-      [theme.breakpoints.down('sm')]: {
-        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
-      },
+const PREFIX = 'History';
+
+const classes = {
+  grid: `${PREFIX}-grid`,
+};
+
+const Root = styled('div')(({ theme }) => ({
+  [`&.${classes.grid}`]: {
+    padding: theme.spacing(1),
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+    justifyContent: 'center',
+    columnGap: theme.spacing(2),
+    rowGap: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
     },
-  }),
-);
+  },
+}));
 
 const defaultLoadBooksCount = 20;
 
 const History = () => {
   useTitle('History');
-  const classes = useStyles();
+
   const theme = useTheme();
   const downSm = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -92,7 +95,7 @@ const History = () => {
   }, []);
 
   return (
-    <div className={classes.grid}>
+    <Root className={classes.grid}>
       {historyBooks.map((bookRead, index, arr) => {
         const book = mappedBooks[bookRead.bookId];
         if (book) {
@@ -123,7 +126,7 @@ const History = () => {
           )}`}</div>
         );
       })}
-    </div>
+    </Root>
   );
 };
 

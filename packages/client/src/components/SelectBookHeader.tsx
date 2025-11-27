@@ -12,20 +12,39 @@ import {
   IconButton,
   StyledEngineProvider,
   TextField,
-  type Theme,
   ThemeProvider,
   Toolbar,
   Typography,
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { createTheme } from '@mui/material/styles';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { createTheme, styled } from '@mui/material/styles';
 import {
   DeleteBooksDocument,
   MoveBooksDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
+
+const PREFIX = 'SelectBookHeader';
+
+const classes = {
+  iconButton: `${PREFIX}-iconButton`,
+  title: `${PREFIX}-title`,
+};
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  '&': {
+    paddingTop: commonTheme.safeArea.top,
+  },
+
+  [`& .${classes.iconButton}`]: {
+    color: theme.palette.common.white,
+  },
+
+  [`& .${classes.title}`]: {
+    userSelect: 'none',
+    flexGrow: 1,
+  },
+}));
 
 interface SelectBookHeaderProps {
   infoId: string;
@@ -34,25 +53,6 @@ interface SelectBookHeaderProps {
   onDeleteBooks?: () => void;
   onMoveBooks?: () => void;
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    appBar: {
-      paddingTop: commonTheme.safeArea.top,
-    },
-    iconButton: {
-      color: theme.palette.common.white,
-    },
-    loadingContent: {
-      display: 'flex',
-      justifyContent: 'center',
-    },
-    title: {
-      userSelect: 'none',
-      flexGrow: 1,
-    },
-  }),
-);
 
 const ContextualActionBarTheme = createTheme({
   palette: {
@@ -63,7 +63,6 @@ const ContextualActionBarTheme = createTheme({
 });
 
 const SelectBookHeader = (props: SelectBookHeaderProps) => {
-  const classes = useStyles(props);
   const { infoId, selectIds, onClose, onDeleteBooks, onMoveBooks } = props;
 
   const [openMoveDialog, setOpenMoveDialog] = useState(false);
@@ -103,7 +102,7 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
     <>
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={ContextualActionBarTheme}>
-          <AppBar className={classes.appBar}>
+          <StyledAppBar>
             <Toolbar>
               <IconButton
                 className={classes.iconButton}
@@ -132,17 +131,16 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
                 <Icon>delete_outline</Icon>
               </IconButton>
             </Toolbar>
-          </AppBar>
+          </StyledAppBar>
         </ThemeProvider>
       </StyledEngineProvider>
-
       <Dialog
         open={openMoveDialog}
         onClose={() => !moveBooksLoading && setOpenMoveDialog(false)}
       >
         <DialogTitle>Move Books</DialogTitle>
         {moveBooksLoading ? (
-          <DialogContent className={classes.loadingContent}>
+          <DialogContent style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress color="secondary" />
           </DialogContent>
         ) : (
@@ -171,13 +169,12 @@ const SelectBookHeader = (props: SelectBookHeaderProps) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog
         open={openDeleteDialog}
         onClose={() => !deleteBooksLoading && setOpenDeleteDialog(false)}
       >
         <DialogTitle>Delete Books</DialogTitle>
-        <DialogContent className={classes.loadingContent}>
+        <DialogContent style={{ display: 'flex', justifyContent: 'center' }}>
           {deleteBooksLoading && <CircularProgress color="secondary" />}
         </DialogContent>
         <DialogActions>

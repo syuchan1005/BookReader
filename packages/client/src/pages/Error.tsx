@@ -1,39 +1,47 @@
 import { useTitle } from '@client/hooks/useTitle';
-import { Fab, Icon, type Theme, Typography } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { Fab, Icon, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTestId } from '../hooks/useTestId';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    error: {
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    oops: {
-      margin: theme.spacing(2),
-      maxWidth: '70vw',
-      maxHeight: '30vw',
-    },
-    backButton: {
-      marginTop: theme.spacing(3),
-    },
-    backIcon: {
-      transform: 'rotate(-35deg)',
-      marginRight: theme.spacing(0.75),
-      marginLeft: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    },
-  }),
-);
+const PREFIX = 'ErrorComponent';
 
-const ErrorComponent = (props) => {
+const classes = {
+  oops: `${PREFIX}-oops`,
+  backButton: `${PREFIX}-backButton`,
+  backIcon: `${PREFIX}-backIcon`,
+};
+
+const Root = styled('main')(({ theme }) => ({
+  '&': {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  [`& .${classes.oops}`]: {
+    margin: theme.spacing(2),
+    maxWidth: '70vw',
+    maxHeight: '30vw',
+  },
+
+  [`& .${classes.backButton}`]: {
+    marginTop: theme.spacing(3),
+  },
+
+  [`& .${classes.backIcon}`]: {
+    transform: 'rotate(-35deg)',
+    marginRight: theme.spacing(0.75),
+    marginLeft: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+}));
+
+const ErrorComponent = (_props) => {
   useTitle('Error');
-  const classes = useStyles(props);
+
   const navigate = useNavigate();
   const location = useLocation();
   const svgTestId = useTestId('svg');
@@ -41,7 +49,7 @@ const ErrorComponent = (props) => {
   const buttonTestId = useTestId('button');
 
   return (
-    <main className={classes.error}>
+    <Root>
       <svg
         {...svgTestId}
         className={classes.oops}
@@ -76,7 +84,7 @@ const ErrorComponent = (props) => {
         <Icon className={classes.backIcon}>send</Icon>
         Go to homepage
       </Fab>
-    </main>
+    </Root>
   );
 };
 

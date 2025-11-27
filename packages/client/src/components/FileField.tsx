@@ -1,7 +1,4 @@
-import { Button, type Theme } from '@mui/material';
-
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { Button } from '@mui/material';
 
 import { archiveTypes } from '@syuchan1005/book-reader-common';
 import { type CSSProperties, useRef } from 'react';
@@ -15,25 +12,8 @@ interface FileFieldProps {
   style?: CSSProperties;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    fileField: {
-      margin: theme.spacing(1),
-    },
-    fieldLabel: {
-      margin: 0,
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      direction: 'rtl',
-      textAlign: 'left',
-    },
-  }),
-);
-
 const FileField = (props: FileFieldProps) => {
-  const classes = useStyles(props);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { acceptType = 'archive', file, onChange, style } = props;
 
   const onFilePicked = (event) => {
@@ -63,10 +43,20 @@ const FileField = (props: FileFieldProps) => {
   return (
     <Button
       onClick={() => inputRef.current.click()}
-      className={classes.fileField}
-      style={style}
+      sx={(theme) => ({ margin: theme.spacing(1), ...style })}
     >
-      <p className={classes.fieldLabel}>{file ? file.name : 'Upload'}</p>
+      <p
+        style={{
+          margin: 0,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          direction: 'rtl',
+          textAlign: 'left',
+        }}
+      >
+        {file ? file.name : 'Upload'}
+      </p>
       <input
         hidden
         type="file"

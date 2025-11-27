@@ -12,18 +12,9 @@ import { useTitle } from '@client/hooks/useTitle';
 import db, { type Read } from '@client/indexedDb/Database';
 import { workbox } from '@client/registerServiceWorker';
 import { sortBookOrderState } from '@client/store/atoms';
-import {
-  Fab,
-  Icon,
-  IconButton,
-  Menu,
-  MenuItem,
-  type Theme,
-  useTheme,
-} from '@mui/material';
+import { Fab, Icon, IconButton, Menu, MenuItem, useTheme } from '@mui/material';
 import { common } from '@mui/material/colors';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { BookInfoDocument, BookOrder } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
 import {
@@ -37,6 +28,93 @@ import {
 } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 
+const PREFIX = 'Info';
+
+const classes = {
+  infoGrid: `${PREFIX}-infoGrid`,
+  loading: `${PREFIX}-loading`,
+  fab: `${PREFIX}-fab`,
+  addButton: `${PREFIX}-addButton`,
+  selectedBookOverlay: `${PREFIX}-selectedBookOverlay`,
+  selectedBookCheckIcon: `${PREFIX}-selectedBookCheckIcon`,
+};
+
+const Main = styled('main')(({ theme }) => ({
+  '&': {
+    height: '100%',
+    ...commonTheme.appbar(theme, 'paddingTop'),
+  },
+
+  [`& .${classes.infoGrid}`]: {
+    padding: theme.spacing(1),
+    display: 'grid',
+    justifyContent: 'center',
+    gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
+    gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
+    columnGap: theme.spacing(2),
+    rowGap: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
+      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
+    },
+  },
+
+  [`& .${classes.loading}`]: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    whiteSpace: 'pre-line',
+    textAlign: 'center',
+  },
+
+  [`& .${classes.fab}`]: {
+    position: 'fixed',
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
+    right: theme.spacing(2),
+    zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(2),
+    },
+  },
+
+  [`& .${classes.addButton}`]: {
+    position: 'fixed',
+    right: theme.spacing(2),
+    bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
+    background: theme.palette.background.paper,
+    color: theme.palette.secondary.main,
+    zIndex: 2,
+    fallbacks: {
+      bottom: theme.spacing(11),
+    },
+  },
+
+  [`& .${classes.selectedBookOverlay}`]: {
+    position: 'relative',
+    '&::after': {
+      pointerEvents: 'none',
+      backgroundColor: theme.palette.primary.main,
+      opacity: '0.45',
+      content: "''",
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      left: 0,
+      bottom: 0,
+      borderRadius: theme.shape.borderRadius,
+    },
+  },
+
+  [`& .${classes.selectedBookCheckIcon}`]: {
+    color: theme.palette.common.white,
+    marginRight: theme.spacing(1),
+    marginTop: theme.spacing(1),
+  },
+}));
+
 const AddBookDialog = lazy(
   () => import('@client/components/dialogs/AddBookDialog'),
 );
@@ -45,87 +123,15 @@ interface InfoProps {
   children?: ReactElement;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    info: {
-      height: '100%',
-      ...commonTheme.appbar(theme, 'paddingTop'),
-    },
-    infoGrid: {
-      padding: theme.spacing(1),
-      display: 'grid',
-      justifyContent: 'center',
-      gridTemplateColumns: 'repeat(auto-fill, 200px) [end]',
-      gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(200)}px)`,
-      columnGap: theme.spacing(2),
-      rowGap: theme.spacing(2),
-      [theme.breakpoints.down('sm')]: {
-        gridTemplateColumns: 'repeat(auto-fill, 150px) [end]',
-        gridTemplateRows: `repeat(auto-fit, ${pageAspectRatio(150)}px)`,
-      },
-    },
-    loading: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      fontSize: '2rem',
-      whiteSpace: 'pre-line',
-      textAlign: 'center',
-    },
-    fab: {
-      position: 'fixed',
-      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(2)})`,
-      right: theme.spacing(2),
-      zIndex: 2,
-      fallbacks: {
-        bottom: theme.spacing(2),
-      },
-    },
-    addButton: {
-      position: 'fixed',
-      right: theme.spacing(2),
-      bottom: `calc(${commonTheme.safeArea.bottom} + ${theme.spacing(11)})`,
-      background: theme.palette.background.paper,
-      color: theme.palette.secondary.main,
-      zIndex: 2,
-      fallbacks: {
-        bottom: theme.spacing(11),
-      },
-    },
-    selectedBookOverlay: {
-      position: 'relative',
-      '&::after': {
-        pointerEvents: 'none',
-        backgroundColor: theme.palette.primary.main,
-        opacity: '0.45',
-        content: "''",
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        left: 0,
-        bottom: 0,
-        borderRadius: theme.shape.borderRadius,
-      },
-    },
-    selectedBookCheckIcon: {
-      color: theme.palette.common.white,
-      marginRight: theme.spacing(1),
-      marginTop: theme.spacing(1),
-    },
-  }),
-);
-
 const ScreenMode = {
   NORMAL: 'NORMAL',
   SELECT: 'SELECT',
 } as const;
 type ScreenModeType = (typeof ScreenMode)[keyof typeof ScreenMode];
 
-const Info = (props: InfoProps) => {
+const Info = (_props: InfoProps) => {
   const [sortBookOrder, setSortBookOrder] = useAtom(sortBookOrderState);
-  const classes = useStyles(props);
+
   const theme = useTheme();
   const { id: infoId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -307,7 +313,7 @@ const Info = (props: InfoProps) => {
           onMoveBooks={handleSelectBookMutated}
         />
       )}
-      <main className={classes.info}>
+      <Main>
         {loading || (error && !data) ? (
           <div className={classes.loading}>
             {loading && 'Loading'}
@@ -384,7 +390,7 @@ const Info = (props: InfoProps) => {
             onClose={hideAddDialog}
           />
         )}
-      </main>
+      </Main>
     </>
   );
 };

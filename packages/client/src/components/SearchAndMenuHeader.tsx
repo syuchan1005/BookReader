@@ -14,14 +14,11 @@ import {
   MenuItem,
   Popover,
   Select,
-  type Theme,
   Toolbar,
   useTheme,
 } from '@mui/material';
 import { red } from '@mui/material/colors';
-import { alpha } from '@mui/material/styles';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { alpha, styled } from '@mui/material/styles';
 import {
   AvailableSearchModesDocument,
   GenresDocument,
@@ -36,6 +33,88 @@ import {
   useState,
 } from 'react';
 
+const PREFIX = 'SearchAndMenuHeader';
+
+const classes = {
+  appBar: `${PREFIX}-appBar`,
+  search: `${PREFIX}-search`,
+  searchIcon: `${PREFIX}-searchIcon`,
+  inputRoot: `${PREFIX}-inputRoot`,
+  inputInput: `${PREFIX}-inputInput`,
+  sortIcon: `${PREFIX}-sortIcon`,
+  inputFilter: `${PREFIX}-inputFilter`,
+  chips: `${PREFIX}-chips`,
+  chip: `${PREFIX}-chip`,
+};
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  [`&.${classes.appBar}`]: {
+    paddingTop: commonTheme.safeArea.top,
+  },
+
+  [`& .${classes.search}`]: {
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    color: theme.palette.common.white,
+    marginLeft: 0,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(1),
+      width: 'auto',
+    },
+  },
+
+  [`& .${classes.searchIcon}`]: {
+    width: theme.spacing(7),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  [`& .${classes.inputRoot}`]: {
+    color: 'inherit',
+    width: '100%',
+  },
+
+  [`& .${classes.inputInput}`]: {
+    padding: theme.spacing(1, 1, 1, 7),
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: 350,
+    },
+  },
+
+  [`& .${classes.sortIcon}`]: {
+    marginLeft: theme.spacing(1),
+    color: 'white',
+  },
+
+  [`& .${classes.inputFilter}`]: {
+    width: '100%',
+    minWidth: 200,
+    [theme.breakpoints.up('sm')]: {
+      width: 350,
+    },
+  },
+
+  [`& .${classes.chips}`]: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+
+  [`& .${classes.chip}`]: {
+    margin: 2,
+  },
+}));
+
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
   searchText?: string;
@@ -43,70 +122,7 @@ interface SearchAndMenuHeaderProps {
   onChangeSearchText?: (text: string, searchMode: SearchMode) => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    appBar: {
-      paddingTop: commonTheme.safeArea.top,
-    },
-    search: {
-      position: 'relative',
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: alpha(theme.palette.common.white, 0.15),
-      '&:hover': {
-        backgroundColor: alpha(theme.palette.common.white, 0.25),
-      },
-      color: theme.palette.common.white,
-      marginLeft: 0,
-      width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(1),
-        width: 'auto',
-      },
-    },
-    searchIcon: {
-      width: theme.spacing(7),
-      height: '100%',
-      position: 'absolute',
-      pointerEvents: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    inputRoot: {
-      color: 'inherit',
-      width: '100%',
-    },
-    inputInput: {
-      padding: theme.spacing(1, 1, 1, 7),
-      transition: theme.transitions.create('width'),
-      width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        width: 350,
-      },
-    },
-    sortIcon: {
-      marginLeft: theme.spacing(1),
-      color: 'white',
-    },
-    inputFilter: {
-      width: '100%',
-      minWidth: 200,
-      [theme.breakpoints.up('sm')]: {
-        width: 350,
-      },
-    },
-    chips: {
-      display: 'flex',
-      flexWrap: 'wrap',
-    },
-    chip: {
-      margin: 2,
-    },
-  }),
-);
-
 const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
-  const classes = useStyles(props);
   const theme = useTheme();
   const { onClickMenuIcon, searchText, searchMode, onChangeSearchText } = props;
 
@@ -169,7 +185,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const hasSearchFilter = useMemo(() => genres.length > 0, [genres.length]);
 
   return (
-    <AppBar elevation={elevation} className={classes.appBar}>
+    <StyledAppBar elevation={elevation} className={classes.appBar}>
       <Toolbar>
         <div style={{ flexGrow: 1 }} />
         <div className={classes.search}>
@@ -289,7 +305,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
           <Icon>sort</Icon>
         </IconButton>
       </Toolbar>
-    </AppBar>
+    </StyledAppBar>
   );
 };
 

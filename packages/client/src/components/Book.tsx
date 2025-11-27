@@ -16,10 +16,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  type Theme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import {
   type Book as BookType,
   DeleteBooksDocument,
@@ -40,6 +38,75 @@ import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
 import { useDownloadBookDialog } from './dialogs/DownloadBookDialog';
 import SelectBookThumbnailDialog from './dialogs/SelectBookThumbnailDialog';
+
+const PREFIX = 'Book';
+
+const classes = {
+  card: `${PREFIX}-card`,
+  cardContent: `${PREFIX}-cardContent`,
+  labelContainer: `${PREFIX}-labelContainer`,
+  readLabel: `${PREFIX}-readLabel`,
+  newLabel: `${PREFIX}-newLabel`,
+  headerMenu: `${PREFIX}-headerMenu`,
+  link: `${PREFIX}-link`,
+};
+
+const Root = styled('div')(({ theme }) => ({
+  [`& .${classes.card}`]: {
+    width: '100%',
+    maxHeight: '100%',
+    margin: 'auto',
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+
+  [`& .${classes.cardContent}`]: {
+    position: 'absolute',
+    bottom: '0',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: theme.spacing(1),
+    borderTopRightRadius: theme.spacing(0.5),
+  },
+
+  [`& .${classes.labelContainer}`]: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    display: 'flex',
+  },
+
+  [`& .${classes.readLabel}`]: {
+    marginLeft: theme.spacing(1),
+    background: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+  },
+
+  [`& .${classes.newLabel}`]: {
+    marginTop: theme.spacing(0.5),
+    marginLeft: theme.spacing(0.5),
+    color: 'white',
+    textShadow: '1px 1px 2px black',
+  },
+
+  [`& .${classes.headerMenu}`]: {
+    position: 'absolute',
+    zIndex: 1,
+    padding: 0,
+  },
+
+  [`& .${classes.link}`]: {
+    width: '100%',
+    color: 'unset',
+    textDecoration: 'unset',
+  },
+}));
 
 const DownloadZipDialog = lazy(
   () => import('@client/components/dialogs/DownloadZipBookDialog'),
@@ -70,65 +137,11 @@ interface BookProps
   children?: ReactNode;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    card: {
-      width: '100%',
-      maxHeight: '100%',
-      margin: 'auto',
-      display: 'flex',
-      justifyContent: 'flex-end',
-    },
-    cardContent: {
-      position: 'absolute',
-      bottom: '0',
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      fontSize: '1rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: theme.spacing(1),
-      borderTopRightRadius: theme.spacing(0.5),
-    },
-    labelContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      display: 'flex',
-    },
-    readLabel: {
-      marginLeft: theme.spacing(1),
-      background: theme.palette.secondary.main,
-      color: theme.palette.secondary.contrastText,
-      padding: theme.spacing(1),
-      borderRadius: theme.spacing(1),
-    },
-    newLabel: {
-      marginTop: theme.spacing(0.5),
-      marginLeft: theme.spacing(0.5),
-      color: 'white',
-      textShadow: '1px 1px 2px black',
-    },
-    headerMenu: {
-      position: 'absolute',
-      zIndex: 1,
-      padding: 0,
-    },
-    link: {
-      width: '100%',
-      color: 'unset',
-      textDecoration: 'unset',
-    },
-  }),
-);
-
 const NEW_BOOK_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const Book = (props: BookProps) => {
-  const classes = useStyles(props);
   const location = useLocation();
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement>(null);
   const {
     infoId,
     name,
@@ -325,7 +338,7 @@ const Book = (props: BookProps) => {
   });
 
   return (
-    <div
+    <Root
       ref={ref}
       style={{
         width: thumbnailSize,
@@ -458,7 +471,7 @@ const Book = (props: BookProps) => {
           {downloadDownloadDialog}
         </Card>
       )}
-    </div>
+    </Root>
   );
 };
 

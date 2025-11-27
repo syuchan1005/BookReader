@@ -7,10 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  type Theme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import {
   AddBookInfoDocument,
   type HomeBookInfoFragment,
@@ -25,43 +22,7 @@ interface AddBookInfoDialogProps {
   onClose?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    dialog: {
-      width: '100%',
-      height: '100%',
-    },
-    addContent: {
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    listItem: {
-      width: '100%',
-      display: 'grid',
-      gridTemplateColumns: '1fr 50px 48px',
-      marginBottom: theme.spacing(0.5),
-    },
-    historyListItem: {
-      width: '100%',
-      display: 'grid',
-      gridColumnGap: theme.spacing(1),
-      gridTemplateColumns: '1fr 55px 30px',
-    },
-    addBookInfoProgress: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    },
-    progressMessage: {
-      marginTop: theme.spacing(2),
-      gridColumn: '1 / end',
-      textAlign: 'center',
-    },
-  }),
-);
-
 const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
-  const classes = useStyles(props);
   const { onAdded, onClose, open, name: argName } = props;
   const [name, setName] = useState('');
   const [selectGenres, setSelectGenres] = useState<string[]>([]);
@@ -97,13 +58,18 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
   return (
     <Dialog open={open} onClose={() => !loading && closeDialog()}>
       <DialogTitle>Add book info</DialogTitle>
-
       {loading ? (
-        <DialogContent className={classes.addBookInfoProgress}>
+        <DialogContent
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
           <CircularProgress color="secondary" />
         </DialogContent>
       ) : (
-        <DialogContent className={classes.addContent}>
+        <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
           <GenresSelect
             showAdd
             value={selectGenres}
@@ -118,7 +84,6 @@ const AddBookInfoDialog = (props: AddBookInfoDialogProps) => {
           />
         </DialogContent>
       )}
-
       <DialogActions>
         <div style={{ flex: 1 }} />
 

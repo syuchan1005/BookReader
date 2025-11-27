@@ -61,7 +61,7 @@ export function useLongTap(
 ): LongTapResult {
   const isLongTapActive = useRef(false);
   const isPressed = useRef(false);
-  const timer = useRef<NodeJS.Timeout>();
+  const timer = useRef<NodeJS.Timeout>(null);
   const savedCallback = useRef(callback);
   const startPosition = useRef<Coordinates>(null);
 

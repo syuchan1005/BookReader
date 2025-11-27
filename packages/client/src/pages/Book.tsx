@@ -1,6 +1,4 @@
-import type { Theme } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import JSZip from 'jszip';
 import {
   type CSSProperties,
@@ -49,6 +47,79 @@ import {
 import { useWindowSize } from 'react-use';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
+const PREFIX = 'Book';
+
+const classes = {
+  book: `${PREFIX}-book`,
+  page: `${PREFIX}-page`,
+  pageContainer: `${PREFIX}-pageContainer`,
+  loading: `${PREFIX}-loading`,
+  pageProgress: `${PREFIX}-pageProgress`,
+};
+
+const Main = styled('main')(({ theme }) => ({
+  [`&.${classes.book}`]: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: theme.palette.grey['900'],
+  },
+
+  [`& .${classes.page}`]: {
+    width: '100%',
+    minWidth: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  [`& .${classes.pageContainer}`]: {
+    width: '100%',
+    height: '100%',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden',
+    listStyle: 'none',
+    padding: 0,
+    '& > .swiper-wrapper': {
+      zIndex: 'inherit',
+    },
+    '& .swiper-slide > *': {
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    '& .swiper-slide.start > *': {
+      justifyContent: 'flex-start',
+    },
+    '& .swiper-slide.end > *': {
+      justifyContent: 'flex-end',
+    },
+  },
+
+  [`& .${classes.loading}`]: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    whiteSpace: 'pre-line',
+    textAlign: 'center',
+  },
+
+  [`& .${classes.pageProgress}`]: {
+    display: 'inline-flex',
+    position: 'absolute',
+    width: '100%',
+    height: theme.spacing(0.5),
+    bottom: 0,
+    '& > div': {
+      height: 'inherit',
+      background: theme.palette.secondary.main,
+    },
+  },
+}));
+
 const EditPagesDialog = lazy(
   () => import('@client/components/dialogs/EditPagesDialog'),
 );
@@ -56,72 +127,6 @@ const EditPagesDialog = lazy(
 interface BookProps {
   children?: ReactElement;
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    '@global': {
-      body: {
-        overflow: 'hidden',
-      },
-    },
-    book: {
-      width: '100%',
-      height: '100%',
-      backgroundColor: theme.palette.grey['900'],
-    },
-    page: {
-      width: '100%',
-      minWidth: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    pageContainer: {
-      width: '100%',
-      height: '100%',
-      margin: '0 auto',
-      position: 'relative',
-      overflow: 'hidden',
-      listStyle: 'none',
-      padding: 0,
-      '& > .swiper-wrapper': {
-        zIndex: 'inherit',
-      },
-      '& .swiper-slide > *': {
-        display: 'flex',
-        justifyContent: 'center',
-      },
-      '& .swiper-slide.start > *': {
-        justifyContent: 'flex-start',
-      },
-      '& .swiper-slide.end > *': {
-        justifyContent: 'flex-end',
-      },
-    },
-    loading: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      fontSize: '2rem',
-      whiteSpace: 'pre-line',
-      textAlign: 'center',
-    },
-    pageProgress: {
-      display: 'inline-flex',
-      position: 'absolute',
-      width: '100%',
-      height: theme.spacing(0.5),
-      bottom: 0,
-      '& > div': {
-        height: 'inherit',
-        background: theme.palette.secondary.main,
-      },
-    },
-  }),
-);
 
 const useDatabasePage = (
   bookId: string,
@@ -224,11 +229,11 @@ const NextPageStyleMap: { [p: PageStyles]: PageStyles } = {
   FullSpreadPlusOne: 'SinglePage',
 };
 
-const Book = (props: BookProps) => {
+const Book = (_props: BookProps) => {
   const readOrder = useAtomValue(readOrderState);
   const showOriginalImage = useAtomValue(showOriginalImageState);
   const pageImageEffect = useAtomValue(pageImageEffectState);
-  const classes = useStyles(props);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -469,14 +474,14 @@ const Book = (props: BookProps) => {
     return (
       <>
         <TitleAndBackHeader title="Book" />
-        <main>
+        <Main>
           <div className={classes.loading}>
             <div>
               {loading && 'Loading'}
               {error && `${error.toString().replace(/:\s*/g, '\n')}`}
             </div>
           </div>
-        </main>
+        </Main>
       </>
     );
   }
@@ -491,8 +496,7 @@ const Book = (props: BookProps) => {
         />
       )}
 
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
-      <main className={classes.book} onClick={clickPage}>
+      <Main className={classes.book} onClick={clickPage}>
         {canMountEditDialog && (
           <Suspense>
             <EditPagesDialog
@@ -545,7 +549,7 @@ const Book = (props: BookProps) => {
         >
           <div style={{ width: `${(page / (maxPage - 1)) * 100}%` }} />
         </div>
-      </main>
+      </Main>
     </>
   );
 };

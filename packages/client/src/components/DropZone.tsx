@@ -1,8 +1,6 @@
 import { useOS } from '@client/hooks/useOS';
-import type { Theme } from '@mui/material';
+import { Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import { archiveTypes } from '@syuchan1005/book-reader-common';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -19,29 +17,11 @@ interface FileFieldProps {
   ) => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    dropZone: {
-      marginTop: theme.spacing(1),
-      width: '100%',
-      border: `dashed ${theme.spacing(0.25)} ${grey[600]}`,
-      padding: theme.spacing(1),
-      '&.dragging': {
-        background: grey[200],
-      },
-      '& > p': {
-        pointerEvents: 'none',
-      },
-    },
-  }),
-);
-
 const DropZone = (props: FileFieldProps) => {
-  const classes = useStyles(props);
   const { onChange } = props;
 
   const [width, setWidth] = useState(undefined);
-  const ref = useRef<HTMLDivElement>();
+  const ref = useRef<HTMLDivElement>(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onChange,
@@ -62,10 +42,22 @@ const DropZone = (props: FileFieldProps) => {
     .map((a) => `.${a}`)
     .join(',')}`;
   return (
-    <div
+    <Box
       {...getRootProps()}
-      className={`${classes.dropZone}${isDragActive ? ' dragging' : ''}`}
-      style={{ minWidth: width }}
+      className={`${isDragActive ? ' dragging' : ''}`}
+      sx={(theme) => ({
+        marginTop: theme.spacing(1),
+        width: '100%',
+        border: `dashed ${theme.spacing(0.25)} ${grey[600]}`,
+        padding: theme.spacing(1),
+        '&.dragging': {
+          background: grey[200],
+        },
+        '& > p': {
+          pointerEvents: 'none',
+        },
+        minWidth: width,
+      })}
       ref={ref}
     >
       <input
@@ -77,7 +69,7 @@ const DropZone = (props: FileFieldProps) => {
       ) : (
         <p>Drag and drop some files here, or click to select files</p>
       )}
-    </div>
+    </Box>
   );
 };
 

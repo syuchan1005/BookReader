@@ -8,10 +8,7 @@ import {
   IconButton,
   InputAdornment,
   TextField,
-  type Theme,
 } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import { useCallback } from 'react';
 import GenresSelect from '../GenresSelect';
 
@@ -30,18 +27,6 @@ interface EditDialogProps {
   onClose?: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    content: {
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    checkbox: {
-      marginBottom: theme.spacing(1),
-    },
-  }),
-);
-
 const defaultGenres = [];
 
 const EditDialog = (props: EditDialogProps) => {
@@ -56,7 +41,6 @@ const EditDialog = (props: EditDialogProps) => {
     onClickEdit,
     onClose,
   } = props;
-  const classes = useStyles(props);
 
   const handleChangeGenres = useCallback(
     (g) => {
@@ -79,7 +63,7 @@ const EditDialog = (props: EditDialogProps) => {
   return (
     <Dialog open={open} onClose={() => !loading && onClose && onClose()}>
       <DialogTitle>{`Edit ${info ? 'book info' : 'book'}`}</DialogTitle>
-      <DialogContent className={classes.content}>
+      <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
         {info && (
           <GenresSelect
             value={genres ?? defaultGenres}

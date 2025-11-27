@@ -16,14 +16,74 @@ import {
   MenuItem,
   Slider,
   StyledEngineProvider,
-  type Theme,
   ThemeProvider,
 } from '@mui/material';
 import { orange } from '@mui/material/colors';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { useAtom } from 'jotai';
 import { type MouseEventHandler, useCallback } from 'react';
+
+const PREFIX = 'BookPageOverlay';
+
+const classes = {
+  overlay: `${PREFIX}-overlay`,
+  overlayContent: `${PREFIX}-overlayContent`,
+  bottomSlider: `${PREFIX}-bottomSlider`,
+};
+
+const Root = styled('div')(({ theme }) => ({
+  [`&.${classes.overlay}`]: {
+    zIndex: 2,
+    top: '0',
+    position: 'fixed',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    userSelect: 'none',
+  },
+
+  [`& .${classes.overlayContent}`]: {
+    userSelect: 'none',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    display: 'grid',
+    gridTemplateRows: '1fr',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    '& > div': {
+      textAlign: 'center',
+    },
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+    position: 'absolute',
+    '&.top': {
+      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}`),
+      whiteSpace: 'nowrap',
+    },
+    '&.bottom': {
+      width: '80%',
+      gridTemplateRows: 'auto auto',
+      gridTemplateColumns: '1fr 1fr 1fr 1fr',
+      bottom: theme.spacing(2),
+    },
+    '&.center': {
+      background: 'inherit',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'column',
+      '& > button + button': {
+        marginTop: theme.spacing(1),
+      },
+    },
+  },
+
+  [`& .${classes.bottomSlider}`]: {
+    gridColumn: '1 / span 4',
+    margin: theme.spacing(0, 2),
+  },
+}));
 
 interface BookPageOverlayProps {
   currentPage: number;
@@ -36,66 +96,11 @@ interface BookPageOverlayProps {
   onEditClick: () => void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    overlay: {
-      zIndex: 2,
-      top: '0',
-      position: 'fixed',
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      userSelect: 'none',
-    },
-    overlayContent: {
-      userSelect: 'none',
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      display: 'grid',
-      gridTemplateRows: '1fr',
-      gridTemplateColumns: '1fr 1fr 1fr',
-      '& > div': {
-        textAlign: 'center',
-      },
-      padding: theme.spacing(1),
-      borderRadius: theme.spacing(1),
-      position: 'absolute',
-      '&.top': {
-        ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}`),
-        whiteSpace: 'nowrap',
-      },
-      '&.bottom': {
-        width: '80%',
-        gridTemplateRows: 'auto auto',
-        gridTemplateColumns: '1fr 1fr 1fr 1fr',
-        bottom: theme.spacing(2),
-      },
-      '&.center': {
-        background: 'inherit',
-        height: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-        '& > button + button': {
-          marginTop: theme.spacing(1),
-        },
-      },
-    },
-    bottomSlider: {
-      gridColumn: '1 / span 4',
-      margin: theme.spacing(0, 2),
-    },
-  }),
-);
-
 const stopPropagationListener: MouseEventHandler<unknown> = (e) => {
   e.stopPropagation();
 };
 
 const BookPageOverlay = (props: BookPageOverlayProps) => {
-  const classes = useStyles(props);
   const {
     currentPage,
     maxPages,
@@ -157,7 +162,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
   );
 
   return (
-    <div className={classes.overlay}>
+    <Root className={classes.overlay}>
       <div className={`${classes.overlayContent} center`}>
         {goPreviousBook && currentPage === 0 && (
           <Button
@@ -335,7 +340,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           </div>
         )}
       </div>
-    </div>
+    </Root>
   );
 };
 

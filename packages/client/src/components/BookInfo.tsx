@@ -15,11 +15,9 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  type Theme,
 } from '@mui/material';
 import { yellow } from '@mui/material/colors';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import {
   DeleteBookInfoDocument,
   EditBookInfoDocument,
@@ -39,6 +37,121 @@ import { Link, useLocation } from 'react-router-dom';
 import BookPageImage, { pageAspectRatio } from './BookPageImage';
 import { useConfirmDialog } from './dialogs/ConfirmDialog';
 import SelectBookInfoThumbnailDialog from './dialogs/SelectBookInfoThumbnailDialog';
+
+const PREFIX = 'BookInfo';
+
+const classes = {
+  card: `${PREFIX}-card`,
+  countLabel: `${PREFIX}-countLabel`,
+  headerMenu: `${PREFIX}-headerMenu`,
+  completedLabel: `${PREFIX}-completedLabel`,
+  invisibleLabel: `${PREFIX}-invisibleLabel`,
+  newLabel: `${PREFIX}-newLabel`,
+  cardContent: `${PREFIX}-cardContent`,
+  link: `${PREFIX}-link`,
+  labelContainer: `${PREFIX}-labelContainer`,
+  readLabel: `${PREFIX}-readLabel`,
+};
+
+const Root = styled('div')(({ theme }) => ({
+  [`& .${classes.card}`]: {
+    width: '100%',
+    maxHeight: '100%',
+    margin: 'auto',
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+
+  [`& .${classes.countLabel}`]: {
+    position: 'absolute',
+    bottom: '0',
+    right: '0',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
+    width: '2rem',
+    height: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderRadius: '50%',
+  },
+
+  [`& .${classes.headerMenu}`]: {
+    position: 'absolute',
+    zIndex: 1,
+    padding: 0,
+  },
+
+  [`& .${classes.completedLabel}`]: {
+    position: 'absolute',
+    bottom: theme.spacing(2),
+    left: theme.spacing(-4),
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
+    height: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(1, 3),
+    transform: 'rotate(45deg)',
+  },
+
+  [`& .${classes.invisibleLabel}`]: {
+    position: 'absolute',
+    right: theme.spacing(1.5),
+    bottom: `calc(2rem + ${theme.spacing(1)})`,
+    color: 'white',
+    textShadow: '1px 1px 1px black',
+  },
+
+  [`& .${classes.newLabel}`]: {
+    position: 'absolute',
+    top: theme.spacing(1.5),
+    left: theme.spacing(1.5),
+    color: 'white',
+    textShadow: '1px 1px 2px black',
+  },
+
+  [`& .${classes.cardContent}`]: {
+    position: 'absolute',
+    bottom: '0',
+    background: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    fontSize: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: theme.spacing(1),
+    borderTopRightRadius: theme.spacing(0.5),
+  },
+
+  [`& .${classes.link}`]: {
+    width: '100%',
+    color: 'unset',
+    textDecoration: 'unset',
+  },
+
+  [`& .${classes.labelContainer}`]: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    display: 'flex',
+  },
+
+  [`& .${classes.readLabel}`]: {
+    marginLeft: theme.spacing(1),
+    background: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+  },
+}));
 
 const DownloadZipDialog = lazy(
   () => import('@client/components/dialogs/DownloadZipBookInfoDialog'),
@@ -63,99 +176,6 @@ interface BookInfoProps
   ) => void;
   visibleMargin?: string;
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    card: {
-      width: '100%',
-      maxHeight: '100%',
-      margin: 'auto',
-      display: 'flex',
-      justifyContent: 'flex-end',
-    },
-    countLabel: {
-      position: 'absolute',
-      bottom: '0',
-      right: '0',
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      fontSize: '1rem',
-      width: '2rem',
-      height: '2rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing(1),
-      margin: theme.spacing(1),
-      borderRadius: '50%',
-    },
-    headerMenu: {
-      position: 'absolute',
-      zIndex: 1,
-      padding: 0,
-    },
-    completedLabel: {
-      position: 'absolute',
-      bottom: theme.spacing(2),
-      left: theme.spacing(-4),
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      fontSize: '1rem',
-      height: '2rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing(1, 3),
-      transform: 'rotate(45deg)',
-    },
-    invisibleLabel: {
-      position: 'absolute',
-      right: theme.spacing(1.5),
-      bottom: `calc(2rem + ${theme.spacing(1)})`,
-      color: 'white',
-      textShadow: '1px 1px 1px black',
-    },
-    newLabel: {
-      position: 'absolute',
-      top: theme.spacing(1.5),
-      left: theme.spacing(1.5),
-      color: 'white',
-      textShadow: '1px 1px 2px black',
-    },
-    cardContent: {
-      position: 'absolute',
-      bottom: '0',
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      fontSize: '1rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: theme.spacing(1),
-      borderTopRightRadius: theme.spacing(0.5),
-    },
-    link: {
-      width: '100%',
-      color: 'unset',
-      textDecoration: 'unset',
-    },
-    labelContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      display: 'flex',
-    },
-    readLabel: {
-      marginLeft: theme.spacing(1),
-      background: theme.palette.secondary.main,
-      color: theme.palette.secondary.contrastText,
-      padding: theme.spacing(1),
-      borderRadius: theme.spacing(1),
-    },
-  }),
-);
 
 const useFavorite = (
   infoId: string,
@@ -190,7 +210,6 @@ const useFavorite = (
 const NEW_BOOK_INFO_EXPIRED = 24 * 60 * 60 * 1000; // 1 day
 
 const BookInfo = (props: BookInfoProps) => {
-  const classes = useStyles(props);
   const location = useLocation();
   const ref = useRef<HTMLDivElement>(null);
   const {
@@ -354,7 +373,7 @@ const BookInfo = (props: BookInfoProps) => {
   };
 
   return (
-    <div
+    <Root
       ref={ref}
       style={{
         width: thumbnailSize,
@@ -484,7 +503,7 @@ const BookInfo = (props: BookInfoProps) => {
           {removeReadingHistoryDialog}
         </Card>
       )}
-    </div>
+    </Root>
   );
 };
 
