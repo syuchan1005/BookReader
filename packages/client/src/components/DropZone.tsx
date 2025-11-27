@@ -1,6 +1,5 @@
 import { useOS } from '@client/hooks/useOS';
 import { Box } from '@mui/material';
-import { grey } from '@mui/material/colors';
 import { archiveTypes } from '@syuchan1005/book-reader-common';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -48,10 +47,10 @@ const DropZone = (props: FileFieldProps) => {
       sx={(theme) => ({
         marginTop: theme.spacing(1),
         width: '100%',
-        border: `dashed ${theme.spacing(0.25)} ${grey[600]}`,
+        border: `dashed ${theme.spacing(0.25)} ${theme.palette.grey[600]}`,
         padding: theme.spacing(1),
         '&.dragging': {
-          background: grey[200],
+          background: theme.palette.grey[200],
         },
         '& > p': {
           pointerEvents: 'none',

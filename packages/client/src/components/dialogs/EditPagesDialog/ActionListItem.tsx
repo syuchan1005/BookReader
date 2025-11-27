@@ -16,6 +16,7 @@ import {
   Icon,
   IconButton,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
@@ -320,12 +321,12 @@ export const AddItemListItem = (props: AddItemListItemProps) => {
   const [anchorEl, setAnchorEl] = useState(null);
   return (
     <>
-      <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
+      <ListItemButton onClick={(e) => setAnchorEl(e.currentTarget)}>
         <ListItemIcon>
           <Icon>add</Icon>
         </ListItemIcon>
         <ListItemText primary="Add Action" />
-      </ListItem>
+      </ListItemButton>
       <Menu
         anchorEl={anchorEl}
         open={!!anchorEl}
@@ -458,12 +459,12 @@ export const AddTemplateListItem = (props: AddTemplateListItemProps) => {
   }, []);
   return (
     <>
-      <ListItem onClick={(e) => setAnchorEl(e.currentTarget)} button>
+      <ListItemButton onClick={(e) => setAnchorEl(e.currentTarget)}>
         <ListItemIcon>
           <Icon>add</Icon>
         </ListItemIcon>
         <ListItemText primary="Use Template" />
-      </ListItem>
+      </ListItemButton>
       <Menu
         anchorEl={anchorEl}
         open={!!anchorEl}

@@ -44,7 +44,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@graphql-codegen/typescript-react-apollo": "^4.3.3",
-    "@mui/material": "^5.11.4",
+    "@mui/material": "^6.5.0",
     "apollo-upload-client": "^19.0.0",
     "apollo3-cache-persist": "^0.15.0",
     "dexie": "^4.2.1",

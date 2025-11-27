@@ -438,13 +438,12 @@ const BookInfo = (props: BookInfoProps) => {
               ) : null}
               {isFavorite && (
                 <Icon
-                  sx={{
+                  sx={(theme) => ({
                     position: 'absolute',
-                    right: (t) => t.spacing(1.5),
-                    bottom: (t) =>
-                      `calc(2rem + ${t.spacing(hasInvisibleGenre ? 4 : 1)})`,
+                    right: theme.spacing(1.5),
+                    bottom: `calc(2rem + ${theme.spacing(hasInvisibleGenre ? 4 : 1)})`,
                     color: yellow[700],
-                  }}
+                  })}
                 >
                   star
                 </Icon>
