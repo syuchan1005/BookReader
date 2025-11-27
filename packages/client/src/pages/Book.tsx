@@ -13,7 +13,7 @@ import {
   useState,
 } from 'react';
 
-import { Keyboard, Virtual } from 'swiper';
+import { Keyboard, Virtual } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/keyboard';
 import 'swiper/css/virtual';
