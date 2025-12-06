@@ -35,9 +35,9 @@ const createAuthRouter = (path: string) => {
     // @ts-expect-error
     const isAuthenticated = req.session.passport !== undefined;
     if (!oidcConfig || isAuthenticated) {
-      res.redirect(200, '/');
+      res.redirect('/');
     } else {
-      res.redirect(401, `${path}/oidc`);
+      res.redirect(`${path}/oidc`);
     }
   });
 
