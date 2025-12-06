@@ -1,4 +1,4 @@
-FROM node:25.1.0-slim AS base
+FROM node:25.2.1-slim AS base
 
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
