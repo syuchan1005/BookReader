@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "jsx": "react-jsx",
     "target": "es2024",
     "module": "esnext",
@@ -11,8 +10,8 @@
     "downlevelIteration": true,
     "outDir": "./dist",
     "paths": {
-      "@client/*": ["src/*"],
-      "@syuchan1005/book-reader-graphql": ["generated/GQLQueries.ts"]
+      "@client/*": ["./src/*"],
+      "@syuchan1005/book-reader-graphql": ["./generated/GQLQueries.ts"]
     }
   }
 }

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "lib": ["ES2024", "DOM"],
     "module": "ESNext",
     "moduleResolution": "node",
@@ -12,9 +11,9 @@
     "skipLibCheck": true,
     "noImplicitAny": false,
     "paths": {
-      "@server/*": ["src/*"],
-      "natural-orderby": ["src/sort"],
-      "@syuchan1005/book-reader-graphql": ["generated/GQLResolvers.ts"]
+      "@server/*": ["./src/*"],
+      "natural-orderby": ["./src/sort"],
+      "@syuchan1005/book-reader-graphql": ["./generated/GQLResolvers.ts"]
     }
   },
   "include": ["src/*"],
