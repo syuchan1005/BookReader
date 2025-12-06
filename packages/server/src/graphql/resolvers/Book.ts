@@ -213,44 +213,65 @@ export const resolvers: Resolvers & {
           totalPageCount: 0,
         });
 
-        const addedNums = [];
-        const results = await asyncMap(bookFolders, async (p, i) => {
-          const folderPath = path.join(tempPath, booksFolderPath, p);
-          const numsMatch = p.match(/\d+/g);
-          let nums: string;
-          if (numsMatch) {
-            nums = Number(numsMatch[numsMatch.length - 1]).toString(10);
-          } else {
-            nums = `${i + 1}`;
-          }
-
-          if (addedNums.includes(nums)) {
-            nums = `[DUP]${nums}: ${p}`;
-          }
-
-          await publishAddBooksSubscriptionThrottle(infoId, {
-            type: AddBooksSubscriptionType.Moving,
-            bookNumber: nums,
-            movedPageCount: 0,
-            totalPageCount: 0,
+        const sortedBookFolders = bookFolders
+          .map((folder, i) => {
+            const numsMatch = folder.match(/\d+/g);
+            let nums: string;
+            if (numsMatch) {
+              nums = Number(numsMatch[numsMatch.length - 1]).toString(10);
+            } else {
+              nums = `${i + 1}`;
+            }
+            return { folder, nums };
+          })
+          .sort((a, b) => {
+            const numA = parseInt(a.nums, 10);
+            const numB = parseInt(b.nums, 10);
+            if (Number.isNaN(numA) && Number.isNaN(numB)) {
+              return a.nums.localeCompare(b.nums);
+            }
+            if (Number.isNaN(numA)) {
+              return 1;
+            }
+            if (Number.isNaN(numB)) {
+              return -1;
+            }
+            return numA - numB;
           });
+        const addedNums = [];
+        const results = await asyncMap(
+          sortedBookFolders,
+          async ({ folder, nums }) => {
+            const folderPath = path.join(tempPath, booksFolderPath, folder);
+            let bookNumber = nums;
+            if (addedNums.includes(bookNumber)) {
+              bookNumber = `[DUP]${bookNumber}: ${folder}`;
+            }
 
-          addedNums.push(nums);
-          return GQLUtil.addBookFromLocalPath(
-            folderPath,
-            infoId,
-            generateId(),
-            nums,
-            (current, total) => {
-              publishAddBooksSubscriptionThrottle(infoId, {
-                type: AddBooksSubscriptionType.Moving,
-                bookNumber: nums,
-                movedPageCount: current,
-                totalPageCount: total,
-              });
-            },
-          );
-        });
+            await publishAddBooksSubscriptionThrottle(infoId, {
+              type: AddBooksSubscriptionType.Moving,
+              bookNumber: bookNumber,
+              movedPageCount: 0,
+              totalPageCount: 0,
+            });
+
+            addedNums.push(bookNumber);
+            return GQLUtil.addBookFromLocalPath(
+              folderPath,
+              infoId,
+              generateId(),
+              bookNumber,
+              (current, total) => {
+                publishAddBooksSubscriptionThrottle(infoId, {
+                  type: AddBooksSubscriptionType.Moving,
+                  bookNumber: bookNumber,
+                  movedPageCount: current,
+                  totalPageCount: total,
+                });
+              },
+            );
+          },
+        );
         return {
           success: true,
           bookResults: results,
