@@ -43,7 +43,7 @@ const createAuthRouter = (path: string) => {
 
   router.get('/logout', (req, res) => {
     req.logout(() => {});
-    res.sendStatus(200);
+    res.redirect('/');
   });
 
   if (oidcConfig) {
@@ -79,6 +79,6 @@ export const isAuthenticatedMiddleware = (
   if (!oidcConfig || req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/auth');
+  res.sendStatus(401);
   return;
 };
