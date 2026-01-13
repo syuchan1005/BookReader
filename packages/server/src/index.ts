@@ -13,8 +13,8 @@ import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
 import http from 'http';
-import Redis from 'ioredis';
 import morgan from 'morgan';
+import { createClient } from 'redis';
 import {
   init as initAuth,
   initRoutes as initAuthRoutes,
@@ -72,18 +72,11 @@ import { getOrConvertImage } from './ImageUtil';
 
   app.use(cors());
 
-  let sessionStoreOption: Record<string, unknown> | undefined;
-  try {
-    sessionStoreOption = JSON.parse(process.env.BOOKREADER_SESSION_STORE);
-  } catch (_e) {
-    sessionStoreOption = undefined;
-  }
+  const sessionStoreConfig = process.env.BOOKREADER_SESSION_STORE || '';
   let sessionStore: session.Store | undefined;
-  if (sessionStoreOption && sessionStoreOption.type === 'redis') {
-    const redisClient = new Redis({
-      port: 6379,
-      ...sessionStoreOption,
-    });
+  if (sessionStoreConfig.startsWith('redis://')) {
+    const redisClient = createClient({ url: sessionStoreConfig });
+    await redisClient.connect();
     sessionStore = new RedisStore({ client: redisClient });
   }
 
@@ -107,7 +100,7 @@ import { getOrConvertImage } from './ImageUtil';
   const requireAuthRouter = express.Router();
   for (const folderPath of StorageDataManager.getStaticFolders()) {
     requireAuthRouter.use(
-'/book',
+      '/book',
       isAuthenticatedMiddleware,
       express.static(folderPath),
     );
