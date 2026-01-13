@@ -15,7 +15,6 @@ import type {
 
 const storageBasePath = 'storage';
 export const bookFolderPath = join(storageBasePath, 'book');
-const cacheFolderPath = join(storageBasePath, 'cache');
 const cacheBookFolderName = join(storageBasePath, 'cache', 'book');
 const downloadFolderName = join(storageBasePath, 'downloads');
 const userDownloadFolderName = 'downloads';
@@ -38,7 +37,7 @@ export class LocalStorageDataManager implements IStorageDataManager {
   }
 
   getStaticFolders(): string[] {
-    return [storageBasePath, cacheFolderPath];
+    return [bookFolderPath, cacheBookFolderName];
   }
 
   async getOriginalPageData({

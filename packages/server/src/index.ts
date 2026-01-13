@@ -107,6 +107,7 @@ import { getOrConvertImage } from './ImageUtil';
   const requireAuthRouter = express.Router();
   for (const folderPath of StorageDataManager.getStaticFolders()) {
     requireAuthRouter.use(
+'/book',
       isAuthenticatedMiddleware,
       express.static(folderPath),
     );

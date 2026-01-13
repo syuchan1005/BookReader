@@ -59,7 +59,7 @@ const createAuthRouter = (path: string) => {
     router.get(
       '/oidc/callback',
       passport.authenticate('openidconnect', {
-        failureRedirect: 'oidc',
+        failureRedirect: '/auth',
         keepSessionInfo: true,
       }),
       (req, res) => {
