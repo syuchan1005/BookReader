@@ -149,7 +149,7 @@ const Home = (_props: HomeProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const searchText = useMemo(() => searchParams.get('search'), [searchParams]);
+  const [searchText, _setSearchText] = useState(searchParams.get('search'));
   const setSearchText = useCallback(
     (text?: string, type: 'push' | 'replace' = 'replace') => {
       const urlSearchParams = new URLSearchParams(searchParams);
@@ -162,6 +162,7 @@ const Home = (_props: HomeProps) => {
         replace: type === 'replace',
         state: location.state,
       });
+      _setSearchText(text);
     },
     [searchParams, setSearchParams, location],
   );
