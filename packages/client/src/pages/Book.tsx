@@ -537,6 +537,7 @@ const Book = (_props: BookProps) => {
           onPageUpdated={updatePage}
           onKeyPress={setHideAppBar}
           showSliderImage={showSliderImage}
+          goNextBook={goNextBook}
         />
 
         <div
@@ -693,6 +694,21 @@ const useBookData = (props: {
     }
   }, [onError, error]);
 
+  const OnlineBookPageComponent = useCallback(
+    (props: ImageComponentProps) => (
+      <BookPageImage
+        {...props}
+        {...props.imageSize}
+        bookId={bookId}
+        bookPageCount={data?.book?.pages || 0}
+        alt={(props.pageIndex + 1).toString(10)}
+        loading="eager"
+        sizeDebounceDelay={300}
+      />
+    ),
+    [bookId, data],
+  );
+
   if (downloadedBook === undefined) {
     return {
       loading: true,
@@ -723,17 +739,7 @@ const useBookData = (props: {
     error,
     data: convertedData,
     refetch,
-    ImageComponent: (props) => (
-      <BookPageImage
-        {...props}
-        {...props.imageSize}
-        bookId={bookId}
-        bookPageCount={data.book?.pages || 0}
-        alt={(props.pageIndex + 1).toString(10)}
-        loading="eager"
-        sizeDebounceDelay={300}
-      />
-    ),
+    ImageComponent: OnlineBookPageComponent,
   };
 };
 
@@ -778,6 +784,7 @@ type SwiperSliderProp = {
 
   onPageUpdated: (page: number) => void;
   onKeyPress: () => void;
+  goNextBook?: () => void;
 
   showSliderImage: boolean;
 };
@@ -798,6 +805,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
     pageUpdateRequest,
     onPageUpdated,
     onKeyPress,
+    goNextBook,
     showSliderImage,
   } = props;
   const { slidesPerView, pageClass, prefixPage } = PageStyle[pageStyleKey];
@@ -836,13 +844,18 @@ const SwiperSlider = (props: SwiperSliderProp) => {
 
   const handleSlideChange = useCallback(
     (s) => {
+      if (s.isEnd && goNextBook) {
+        goNextBook();
+        return;
+      }
+
       if (requestRef.current?.page !== s.activeIndex) {
         onPageUpdated(s.activeIndex);
       } else {
         requestRef.current = undefined;
       }
     },
-    [onPageUpdated],
+    [onPageUpdated, goNextBook],
   );
 
   return (
