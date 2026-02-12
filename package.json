@@ -44,5 +44,10 @@
   },
   "engines": {
     "npm": "<11.5.0"
-  }
+  },
+  "trustedDependencies": [
+    "core-js",
+    "protobufjs",
+    "unrs-resolver"
+  ]
 }
