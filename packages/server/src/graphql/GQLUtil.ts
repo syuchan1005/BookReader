@@ -6,13 +6,11 @@ import { tracer } from '@server/OpenTelemetry';
 import {
   readFile,
   StorageDataManager,
-  streamToBuffer,
   withTemporaryFolder,
 } from '@server/storage/StorageDataManager';
 import { PromisePool } from '@supercharge/promise-pool';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
 import type { Result, Upload } from '@syuchan1005/book-reader-graphql';
-import type { Buffer } from 'buffer';
 import { promises as fs } from 'fs';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
@@ -172,10 +170,8 @@ const GQLUtil = {
           buffer = await StorageDataManager.getUserStoredArchive(localPath);
           onProgress(0);
         } else if (file) {
-          buffer = await streamToBuffer(
-            (await file).createReadStream(),
-            onProgress,
-          );
+          buffer = Buffer.from(await file.arrayBuffer());
+          onProgress(buffer.length);
         }
 
         if (!buffer) {

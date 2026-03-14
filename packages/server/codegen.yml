@@ -15,7 +15,7 @@ generates:
           content:
             - "export type BigInt = number;"
             - "export type IntRange = (number | [number, number])[];"
-            - "export type Upload = Promise<{ filename: string, mimetype: string, encoding: string, createReadStream: () => NodeJS.ReadableStream }>;"
+            - "export type Upload = File;"
 config:
   strictScalars: true
   enumsAsConst: true
