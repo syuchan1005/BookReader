@@ -24,13 +24,6 @@ import GraphQL from './graphql/index';
 import { getOrConvertImage } from './ImageUtil';
 
 (async () => {
-  const { default: GraphQLUpload } = await import(
-    'graphql-upload/GraphQLUpload.mjs'
-  );
-  const { default: GraphQLUploadExpress } = await import(
-    'graphql-upload/graphqlUploadExpress.mjs'
-  );
-
   await StorageDataManager.init();
   initAuth();
   await meiliSearchClient.init();
@@ -38,7 +31,7 @@ import { getOrConvertImage } from './ImageUtil';
 
   const app = express();
   const httpServer = http.createServer(app);
-  const graphql = new GraphQL(httpServer, GraphQLUpload);
+  const graphql = new GraphQL();
 
   app.use(
     morgan((tokens, req, res) => {
@@ -151,11 +144,7 @@ import { getOrConvertImage } from './ImageUtil';
 
   await BookDataManager.init();
 
-  await graphql.middleware(
-    requireAuthRouter,
-    GraphQLUploadExpress,
-    isAuthenticatedMiddleware,
-  );
+  graphql.applyMiddleware(requireAuthRouter, isAuthenticatedMiddleware);
 
   app.use(requireAuthRouter);
 

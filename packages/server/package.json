@@ -23,8 +23,6 @@
     "nodemon": "^3.1.11"
   },
   "dependencies": {
-    "@apollo/server": "^5.1.0",
-    "@as-integrations/express5": "^1.1.2",
     "@elastic/elasticsearch": "^9.2.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.2.0",
@@ -43,7 +41,6 @@
     "@prisma/client": "^6.19.0",
     "@prisma/instrumentation": "^6.19.0",
     "@supercharge/promise-pool": "^3.2.0",
-    "body-parser": "^2.2.0",
     "connect-history-api-fallback": "^2.0.0",
     "connect-redis": "^9.0.0",
     "cors": "^2.8.5",
@@ -54,9 +51,8 @@
     "fs-extra": "^11.3.2",
     "graphql": "^16.12.0",
     "graphql-subscriptions": "^3.0.0",
-    "graphql-tag": "^2.12.6",
-    "graphql-upload": "^17.0.0",
     "graphql-ws": "^5.16.2",
+    "graphql-yoga": "^5.18.1",
     "lodash.chunk": "^4.2.0",
     "lodash.throttle": "^4.1.1",
     "meilisearch": "^0.54.0",
