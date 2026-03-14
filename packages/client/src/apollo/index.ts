@@ -153,7 +153,6 @@ export const apolloClient = new ApolloClient({
       ),
       new UploadHttpLink({
         uri: `${window.location.protocol}${uri}`,
-        headers: { 'Apollo-Require-Preflight': 'true' },
       }),
     ),
   ]),
