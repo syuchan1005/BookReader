@@ -1,4 +1,4 @@
-scalar Upload
+scalar File
 scalar BigInt
 scalar IntRange
 
@@ -40,7 +40,7 @@ type Mutation {
 
   ## Book
   addBooks(id: ID!, books: [InputBook!]!): [Result!]!
-  addCompressBook(id: ID!, file: Upload, path: String): ResultWithBookResults!
+  addCompressBook(id: ID!, file: File, path: String): ResultWithBookResults!
   editBook(id: ID!, number: String, thumbnail: Int): Result!
   deleteBooks(infoId: ID!, ids: [ID!]!): Result!
   moveBooks(infoId: ID!, ids: [ID!]!): Result!
@@ -277,7 +277,7 @@ input CropEditAction {
 
 input UploadEditAction {
   pageIndex: Int!
-  image: Upload!
+  image: File!
 }
 
 input DeleteEditAction {
@@ -296,7 +296,7 @@ input HStackEditAction {
 
 input InputBook {
   number: String!
-  file: Upload
+  file: File
   path: String
 }
 

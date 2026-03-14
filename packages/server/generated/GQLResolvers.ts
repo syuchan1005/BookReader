@@ -13,7 +13,6 @@ export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 export type BigInt = number;
 export type IntRange = (number | [number, number])[];
-export type Upload = File;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string; }
@@ -22,8 +21,8 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   BigInt: { input: BigInt; output: BigInt; }
+  File: { input: File; output: File; }
   IntRange: { input: IntRange; output: IntRange; }
-  Upload: { input: Upload; output: Upload; }
 };
 
 export type AddBookInfoResult = {
@@ -200,7 +199,7 @@ export type HStackEditAction = {
 };
 
 export type InputBook = {
-  file?: InputMaybe<Scalars['Upload']['input']>;
+  file?: InputMaybe<Scalars['File']['input']>;
   number: Scalars['String']['input'];
   path?: InputMaybe<Scalars['String']['input']>;
 };
@@ -251,7 +250,7 @@ export type MutationAddBooksArgs = {
 
 
 export type MutationAddCompressBookArgs = {
-  file?: InputMaybe<Scalars['Upload']['input']>;
+  file?: InputMaybe<Scalars['File']['input']>;
   id: Scalars['ID']['input'];
   path?: InputMaybe<Scalars['String']['input']>;
 };
@@ -426,7 +425,7 @@ export type SubscriptionBulkEditPageArgs = {
 };
 
 export type UploadEditAction = {
-  image: Scalars['Upload']['input'];
+  image: Scalars['File']['input'];
   pageIndex: Scalars['Int']['input'];
 };
 
@@ -541,6 +540,7 @@ export type ResolversTypes = {
   EditBookInfoResult: ResolverTypeWrapper<Omit<EditBookInfoResult, 'bookInfo'> & { bookInfo?: Maybe<ResolversTypes['BookInfo']> }>;
   EditType: EditType;
   ExtractingAddBooksSubscriptionResult: ResolverTypeWrapper<ExtractingAddBooksSubscriptionResult>;
+  File: ResolverTypeWrapper<Scalars['File']['output']>;
   Genre: ResolverTypeWrapper<Genre>;
   HStackEditAction: HStackEditAction;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -562,7 +562,6 @@ export type ResolversTypes = {
   SplitType: SplitType;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
-  Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   UploadEditAction: UploadEditAction;
   UploadingAddBooksSubscriptionResult: ResolverTypeWrapper<UploadingAddBooksSubscriptionResult>;
 };
@@ -588,6 +587,7 @@ export type ResolversParentTypes = {
   EditAction: EditAction;
   EditBookInfoResult: Omit<EditBookInfoResult, 'bookInfo'> & { bookInfo?: Maybe<ResolversParentTypes['BookInfo']> };
   ExtractingAddBooksSubscriptionResult: ExtractingAddBooksSubscriptionResult;
+  File: Scalars['File']['output'];
   Genre: Genre;
   HStackEditAction: HStackEditAction;
   ID: Scalars['ID']['output'];
@@ -607,7 +607,6 @@ export type ResolversParentTypes = {
   SplitEditAction: SplitEditAction;
   String: Scalars['String']['output'];
   Subscription: Record<PropertyKey, never>;
-  Upload: Scalars['Upload']['output'];
   UploadEditAction: UploadEditAction;
   UploadingAddBooksSubscriptionResult: UploadingAddBooksSubscriptionResult;
 };
@@ -698,6 +697,10 @@ export type ExtractingAddBooksSubscriptionResultResolvers<ContextType = any, Par
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export interface FileScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['File'], any> {
+  name: 'File';
+}
+
 export type GenreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Genre'] = ResolversParentTypes['Genre']> = {
   invisible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -784,10 +787,6 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   bulkEditPage?: SubscriptionResolver<ResolversTypes['String'], "bulkEditPage", ParentType, ContextType, RequireFields<SubscriptionBulkEditPageArgs, 'id'>>;
 };
 
-export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
-  name: 'Upload';
-}
-
 export type UploadingAddBooksSubscriptionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UploadingAddBooksSubscriptionResult'] = ResolversParentTypes['UploadingAddBooksSubscriptionResult']> = {
   bookNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   downloadedBytes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -810,6 +809,7 @@ export type Resolvers<ContextType = any> = {
   DeleteBookInfoResult?: DeleteBookInfoResultResolvers<ContextType>;
   EditBookInfoResult?: EditBookInfoResultResolvers<ContextType>;
   ExtractingAddBooksSubscriptionResult?: ExtractingAddBooksSubscriptionResultResolvers<ContextType>;
+  File?: GraphQLScalarType;
   Genre?: GenreResolvers<ContextType>;
   IntRange?: GraphQLScalarType;
   MovingAddBooksSubscriptionResult?: MovingAddBooksSubscriptionResultResolvers<ContextType>;
@@ -822,9 +822,8 @@ export type Resolvers<ContextType = any> = {
   ResultWithBookResults?: ResultWithBookResultsResolvers<ContextType>;
   Revision?: RevisionResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
-  Upload?: GraphQLScalarType;
   UploadingAddBooksSubscriptionResult?: UploadingAddBooksSubscriptionResultResolvers<ContextType>;
 };
 
 
-export const schemaString = `schema{query:Query mutation:Mutation subscription:Subscription}type AddBookInfoResult{bookInfo:BookInfo code:String message:String success:Boolean!}interface AddBooksSubscriptionResult{bookNumber:String type:AddBooksSubscriptionType!}enum AddBooksSubscriptionType{Extracting Moving Uploading}type Auth0{clientId:String!domain:String!}scalar BigInt type Book{id:ID!info:BookInfo number:String!pages:Int!thumbnail:Int updatedAt:String!}type BookInfo{books(order:BookOrder=Number_Asc):[Book!]!count:Int!genres:[Genre!]!id:ID!name:String!thumbnail:BookInfoThumbnail updatedAt:String!}type BookInfoEdge{cursor:String!node:BookInfo!}type BookInfoList{hasNext:Boolean!infos:[BookInfo!]!}enum BookInfoOrder{Add_Newest Add_Oldest Name_Asc Name_Desc Update_Newest Update_Oldest}type BookInfoPartialList{edges:[BookInfoEdge!]!pageInfo:PageInfo!}type BookInfoThumbnail{bookId:ID!bookPageCount:Int!pageIndex:Int!}input BookInfosOption{genres:[String!]=[]order:BookInfoOrder=Update_Newest search:String searchMode:SearchMode=DATABASE}enum BookOrder{Number_Asc Number_Desc Update_Newest Update_Oldest}input CropEditAction{bottom:Int left:Int pageRange:IntRange!right:Int top:Int}type Debug_BookCounts{bookCount:Int!bookInfoCount:Int!}type DeleteBookInfoResult{books:[Book!]!code:String message:String success:Boolean!}input DeleteEditAction{pageRange:IntRange!}input EditAction{crop:CropEditAction delete:DeleteEditAction editType:EditType!hstack:HStackEditAction put:UploadEditAction replace:UploadEditAction split:SplitEditAction}type EditBookInfoResult{bookInfo:BookInfo code:String message:String success:Boolean!}enum EditType{Crop Delete HStack Put Replace Split}type ExtractingAddBooksSubscriptionResult implements AddBooksSubscriptionResult{bookNumber:String progressPercent:Int!type:AddBooksSubscriptionType!}type Genre{invisible:Boolean!name:ID!}input HStackEditAction{pageRange:IntRange!}input InputBook{file:Upload number:String!path:String}input InputRead{bookId:ID!infoId:ID!page:Int!updatedAt:String!}scalar IntRange type MovingAddBooksSubscriptionResult implements AddBooksSubscriptionResult{bookNumber:String movedPageCount:Int!totalPageCount:Int!type:AddBooksSubscriptionType!}type Mutation{addBookInfo(genres:[String!]name:String!):AddBookInfoResult!addBooks(books:[InputBook!]!id:ID!):[Result!]!addCompressBook(file:Upload id:ID!path:String):ResultWithBookResults!bulkEditPage(actions:[EditAction!]!id:ID!):Result!debug_deleteUnusedFolders:Result!debug_rebuildMeiliSearch:Result!deleteBookInfo(id:ID!):DeleteBookInfoResult!deleteBooks(ids:[ID!]!infoId:ID!):Result!deleteGenre(genre:String!):Result!editBook(id:ID!number:String thumbnail:Int):Result!editBookInfo(genres:[String!]id:ID!name:String thumbnail:ID):EditBookInfoResult!editGenre(invisible:Boolean newName:String oldName:String!):Result!moveBooks(ids:[ID!]!infoId:ID!):Result!}type PageInfo{endCursor:String!hasNextPage:Boolean!hasPreviousPage:Boolean!startCursor:String!}type Query{availableSearchModes:[SearchMode!]!book(id:ID!):Book bookInfo(id:ID!):BookInfo bookInfos(ids:[ID!]!):[BookInfo]!books(ids:[ID!]!):[Book]!debug_bookCounts:Debug_BookCounts!genres:[Genre!]!relayBookInfos(after:String before:String first:Int last:Int option:BookInfosOption):BookInfoPartialList!}type Read{bookId:ID!infoId:ID!page:Int!updatedAt:String!}type ReadList{latestRevision:Revision!readList:[Read!]!}type Result{code:String message:String success:Boolean!}type ResultWithBookResults{bookResults:[Result!]code:String message:String success:Boolean!}type Revision{count:Int!syncedAt:String!}enum SearchMode{DATABASE ELASTICSEARCH MEILISEARCH}input SplitEditAction{pageRange:IntRange!splitCount:Int=2 splitType:SplitType!}enum SplitType{HORIZONTAL VERTICAL}type Subscription{addBooks(id:ID!):AddBooksSubscriptionResult!bulkEditPage(id:ID!):String!}scalar Upload input UploadEditAction{image:Upload!pageIndex:Int!}type UploadingAddBooksSubscriptionResult implements AddBooksSubscriptionResult{bookNumber:String downloadedBytes:Int!type:AddBooksSubscriptionType!}`;
+export const schemaString = `schema{query:Query mutation:Mutation subscription:Subscription}type AddBookInfoResult{bookInfo:BookInfo code:String message:String success:Boolean!}interface AddBooksSubscriptionResult{bookNumber:String type:AddBooksSubscriptionType!}enum AddBooksSubscriptionType{Extracting Moving Uploading}type Auth0{clientId:String!domain:String!}scalar BigInt type Book{id:ID!info:BookInfo number:String!pages:Int!thumbnail:Int updatedAt:String!}type BookInfo{books(order:BookOrder=Number_Asc):[Book!]!count:Int!genres:[Genre!]!id:ID!name:String!thumbnail:BookInfoThumbnail updatedAt:String!}type BookInfoEdge{cursor:String!node:BookInfo!}type BookInfoList{hasNext:Boolean!infos:[BookInfo!]!}enum BookInfoOrder{Add_Newest Add_Oldest Name_Asc Name_Desc Update_Newest Update_Oldest}type BookInfoPartialList{edges:[BookInfoEdge!]!pageInfo:PageInfo!}type BookInfoThumbnail{bookId:ID!bookPageCount:Int!pageIndex:Int!}input BookInfosOption{genres:[String!]=[]order:BookInfoOrder=Update_Newest search:String searchMode:SearchMode=DATABASE}enum BookOrder{Number_Asc Number_Desc Update_Newest Update_Oldest}input CropEditAction{bottom:Int left:Int pageRange:IntRange!right:Int top:Int}type Debug_BookCounts{bookCount:Int!bookInfoCount:Int!}type DeleteBookInfoResult{books:[Book!]!code:String message:String success:Boolean!}input DeleteEditAction{pageRange:IntRange!}input EditAction{crop:CropEditAction delete:DeleteEditAction editType:EditType!hstack:HStackEditAction put:UploadEditAction replace:UploadEditAction split:SplitEditAction}type EditBookInfoResult{bookInfo:BookInfo code:String message:String success:Boolean!}enum EditType{Crop Delete HStack Put Replace Split}type ExtractingAddBooksSubscriptionResult implements AddBooksSubscriptionResult{bookNumber:String progressPercent:Int!type:AddBooksSubscriptionType!}scalar File type Genre{invisible:Boolean!name:ID!}input HStackEditAction{pageRange:IntRange!}input InputBook{file:File number:String!path:String}input InputRead{bookId:ID!infoId:ID!page:Int!updatedAt:String!}scalar IntRange type MovingAddBooksSubscriptionResult implements AddBooksSubscriptionResult{bookNumber:String movedPageCount:Int!totalPageCount:Int!type:AddBooksSubscriptionType!}type Mutation{addBookInfo(genres:[String!]name:String!):AddBookInfoResult!addBooks(books:[InputBook!]!id:ID!):[Result!]!addCompressBook(file:File id:ID!path:String):ResultWithBookResults!bulkEditPage(actions:[EditAction!]!id:ID!):Result!debug_deleteUnusedFolders:Result!debug_rebuildMeiliSearch:Result!deleteBookInfo(id:ID!):DeleteBookInfoResult!deleteBooks(ids:[ID!]!infoId:ID!):Result!deleteGenre(genre:String!):Result!editBook(id:ID!number:String thumbnail:Int):Result!editBookInfo(genres:[String!]id:ID!name:String thumbnail:ID):EditBookInfoResult!editGenre(invisible:Boolean newName:String oldName:String!):Result!moveBooks(ids:[ID!]!infoId:ID!):Result!}type PageInfo{endCursor:String!hasNextPage:Boolean!hasPreviousPage:Boolean!startCursor:String!}type Query{availableSearchModes:[SearchMode!]!book(id:ID!):Book bookInfo(id:ID!):BookInfo bookInfos(ids:[ID!]!):[BookInfo]!books(ids:[ID!]!):[Book]!debug_bookCounts:Debug_BookCounts!genres:[Genre!]!relayBookInfos(after:String before:String first:Int last:Int option:BookInfosOption):BookInfoPartialList!}type Read{bookId:ID!infoId:ID!page:Int!updatedAt:String!}type ReadList{latestRevision:Revision!readList:[Read!]!}type Result{code:String message:String success:Boolean!}type ResultWithBookResults{bookResults:[Result!]code:String message:String success:Boolean!}type Revision{count:Int!syncedAt:String!}enum SearchMode{DATABASE ELASTICSEARCH MEILISEARCH}input SplitEditAction{pageRange:IntRange!splitCount:Int=2 splitType:SplitType!}enum SplitType{HORIZONTAL VERTICAL}type Subscription{addBooks(id:ID!):AddBooksSubscriptionResult!bulkEditPage(id:ID!):String!}input UploadEditAction{image:File!pageIndex:Int!}type UploadingAddBooksSubscriptionResult implements AddBooksSubscriptionResult{bookNumber:String downloadedBytes:Int!type:AddBooksSubscriptionType!}`;

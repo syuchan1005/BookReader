@@ -10,7 +10,7 @@ import {
 } from '@server/storage/StorageDataManager';
 import { PromisePool } from '@supercharge/promise-pool';
 import { defaultStoredImageExtension } from '@syuchan1005/book-reader-common';
-import type { Result, Upload } from '@syuchan1005/book-reader-graphql';
+import type { Result } from '@syuchan1005/book-reader-graphql';
 import { promises as fs } from 'fs';
 import { orderBy as naturalOrderBy } from 'natural-orderby';
 import { extractFull } from 'node-7z';
@@ -142,7 +142,7 @@ const GQLUtil = {
   },
   async getArchiveFile(
     onProgress: (downloadedBytes: number) => void,
-    file?: Upload,
+    file?: File,
     localPath?: string,
   ): Promise<({ success: false } & Result) | { success: true; data: Buffer }> {
     return tracer.startActiveSpan(

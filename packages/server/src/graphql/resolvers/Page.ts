@@ -14,7 +14,6 @@ import {
   type Resolvers,
   type Result,
   SplitType,
-  type Upload,
 } from '@syuchan1005/book-reader-graphql';
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import lodashChunk from 'lodash.chunk';
@@ -80,7 +79,7 @@ type TransformFn = (width: number, height: number) => CropValue;
 type ImageEditAction = {
   pageIndex: number;
   willDelete: boolean;
-  image?: Upload;
+  image?: File;
   cropTransforms?: TransformFn[];
   compositePages?: number[];
 };

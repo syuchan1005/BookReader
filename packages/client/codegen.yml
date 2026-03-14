@@ -15,7 +15,6 @@ generates:
           content:
             - "export type BigInt = number;"
             - "export type IntRange = (number | [number, number])[];"
-            - "export type Upload = File;"
     config:
       avoidOptionals:
         field: true
@@ -27,4 +26,4 @@ generates:
       scalars:
         BigInt: BigInt
         IntRange: IntRange
-        Upload: Upload
+        File: File

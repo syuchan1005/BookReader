@@ -3,9 +3,9 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { resolvers } from '@server/graphql/resolvers';
 import { schemaString } from '@syuchan1005/book-reader-graphql';
 import { GraphQLScalarType, type GraphQLSchema } from 'graphql';
-import { createYoga } from 'graphql-yoga';
 import type { Disposable } from 'graphql-ws/lib/common';
 import { useServer } from 'graphql-ws/lib/use/ws';
+import { createYoga } from 'graphql-yoga';
 import { WebSocketServer } from 'ws';
 import BigIntScalar from './scalar/BigIntScalar';
 import IntRangeScalar from './scalar/IntRange';
@@ -15,8 +15,8 @@ export const SubscriptionKeys = {
   BULK_EDIT_PAGE: 'BULK_EDIT_PAGE',
 };
 
-const UploadScalar = new GraphQLScalarType({
-  name: 'Upload',
+const FileScalar = new GraphQLScalarType({
+  name: 'File',
   description: 'File upload scalar type (handled natively by GraphQL Yoga)',
   parseValue: (value) => value,
   parseLiteral() {
@@ -41,7 +41,7 @@ export default class GraphQL {
         {
           BigInt: BigIntScalar,
           IntRange: IntRangeScalar,
-          Upload: UploadScalar,
+          File: FileScalar,
         },
         resolvers,
       ]),

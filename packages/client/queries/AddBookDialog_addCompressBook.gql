@@ -1,4 +1,4 @@
-mutation addCompressBook($id: ID!, $file: Upload, $path: String) {
+mutation addCompressBook($id: ID!, $file: File, $path: String) {
   add: addCompressBook(id: $id, file: $file, path: $path) {
     success
     code

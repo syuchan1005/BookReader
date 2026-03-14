@@ -15,7 +15,6 @@ generates:
           content:
             - "export type BigInt = number;"
             - "export type IntRange = (number | [number, number])[];"
-            - "export type Upload = File;"
 config:
   strictScalars: true
   enumsAsConst: true
@@ -23,7 +22,7 @@ config:
   scalars:
     BigInt: BigInt
     IntRange: IntRange
-    Upload: Upload
+    File: File
   mappers:
     BookInfo: "../src/database/models/BookInfo#BookInfo as BookInfoModel"
     Book: "../src/database/models/Book#Book as BookModel"
