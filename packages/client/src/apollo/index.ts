@@ -2,11 +2,11 @@ import {
   ApolloClient,
   ApolloLink,
   CombinedGraphQLErrors,
+  Observable,
   ServerError,
 } from '@apollo/client';
 import { InMemoryCache, isReference } from '@apollo/client/cache';
 import { ErrorLink } from '@apollo/client/link/error';
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import {
   concatPagination,
   getMainDefinition,
@@ -16,9 +16,11 @@ import { goToAuthPage } from '@client/auth';
 import type { BookInfo } from '@syuchan1005/book-reader-graphql';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
 import { CachePersistor, LocalStorageWrapper } from 'apollo3-cache-persist';
-import { createClient } from 'graphql-ws';
+import { type FormattedExecutionResult, print } from 'graphql';
+import { createClient, type Sink } from 'graphql-sse';
 
-const uri = `//${window.location.hostname}:${window.location.port}/graphql`;
+const endpoint = `${window.location.origin}/graphql`;
+const sseClient = createClient({ url: endpoint });
 const schemaVersion = '1.3.1';
 const schemaVersionKey = 'apollo-cache-schema-version';
 
@@ -144,15 +146,26 @@ export const apolloClient = new ApolloClient({
           definition.operation === 'subscription'
         );
       },
-      new GraphQLWsLink(
-        createClient({
-          url: `${
-            window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-          }${uri}`,
-        }),
-      ),
+      new ApolloLink((operation) => {
+        const { query, variables, operationName, extensions } = operation;
+        return new Observable((sink) => {
+          return sseClient.subscribe(
+            {
+              variables,
+              operationName,
+              extensions,
+              query: print(query),
+            },
+            {
+              next: sink.next.bind(sink),
+              error: sink.error.bind(sink),
+              complete: sink.complete.bind(sink),
+            } satisfies Sink<FormattedExecutionResult> as any,
+          );
+        });
+      }),
       new UploadHttpLink({
-        uri: `${window.location.protocol}${uri}`,
+        uri: endpoint,
       }),
     ),
   ]),

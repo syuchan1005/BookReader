@@ -157,6 +157,4 @@ import { getOrConvertImage } from './ImageUtil';
     console.log(`👔 listen  at: http://localhost:${port}`);
     console.log(`🚀 graphql at: http://localhost:${port}/graphql`);
   });
-
-  graphql.useSubscription(httpServer);
 })();
