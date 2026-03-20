@@ -40,7 +40,6 @@ $ docker run \
 | `BOOKREADER_TRACE_PROPAGATOR`    | `enum`        | ``                     | b3, jaeger                                                          |
 | `BOOKREADER_TRACE_CONSOLE`       | `boolean`     | ``                     |                                                                     |
 | `BOOKREADER_SESSION_SECRET`      | `string`      | `book-reader`          | Must specify a value                                                |
-| `BOOKREADER_SESSION_STORE`       | `string`      | ``                     | Default: memory. redis: `redis://localhost:6379`                    |
 | `BOOKREADER_OIDC`                | `json-string` | ``                     | If not empty, authentication is activated.                          |
 | `BOOKREADER_MEILISEARCH_HOST`    | `string`      | ``                     | `http://xxxxx:xxxx`                                                 |
 | `BOOKREADER_MEILISEARCH_API_KEY` | `string`      | ``                     |                                                                     |

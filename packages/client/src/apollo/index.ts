@@ -160,7 +160,7 @@ export const apolloClient = new ApolloClient({
               next: sink.next.bind(sink),
               error: sink.error.bind(sink),
               complete: sink.complete.bind(sink),
-            } satisfies Sink<FormattedExecutionResult> as any,
+            } satisfies Sink<FormattedExecutionResult>,
           );
         });
       }),

@@ -10,4 +10,4 @@ downloads
 .DS_Store
 book-reader-*
 !book-reader-test-plugin
-.claude/**/*.local.*
+*.local*

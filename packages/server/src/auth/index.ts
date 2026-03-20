@@ -1,8 +1,13 @@
-import express, { type Express } from 'express';
-import passport from 'passport';
-import { type OIDCConfig, registerRegistry } from './registerRegistry';
+import { BookDataManager } from '@server/database/BookDataManager';
+import { INSTANCE, PrismaBookDataManager } from '@server/database/prisma';
+import { betterAuth, type DBAdapterInstance } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { type GenericOAuthConfig, genericOAuth } from 'better-auth/plugins';
+import { type Context, Hono, type MiddlewareHandler, type Next } from 'hono';
 
-const getOIDCConfig = (): OIDCConfig | undefined => {
+const getOIDCConfig = ():
+  | Omit<GenericOAuthConfig, 'providerId' | 'scopes'>
+  | undefined => {
   try {
     return JSON.parse(process.env.BOOKREADER_OIDC);
   } catch (_e) {
@@ -10,75 +15,59 @@ const getOIDCConfig = (): OIDCConfig | undefined => {
   }
 };
 
-const oidcConfig = getOIDCConfig();
+export const oidcConfig = getOIDCConfig();
 
-export const init = () => {
-  passport.serializeUser((user, done) => {
-    done(null, user);
-  });
-  passport.deserializeUser((obj, done) => {
-    done(null, obj);
-  });
-
-  registerRegistry(oidcConfig);
-};
-
-export const initRoutes = (app: Express) => {
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use('/auth', createAuthRouter('/auth'));
-};
-
-const createAuthRouter = (path: string) => {
-  const router = express.Router();
-  router.get('/', (req, res) => {
-    // @ts-expect-error
-    const isAuthenticated = req.session.passport !== undefined;
-    if (!oidcConfig || isAuthenticated) {
-      res.redirect('/');
-    } else {
-      res.redirect(`${path}/oidc`);
-    }
-  });
-
-  router.get('/logout', (req, res) => {
-    req.logout(() => {});
-    res.redirect('/');
-  });
-
-  if (oidcConfig) {
-    router.get(
-      '/oidc',
-      (req, _res, next) => {
-        // @ts-expect-error
-        req.session.redirectTo = req.query.r;
-        return next();
-      },
-      passport.authenticate('openidconnect'),
-    );
-    router.get(
-      '/oidc/callback',
-      passport.authenticate('openidconnect', {
-        failureRedirect: '/auth',
-        keepSessionInfo: true,
+export const createAuth = () => {
+  let database: DBAdapterInstance;
+  if (BookDataManager instanceof PrismaBookDataManager) {
+    database = prismaAdapter(INSTANCE.prismaClient, { provider: 'sqlite' });
+  } else {
+    throw new Error('Unsupported database adapter for better-auth');
+  }
+  return betterAuth({
+    database,
+    secret: process.env.BOOKREADER_SESSION_SECRET || 'book-reader',
+    baseURL: process.env.BOOKREADER_BASE_URL || 'http://localhost:8081',
+    basePath: '/auth',
+    plugins: [
+      genericOAuth({
+        config: oidcConfig
+          ? [
+              {
+                ...oidcConfig,
+                providerId: 'oidc',
+                scopes: ['openid', 'profile', 'email'],
+              },
+            ]
+          : [],
       }),
-      (req, res) => {
-        // @ts-expect-error
-        res.redirect(req.session.redirectTo || '/');
-      },
-    );
-  }
-  return router;
+    ],
+    trustedOrigins: ['*'],
+  });
 };
 
-export const isAuthenticatedMiddleware = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-): ReturnType<express.NextFunction> => {
-  if (!oidcConfig || req.isAuthenticated()) {
-    return next();
-  }
-  res.sendStatus(401);
-  return;
+export type Auth = ReturnType<typeof createAuth>;
+
+export const authRoute = (auth: Auth) => {
+  const app = new Hono();
+  app.all('*', (c) => auth.handler(c.req.raw));
+  return app;
 };
+
+export const isAuthenticated = async (
+  auth: Auth,
+  headers: Headers,
+): Promise<boolean> => {
+  if (!oidcConfig) return true;
+  const session = await auth.api.getSession({ headers });
+  return !!session;
+};
+
+export const createIsAuthenticatedMiddleware =
+  (auth: Auth): MiddlewareHandler =>
+  async (c: Context, next: Next) => {
+    if (await isAuthenticated(auth, c.req.raw.headers)) {
+      return next();
+    }
+    return c.text('', 401);
+  };

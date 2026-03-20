@@ -60,7 +60,7 @@ const PrismaErrorCode = {
 } as const;
 
 export class PrismaBookDataManager implements IBookDataManager {
-  private prismaClient: PrismaClient;
+  public prismaClient: PrismaClient;
 
   async init(databaseUrl?: string): Promise<void> {
     const url = databaseUrl ?? `file:../${env}.sqlite`;

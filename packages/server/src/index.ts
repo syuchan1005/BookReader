@@ -1,5 +1,8 @@
 import './OpenTelemetry';
 
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { httpInstrumentationMiddleware } from '@hono/otel';
 import { BookDataManager } from '@server/database/BookDataManager';
 import { elasticSearchClient, meiliSearchClient } from '@server/search';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
@@ -7,153 +10,102 @@ import {
   availableImageExtensions,
   type availableImageExtensionWithContentType,
 } from '@syuchan1005/book-reader-common';
-import history from 'connect-history-api-fallback';
-import { RedisStore } from 'connect-redis';
-import cors from 'cors';
-import express from 'express';
-import session from 'express-session';
-import http from 'http';
-import morgan from 'morgan';
-import { createClient } from 'redis';
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
 import {
-  init as initAuth,
-  initRoutes as initAuthRoutes,
-  isAuthenticatedMiddleware,
+  authRoute,
+  createAuth,
+  createIsAuthenticatedMiddleware,
+  isAuthenticated,
 } from './auth';
 import GraphQL from './graphql/index';
 import { getOrConvertImage } from './ImageUtil';
 
 (async () => {
   await StorageDataManager.init();
-  initAuth();
   await meiliSearchClient.init();
   await elasticSearchClient.init();
+  await BookDataManager.init();
 
-  const app = express();
-  const httpServer = http.createServer(app);
+  const auth = createAuth();
+  const isAuthenticatedMiddleware = createIsAuthenticatedMiddleware(auth);
+
+  const app = new Hono();
   const graphql = new GraphQL();
 
-  app.use(
-    morgan((tokens, req, res) => {
-      let severity = 'INFO';
-      const status = tokens.status(req, res);
-
-      if (status >= 500) severity = 'ERROR';
-      else if (status >= 400) severity = 'WARNING';
-
-      const httpRequest = {
-        requestMethod: tokens.method(req, res),
-        requestUrl: tokens.url(req, res),
-        status,
-        responseSize: tokens.res(req, res, 'content-length'),
-        userAgent: tokens['user-agent'](req, res),
-        remoteIp: tokens['remote-addr'](req, res),
-        referer: tokens.referrer(req, res),
-        protocol: `HTTP/${tokens['http-version'](req, res)}`,
-      };
-
-      return JSON.stringify({
-        severity,
-        httpRequest,
-        remote_user: tokens['remote-user'](req, res),
-        timestamp: tokens.date(req, res, 'iso'),
-        response_time: tokens['response-time'](req, res),
-        total_time: tokens['total-time'](req, res),
-      });
-    }),
-  );
-
+  app.use(httpInstrumentationMiddleware());
+  app.use(logger());
   app.use(cors());
 
-  const sessionStoreConfig = process.env.BOOKREADER_SESSION_STORE || '';
-  let sessionStore: session.Store | undefined;
-  if (sessionStoreConfig.startsWith('redis://')) {
-    const redisClient = createClient({ url: sessionStoreConfig });
-    await redisClient.connect();
-    sessionStore = new RedisStore({ client: redisClient });
-  }
+  app.route('/auth/*', authRoute(auth));
 
-  app.use(
-    session({
-      secret: process.env.BOOKREADER_SESSION_SECRET || 'book-reader',
-      name: 'session',
-      resave: false,
-      saveUninitialized: false,
-      rolling: true,
-      cookie: {
-        httpOnly: true,
-        secure: 'auto',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      },
-      store: sessionStore,
-    }),
-  );
-  initAuthRoutes(app);
-
-  const requireAuthRouter = express.Router();
-  for (const folderPath of StorageDataManager.getStaticFolders()) {
-    requireAuthRouter.use(
-      '/book',
-      isAuthenticatedMiddleware,
-      express.static(folderPath),
-    );
-  }
-
-  /* image serve with options in image name */
+  /* image serve with auth protection */
   const bookImagePathRegex = new RegExp(
     `(\\d+)(_(\\d+)x(\\d+))?\\.(${availableImageExtensions.join('|')})$`,
   );
-  requireAuthRouter.get(
-    '/book/:bookId/:fileName',
-    isAuthenticatedMiddleware,
-    async (req, res, next) => {
-      const match = req.params.fileName.match(bookImagePathRegex);
-      if (!match) {
-        await next();
-        return;
-      }
-      const [_full, pageNum, sizeExists, width, height, ext] = match;
-      const isNotSave = req.query.nosave === '';
-      const extension =
-        ext as keyof typeof availableImageExtensionWithContentType;
 
-      const result = await getOrConvertImage(
-        req.params.bookId,
-        pageNum,
-        {
-          ext: extension,
-          size: sizeExists
-            ? {
-                width: Number(width),
-                height: Number(height),
-              }
-            : undefined,
-        },
-        !isNotSave,
-      );
-      if (result.success) {
-        res.setHeader('Content-Type', result.type);
-        res.setHeader('Content-Length', result.byteLength.toString());
-        res.setHeader('Last-Modified', result.lastModified.toUTCString());
-        res.send(result.body);
-      } else {
-        res.status(503).send(result.body);
-      }
-    },
+  for (const folderPath of StorageDataManager.getStaticFolders()) {
+    app.use(
+      '/book/*',
+      isAuthenticatedMiddleware,
+      serveStatic({ root: folderPath }),
+    );
+  }
+
+  app.get('/book/:bookId/:fileName', isAuthenticatedMiddleware, async (c) => {
+    const { bookId, fileName } = c.req.param();
+    const match = fileName.match(bookImagePathRegex);
+    if (!match) {
+      return c.notFound();
+    }
+    const [_full, pageNum, sizeExists, width, height, ext] = match;
+    const isNotSave = c.req.query('nosave') === '';
+    const extension =
+      ext as keyof typeof availableImageExtensionWithContentType;
+
+    const result = await getOrConvertImage(
+      bookId,
+      pageNum,
+      {
+        ext: extension,
+        size: sizeExists
+          ? {
+              width: Number(width),
+              height: Number(height),
+            }
+          : undefined,
+      },
+      !isNotSave,
+    );
+    if (result.success) {
+      c.header('Content-Type', result.type);
+      c.header('Content-Length', result.byteLength.toString());
+      c.header('Last-Modified', result.lastModified.toUTCString());
+      return c.body(result.body as unknown as ReadableStream);
+    }
+    return c.text(result.body as string, 503);
+  });
+
+  // GraphQL with auth protection
+  app.on(['GET', 'POST'], '/graphql', async (c) => {
+    if (!(await isAuthenticated(auth, c.req.raw.headers))) {
+      return c.text('', 401);
+    }
+    return graphql.handle(c);
+  });
+
+  // Static files
+  app.use(serveStatic({ root: './public' }));
+
+  // SPA history API fallback
+  app.get(
+    '*',
+    serveStatic({ root: './public', rewriteRequestPath: () => '/index.html' }),
   );
 
-  await BookDataManager.init();
-
-  graphql.applyMiddleware(requireAuthRouter, isAuthenticatedMiddleware);
-
-  app.use(requireAuthRouter);
-
-  app.use(history());
-
-  app.use(express.static('public'));
-
-  const port = process.env.PORT || 8081;
-  httpServer.listen(port, () => {
+  const port = Number(process.env.PORT) || 8081;
+  serve({ fetch: app.fetch, port }, () => {
     console.log(`👔 listen  at: http://localhost:${port}`);
     console.log(`🚀 graphql at: http://localhost:${port}/graphql`);
   });

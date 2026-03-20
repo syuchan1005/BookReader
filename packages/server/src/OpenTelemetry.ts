@@ -3,7 +3,6 @@ import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
 import { CompositePropagator } from '@opentelemetry/core';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
@@ -68,7 +67,6 @@ const setup = (): Tracer => {
     tracerProvider: provider,
     instrumentations: [
       new HttpInstrumentation(),
-      new ExpressInstrumentation(),
       new GraphQLInstrumentation(),
       new PrismaInstrumentation(),
     ],

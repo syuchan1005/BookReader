@@ -1,9 +1,11 @@
 import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import type { MaybePromise } from '@graphql-tools/utils';
 import { resolvers } from '@server/graphql/resolvers';
 import { schemaString } from '@syuchan1005/book-reader-graphql';
 import { GraphQLScalarType, type GraphQLSchema } from 'graphql';
 import { createYoga } from 'graphql-yoga';
+import type { Context } from 'hono';
 import BigIntScalar from './scalar/BigIntScalar';
 import IntRangeScalar from './scalar/IntRange';
 
@@ -50,7 +52,7 @@ export default class GraphQL {
     });
   }
 
-  applyMiddleware(app, preMiddleware) {
-    app.use(this.yoga.graphqlEndpoint, preMiddleware, this.yoga);
+  handle(c: Context): MaybePromise<Response> {
+    return this.yoga.handle(c.req.raw, c);
   }
 }
