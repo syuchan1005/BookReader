@@ -16,7 +16,7 @@
 ## how to use?
 
 > when you use v1.0.5, please run this 
-> `$ node scripts/removeCacheInBefore.js`
+> `$ bun scripts/removeCacheInBefore.js`
 
 
 ```shell script
@@ -49,9 +49,10 @@ $ docker run \
 
 ## develop use
 ```shell script
-$ npm install
-$ npm run db:migrate
-$ npm run serve
+$ bun install
+$ bun run script:prisma-migrate
+$ bun run serve:server
+$ bun run serve:client
 ```
 
 

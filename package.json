@@ -8,20 +8,21 @@
     "packages/server",
     "packages/client"
   ],
+  "packageManager": "bun@1.3.14",
   "scripts": {
-    "serve:client": "npm run serve --workspace=\"packages/client\"",
-    "serve:client:prod": "npm run serve:prod --workspace=\"packages/client\"",
-    "build:client": "npm run build --workspace=\"packages/client\"",
-    "test:client": "npm run test --workspace=\"packages/client\"",
-    "serve:storybook": "npm run storybook --workspace=\"packages/client\"",
-    "build:storybook": "npm run build-storybook --workspace=\"packages/client\"",
-    "serve:server": "npm run serve --workspace=\"packages/server\"",
-    "build:server": "npm run build --workspace=\"packages/server\"",
-    "test:server": "npm run test --workspace=\"packages/server\"",
-    "build": "npm run build:client && npm run build:storybook && npm run build:server",
-    "start": "node dist/server",
-    "script:prisma-migrate": "npm run prisma-migrate --workspace=\"packages/server\"",
-    "gql-gen": "npm run gql-gen --workspace=\"packages/server\" && npm run gql-gen --workspace=\"packages/client\"",
+    "serve:client": "bun run --cwd packages/client serve",
+    "serve:client:prod": "bun run --cwd packages/client serve:prod",
+    "build:client": "bun run --cwd packages/client build",
+    "test:client": "bun run --cwd packages/client test",
+    "serve:storybook": "bun run --cwd packages/client storybook",
+    "build:storybook": "bun run --cwd packages/client build-storybook",
+    "serve:server": "bun run --cwd packages/server serve",
+    "build:server": "bun run --cwd packages/server build",
+    "test:server": "bun run --cwd packages/server test",
+    "build": "bun run build:client && bun run build:storybook && bun run build:server",
+    "start": "bun packages/server/dist/index.js",
+    "script:prisma-migrate": "bun run --cwd packages/server prisma-migrate",
+    "gql-gen": "bun run --cwd packages/server gql-gen && bun run --cwd packages/client gql-gen",
     "lint": "biome check --write --unsafe .",
     "prepare": "husky"
   },
@@ -41,9 +42,6 @@
     "@graphql-tools/utils": "^10.10.3",
     "husky": "^9.1.7",
     "typescript": "^5.9.3"
-  },
-  "engines": {
-    "npm": "<11.5.0"
   },
   "trustedDependencies": [
     "core-js",

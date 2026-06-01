@@ -1,9 +1,9 @@
 {
   "name": "@syuchan1005/book-reader-server",
   "scripts": {
-    "serve": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && npm run build -- development && bun run dist\"",
-    "build": "node scripts/build.mjs",
-    "prisma-migrate": "node scripts/prisma-migrate.js",
+    "serve": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && bun run build -- development && bun dist/index.js\"",
+    "build": "bun scripts/build.mjs",
+    "prisma-migrate": "bun scripts/prisma-migrate.js",
     "test": "jest",
     "prisma": "prisma",
     "gql-gen": "graphql-codegen --config codegen.yml"

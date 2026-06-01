@@ -7,7 +7,7 @@
     "test": "jest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build -o dist/storybook",
-    "generateIcons": "node scripts/generateIcon.js",
+    "generateIcons": "bun scripts/generateIcon.js",
     "gql-gen": "graphql-codegen --config codegen.yml"
   },
   "devDependencies": {
