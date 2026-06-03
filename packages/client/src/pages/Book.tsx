@@ -871,7 +871,8 @@ const SwiperSlider = (props: SwiperSliderProp) => {
       slidesPerView={slidesPerView}
       slidesPerGroup={slidesPerView}
       virtual={{
-        addSlidesAfter: slidesPerView * 2,
+        addSlidesBefore: slidesPerView * 3,
+        addSlidesAfter: slidesPerView * 3,
       }}
       keyboard
       zoom={{ maxRatio: 5 }}
@@ -891,7 +892,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
                 style={effectBackGround}
                 pageIndex={i}
                 imageSize={imageSize}
-                skip={Math.abs(index - debouncePage) > slidesPerView}
+                skip={Math.abs(index - debouncePage) > slidesPerView * 4}
               />
             )}
           </div>
