@@ -13,10 +13,11 @@ import {
   useState,
 } from 'react';
 
-import { Keyboard, Virtual } from 'swiper/modules';
+import { Keyboard, Virtual, Zoom } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/keyboard';
 import 'swiper/css/virtual';
+import 'swiper/css/zoom';
 
 import { useQuery } from '@apollo/client/react';
 import BookPageImage from '@client/components/BookPageImage';
@@ -861,7 +862,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
   return (
     <Swiper
       key={`${bookId}:${pageStyleKey}:${readOrder}`}
-      modules={[Virtual, Keyboard]}
+      modules={[Virtual, Keyboard, Zoom]}
       onSwiper={updateSwiper}
       onSlideChange={handleSlideChange}
       onKeyPress={onKeyPress}
@@ -873,6 +874,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
         addSlidesAfter: slidesPerView * 2,
       }}
       keyboard
+      zoom={{ maxRatio: 5 }}
     >
       {[...new Array(prefixPage).keys()].map((i) => (
         <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
@@ -883,14 +885,16 @@ const SwiperSlider = (props: SwiperSliderProp) => {
           virtualIndex={index + prefixPage}
           className={pageClass(index)}
         >
-          {showSliderImage && (
-            <ImageComponent
-              style={effectBackGround}
-              pageIndex={i}
-              imageSize={imageSize}
-              skip={Math.abs(index - debouncePage) > slidesPerView}
-            />
-          )}
+          <div className="swiper-zoom-container">
+            {showSliderImage && (
+              <ImageComponent
+                style={effectBackGround}
+                pageIndex={i}
+                imageSize={imageSize}
+                skip={Math.abs(index - debouncePage) > slidesPerView}
+              />
+            )}
+          </div>
         </SwiperSlide>
       ))}
       {[...new Array((maxPage + prefixPage) % slidesPerView).keys()].map(
