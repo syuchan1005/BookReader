@@ -875,7 +875,7 @@ const SwiperSlider = (props: SwiperSliderProp) => {
         addSlidesAfter: slidesPerView * 3,
       }}
       keyboard
-      zoom={{ maxRatio: 5 }}
+      zoom={{ maxRatio: 5, toggle: false }}
     >
       {[...new Array(prefixPage).keys()].map((i) => (
         <SwiperSlide key={`virtual-${i}`} virtualIndex={i} />
