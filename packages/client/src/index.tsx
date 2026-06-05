@@ -19,6 +19,7 @@ if (process.env.NODE_ENV !== 'production' && false) {
 }
 
 (async () => {
+  await navigator.storage?.persist?.();
   await db.connect();
   await workbox?.register();
   await setUpApollo();
