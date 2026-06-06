@@ -19,19 +19,9 @@ import {
 } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { alpha, styled } from '@mui/material/styles';
-import {
-  AvailableSearchModesDocument,
-  GenresDocument,
-  SearchMode,
-} from '@syuchan1005/book-reader-graphql';
+import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
-import {
-  type ChangeEvent,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 const PREFIX = 'SearchAndMenuHeader';
 
@@ -118,44 +108,16 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 interface SearchAndMenuHeaderProps {
   onClickMenuIcon?: (element: Element) => void;
   searchText?: string;
-  searchMode: SearchMode;
-  onChangeSearchText?: (text: string, searchMode: SearchMode) => void;
+  onChangeSearchText?: (text: string) => void;
 }
 
 const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const theme = useTheme();
-  const { onClickMenuIcon, searchText, searchMode, onChangeSearchText } = props;
-
-  const { data } = useQuery(AvailableSearchModesDocument);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: onChangeSearchText
-  const handleSearchModeChange = useCallback(
-    (e) => {
-      const selectedSearchMode = e.target.value;
-      let mode = SearchMode.Database;
-      if (Object.values(SearchMode).includes(selectedSearchMode)) {
-        mode = selectedSearchMode;
-      }
-      onChangeSearchText?.(searchText, mode);
-    },
-    [searchText],
-  );
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: searchMode
-  const handleSearchText = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      onChangeSearchText?.(event.target.value, searchMode);
-    },
-    [onChangeSearchText],
-  );
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: searchMode
-  const clearSearchText = useCallback(() => {
-    onChangeSearchText?.('', searchMode);
-  }, [onChangeSearchText]);
+  const { onClickMenuIcon, searchText, onChangeSearchText } = props;
 
   const elevation = useAppBarScrollElevation();
-
   const searchInputRef = useRef(null);
+
   const [searchFilterPopoverAnchorEl, setSearchFilterPopoverAnchorEl] =
     useState(null);
   const handleSearchFilterClick = useCallback(() => {
@@ -165,12 +127,14 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const { data: genreData } = useQuery(GenresDocument);
   // TODO: Update genres state in caller side
   const [genres, setGenres] = useAtom(genresState);
+
   const handleGenresChange = useCallback(
     (event) => {
       setGenres(event.target.value);
     },
     [setGenres],
   );
+
   const handleDeleteGenre = useCallback(
     (index) => {
       setGenres((currentGenres) => {
@@ -188,6 +152,8 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
     <StyledAppBar elevation={elevation} className={classes.appBar}>
       <Toolbar>
         <div style={{ flexGrow: 1 }} />
+
+        {/* Search Bar */}
         <div className={classes.search}>
           <div className={classes.searchIcon}>
             <Icon>search</Icon>
@@ -206,7 +172,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
                   <IconButton
                     size="small"
                     style={{ color: theme.palette.common.white }}
-                    onClick={clearSearchText}
+                    onClick={() => onChangeSearchText?.('')}
                     aria-label="clear"
                   >
                     <Icon>clear</Icon>
@@ -227,10 +193,11 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
               </InputAdornment>
             }
             value={searchText}
-            onChange={handleSearchText}
+            onChange={(event) => onChangeSearchText?.(event.target.value)}
           />
         </div>
 
+        {/* Genre Selection Popover */}
         <Popover
           open={Boolean(searchFilterPopoverAnchorEl)}
           anchorEl={searchFilterPopoverAnchorEl}
@@ -240,29 +207,14 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
             horizontal: 'left',
           }}
           PaperProps={{
-            sx: { p: 1, display: 'flex', flexDirection: 'column' },
+            sx: {
+              p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 250,
+            },
           }}
         >
-          <FormControl
-            fullWidth
-            margin="dense"
-            size="small"
-            className={classes.inputFilter}
-          >
-            <InputLabel>SearchMode</InputLabel>
-            <Select
-              label="SearchMode"
-              margin="dense"
-              value={searchMode}
-              onChange={handleSearchModeChange}
-            >
-              {(data?.availableSearchModes ?? ['DATABASE']).map((mode) => (
-                <MenuItem key={mode} value={mode}>
-                  {mode}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           <FormControl fullWidth margin="dense" className={classes.inputFilter}>
             <InputLabel>Genre</InputLabel>
             <Select
@@ -296,6 +248,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
           </FormControl>
         </Popover>
 
+        {/* Sort Button */}
         <IconButton
           className={classes.sortIcon}
           onClick={(event) => onClickMenuIcon?.(event.currentTarget)}

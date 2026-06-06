@@ -16,7 +16,6 @@ import { workbox } from '@client/registerServiceWorker';
 import {
   genresState,
   homeLastSeenBookPosition,
-  searchModeState,
   showBookInfoNameState,
   sortOrderState,
 } from '@client/store/atoms';
@@ -25,7 +24,6 @@ import { styled } from '@mui/material/styles';
 import {
   type HomeBookInfoFragment,
   RelayBookInfosDocument,
-  type SearchMode,
 } from '@syuchan1005/book-reader-graphql';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -166,10 +164,8 @@ const Home = (_props: HomeProps) => {
     },
     [searchParams, setSearchParams, location],
   );
-  const debounceSearch = useDebounceValue(searchText, 800);
-  const [searchMode, setSearchMode] = useAtom(searchModeState);
   const handleSearchText = useCallback(
-    (text: string, mode: SearchMode) => {
+    (text: string) => {
       if (!text) {
         setSearchText(undefined);
       } else if (searchText === undefined) {
@@ -177,9 +173,8 @@ const Home = (_props: HomeProps) => {
       } else {
         setSearchText(text, 'replace');
       }
-      setSearchMode(mode);
     },
-    [searchText, setSearchText, setSearchMode],
+    [searchText, setSearchText],
   );
 
   const [isSkipQuery, setSkipQuery] = useState(true);
@@ -187,6 +182,7 @@ const Home = (_props: HomeProps) => {
     setSkipQuery(false);
   }, []);
 
+  const debounceSearch = useDebounceValue(searchText, 800);
   const [infos, setInfos] = useState<HomeBookInfoFragment[]>([]);
   const { refetch, loading, error, data, fetchMore } = useQuery(
     RelayBookInfosDocument,
@@ -196,7 +192,6 @@ const Home = (_props: HomeProps) => {
         first: lastSeenPositionIndex + defaultLoadBookInfoCount,
         option: {
           search: debounceSearch || undefined,
-          searchMode,
           genres,
           order: sortOrder,
         },
@@ -352,7 +347,6 @@ const Home = (_props: HomeProps) => {
     <>
       <SearchAndMenuHeader
         searchText={searchText || ''}
-        searchMode={searchMode}
         onChangeSearchText={handleSearchText}
         onClickMenuIcon={setMenuAnchor}
       />

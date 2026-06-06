@@ -1,8 +1,4 @@
-import {
-  BookInfoOrder,
-  BookOrder,
-  SearchMode,
-} from '@syuchan1005/book-reader-graphql';
+import { BookInfoOrder, BookOrder } from '@syuchan1005/book-reader-graphql';
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
@@ -43,11 +39,6 @@ const createLocalStorageAtom = <T>(key: string, initialValue: T) => {
 };
 
 export const genresState = atom<string[]>([]);
-
-export const searchModeState = createLocalStorageAtom<SearchMode>(
-  'searchMode',
-  SearchMode.Database,
-);
 
 export const themeState = atom<'light' | 'dark'>('light');
 

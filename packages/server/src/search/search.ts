@@ -25,7 +25,9 @@ function normalizeText(text: string): string {
 
 export class SearchClient {
   private miniSearch: MiniSearch<BookInfoIndexEntity> | undefined;
-  private readonly segmenter = new Intl.Segmenter('ja', { granularity: 'word' });
+  private readonly segmenter = new Intl.Segmenter('ja', {
+    granularity: 'word',
+  });
 
   async init(): Promise<void> {
     this.miniSearch = new MiniSearch<BookInfoIndexEntity>({
@@ -69,7 +71,9 @@ export class SearchClient {
       id: bookInfo.id,
       infoName: bookInfo.name,
       genres: bookInfo.genres.map((g) => g.name),
-      invisibleGenres: bookInfo.genres.filter((g) => g.isInvisible).map((g) => g.name),
+      invisibleGenres: bookInfo.genres
+        .filter((g) => g.isInvisible)
+        .map((g) => g.name),
     }));
 
     this.miniSearch.addAll(entities);
@@ -92,7 +96,9 @@ export class SearchClient {
       id: bookInfo.id,
       infoName: bookInfo.name,
       genres: bookInfo.genres.map((g) => g.name),
-      invisibleGenres: bookInfo.genres.filter((g) => g.isInvisible).map((g) => g.name),
+      invisibleGenres: bookInfo.genres
+        .filter((g) => g.isInvisible)
+        .map((g) => g.name),
     });
   }
 
@@ -120,7 +126,9 @@ export class SearchClient {
     const searchOptions: any = {};
     const filterGenres = genres || [];
     searchOptions.filter = (result: BookInfoIndexEntity) => {
-      const matchesFilter = filterGenres.every((g) => result.genres.includes(g));
+      const matchesFilter = filterGenres.every((g) =>
+        result.genres.includes(g),
+      );
       if (!matchesFilter) return false;
 
       const invisibleGenres = result.invisibleGenres || [];

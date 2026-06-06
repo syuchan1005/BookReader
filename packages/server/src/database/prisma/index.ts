@@ -393,7 +393,6 @@ export class PrismaBookDataManager implements IBookDataManager {
       },
     };
 
-
     const bookInfos = await this.prismaClient.bookInfo.findMany({
       take: limit,
       where: {
@@ -432,7 +431,11 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   async getBookInfosForSearch(): Promise<
-    Array<{ id: string; name: string; genres: Array<{ name: string; isInvisible: boolean }> }>
+    Array<{
+      id: string;
+      name: string;
+      genres: Array<{ name: string; isInvisible: boolean }>;
+    }>
   > {
     const bookInfos = await this.prismaClient.bookInfo.findMany({
       select: {
@@ -461,7 +464,12 @@ export class PrismaBookDataManager implements IBookDataManager {
   }
 
   async getBookInfoForSearch(infoId: string): Promise<
-    { id: string; name: string; genres: Array<{ name: string; isInvisible: boolean }> } | undefined
+    | {
+        id: string;
+        name: string;
+        genres: Array<{ name: string; isInvisible: boolean }>;
+      }
+    | undefined
   > {
     const bookInfo = await this.prismaClient.bookInfo.findUnique({
       where: { id: infoId },

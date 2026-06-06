@@ -26,7 +26,7 @@ import {
   BookInfoOrder,
   DebugBookCountsDocument,
   DeleteUnusedFoldersDocument,
-  RebuildMeiliSearchDocument,
+  RebuildSearchDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
 import { useCallback, useState } from 'react';
@@ -105,8 +105,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     }
   }, [vConsole]);
 
-  const [rebuildMeiliSearchMutation, { loading: rebuilding }] = useMutation(
-    RebuildMeiliSearchDocument,
+  const [rebuildSearchMutation, { loading: rebuilding }] = useMutation(
+    RebuildSearchDocument,
   );
 
   return (
@@ -242,11 +242,11 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           </Collapse>
           <MenuItem
             onClick={() => {
-              rebuildMeiliSearchMutation();
+              rebuildSearchMutation();
             }}
             disabled={rebuilding}
           >
-            Rebuild MeiliSearch indexes
+            Rebuild Search index
           </MenuItem>
         </Collapse>
         <MenuItem

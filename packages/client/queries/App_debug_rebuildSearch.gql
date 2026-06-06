@@ -1,0 +1,5 @@
+mutation rebuildSearch {
+  debug_rebuildSearch {
+    success
+  }
+}

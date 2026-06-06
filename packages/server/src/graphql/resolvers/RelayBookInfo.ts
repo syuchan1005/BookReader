@@ -173,7 +173,7 @@ const searchBookInfosBySearch = async ({
   const bookInfoMap = new Map(bookInfos.map((info) => [info.id, info]));
   const sortedBookInfos = infoIds
     .map((id) => bookInfoMap.get(id))
-    .filter((info): info is typeof bookInfos[number] => !!info);
+    .filter((info): info is (typeof bookInfos)[number] => !!info);
 
   return {
     edges: sortedBookInfos.map((bookInfo) => ({

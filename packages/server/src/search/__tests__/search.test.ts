@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SearchClient } from '../search';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BookDataManager } from '../../database/BookDataManager';
+import { SearchClient } from '../search';
 
 vi.mock('../../database/BookDataManager', () => {
   return {
@@ -24,33 +24,31 @@ describe('SearchClient with invisible genres filter', () => {
       {
         id: 'book1',
         name: 'Visible Book',
-        genres: [
-          { name: 'Completed', isInvisible: false }
-        ]
+        genres: [{ name: 'Completed', isInvisible: false }],
       },
       {
         id: 'book2',
         name: 'Invisible Book',
-        genres: [
-          { name: 'Invisible', isInvisible: true }
-        ]
+        genres: [{ name: 'Invisible', isInvisible: true }],
       },
       {
         id: 'book3',
         name: 'Mixed Book',
         genres: [
           { name: 'Completed', isInvisible: false },
-          { name: 'Invisible', isInvisible: true }
-        ]
+          { name: 'Invisible', isInvisible: true },
+        ],
       },
       {
         id: 'book4',
         name: 'No Genre Book',
-        genres: []
-      }
+        genres: [],
+      },
     ];
 
-    vi.mocked(BookDataManager.getBookInfosForSearch).mockResolvedValue(mockBooks);
+    vi.mocked(BookDataManager.getBookInfosForSearch).mockResolvedValue(
+      mockBooks,
+    );
 
     await searchClient.init();
 
@@ -72,7 +70,10 @@ describe('SearchClient with invisible genres filter', () => {
     expect(resultsInvisible).toContain('book3');
 
     // 4. Search with both "Completed" and "Invisible": should find Mixed Book
-    const resultsBoth = await searchClient.search('Book', ['Completed', 'Invisible']);
+    const resultsBoth = await searchClient.search('Book', [
+      'Completed',
+      'Invisible',
+    ]);
     expect(resultsBoth).toContain('book3');
     expect(resultsBoth).not.toContain('book1');
     expect(resultsBoth).not.toContain('book2');

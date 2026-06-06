@@ -5,9 +5,9 @@ import { resolvers as Book } from './Book';
 import { resolvers as BookInfo } from './BookInfo';
 import { resolvers as Debug } from './Debug';
 import { resolvers as Genre } from './Genre';
-import { resolvers as MeiliSearch } from './MeiliSearch';
 import { resolvers as Page } from './Page';
 import { resolvers as RelayBookInfo } from './RelayBookInfo';
+import { resolvers as Search } from './Search';
 
 export const resolvers: Resolvers = mergeResolvers([
   Book,
@@ -16,5 +16,5 @@ export const resolvers: Resolvers = mergeResolvers([
   Genre,
   Page,
   RelayBookInfo,
-  MeiliSearch,
+  Search,
 ]);
