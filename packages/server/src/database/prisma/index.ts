@@ -3,12 +3,6 @@ import {
   type BookInfo as PBookInfo,
   PrismaClient,
 } from '@prisma/client';
-
-import {
-  BatchLoading,
-  BatchLoadingClear,
-  BatchLoadingClearAll,
-} from '@server/database/BatchLoading';
 import type {
   IBookDataManager,
   RequireAtLeastOne,
@@ -37,6 +31,7 @@ import type {
 } from '@server/database/models/Genre';
 import { generateId } from '@server/database/models/Id';
 import { defaultGenres } from '@syuchan1005/book-reader-common';
+import DataLoader from 'dataloader';
 
 type IsNullable<T, K> = undefined extends T ? K : never;
 type NullableKeys<T> = { [K in keyof T]-?: IsNullable<T[K], K> }[keyof T];
@@ -61,6 +56,60 @@ const PrismaErrorCode = {
 
 export class PrismaBookDataManager implements IBookDataManager {
   public prismaClient: PrismaClient;
+
+  private readonly bookInfoThumbnailLoader = new DataLoader<
+    InfoId,
+    BookInfoThumbnail | undefined
+  >(async (infoIds) => {
+    const bookMap = await this.prismaClient.book
+      .findMany({
+        where: {
+          thumbnailById: {
+            in: infoIds as string[],
+          },
+        },
+      })
+      .then((books) => {
+        const result: Record<string, PBook> = {};
+        for (const info of books) {
+          if (info.thumbnailById) {
+            result[info.thumbnailById] = info;
+          }
+        }
+        return result;
+      });
+    return infoIds.map((id) =>
+      PrismaBookDataManager.convertBookInfoThumbnail(bookMap[id]),
+    );
+  });
+
+  private readonly bookInfoGenresLoader = new DataLoader<InfoId, Array<Genre>>(
+    async (infoIds) => {
+      const genreMap = await this.prismaClient.bookInfo
+        .findMany({
+          where: {
+            id: {
+              in: infoIds as string[],
+            },
+          },
+          include: {
+            genres: {
+              include: {
+                genre: true,
+              },
+            },
+          },
+        })
+        .then((bookInfos) => {
+          const result: Record<string, Genre[]> = {};
+          for (const info of bookInfos) {
+            result[info.id] = info?.genres?.map(({ genre }) => genre) ?? [];
+          }
+          return result;
+        });
+      return infoIds.map((id) => genreMap[id] ?? []);
+    },
+  );
 
   async init(databaseUrl?: string): Promise<void> {
     const url = databaseUrl ?? `file:../${env}.sqlite`;
@@ -103,11 +152,8 @@ export class PrismaBookDataManager implements IBookDataManager {
     });
   }
 
-  @BatchLoadingClear<[InputBook]>(
-    'getBookInfoThumbnail',
-    (args) => args[0].infoId,
-  )
   async addBook({ id, infoId, ...book }: InputBook): Promise<BookId> {
+    this.bookInfoThumbnailLoader.clear(infoId);
     const bookId = id || generateId();
     await this.prismaClient.$transaction(async (transactionalPrismaClient) => {
       await transactionalPrismaClient.book.create({
@@ -137,19 +183,19 @@ export class PrismaBookDataManager implements IBookDataManager {
     return bookId;
   }
 
-  @BatchLoadingClearAll('getBookInfoThumbnail')
   async editBook(
     bookId: BookId,
     value: RequireAtLeastOne<BookEditableValue>,
   ): Promise<void> {
+    this.bookInfoThumbnailLoader.clearAll();
     await this.prismaClient.book.update({
       where: { id: bookId },
       data: removeNullableEntries(value),
     });
   }
 
-  @BatchLoadingClearAll('getBookInfoThumbnail')
   async deleteBooks(infoId: InfoId, bookIds: Array<BookId>): Promise<void> {
+    this.bookInfoThumbnailLoader.clearAll();
     await this.prismaClient.$transaction([
       this.prismaClient.book.deleteMany({
         where: {
@@ -166,11 +212,11 @@ export class PrismaBookDataManager implements IBookDataManager {
     ]);
   }
 
-  @BatchLoadingClearAll('getBookInfoThumbnail')
   async moveBooks(
     bookIds: Array<BookId>,
     destinationInfoId: InfoId,
   ): Promise<void> {
+    this.bookInfoThumbnailLoader.clearAll();
     if (bookIds.length === 0) {
       return;
     }
@@ -252,36 +298,10 @@ export class PrismaBookDataManager implements IBookDataManager {
     };
   }
 
-  @BatchLoading<InfoId, BookInfoThumbnail>(
-    'getBookInfoThumbnail',
-    async (infoIds) => {
-      const bookMap = await INSTANCE.prismaClient.book
-        .findMany({
-          where: {
-            thumbnailById: {
-              in: infoIds,
-            },
-          },
-        })
-        .then((books) => {
-          const result = {};
-          for (const info of books) {
-            result[info.thumbnailById] = info;
-          }
-          return result;
-        });
-      return infoIds.map((id) =>
-        PrismaBookDataManager.convertBookInfoThumbnail(bookMap[id]),
-      );
-    },
-  )
   async getBookInfoThumbnail(
     infoId: InfoId,
   ): Promise<BookInfoThumbnail | undefined> {
-    const thumbnailBook = await this.prismaClient.book.findFirst({
-      where: { thumbnailById: infoId },
-    });
-    return PrismaBookDataManager.convertBookInfoThumbnail(thumbnailBook);
+    return this.bookInfoThumbnailLoader.load(infoId);
   }
 
   // biome-ignore lint/correctness/noUnusedPrivateClassMembers: not unused
@@ -297,45 +317,8 @@ export class PrismaBookDataManager implements IBookDataManager {
       : undefined;
   }
 
-  @BatchLoading<InfoId, Array<Genre>>('getBookInfoGenres', async (infoIds) => {
-    const genreMap = await INSTANCE.prismaClient.bookInfo
-      .findMany({
-        where: {
-          id: {
-            in: infoIds,
-          },
-        },
-        include: {
-          genres: {
-            include: {
-              genre: true,
-            },
-          },
-        },
-      })
-      .then((bookInfos) => {
-        const result = {};
-        for (const info of bookInfos) {
-          result[info.id] = info?.genres?.map(({ genre }) => genre);
-        }
-        return result;
-      });
-    return infoIds.map((id) => genreMap[id]);
-  })
   async getBookInfoGenres(infoId: InfoId): Promise<Array<Genre>> {
-    const bookInfo = await this.prismaClient.bookInfo.findUnique({
-      where: {
-        id: infoId,
-      },
-      include: {
-        genres: {
-          include: {
-            genre: true,
-          },
-        },
-      },
-    });
-    return bookInfo?.genres?.map(({ genre }) => genre) ?? [];
+    return this.bookInfoGenresLoader.load(infoId);
   }
 
   async getBookInfoBooks(
@@ -474,8 +457,6 @@ export class PrismaBookDataManager implements IBookDataManager {
     return infoId;
   }
 
-  @BatchLoadingClear('getBookInfoThumbnail')
-  @BatchLoadingClear('getBookInfoGenres')
   async editBookInfo(
     infoId: InfoId,
     {
@@ -484,6 +465,8 @@ export class PrismaBookDataManager implements IBookDataManager {
       thumbnail,
     }: RequireAtLeastOne<BookInfoEditableValue>,
   ): Promise<void> {
+    this.bookInfoThumbnailLoader.clear(infoId);
+    this.bookInfoGenresLoader.clear(infoId);
     if (!bookName && !genres && !thumbnail) {
       return;
     }
@@ -568,9 +551,9 @@ export class PrismaBookDataManager implements IBookDataManager {
     });
   }
 
-  @BatchLoadingClear('getBookInfoThumbnail')
-  @BatchLoadingClear('getBookInfoGenres')
   async deleteBookInfo(infoId: InfoId): Promise<void> {
+    this.bookInfoThumbnailLoader.clear(infoId);
+    this.bookInfoGenresLoader.clear(infoId);
     await this.prismaClient.bookInfo.delete({ where: { id: infoId } });
   }
 
@@ -584,11 +567,11 @@ export class PrismaBookDataManager implements IBookDataManager {
     return this.prismaClient.genre.findMany();
   }
 
-  @BatchLoadingClearAll('getBookInfoGenres')
   async editGenre(
     genreName: GenreName,
     genre: RequireAtLeastOne<GenreEditableValue>,
   ): Promise<DeleteGenreError> {
+    this.bookInfoGenresLoader.clearAll();
     if (defaultGenres.includes(genreName)) {
       return 'DELETE_DEFAULT';
     }
@@ -599,10 +582,10 @@ export class PrismaBookDataManager implements IBookDataManager {
     return undefined;
   }
 
-  @BatchLoadingClearAll('getBookInfoGenres')
   async deleteGenre(
     genreName: GenreName,
   ): Promise<DeleteGenreError | undefined> {
+    this.bookInfoGenresLoader.clearAll();
     if (defaultGenres.includes(genreName)) {
       return 'DELETE_DEFAULT';
     }
