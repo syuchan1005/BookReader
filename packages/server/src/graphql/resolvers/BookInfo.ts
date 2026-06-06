@@ -7,7 +7,7 @@ import { generateId } from '@server/database/models/Id';
 import Errors from '@server/Errors';
 import type { StrictResolver } from '@server/graphql/resolvers/ResolverUtil';
 import { purgeImageCache } from '@server/ImageUtil';
-import { elasticSearchClient, meiliSearchClient } from '@server/search';
+import { searchClient } from '@server/search';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import {
   type BookInfo as BookInfoGQLModel,
@@ -59,8 +59,7 @@ export const resolvers: Resolvers & {
           message: Errors.QL0004,
         };
       }
-      await meiliSearchClient.addBookInfo(infoId);
-      await elasticSearchClient.addBookInfo(infoId);
+      await searchClient.addBookInfo(infoId);
       return {
         success: true,
         bookInfo,
@@ -96,10 +95,7 @@ export const resolvers: Resolvers & {
         };
       }
 
-      await meiliSearchClient.removeBookInfo(infoId);
-      await elasticSearchClient.removeBookInfo(infoId);
-      await meiliSearchClient.addBookInfo(infoId);
-      await elasticSearchClient.addBookInfo(infoId);
+      await searchClient.addBookInfo(infoId);
 
       return {
         success: true,
@@ -115,8 +111,7 @@ export const resolvers: Resolvers & {
       );
       purgeImageCache();
 
-      await meiliSearchClient.removeBookInfo(infoId);
-      await elasticSearchClient.removeBookInfo(infoId);
+      await searchClient.removeBookInfo(infoId);
       return {
         success: true,
         books,

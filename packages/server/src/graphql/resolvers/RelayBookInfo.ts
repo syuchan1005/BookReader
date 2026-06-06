@@ -2,7 +2,7 @@ import {
   BookDataManager,
   type SortKey,
 } from '@server/database/BookDataManager';
-import { elasticSearchClient, meiliSearchClient } from '@server/search';
+import { searchClient } from '@server/search';
 import {
   type BookInfo as BookInfoGQLModel,
   BookInfoOrder,
@@ -10,12 +10,10 @@ import {
   type BookInfosOption,
   type QueryRelayBookInfosArgs,
   type Resolvers,
-  SearchMode,
 } from '@syuchan1005/book-reader-graphql';
 
 const DefaultOptions: BookInfosOption = {
   search: undefined,
-  searchMode: SearchMode.Database,
   genres: [],
   order: BookInfoOrder.UpdateNewest,
 };
@@ -160,50 +158,33 @@ const searchBookInfosByDB = async ({
   } as BookInfoPartialList;
 };
 
-const searchBookInfosByMeiliSearch = async ({
+const searchBookInfosBySearch = async ({
   first,
   option = DefaultOptions,
 }: Partial<QueryRelayBookInfosArgs>) => {
-  const infoIds = await meiliSearchClient.search(
+  const infoIds = await searchClient.search(
     option.search,
     option.genres,
     first,
   );
   const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
-  return {
-    edges: bookInfos.map((bookInfo) => ({
-      cursor: bookInfo.name,
-      node: bookInfo as unknown as BookInfoGQLModel,
-    })),
-    pageInfo: {
-      hasNextPage: false,
-      hasPreviousPage: false,
-      startCursor: bookInfos[0]?.name ?? '',
-      endCursor: bookInfos[bookInfos.length - 1]?.name ?? '',
-    },
-  } as BookInfoPartialList;
-};
 
-const searchBookInfosByElasticSearch = async ({
-  first,
-  option = DefaultOptions,
-}: Partial<QueryRelayBookInfosArgs>) => {
-  const infoIds = await elasticSearchClient.search(
-    option.search,
-    option.genres,
-    first,
-  );
-  const bookInfos = await BookDataManager.getBookInfosFromIds(infoIds);
+  // Re-sort results to preserve the relevance order computed by MiniSearch
+  const bookInfoMap = new Map(bookInfos.map((info) => [info.id, info]));
+  const sortedBookInfos = infoIds
+    .map((id) => bookInfoMap.get(id))
+    .filter((info): info is typeof bookInfos[number] => !!info);
+
   return {
-    edges: bookInfos.map((bookInfo) => ({
+    edges: sortedBookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
       node: bookInfo as unknown as BookInfoGQLModel,
     })),
     pageInfo: {
       hasNextPage: false,
       hasPreviousPage: false,
-      startCursor: bookInfos[0]?.name ?? '',
-      endCursor: bookInfos[bookInfos.length - 1]?.name ?? '',
+      startCursor: sortedBookInfos[0]?.name ?? '',
+      endCursor: sortedBookInfos[sortedBookInfos.length - 1]?.name ?? '',
     },
   } as BookInfoPartialList;
 };
@@ -211,26 +192,10 @@ const searchBookInfosByElasticSearch = async ({
 export const resolvers: Resolvers = {
   Query: {
     relayBookInfos: ((_parent, args: QueryRelayBookInfosArgs) => {
-      const searchMode = (args.option || DefaultOptions).searchMode;
-      switch (searchMode) {
-        case SearchMode.Meilisearch:
-          if (args.option.search && meiliSearchClient.isAvailable()) {
-            return searchBookInfosByMeiliSearch(args);
-          }
-          break;
-        case SearchMode.Elasticsearch:
-          if (args.option.search && elasticSearchClient.isAvailable()) {
-            return searchBookInfosByElasticSearch(args);
-          }
-          break;
-        case SearchMode.Database:
-          return searchBookInfosByDB(args);
-        default: {
-          const _exhaustiveCheck: never = searchMode;
-          return _exhaustiveCheck;
-        }
+      if (args.option?.search && searchClient.isAvailable()) {
+        return searchBookInfosBySearch(args);
       }
-      throw Error('Unknown searchMode');
+      return searchBookInfosByDB(args);
     }) as any,
   },
 };

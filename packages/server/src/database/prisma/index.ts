@@ -365,23 +365,11 @@ export class PrismaBookDataManager implements IBookDataManager {
       sort,
     } = option;
 
-    const genreFilter =
-      genres.length === 0
-        ? {
-            where: {
-              NOT: {
-                genres: {
-                  some: {
-                    genre: {
-                      isInvisible: true,
-                    },
-                  },
-                },
-              },
-            },
-          }
-        : {
-            where: {
+    const genreFilter = {
+      where: {
+        ...(genres.length === 0
+          ? {}
+          : {
               genres: {
                 some: {
                   genreName: {
@@ -389,8 +377,22 @@ export class PrismaBookDataManager implements IBookDataManager {
                   },
                 },
               },
+            }),
+        NOT: {
+          genres: {
+            some: {
+              genre: {
+                isInvisible: true,
+              },
+              genreName: {
+                notIn: genres,
+              },
             },
-          };
+          },
+        },
+      },
+    };
+
 
     const bookInfos = await this.prismaClient.bookInfo.findMany({
       take: limit,
@@ -427,6 +429,68 @@ export class PrismaBookDataManager implements IBookDataManager {
     return bookInfos.map(({ genres: _, ...bookInfo }) =>
       PrismaBookDataManager.convertBookInfo(bookInfo),
     );
+  }
+
+  async getBookInfosForSearch(): Promise<
+    Array<{ id: string; name: string; genres: Array<{ name: string; isInvisible: boolean }> }>
+  > {
+    const bookInfos = await this.prismaClient.bookInfo.findMany({
+      select: {
+        id: true,
+        name: true,
+        genres: {
+          select: {
+            genreName: true,
+            genre: {
+              select: {
+                isInvisible: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return bookInfos.map((info) => ({
+      id: info.id,
+      name: info.name,
+      genres: info.genres.map((g) => ({
+        name: g.genreName,
+        isInvisible: g.genre.isInvisible,
+      })),
+    }));
+  }
+
+  async getBookInfoForSearch(infoId: string): Promise<
+    { id: string; name: string; genres: Array<{ name: string; isInvisible: boolean }> } | undefined
+  > {
+    const bookInfo = await this.prismaClient.bookInfo.findUnique({
+      where: { id: infoId },
+      select: {
+        id: true,
+        name: true,
+        genres: {
+          select: {
+            genreName: true,
+            genre: {
+              select: {
+                isInvisible: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!bookInfo) {
+      return undefined;
+    }
+    return {
+      id: bookInfo.id,
+      name: bookInfo.name,
+      genres: bookInfo.genres.map((g) => ({
+        name: g.genreName,
+        isInvisible: g.genre.isInvisible,
+      })),
+    };
   }
 
   async addBookInfo({

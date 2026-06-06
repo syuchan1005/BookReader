@@ -76,6 +76,14 @@ export interface IBookDataManager {
     > /* = [['updatedAt', 'asc']] */,
   ): Promise<Array<Book>>;
 
+  getBookInfosForSearch(): Promise<
+    Array<{ id: string; name: string; genres: Array<{ name: string; isInvisible: boolean }> }>
+  >;
+
+  getBookInfoForSearch(infoId: InfoId): Promise<
+    { id: string; name: string; genres: Array<{ name: string; isInvisible: boolean }> } | undefined
+  >;
+
   getBookInfos(option: {
     limit?: number;
     filter: {

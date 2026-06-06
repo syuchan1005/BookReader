@@ -4,7 +4,7 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { httpInstrumentationMiddleware } from '@hono/otel';
 import { BookDataManager } from '@server/database/BookDataManager';
-import { elasticSearchClient, meiliSearchClient } from '@server/search';
+import { searchClient } from '@server/search';
 import { StorageDataManager } from '@server/storage/StorageDataManager';
 import {
   availableImageExtensions,
@@ -24,9 +24,8 @@ import { getOrConvertImage } from './ImageUtil';
 
 (async () => {
   await StorageDataManager.init();
-  await meiliSearchClient.init();
-  await elasticSearchClient.init();
   await BookDataManager.init();
+  await searchClient.init();
 
   const auth = createAuth();
   const isAuthenticatedMiddleware = createIsAuthenticatedMiddleware(auth);
