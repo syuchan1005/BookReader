@@ -63,6 +63,11 @@ COPY package.json bun.lock ./
 COPY packages/server/package.json packages/server/
 COPY packages/client/package.json packages/client/
 COPY packages/common/package.json packages/common/
+# Copy common package source before bun install so the workspace package
+# (@syuchan1005/book-reader-common) is available for hoisted linker resolution.
+# bun build uses packages: 'external', so the common package is NOT bundled
+# inline and must be present in the runtime environment.
+COPY packages/common packages/common
 RUN bun install --linker hoisted --frozen-lockfile --production
 
 COPY --from=build-client /build/packages/client/dist public
