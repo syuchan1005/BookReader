@@ -67,21 +67,19 @@ export const commonTheme = {
             ],
           ];
         }
-        // @ts-expect-error
-        if (val.minHeight !== undefined) {
+        const valObj = val as { minHeight?: number };
+        if (valObj.minHeight !== undefined) {
           return [
             [
               key,
               {
-                // @ts-expect-error
                 [styleName]: `calc(${commonTheme.safeArea.top} + ${
-                  val.minHeight
+                  valObj.minHeight
                 }px${calcOption || ''})`,
                 fallbacks: {
-                  // @ts-expect-error
                   [styleName]: calcOption
-                    ? `calc(${val.minHeight}px${calcOption})`
-                    : val.minHeight,
+                    ? `calc(${valObj.minHeight}px${calcOption})`
+                    : valObj.minHeight,
                 },
               },
             ],
@@ -89,10 +87,9 @@ export const commonTheme = {
         }
         return [];
       })
-      .reduce((o, props) => {
+      .reduce((o: Record<string, unknown>, props) => {
         for (const [k, v] of props) {
-          // @ts-expect-error
-          o[k] = v;
+          o[k as string] = v;
         }
         return o;
       }, {}),

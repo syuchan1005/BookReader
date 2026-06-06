@@ -1,17 +1,17 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import orderBy from '../index';
+import baseOrderBy from '../../utils/baseOrderBy';
+
+vi.mock('../../utils/baseOrderBy', () => ({
+  default: vi.fn(),
+}));
+
 describe('orderBy()', () => {
   beforeEach(() => {
-    jest.resetModules();
-    jest.resetAllMocks();
-    jest.mock('../../utils/baseOrderBy', () =>
-      jest.fn().mockName('baseOrderBy'),
-    );
+    vi.clearAllMocks();
   });
   describe('non-exceptional cases', () => {
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = ['Fred', 'barney', 'frank', 'Bob'];
       const identifiers = undefined;
       const orders = undefined;
@@ -20,10 +20,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection, identifiers and orders arguments', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = ['Fred', 'barney', 'frank', 'Bob'];
       const identifiers = [v => v.toLowerCase()];
       const orders = ['desc'];
@@ -34,10 +30,6 @@ describe('orderBy()', () => {
   });
   describe('exceptional cases', () => {
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = [
         {
           user: 'Fred',
@@ -63,10 +55,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = [
         {
           user: 'Fred',
@@ -93,10 +81,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = [
         {
           user: 'Fred',
@@ -123,10 +107,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection argument and an empty array value for identifiers and orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = [
         {
           user: 'Fred',
@@ -153,10 +133,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, [], [], undefined);
     });
     it('should call baseOrderBy() with provided collection and identifiers argument and an empty array value for orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = [
         {
           user: 'Fred',
@@ -183,10 +159,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, [], undefined);
     });
     it('should call baseOrderBy() with provided collection and identifiers argument and an empty array value for orders', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = [
         {
           user: 'Fred',
@@ -213,10 +185,6 @@ describe('orderBy()', () => {
       expect(baseOrderBy).toHaveBeenCalledWith(collection, identifiers, [], undefined);
     });
     it('should return an empty array, if collection is null', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = null;
       const identifiers = undefined;
       const orders = undefined;
@@ -226,10 +194,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is undefined', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = undefined;
       const identifiers = undefined;
       const orders = undefined;
@@ -239,10 +203,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is boolean', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = true;
       const identifiers = undefined;
       const orders = undefined;
@@ -252,10 +212,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is a number', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = 1;
       const identifiers = undefined;
       const orders = undefined;
@@ -265,10 +221,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is a string', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = 'abc';
       const identifiers = undefined;
       const orders = undefined;
@@ -278,10 +230,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is a object', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = {};
       const identifiers = undefined;
       const orders = undefined;
@@ -291,10 +239,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is a function', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = () => {};
 
       const identifiers = undefined;
@@ -305,10 +249,6 @@ describe('orderBy()', () => {
       expect(result).toEqual([]);
     });
     it('should return an empty array, if collection is a symbol', () => {
-      const orderBy = require('..').default;
-
-      const baseOrderBy = require('../../utils/baseOrderBy');
-
       const collection = Symbol();
       const identifiers = undefined;
       const orders = undefined;
@@ -319,3 +259,5 @@ describe('orderBy()', () => {
     });
   });
 });
+
+

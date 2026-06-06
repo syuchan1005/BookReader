@@ -1,10 +1,10 @@
-import type { ComponentMeta } from '@storybook/react';
+import type { Meta } from '@storybook/react';
 
 import { HeaderWithBookListSkeleton } from '../HeaderWithBookListSkeleton';
 
 export default {
   title: 'Components/HeaderWithBookListSkeleton',
-} as ComponentMeta<typeof HeaderWithBookListSkeleton>;
+} as Meta<typeof HeaderWithBookListSkeleton>;
 
 const Template = () => <HeaderWithBookListSkeleton />;
 

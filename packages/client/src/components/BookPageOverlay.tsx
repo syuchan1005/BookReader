@@ -318,8 +318,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
                 theme={(outerTheme) => ({
                   ...outerTheme,
                   palette: {
-                    // @ts-expect-error
-                    ...outerTheme.palette,
+                    ...(outerTheme as any).palette,
                     primary: {
                       main: orange['700'],
                     },

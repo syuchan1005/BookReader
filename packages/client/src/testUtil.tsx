@@ -1,14 +1,13 @@
 import { render } from '@testing-library/react';
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactElement } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 export const renderWithRouter = (ui: ReactElement) => {
-  const Wrapper = ({ children }: { children: ReactNode }) => (
+  return render(
     <BrowserRouter>
       <Routes>
-        <Route path="*">{children}</Route>
+        <Route path="*" element={ui} />
       </Routes>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
-  return { ...render(ui, { wrapper: Wrapper }) };
 };

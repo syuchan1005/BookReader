@@ -53,7 +53,6 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const { backRoute, title, subTitle, children } = props;
 
   const clickBack = useCallback(() => {
-    // @ts-expect-error
     if (!location.state?.referrer && backRoute) {
       navigate(backRoute, {
         state: { referrer: location.pathname },

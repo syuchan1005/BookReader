@@ -12,9 +12,8 @@ import { workbox } from './registerServiceWorker';
 // biome-ignore lint/correctness/noConstantCondition: read above
 if (process.env.NODE_ENV !== 'production' && false) {
   import('@welldone-software/why-did-you-render').then(
-    (
-      { default: whyDidYouRender }, // @ts-ignore
-    ) => whyDidYouRender(React, { trackAllPureComponents: true }),
+    ({ default: whyDidYouRender }: any) =>
+      whyDidYouRender(React, { trackAllPureComponents: true }),
   );
 }
 

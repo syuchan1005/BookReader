@@ -26,8 +26,7 @@ export const importDbJson = async () => {
     fileInput.accept = '.json';
     fileInput.hidden = true;
     fileInput.onchange = (e) => {
-      // @ts-expect-error
-      resolve(e.target.files[0]);
+      resolve((e.target as HTMLInputElement).files[0]);
     };
     document.body.appendChild(fileInput);
     fileInput.click();
@@ -37,8 +36,7 @@ export const importDbJson = async () => {
   const jsonText: string = await new Promise((resolve) => {
     const fileReader = new FileReader();
     fileReader.onload = (e) => {
-      // @ts-expect-error
-      resolve(e.target.result);
+      resolve((e.target as FileReader).result as string);
     };
     fileReader.readAsText(file);
   });

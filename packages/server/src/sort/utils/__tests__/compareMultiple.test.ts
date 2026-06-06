@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import compareMultiple from '../compareMultiple';
 describe('compareMultiple()', () => {
   describe('default order', () => {
@@ -466,7 +467,7 @@ describe('compareMultiple()', () => {
   });
   describe('order function', () => {
     it('should call compareValues() and order() once and return result of order()', () => {
-      const order = jest.fn().mockReturnValue(-1);
+      const order = vi.fn().mockReturnValue(-1);
       const recordA = {
         index: 0,
         values: [
@@ -519,13 +520,13 @@ describe('compareMultiple()', () => {
         0,
       );
       expect(order).toHaveBeenCalledTimes(1);
-      expect(order).toBeCalledWith(
+      expect(order).toHaveBeenCalledWith(
         recordA.values[1].value,
         recordB.values[1].value,
       );
     });
     it('should call order() and compareValues() once and return result of compareValues()', () => {
-      const order = jest.fn().mockReturnValue(0);
+      const order = vi.fn().mockReturnValue(0);
       const recordA = {
         index: 0,
         values: [
@@ -576,7 +577,7 @@ describe('compareMultiple()', () => {
       };
       expect(compareMultiple(recordA, recordB, [order, 'asc'])).toBeLessThan(0);
       expect(order).toHaveBeenCalledTimes(1);
-      expect(order).toBeCalledWith(
+      expect(order).toHaveBeenCalledWith(
         recordA.values[0].value,
         recordB.values[0].value,
       );

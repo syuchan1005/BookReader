@@ -4,7 +4,7 @@
     "serve": "nodemon --watch src --ext .js,.ts --exec \"tsc --noEmit && bun run build -- development && bun dist/index.js\"",
     "build": "bun scripts/build.mjs",
     "prisma-migrate": "bun scripts/prisma-migrate.js",
-    "test": "jest",
+    "test": "vitest run",
     "prisma": "prisma",
     "gql-gen": "graphql-codegen --config codegen.yml"
   },
@@ -17,7 +17,8 @@
     "@types/sharp": "^0.32.0",
     "@types/unzipper": "^0.10.11",
     "esbuild": "^0.27.0",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "vitest": "^3.0.0"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^9.2.0",

@@ -108,7 +108,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     sizeDebounceDelay = 0,
     skip = false,
   } = props;
-  const imageRef = useRef<HTMLImageElement>();
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const argDebounceWidth = useDebounceValue(argWidth, sizeDebounceDelay);
   const argDebounceHeight = useDebounceValue(argHeight, sizeDebounceDelay);

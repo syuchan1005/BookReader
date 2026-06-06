@@ -5,13 +5,16 @@ import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
+declare const self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
+};
+
 setCacheNameDetails({
   prefix: 'bookReader',
   suffix: 'v2',
 });
 skipWaiting();
 clientsClaim();
-// @ts-expect-error
 precacheAndRoute(self.__WB_MANIFEST);
 
 // https://developers.google.com/web/tools/workbox/guides/common-recipes
@@ -82,7 +85,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-addEventListener('message', (event) => {
+self.addEventListener('message', (event) => {
   // When no response, client cannot resolve Promise.
   const postMessage = (arg = true) => event.ports[0].postMessage(arg);
   if (!event.data || !event.data.type) {
@@ -106,6 +109,5 @@ addEventListener('message', (event) => {
     postMessage();
   };
 
-  // @ts-expect-error waitUntil is not resolved
-  event.waitUntil(onMessage());
+  (event as ExtendableMessageEvent).waitUntil(onMessage());
 });

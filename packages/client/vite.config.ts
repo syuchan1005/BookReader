@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import { resolve } from 'path';
@@ -69,6 +70,10 @@ const TimePlugin = (): Plugin => {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+  },
   resolve: {
     dedupe: ['@apollo/client', 'react', 'react-dom', 'jotai'],
     alias: {
@@ -95,7 +100,6 @@ export default defineConfig({
       },
     }),
     RemoveServiceWorkerTsFilePlugin(),
-    // @ts-expect-error
     bundleVisualizer({
       template: 'treemap',
       gzipSize: true,

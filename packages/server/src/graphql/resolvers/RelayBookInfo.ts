@@ -117,8 +117,8 @@ const searchBookInfosByDB = async ({
       genres,
       name: {
         include: search,
-        // @ts-expect-error-error
-        between: cursor.cursorKey === 'name' ? paginationWhere : undefined,
+        between:
+          cursor.cursorKey === 'name' ? (paginationWhere as any) : undefined,
       },
       ...(cursor.cursorKey !== 'name'
         ? {
@@ -149,8 +149,7 @@ const searchBookInfosByDB = async ({
   return {
     edges: edges.map((bookInfo) => ({
       cursor: bookInfo[cursor.cursorKey],
-      // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
-      node: bookInfo as BookInfoGQLModel,
+      node: bookInfo as unknown as BookInfoGQLModel,
     })),
     pageInfo: {
       hasNextPage: bookInfos.length > first,
@@ -174,8 +173,7 @@ const searchBookInfosByMeiliSearch = async ({
   return {
     edges: bookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
-      // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
-      node: bookInfo as BookInfoGQLModel,
+      node: bookInfo as unknown as BookInfoGQLModel,
     })),
     pageInfo: {
       hasNextPage: false,
@@ -199,8 +197,7 @@ const searchBookInfosByElasticSearch = async ({
   return {
     edges: bookInfos.map((bookInfo) => ({
       cursor: bookInfo.name,
-      // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
-      node: bookInfo as BookInfoGQLModel,
+      node: bookInfo as unknown as BookInfoGQLModel,
     })),
     pageInfo: {
       hasNextPage: false,
@@ -213,8 +210,7 @@ const searchBookInfosByElasticSearch = async ({
 
 export const resolvers: Resolvers = {
   Query: {
-    // @ts-expect-error https://github.com/dotansimha/graphql-code-generator/issues/3131
-    relayBookInfos: (_parent, args) => {
+    relayBookInfos: ((_parent, args: QueryRelayBookInfosArgs) => {
       const searchMode = (args.option || DefaultOptions).searchMode;
       switch (searchMode) {
         case SearchMode.Meilisearch:
@@ -235,6 +231,6 @@ export const resolvers: Resolvers = {
         }
       }
       throw Error('Unknown searchMode');
-    },
+    }) as any,
   },
 };

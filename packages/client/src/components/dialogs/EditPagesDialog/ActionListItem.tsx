@@ -101,12 +101,10 @@ const ListItemCard = forwardRef((props: ListItemCardProps, ref) => {
   const theme = useTheme();
   return (
     <ListItem
-      // @ts-expect-error
       ref={ref}
       {...draggableProps}
       style={{
         zIndex: theme.zIndex.modal + 1,
-        // @ts-expect-error
         ...draggableProps.style,
         flexWrap: 'wrap',
       }}

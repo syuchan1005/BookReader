@@ -1,6 +1,6 @@
 import { MockedProvider } from '@apollo/client/testing/react';
 import { Icon, IconButton } from '@mui/material';
-import type { ComponentMeta } from '@storybook/react';
+import type { Meta } from '@storybook/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import TitleAndBackHeader from '../TitleAndBackHeader';
@@ -32,7 +32,7 @@ export default {
       </MockedProvider>
     ),
   ],
-} as ComponentMeta<typeof TitleAndBackHeader>;
+} as Meta<typeof TitleAndBackHeader>;
 
 const Template = (args) => <TitleAndBackHeader {...args} />;
 

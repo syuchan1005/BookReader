@@ -101,7 +101,6 @@ const cache = new InMemoryCache({
 });
 
 const cachePersistor = new CachePersistor({
-  // @ts-expect-error
   cache,
   storage: new LocalStorageWrapper(window.localStorage),
 });

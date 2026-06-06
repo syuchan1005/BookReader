@@ -1,6 +1,6 @@
 import { MockedProvider } from '@apollo/client/testing/react';
 import { ListItem } from '@mui/material';
-import type { ComponentMeta } from '@storybook/react';
+import type { Meta } from '@storybook/react';
 
 import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import GenresSelect from '../GenresSelect';
@@ -9,10 +9,7 @@ export default {
   title: 'Components/GenresSelect',
   argTypes: {
     value: {
-      control: {
-        type: 'array',
-        required: true,
-      },
+      control: 'object',
     },
     showAdd: {
       type: { name: 'boolean' },
@@ -38,11 +35,10 @@ export default {
       </ListItem>
     ),
   ],
-} as ComponentMeta<typeof GenresSelect>;
+} as Meta<typeof GenresSelect>;
 
 const Template = (args) => (
   <MockedProvider
-    addTypename={false}
     mocks={[
       {
         request: {

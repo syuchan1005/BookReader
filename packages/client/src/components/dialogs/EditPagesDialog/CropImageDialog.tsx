@@ -28,8 +28,7 @@ const CropImageDialog = (props: CropImageDialogProps) => {
   const cropperRef = useRef<HTMLImageElement>(null);
 
   const onFinishClicked = useCallback(() => {
-    // @ts-expect-error
-    const cropper = cropperRef?.current?.cropper;
+    const cropper = (cropperRef?.current as any)?.cropper;
     if (!cropper) return;
     const canvasElem: HTMLCanvasElement = cropper.getCroppedCanvas();
     canvasElem.toBlob(onClose, 'image/jpeg');

@@ -42,29 +42,25 @@ describe('getIdentifiers()', () => {
   describe('invalid values', () => {
     it('should return empty array, if object provided', () => {
       const identifiers = {};
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if symbol provided', () => {
       const identifiers = Symbol();
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if boolean provided', () => {
       const identifiers = true;
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if one element has invalid type', () => {
       const identifiers = [[1]];
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
@@ -74,8 +70,7 @@ describe('getIdentifiers()', () => {
           a: 1,
         },
       ];
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
@@ -95,15 +90,13 @@ describe('getIdentifiers()', () => {
     });
     it('should return empty array, if one element has invalid type', () => {
       const identifiers = [Symbol()];
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if one element has invalid type', () => {
       const identifiers = [true];
-      // @ts-ignore invalid input test
-      const value = getIdentifiers(identifiers);
+      const value = getIdentifiers(identifiers as any);
       const expected = [];
       expect(value).toEqual(expected);
     });

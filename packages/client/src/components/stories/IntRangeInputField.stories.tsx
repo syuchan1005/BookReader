@@ -1,4 +1,4 @@
-import type { ComponentMeta } from '@storybook/react';
+import type { Meta } from '@storybook/react';
 
 import IntRangeInputField from '../IntRangeInputField';
 
@@ -14,7 +14,7 @@ export default {
       control: { type: 'boolean' },
     },
   },
-} as ComponentMeta<typeof IntRangeInputField>;
+} as Meta<typeof IntRangeInputField>;
 
 const Template = (args) => <IntRangeInputField {...args} />;
 

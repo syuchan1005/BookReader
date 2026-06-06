@@ -68,36 +68,31 @@ describe('getOrders()', () => {
   describe('invalid values', () => {
     it('should return empty array, if number provided', () => {
       const orders = 1;
-      // @ts-ignore invalid input test
-      const value = getOrders(orders);
+      const value = getOrders(orders as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if boolean provided', () => {
       const orders = true;
-      // @ts-ignore invalid input test
-      const value = getOrders(orders);
+      const value = getOrders(orders as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if object provided', () => {
       const orders = {};
-      // @ts-ignore invalid input test
-      const value = getOrders(orders);
+      const value = getOrders(orders as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if symbol provided', () => {
       const orders = Symbol();
-      // @ts-ignore invalid input test
-      const value = getOrders(orders);
+      const value = getOrders(orders as any);
       const expected = [];
       expect(value).toEqual(expected);
     });
     it('should return empty array, if invalid elements provided', () => {
       const orders = ['asc', 'invalid'];
-      // @ts-ignore invalid input test
-      const value = getOrders(orders);
+      const value = getOrders(orders as any);
       const expected = [];
       expect(value).toEqual(expected);
     });

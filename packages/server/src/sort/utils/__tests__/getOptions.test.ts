@@ -37,8 +37,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: 'abc',
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
@@ -46,8 +45,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: true,
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
@@ -55,8 +53,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: 1,
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
@@ -64,8 +61,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: {},
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
@@ -73,8 +69,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: () => {},
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
@@ -82,8 +77,7 @@ describe('getOptions()', () => {
       const customOptions = {
         order: Symbol(),
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
@@ -106,32 +100,27 @@ describe('getOptions()', () => {
         b: 2,
         c: 3,
       };
-      // @ts-ignore invalid input test
-      const options = getOptions(customOptions);
+      const options = getOptions(customOptions as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is an invalid string', () => {
-      // @ts-ignore invalid input test
-      const options = getOptions('abc');
+      const options = getOptions('abc' as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is a number', () => {
-      // @ts-ignore invalid input test
-      const options = getOptions(123);
+      const options = getOptions(123 as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is a function', () => {
-      // @ts-ignore invalid input test
-      const options = getOptions(() => {});
+      const options = getOptions((() => {}) as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });
     it('should return default options, if argument is a symbol', () => {
-      // @ts-ignore invalid input test
-      const options = getOptions(Symbol());
+      const options = getOptions(Symbol() as any);
       const expected = defaultOptions;
       expect(options).toEqual(expected);
     });

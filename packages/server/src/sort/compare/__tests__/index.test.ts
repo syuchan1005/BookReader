@@ -1,33 +1,32 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import compare from '../index';
+import baseCompare from '../../utils/baseCompare';
+
+vi.mock('../../utils/baseCompare', () => ({
+  default: vi.fn(),
+}));
+
 const defaultOptions = {
   order: 'asc',
 };
+
 describe('compare()', () => {
   beforeEach(() => {
-    jest.resetModules();
-    jest.resetAllMocks();
-    jest.mock('../../utils/baseCompare', () =>
-      jest.fn().mockName('baseCompare'),
-    );
+    vi.clearAllMocks();
   });
+
   it('should call baseCompare() with default options', () => {
-    const compare = require('..').default;
-
-    const baseCompare = require('../../utils/baseCompare');
-
     compare();
     expect(baseCompare).toHaveBeenCalledTimes(1);
     expect(baseCompare).toHaveBeenCalledWith(defaultOptions, undefined);
   });
+
   it('should call baseCompare() with { order: "desc" } ', () => {
-    const compare = require('..').default;
-
-    const baseCompare = require('../../utils/baseCompare');
-
     const options = {
       order: 'desc',
     };
     const expectedOptions = { ...defaultOptions, ...options };
-    compare(options);
+    compare(options as any);
     expect(baseCompare).toHaveBeenCalledTimes(1);
     expect(baseCompare).toHaveBeenCalledWith(expectedOptions, undefined);
   });

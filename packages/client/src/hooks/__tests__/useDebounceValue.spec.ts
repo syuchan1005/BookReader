@@ -1,8 +1,9 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { useDebounceValue } from '../useDebounceValue';
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('useDebounceValue', () => {
   it('initial', () => {
@@ -24,7 +25,7 @@ describe('useDebounceValue', () => {
     });
     expect(result.current).not.toBe('test2');
     act(() => {
-      jest.runTimersToTime(201);
+      vi.advanceTimersByTime(201);
     });
     expect(result.current).toBe('test2');
   });

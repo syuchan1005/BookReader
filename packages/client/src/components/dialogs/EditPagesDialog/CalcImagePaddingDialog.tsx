@@ -137,8 +137,8 @@ const CalcImagePaddingDialog = (props: CalcImagePaddingDialogProps) => {
   const [horizontalOffset, setHorizontalOffset] = useState(10);
   const [useCompareWithWhite, setCompareWithWhite] = useState(false);
   const [imageData, setImageData] = useState<ImageData | undefined>(undefined);
-  const canvasRef = useRef<HTMLCanvasElement>();
-  const canvasContainerRef = useRef<HTMLDivElement>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
 
   const onDetectClick = useCallback(async () => {
     if (!onSizeChange) return;

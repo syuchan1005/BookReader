@@ -15,8 +15,7 @@ export const useStateWithReset = <T>(
   const setValue = useCallback((creator: Creator<T>) => {
     setState((prevValue: T) => {
       if (typeof creator === 'function') {
-        // @ts-expect-error
-        return creator(initValue, prevValue);
+        return (creator as (i: T, p: T) => T)(initValue, prevValue);
       }
       return creator;
     });
