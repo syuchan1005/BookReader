@@ -3,7 +3,7 @@ FROM oven/bun:1.3.14-slim AS base
 LABEL maintainer="syuchan1005<syuchan.dev@gmail.com>"
 LABEL name="BookReader"
 
-ENV HUSKY="0"
+ENV CI="true"
 
 FROM base AS build-client
 
@@ -47,7 +47,7 @@ FROM base
 
 EXPOSE 80
 
-ENV DEBUG="" NODE_ENV="production" PORT=80 HUSKY="0"
+ENV DEBUG="" NODE_ENV="production" PORT=80 CI="true"
 
 RUN apt-get update \
  && apt-get install -y ca-certificates \

@@ -23,11 +23,11 @@
     "start": "bun packages/server/dist/index.js",
     "script:prisma-migrate": "bun run --cwd packages/server prisma-migrate",
     "gql-gen": "bun run --cwd packages/server gql-gen && bun run --cwd packages/client gql-gen",
-    "lint": "biome check --write --unsafe .",
-    "prepare": "husky"
+    "lint": "biome check --write --unsafe ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.6"
+    "@biomejs/biome": "2.3.6",
+    "lefthook": "^2.1.9"
   },
   "dependencies": {
     "@graphql-codegen/add": "^6.0.0",
@@ -37,7 +37,6 @@
     "@graphql-tools/merge": "^9.1.5",
     "@graphql-tools/schema": "^10.0.29",
     "@graphql-tools/utils": "^10.10.3",
-    "husky": "^9.1.7",
     "typescript": "^5.9.3"
   },
   "trustedDependencies": [
