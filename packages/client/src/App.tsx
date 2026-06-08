@@ -44,55 +44,11 @@ const ErrorComponent = lazy(() => import('@client/pages/Error'));
 
 export const commonTheme = {
   safeArea: {
-    top: 'env(safe-area-inset-top)',
-    bottom: 'env(safe-area-inset-bottom)',
-    right: 'env(safe-area-inset-right)',
-    left: 'env(safe-area-inset-left)',
+    top: 'var(--safe-area-inset-top)',
+    bottom: 'var(--safe-area-inset-bottom)',
+    right: 'var(--safe-area-inset-right)',
+    left: 'var(--safe-area-inset-left)',
   },
-  appbar: (theme: Theme, styleName: string, calcOption?: string) =>
-    Object.keys(theme.mixins.toolbar)
-      .map((key) => {
-        const val = theme.mixins.toolbar[key];
-        if (key === 'minHeight') {
-          return [
-            [
-              styleName,
-              `calc(${commonTheme.safeArea.top} + ${val}px${calcOption || ''})`,
-            ],
-            [
-              'fallbacks',
-              {
-                [styleName]: calcOption ? `calc(${val}px${calcOption})` : val,
-              },
-            ],
-          ];
-        }
-        const valObj = val as { minHeight?: number };
-        if (valObj.minHeight !== undefined) {
-          return [
-            [
-              key,
-              {
-                [styleName]: `calc(${commonTheme.safeArea.top} + ${
-                  valObj.minHeight
-                }px${calcOption || ''})`,
-                fallbacks: {
-                  [styleName]: calcOption
-                    ? `calc(${valObj.minHeight}px${calcOption})`
-                    : valObj.minHeight,
-                },
-              },
-            ],
-          ];
-        }
-        return [];
-      })
-      .reduce((o: Record<string, unknown>, props) => {
-        for (const [k, v] of props) {
-          o[k as string] = v;
-        }
-        return o;
-      }, {}),
 };
 
 const App = () => {

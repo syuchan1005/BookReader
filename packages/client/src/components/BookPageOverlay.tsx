@@ -57,7 +57,7 @@ const Root = styled('div')(({ theme }) => ({
     borderRadius: theme.spacing(1),
     position: 'absolute',
     '&.top': {
-      ...commonTheme.appbar(theme, 'top', ` + ${theme.spacing(2)}`),
+      top: `calc(${commonTheme.safeArea.top} + ${theme.spacing(2)})`,
       whiteSpace: 'nowrap',
     },
     '&.bottom': {

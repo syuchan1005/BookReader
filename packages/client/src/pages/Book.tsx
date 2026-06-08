@@ -494,6 +494,7 @@ const Book = (_props: BookProps) => {
           backRoute={data && `/info/${data.infoId}`}
           title={data?.infoName}
           subTitle={data && `No.${data.bookNumber}`}
+          position="fixed"
         />
       )}
 

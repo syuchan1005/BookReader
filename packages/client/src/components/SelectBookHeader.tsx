@@ -1,7 +1,5 @@
 import { useMutation } from '@apollo/client/react';
-import { commonTheme } from '@client/App';
 import {
-  AppBar,
   Button,
   CircularProgress,
   Dialog,
@@ -23,6 +21,7 @@ import {
   MoveBooksDocument,
 } from '@syuchan1005/book-reader-graphql';
 import { useState } from 'react';
+import { SafeAreaAppBar } from '@client/components/SafeAreaAppBar';
 
 const PREFIX = 'SelectBookHeader';
 
@@ -31,11 +30,7 @@ const classes = {
   title: `${PREFIX}-title`,
 };
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  '&': {
-    paddingTop: commonTheme.safeArea.top,
-  },
-
+const StyledAppBar = styled(SafeAreaAppBar)(({ theme }) => ({
   [`& .${classes.iconButton}`]: {
     color: theme.palette.common.white,
   },

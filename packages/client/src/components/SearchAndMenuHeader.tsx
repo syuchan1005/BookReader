@@ -1,9 +1,6 @@
 import { useQuery } from '@apollo/client/react';
-import { commonTheme } from '@client/App';
-import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
 import { genresState } from '@client/store/atoms';
 import {
-  AppBar,
   Chip,
   FormControl,
   Icon,
@@ -22,6 +19,7 @@ import { alpha, styled } from '@mui/material/styles';
 import { GenresDocument } from '@syuchan1005/book-reader-graphql';
 import { useAtom } from 'jotai';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { SafeAreaAppBar } from '@client/components/SafeAreaAppBar';
 
 const PREFIX = 'SearchAndMenuHeader';
 
@@ -37,11 +35,7 @@ const classes = {
   chip: `${PREFIX}-chip`,
 };
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  [`&.${classes.appBar}`]: {
-    paddingTop: commonTheme.safeArea.top,
-  },
-
+const StyledAppBar = styled(SafeAreaAppBar)(({ theme }) => ({
   [`& .${classes.search}`]: {
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
@@ -115,7 +109,6 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const theme = useTheme();
   const { onClickMenuIcon, searchText, onChangeSearchText } = props;
 
-  const elevation = useAppBarScrollElevation();
   const searchInputRef = useRef(null);
 
   const [searchFilterPopoverAnchorEl, setSearchFilterPopoverAnchorEl] =
@@ -149,7 +142,7 @@ const SearchAndMenuHeader = (props: SearchAndMenuHeaderProps) => {
   const hasSearchFilter = useMemo(() => genres.length > 0, [genres.length]);
 
   return (
-    <StyledAppBar elevation={elevation} className={classes.appBar}>
+    <StyledAppBar className={classes.appBar}>
       <Toolbar>
         <div style={{ flexGrow: 1 }} />
 

@@ -50,7 +50,6 @@ const classes = {
 const Main = styled('main')(({ theme }) => ({
   '&': {
     height: '100%',
-    ...commonTheme.appbar(theme, 'paddingTop'),
   },
 
   [`& .${classes.homeGrid}`]: {

@@ -1,5 +1,4 @@
 import {
-  AppBar,
   Box,
   Button,
   Icon,
@@ -9,6 +8,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { SafeAreaAppBar } from '@client/components/SafeAreaAppBar';
 
 const BookShelf = () => {
   const theme = useTheme();
@@ -17,7 +17,7 @@ const BookShelf = () => {
 
   return (
     <>
-      <AppBar sx={{ color: theme.palette.common.white }}>
+      <SafeAreaAppBar sx={{ color: theme.palette.common.white }}>
         <Toolbar>
           {isHistory && (
             <IconButton
@@ -39,9 +39,8 @@ const BookShelf = () => {
             </Button>
           )}
         </Toolbar>
-      </AppBar>
+      </SafeAreaAppBar>
       <Box component="main">
-        <Toolbar />
         <Outlet />
       </Box>
     </>

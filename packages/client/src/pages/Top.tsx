@@ -2,8 +2,10 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Icon,
-  Paper,
 } from '@mui/material';
+import { Box } from '@mui/material';
+import { SafeAreaBottomNavigationContainer } from '@client/components/SafeAreaBottomNavigationContainer';
+import { commonTheme } from '@client/App';
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
@@ -33,19 +35,11 @@ const Top = () => {
   }, []);
 
   return (
-    <>
+    <Box sx={{ paddingBottom: `calc(${commonTheme.safeArea.bottom} + 56px)` }}>
       <Outlet />
-      <Paper
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 'appBar',
-        }}
-        elevation={3}
-      >
+      <SafeAreaBottomNavigationContainer elevation={3}>
         <BottomNavigation
+          sx={{ backgroundColor: 'transparent' }}
           showLabels
           value={tabIndex}
           onChange={(_a, b) => setTabIndex(b)}
@@ -62,8 +56,8 @@ const Top = () => {
             />
           ))}
         </BottomNavigation>
-      </Paper>
-    </>
+      </SafeAreaBottomNavigationContainer>
+    </Box>
   );
 };
 

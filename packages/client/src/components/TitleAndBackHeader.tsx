@@ -1,9 +1,8 @@
-import { useAppBarScrollElevation } from '@client/hooks/useAppBarScrollElevation';
-import { AppBar, Icon, IconButton, Toolbar, Typography } from '@mui/material';
+import { Icon, IconButton, Toolbar, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { type ReactNode, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { commonTheme } from '../App';
+import { SafeAreaAppBar } from '@client/components/SafeAreaAppBar';
 
 const PREFIX = 'TitleAndBackHeader';
 
@@ -14,7 +13,7 @@ const classes = {
   appBar: `${PREFIX}-appBar`,
 };
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
+const StyledAppBar = styled(SafeAreaAppBar)(({ theme }) => ({
   [`& .${classes.backIcon}`]: {
     color: theme.palette.common.white,
     marginRight: theme.spacing(1),
@@ -35,9 +34,6 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
     letterSpacing: '0.0075em',
   },
 
-  [`&.${classes.appBar}`]: {
-    paddingTop: commonTheme.safeArea.top,
-  },
 }));
 
 interface TitleAndBackHeaderProps {
@@ -45,12 +41,13 @@ interface TitleAndBackHeaderProps {
   title?: string;
   subTitle?: string;
   children?: ReactNode;
+  position?: 'fixed' | 'absolute' | 'sticky' | 'static' | 'relative';
 }
 
 const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { backRoute, title, subTitle, children } = props;
+  const { backRoute, title, subTitle, children, position } = props;
 
   const clickBack = useCallback(() => {
     if (!location.state?.referrer && backRoute) {
@@ -62,10 +59,8 @@ const TitleAndBackHeader = (props: TitleAndBackHeaderProps) => {
     }
   }, [navigate, backRoute, location]);
 
-  const elevation = useAppBarScrollElevation();
-
   return (
-    <StyledAppBar className={classes.appBar} elevation={elevation}>
+    <StyledAppBar className={classes.appBar} position={position}>
       <Toolbar>
         <IconButton
           className={classes.backIcon}
