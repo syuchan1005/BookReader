@@ -48,7 +48,7 @@ const History = () => {
   const mappedBooks: { [bookId: string]: (typeof data.books)[number] } =
     useMemo(
       () =>
-        (data?.books ?? []).reduce((map, book) => {
+        (data?.books ?? []).filter((book): book is NonNullable<typeof book> => !!book).reduce((map, book) => {
           map[book.id] = book;
           return map;
         }, {}),
