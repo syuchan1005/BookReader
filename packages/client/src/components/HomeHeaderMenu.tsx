@@ -91,19 +91,22 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
     ]).finally(() => window.location.reload());
   }, []);
 
-  const [vConsole, setVConsole] = useState(undefined);
-  const handleShowVConsole = useCallback(() => {
-    if (vConsole === undefined) {
-      import('vconsole').then(({ default: VConsole }) => {
-        const console = new VConsole();
-        console.setSwitchPosition(80, 20);
-        setVConsole(console);
+  const [eruda, setEruda] = useState<any>(undefined);
+  const handleShowEruda = useCallback(() => {
+    if (eruda === undefined) {
+      Promise.all([
+        import('eruda').then((m) => m.default),
+        import('eruda-indexeddb').then((m) => m.default)
+      ]).then(([erudaInstance, erudaIndexedDB]) => {
+        erudaInstance.init();
+        erudaInstance.add(erudaIndexedDB);
+        setEruda(erudaInstance);
       });
     } else {
-      vConsole.destroy();
-      setVConsole(undefined);
+      eruda.destroy();
+      setEruda(undefined);
     }
-  }, [vConsole]);
+  }, [eruda]);
 
   const [rebuildSearchMutation, { loading: rebuilding }] = useMutation(
     RebuildSearchDocument,
@@ -163,8 +166,8 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
           <Icon>{`keyboard_arrow_${debugAnchorEl ? 'up' : 'down'}`}</Icon>
         </MenuItem>
         <Collapse in={debugAnchorEl}>
-          <MenuItem onClick={handleShowVConsole}>
-            {`${vConsole !== undefined ? 'Hide' : 'Show'} vConsole`}
+          <MenuItem onClick={handleShowEruda}>
+            {`${eruda !== undefined ? 'Hide' : 'Show'} Eruda`}
           </MenuItem>
           <MenuItem onClick={() => setOpenCacheControl(!openCacheControl)}>
             Cache Control
