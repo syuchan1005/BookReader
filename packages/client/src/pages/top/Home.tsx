@@ -405,7 +405,7 @@ const Home = (_props: HomeProps) => {
 
         <AddBookInfoDialog
           open={open}
-          name={infos.length === 0 ? searchText : undefined}
+          name={searchText || ""}
           onAdded={openInfoPage}
           onClose={setClose}
         />
