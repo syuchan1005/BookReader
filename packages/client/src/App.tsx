@@ -29,18 +29,18 @@ import {
 } from 'react';
 import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
 
-const Top = lazy(() => import('@client/pages/Top'));
-const Home = lazy(() => import('@client/pages/top/Home'));
-const BookShelf = lazy(() => import('@client/pages/top/BookShelf'));
-const BookShelfContent = lazy(
-  () => import('@client/pages/top/bookshelf/index'),
-);
-const History = lazy(() => import('@client/pages/top/bookshelf/History'));
+import Top from '@client/pages/Top';
+import Home from '@client/pages/top/Home';
+import BookShelf from '@client/pages/top/BookShelf';
+import BookShelfContent from '@client/pages/top/bookshelf/index';
+import History from '@client/pages/top/bookshelf/History';
 
-const Info = lazy(() => import('@client/pages/Info'));
+import Info from '@client/pages/Info';
+import Setting from '@client/pages/Setting';
+import ErrorComponent from '@client/pages/Error';
+
+// NOTE: It's intentionally lazy-loaded due to its large size (~130KB) to reduce parsing overhead on initial load.
 const Book = lazy(() => import('@client/pages/Book'));
-const Setting = lazy(() => import('@client/pages/Setting'));
-const ErrorComponent = lazy(() => import('@client/pages/Error'));
 
 export const commonTheme = {
   safeArea: {

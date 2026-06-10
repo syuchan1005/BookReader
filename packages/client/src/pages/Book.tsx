@@ -121,9 +121,7 @@ const Main = styled('main')(({ theme }) => ({
   },
 }));
 
-const EditPagesDialog = lazy(
-  () => import('@client/components/dialogs/EditPagesDialog'),
-);
+import EditPagesDialog from '@client/components/dialogs/EditPagesDialog';
 
 interface BookProps {
   children?: ReactElement;

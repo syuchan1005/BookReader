@@ -114,9 +114,7 @@ const Main = styled('main')(({ theme }) => ({
   },
 }));
 
-const AddBookDialog = lazy(
-  () => import('@client/components/dialogs/AddBookDialog'),
-);
+import AddBookDialog from '@client/components/dialogs/AddBookDialog';
 
 interface InfoProps {
   children?: ReactElement;
