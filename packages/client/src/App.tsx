@@ -27,7 +27,14 @@ import {
   useEffect,
   useMemo,
 } from 'react';
-import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigationType,
+  useParams,
+} from 'react-router-dom';
 
 import Top from '@client/pages/Top';
 import Home from '@client/pages/top/Home';
@@ -41,6 +48,19 @@ import ErrorComponent from '@client/pages/Error';
 
 // NOTE: It's intentionally lazy-loaded due to its large size (~130KB) to reduce parsing overhead on initial load.
 const Book = lazy(() => import('@client/pages/Book'));
+
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  const navType = useNavigationType();
+
+  useEffect(() => {
+    if (navType !== 'POP') {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, navType]);
+
+  return null;
+};
 
 export const commonTheme = {
   safeArea: {
@@ -121,6 +141,7 @@ const App = () => {
       <ThemeProvider theme={provideTheme}>
         <CssBaseline />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route
               path="/"
