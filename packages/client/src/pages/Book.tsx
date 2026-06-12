@@ -299,6 +299,32 @@ const Book = (_props: BookProps) => {
     bookId,
   );
 
+  const openBook = useCallback(
+    (_infoId: string, targetBookId: string) => {
+      navigate(`/book/${targetBookId}`, {
+        state: {
+          referrer: location.state?.referrer || location.pathname,
+        },
+        replace: true,
+      });
+    },
+    [navigate, location],
+  );
+
+  const goNextBook = useMemo(() => {
+    if (nextBook && data) {
+      return () => openBook(data.infoId, nextBook);
+    }
+    return undefined;
+  }, [data, openBook, nextBook]);
+
+  const goPreviousBook = useMemo(() => {
+    if (prevBook && data) {
+      return () => openBook(data.infoId, prevBook);
+    }
+    return undefined;
+  }, [data, openBook, prevBook]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: data, isPageSet, searchParams, setSearchParams, nextBook, setDbPage, maxPage, location
   useEffect(() => {
     if (page >= maxPage) {
@@ -340,9 +366,22 @@ const Book = (_props: BookProps) => {
   );
 
   const increment = useCallback(() => {
+    const isEndPage = Math.abs(maxPage - page) <= PageStyle[pageStyleKey].slidesPerView;
+    if (isEndPage && goNextBook) {
+      goNextBook();
+      return;
+    }
     setPage(page + slidesPerView);
     setHideAppBar();
-  }, [page, setPage, setHideAppBar, slidesPerView]);
+  }, [
+    page,
+    setPage,
+    setHideAppBar,
+    slidesPerView,
+    maxPage,
+    normalizeCount,
+    goNextBook,
+  ]);
 
   const decrement = useCallback(() => {
     setPage(page - slidesPerView);
@@ -401,18 +440,6 @@ const Book = (_props: BookProps) => {
     ],
   );
 
-  const openBook = useCallback(
-    (_infoId: string, targetBookId: string) => {
-      navigate(`/book/${targetBookId}`, {
-        state: {
-          referrer: location.state?.referrer || location.pathname,
-        },
-        replace: true,
-      });
-    },
-    [navigate, location],
-  );
-
   const imageSize = useMemo(() => {
     if (showOriginalImage) {
       return {
@@ -422,20 +449,6 @@ const Book = (_props: BookProps) => {
     }
     return windowSize;
   }, [windowSize, showOriginalImage]);
-
-  const goNextBook = useMemo(() => {
-    if (nextBook && data) {
-      return () => openBook(data.infoId, nextBook);
-    }
-    return undefined;
-  }, [data, openBook, nextBook]);
-
-  const goPreviousBook = useMemo(() => {
-    if (prevBook && data) {
-      return () => openBook(data.infoId, prevBook);
-    }
-    return undefined;
-  }, [data, openBook, prevBook]);
 
   const setNextPageStyle = useCallback(
     () => setPageStyle((p) => NextPageStyleMap[p]),
