@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@apollo/client/react';
+import { ApiKeyPane } from '@client/components/ApiKeyPane';
 import TitleAndBackHeader from '@client/components/TitleAndBackHeader';
 import { useTitle } from '@client/hooks/useTitle';
 import {
@@ -211,6 +212,8 @@ const Setting = (_props) => {
             </Dialog>
           </>
         )}
+
+        <ApiKeyPane />
       </main>
     </>
   );
