@@ -3,6 +3,7 @@ import { INSTANCE, PrismaBookDataManager } from '@server/database/prisma';
 import { betterAuth, type DBAdapterInstance } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { type GenericOAuthConfig, genericOAuth } from 'better-auth/plugins';
+import { apiKey } from '@better-auth/api-key';
 import { type Context, Hono, type MiddlewareHandler, type Next } from 'hono';
 
 const getOIDCConfig = ():
@@ -41,6 +42,7 @@ export const createAuth = () => {
             ]
           : [],
       }),
+      apiKey({ enableSessionForAPIKeys: true, defaultPrefix: 'br_' }),
     ],
     trustedOrigins: ['*'],
   });

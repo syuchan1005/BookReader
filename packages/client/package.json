@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
+    "@better-auth/api-key": "^1.6.23",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@graphql-codegen/typescript-react-apollo": "^4.3.3",

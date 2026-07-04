@@ -1,10 +1,11 @@
 import { createAuthClient } from 'better-auth/client';
 import { genericOAuthClient } from 'better-auth/client/plugins';
+import { apiKeyClient } from "@better-auth/api-key/client"
 
 const authClient = createAuthClient({
   baseURL: window.location.origin,
   basePath: '/auth',
-  plugins: [genericOAuthClient()],
+  plugins: [genericOAuthClient(), apiKeyClient()],
 });
 
 let isJumped = false;
