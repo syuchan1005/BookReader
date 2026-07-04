@@ -20,6 +20,10 @@ function normalizeText(text: string): string {
   normalized = hiraganaToKatakana(normalized);
   // Normalize wave dashes: ~ (0x7e), ～ (0xff5e), 〜 (0x301c) to ～
   normalized = normalized.replace(/[~〜]/g, '～');
+
+  // Strip common symbols and punctuation to prevent them from interfering with word matching
+  normalized = normalized.replace(/[\s\(\)\[\]\{\}\<\>（）「」『』【】、。！？!?~～・:：;\-]/g, '');
+
   return normalized.toLowerCase();
 }
 
