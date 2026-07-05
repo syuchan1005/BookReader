@@ -34,15 +34,23 @@ export const createAuth = () => {
       genericOAuth({
         config: oidcConfig
           ? [
-              {
-                ...oidcConfig,
-                providerId: 'oidc',
-                scopes: ['openid', 'profile', 'email'],
-              },
-            ]
+            {
+              ...oidcConfig,
+              providerId: 'oidc',
+              scopes: ['openid', 'profile', 'email'],
+            },
+          ]
           : [],
       }),
-      apiKey({ enableSessionForAPIKeys: true, defaultPrefix: 'br_' }),
+      apiKey({
+        enableSessionForAPIKeys: true,
+        defaultPrefix: 'br_',
+        rateLimit: {
+          enabled: true,
+          timeWindow: 60 * 1000, // 1 minute
+          maxRequests: 100,
+        },
+      }),
     ],
     trustedOrigins: ['*'],
   });
@@ -67,9 +75,9 @@ export const isAuthenticated = async (
 
 export const createIsAuthenticatedMiddleware =
   (auth: Auth): MiddlewareHandler =>
-  async (c: Context, next: Next) => {
-    if (await isAuthenticated(auth, c.req.raw.headers)) {
-      return next();
-    }
-    return c.text('', 401);
-  };
+    async (c: Context, next: Next) => {
+      if (await isAuthenticated(auth, c.req.raw.headers)) {
+        return next();
+      }
+      return c.text('', 401);
+    };
