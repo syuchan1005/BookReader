@@ -78,6 +78,20 @@ import { getOrConvertImage } from './ImageUtil';
       !isNotSave,
     );
     if (result.success) {
+      c.header('Cache-Control', 'no-cache');
+      const ifModifiedSince = c.req.header('if-modified-since');
+      if (ifModifiedSince) {
+        const sinceDate = new Date(ifModifiedSince);
+        if (!Number.isNaN(sinceDate.getTime())) {
+          const lastModDate = new Date(result.lastModified);
+          sinceDate.setMilliseconds(0);
+          lastModDate.setMilliseconds(0);
+          if (sinceDate.getTime() >= lastModDate.getTime()) {
+            return c.body(null, 304);
+          }
+        }
+      }
+
       c.header('Content-Type', result.type);
       c.header('Content-Length', result.byteLength.toString());
       c.header('Last-Modified', result.lastModified.toUTCString());
