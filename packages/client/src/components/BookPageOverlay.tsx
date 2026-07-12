@@ -250,6 +250,7 @@ const BookPageOverlay = (props: BookPageOverlayProps) => {
           <MenuItem onClick={toggleOriginalImage}>
             {`Show ${showOriginalImage ? 'Compressed' : 'Original'} Image`}
           </MenuItem>
+
         </Menu>
         <Button
           variant="outlined"

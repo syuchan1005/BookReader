@@ -78,6 +78,11 @@ export const showOriginalImageState = createLocalStorageAtom<boolean>(
   false,
 );
 
+export const useAvifState = createLocalStorageAtom<boolean>(
+  'useAvif',
+  false,
+);
+
 export const pageImageEffectState = createLocalStorageAtom<
   PageImageEffect | undefined
 >('pageImageEffectState', undefined);

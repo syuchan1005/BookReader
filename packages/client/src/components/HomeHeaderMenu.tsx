@@ -8,6 +8,7 @@ import {
   secondaryColorState,
   showBookInfoNameState,
   sortOrderState,
+  useAvifState,
 } from '@client/store/atoms';
 import {
   Button,
@@ -48,6 +49,7 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
   const [showBookInfoName, setShowBookInfoName] = useAtom(
     showBookInfoNameState,
   );
+  const [useAvif, setUseAvif] = useAtom(useAvifState);
   const theme = useTheme();
 
   const [sortAnchorEl, setSortAnchorEl] = useState(null);
@@ -250,6 +252,9 @@ const HomeHeaderMenu = (props: HeaderMenuProps) => {
             disabled={rebuilding}
           >
             Rebuild Search index
+          </MenuItem>
+          <MenuItem onClick={() => setUseAvif((v) => !v)}>
+            {`Use AVIF: ${useAvif ? 'ON' : 'OFF'}`}
           </MenuItem>
         </Collapse>
         <MenuItem

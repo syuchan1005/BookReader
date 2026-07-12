@@ -6,6 +6,8 @@ import {
   availableImageExtensionWithContentType,
   defaultStoredImageExtension,
 } from '@syuchan1005/book-reader-common';
+import { useAvifState } from '@client/store/atoms';
+import { useAtomValue } from 'jotai';
 import {
   type CSSProperties,
   useCallback,
@@ -109,6 +111,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     skip = false,
   } = props;
   const imageRef = useRef<HTMLImageElement>(null);
+  const useAvif = useAtomValue(useAvifState);
 
   const argDebounceWidth = useDebounceValue(argWidth, sizeDebounceDelay);
   const argDebounceHeight = useDebounceValue(argHeight, sizeDebounceDelay);
@@ -148,7 +151,12 @@ const BookPageImage = (props: BookPageImageProps) => {
     if (requestImageWidth !== undefined || requestImageHeight !== undefined) {
       const sizeRatio = [1, 1.5, 2, 3];
 
-      for (const imageType of availableImageExtensions) {
+      // If AVIF is disabled, exclude it from the source sets.
+      const allowedExtensions = useAvif
+        ? availableImageExtensions
+        : availableImageExtensions.filter((ext) => ext !== 'avif');
+
+      for (const imageType of allowedExtensions) {
         const srcSet = sizeRatio
           .map((ratio) => {
             const src = createBookPageUrl(
@@ -183,6 +191,7 @@ const BookPageImage = (props: BookPageImageProps) => {
     requestImageWidth,
     requestImageHeight,
     noSave,
+    useAvif,
   ]);
 
   const [imageState, setImageState] = useState<ImageStateType>(

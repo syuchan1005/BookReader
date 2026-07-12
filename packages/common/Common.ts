@@ -10,6 +10,7 @@ export const defaultTitle = 'Book Reader';
 
 // Available image formats for delivery, ordered by delivery priority (best performance/compression first).
 export const availableImageExtensionWithContentType = {
+  avif: 'image/avif',
   webp: 'image/webp',
   jpg: 'image/jpeg',
 } as const;
@@ -41,8 +42,6 @@ export const uploadSupportedExtensionToContentType: Record<UploadSupportedExtens
   png: 'image/png',
 };
 
-
-
 /**
  * Returns comma-separated MIME types for the file input's accept attribute.
  * Example: "image/webp,image/jpeg,image/png"
@@ -62,5 +61,3 @@ export const getUploadAcceptArchiveTypes = (): string => {
     .map((a) => `.${a}`)
     .join(',')}`;
 };
-
-

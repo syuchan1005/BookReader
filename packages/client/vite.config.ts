@@ -110,7 +110,7 @@ export default defineConfig({
   server: {
     port: 8080,
     proxy: {
-      '^/book/.*.(jpg|webp)[^/]*$': {
+      '^/book/(?<bookId>[^/]+)/(?<pageImage>[^/]+\\.[^/]+)$': {
         target: {
           host: 'localhost',
           port: 8081,
