@@ -1,6 +1,9 @@
 import { Button } from '@mui/material';
 
-import { archiveTypes } from '@syuchan1005/book-reader-common';
+import {
+  getUploadAcceptArchiveTypes,
+  getUploadAcceptMimeTypes,
+} from '@syuchan1005/book-reader-common';
 import { type CSSProperties, useRef } from 'react';
 
 export type AcceptType = 'archive' | 'image';
@@ -26,14 +29,10 @@ const FileField = (props: FileFieldProps) => {
   let acceptTypeText: string;
   switch (acceptType) {
     case 'image':
-      acceptTypeText = 'image/jpeg,image/png,image/webp';
+      acceptTypeText = getUploadAcceptMimeTypes();
       break;
     case 'archive':
-      acceptTypeText = `${Object.keys(archiveTypes).join(',')},${[
-        ...new Set(Object.values(archiveTypes)),
-      ]
-        .map((a) => `.${a}`)
-        .join(',')}`;
+      acceptTypeText = getUploadAcceptArchiveTypes();
       break;
     default: {
       const _exhaustiveCheck: never = acceptType;
