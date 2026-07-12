@@ -2,6 +2,7 @@ import { StorageDataManager } from '@server/storage/StorageDataManager';
 import {
   availableImageExtensionWithContentType,
   defaultStoredImageExtension,
+  sharpFormatOptions,
 } from '@syuchan1005/book-reader-common';
 import type { Buffer } from 'buffer';
 import sharp from 'sharp';
@@ -68,7 +69,9 @@ export const getOrConvertImage = async (
 
   let cachePageBuffer: Buffer;
   try {
-    cachePageBuffer = await sharpInstance.toFormat(info.ext).toBuffer();
+    cachePageBuffer = await sharpInstance
+      .toFormat(info.ext, sharpFormatOptions[info.ext] ?? {})
+      .toBuffer();
   } catch (e) {
     return {
       success: false,

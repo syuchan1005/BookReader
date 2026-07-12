@@ -61,3 +61,20 @@ export const getUploadAcceptArchiveTypes = (): string => {
     .map((a) => `.${a}`)
     .join(',')}`;
 };
+
+// Sharp format conversion options for each image type.
+// You can adjust quality (1-100), effort (0-9 for AVIF CPU computation effort), etc.
+export const sharpFormatOptions = {
+  avif: {
+    quality: 50,
+    effort: 2, // Prioritize conversion speed for on-demand delivery (default: 4)
+    chromaSubsampling: '4:4:4', // Prevent color bleeding on monochrome manga lineart & screen-tones
+  },
+  webp: {
+    quality: 80,
+  },
+  jpg: {
+    quality: 80,
+  },
+} as const;
+
