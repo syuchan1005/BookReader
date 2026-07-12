@@ -222,8 +222,8 @@ const BookPageImage = (props: BookPageImageProps) => {
   }, [argAlt, imageState]);
   const [isRetried, setRetried] = useState(false);
 
-  const checkAuthenticate = useCallback(() => {
-    fetch('/auth').then((res) => {
+  const checkAuthenticate = useCallback((url: string) => {
+    fetch(url).then((res) => {
       if (res.status === 401) {
         goToAuthPage();
       }
@@ -250,7 +250,9 @@ const BookPageImage = (props: BookPageImageProps) => {
           onError={() => {
             setImageState(ImageState.ERROR);
             if (isRetried) {
-              checkAuthenticate();
+              if (imageSourceSet.imgSrc) {
+                checkAuthenticate(imageSourceSet.imgSrc);
+              }
             }
             setRetried(true);
           }}
